@@ -39,7 +39,7 @@ export async function renderVideo(
       // Render single frame for thumbnail
       const args = [
         'remotion', 'still',
-        `src/compositions/index.ts`,
+        `src/compositions/index.tsx`,
         compositionId,
         outputPath,
         `--props=${propsPath}`,
@@ -53,7 +53,7 @@ export async function renderVideo(
       // Render video
       const args = [
         'remotion', 'render',
-        `src/compositions/index.ts`,
+        `src/compositions/index.tsx`,
         compositionId,
         outputPath,
         `--props=${propsPath}`,

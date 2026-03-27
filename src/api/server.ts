@@ -11,10 +11,7 @@ const PORT = process.env.API_PORT || 3000;
 
 app.use(express.json());
 
-// Serve static files from public/
-app.use(express.static(path.join(__dirname, '../../public')));
-
-// Routes
+// API Routes (must come BEFORE static file serving)
 app.use('/api/queue', queueRoutes);
 app.use('/api/render', renderRoutes);
 
@@ -67,6 +64,9 @@ app.post('/api/preview', (req, res) => {
     estimatedDurationSeconds: totalDuration,
   });
 });
+
+// Serve static files from public/ (AFTER API routes)
+app.use(express.static(path.join(__dirname, '../../public')));
 
 // Initialize
 initDatabase();

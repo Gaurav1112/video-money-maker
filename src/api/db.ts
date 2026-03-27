@@ -5,6 +5,8 @@ const db: DatabaseType = new Database(dbPath);
 
 // Enable WAL mode for better performance
 db.pragma('journal_mode = WAL');
+// Disable FK enforcement (queue_id is optional for ad-hoc renders)
+db.pragma('foreign_keys = OFF');
 
 // Whitelists to prevent SQL injection via dynamic column names
 const ALLOWED_QUEUE_COLUMNS = new Set(['status', 'youtube_id', 'instagram_id', 'published_at', 'long_path', 'short_path', 'thumb_path', 'updated_at']);
@@ -67,10 +69,10 @@ export function updateQueueStatus(id: number, status: string, extra?: Record<str
   db.prepare(`UPDATE queue SET ${sets.join(', ')} WHERE id = ?`).run(...values);
 }
 
-export function createRenderJob(id: string, queueId: number) {
+export function createRenderJob(id: string, queueId?: number | null) {
   db.prepare(
     'INSERT INTO render_jobs (id, queue_id, status) VALUES (?, ?, ?)'
-  ).run(id, queueId, 'queued');
+  ).run(id, queueId || null, 'queued');
 }
 
 export function updateRenderJob(id: string, updates: Record<string, any>) {
