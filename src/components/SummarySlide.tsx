@@ -102,7 +102,7 @@ const SummarySlide: React.FC<SummarySlideProps> = ({
             fontWeight: 600,
           }}
         >
-          Practice this topic: gurusishya.com
+          Practice this topic: guru-sishya.in
         </div>
         <div
           style={{

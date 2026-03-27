@@ -834,17 +834,33 @@
       checkApiStatus();
     });
 
+    // ─── Demo topics (used when API is not running, e.g. on Vercel) ───
+    const DEMO_TOPICS = [
+      'system-design-fundamentals', 'aws', 'k8s-docker', 'kafka', 'spring-boot',
+      'java-core', 'javascript', 'react-nextjs', 'nodejs', 'design-patterns',
+      'ds-algo', 'dsa-patterns', 'nosql', 'rdbms-sql', 'core-cs',
+      'html-css', 'system-design-cases', 'estimation', 'interview-framework'
+    ];
+
+    let isApiAvailable = false;
+
     // ─── Topics ───
     async function loadTopics() {
       try {
         const res = await fetch('/api/topics');
+        if (!res.ok) throw new Error('API returned ' + res.status);
         const data = await res.json();
         allTopics = data.topics || [];
+        isApiAvailable = true;
         document.getElementById('topicCount').textContent = `${allTopics.length} topics available`;
         renderTopicList(allTopics);
       } catch (e) {
-        document.getElementById('topicCount').textContent = 'Failed to load topics';
-        showToast('Failed to load topics. Is the API running?', 'error');
+        // Fallback to demo topics when API is not available (Vercel static deployment)
+        isApiAvailable = false;
+        allTopics = DEMO_TOPICS;
+        document.getElementById('topicCount').textContent = `${allTopics.length} topics (demo mode)`;
+        renderTopicList(allTopics);
+        showToast('Running in demo mode. Start API locally for full features: npm run api', 'info');
       }
     }
 
@@ -911,16 +927,22 @@
       const sessionIndex = parseInt(document.getElementById('sessionSelect').value);
 
       try {
-        const res = await fetch('/api/preview', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            topic: selectedTopic,
-            language: currentLanguage,
-            sessionIndex: sessionIndex,
-          }),
-        });
-        const data = await res.json();
+        let data;
+        if (isApiAvailable) {
+          const res = await fetch('/api/preview', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              topic: selectedTopic,
+              language: currentLanguage,
+              sessionIndex: sessionIndex,
+            }),
+          });
+          data = await res.json();
+        } else {
+          // Demo preview when API is not available
+          data = generateDemoPreview(selectedTopic, currentLanguage);
+        }
         currentPreview = data;
 
         document.getElementById('previewTopicLabel').textContent = data.topic || formatTopicName(selectedTopic);
@@ -931,7 +953,10 @@
         document.getElementById('metaLang').textContent = data.language;
 
         renderScenes(data.scenes);
-        document.getElementById('renderBtn').disabled = false;
+        document.getElementById('renderBtn').disabled = !isApiAvailable;
+        if (!isApiAvailable) {
+          showToast('Preview is demo data. Start API locally to render real videos.', 'info');
+        }
       } catch (e) {
         showToast('Failed to generate preview', 'error');
       } finally {
@@ -1068,7 +1093,11 @@
         document.getElementById('statRendering').textContent = rendering;
         document.getElementById('statTotal').textContent = total;
       } catch (e) {
-        // Stats unavailable
+        // Demo stats when API unavailable
+        document.getElementById('statPending').textContent = '53';
+        document.getElementById('statPublished').textContent = '0';
+        document.getElementById('statRendering').textContent = '0';
+        document.getElementById('statTotal').textContent = '53';
       }
     }
 
@@ -1131,6 +1160,42 @@
           </div>
         </div>
       `).join('');
+    }
+
+    // ─── Demo Preview Generator (for Vercel/static mode) ───
+    function generateDemoPreview(topic, language) {
+      const name = formatTopicName(topic);
+      const hooks = [
+        `Most developers get ${name} completely wrong. Let me show you why.`,
+        `If you can't explain ${name} in an interview, you're not getting the job.`,
+        `${name} shows up in 90 percent of technical interviews. Are you ready?`,
+        `Everything you learned about ${name} in school is wrong.`,
+        `Google, Amazon, and Meta all ask about ${name}. Here's the pattern.`,
+      ];
+      const hook = hooks[topic.length % hooks.length];
+
+      const scenes = [
+        { type: 'title', heading: name, narration: hook, duration: 10 },
+        { type: 'text', heading: 'What is ' + name + '?', narration: `${name} is a fundamental concept in software engineering. Let's break it down step by step so you can ace your next interview.`, duration: 12 },
+        { type: 'text', heading: 'Why It Matters', narration: `In modern distributed systems, understanding ${name} is essential. Here\'s what separates junior from senior developers.`, duration: 10 },
+        { type: 'code', heading: `${language === 'java' ? 'Java' : 'Python'} Implementation`, narration: `Let's look at the implementation in ${language}. Pay attention to the key patterns here.`, duration: 15 },
+        { type: 'code', heading: 'Optimized Version', narration: `Now here's the optimized approach. Notice how we reduce the time complexity significantly.`, duration: 15 },
+        { type: 'table', heading: 'Comparison', narration: `Let's compare the different approaches in a table. Notice the key differences in time and space complexity.`, duration: 8 },
+        { type: 'interview', heading: 'Interview Insight', narration: `Here's what interviewers actually look for when they ask about ${name}. This tip alone can make the difference.`, duration: 8 },
+        { type: 'review', heading: 'Review Question', narration: `Let's test your understanding. Can you explain when to use ${name} vs its alternatives?`, duration: 10 },
+        { type: 'summary', heading: 'Key Takeaways', narration: `Let's recap. You now understand ${name}, its implementation, and how to discuss it in interviews. Practice on guru-sishya.in`, duration: 8 },
+      ];
+
+      const totalDuration = scenes.reduce((s, sc) => s + sc.duration, 0);
+      return {
+        topic: name,
+        title: `Introduction to ${name}`,
+        language,
+        scenes,
+        sceneCount: scenes.length,
+        estimatedDuration: `${Math.floor(totalDuration / 60)}:${String(totalDuration % 60).padStart(2, '0')}`,
+        estimatedDurationSeconds: totalDuration,
+      };
     }
 
     // ─── Toast ───

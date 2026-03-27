@@ -35,7 +35,7 @@ export function generateYouTubeMetadata(storyboard: Storyboard, language: string
 
 ${chapters}
 
-Practice this topic with interactive quizzes: https://gurusishya.com
+Practice this topic with interactive quizzes: https://guru-sishya.in
 Full playlist: [playlist link]
 
 #CodingInterview #${topic.replace(/\s+/g, '')} #${language} #InterviewPrep #DataStructures`;
