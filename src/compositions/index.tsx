@@ -1,8 +1,15 @@
 import { registerRoot, Composition } from 'remotion';
+import type { ComponentType } from 'react';
 import React from 'react';
-import LongVideo from './LongVideo';
-import ShortVideo from './ShortVideo';
-import { Storyboard } from '../types';
+import { LongVideo } from './LongVideo';
+import { ShortVideo } from './ShortVideo';
+import type { Storyboard } from '../types';
+
+// Remotion's Composition generic expects Props extends Record<string, unknown>.
+// We cast components to satisfy this constraint while preserving runtime behavior.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const asCompositionComponent = <T,>(c: ComponentType<T>) =>
+  c as ComponentType<Record<string, unknown>>;
 
 const defaultStoryboard: Storyboard = {
   fps: 30,
@@ -20,7 +27,7 @@ export const RemotionRoot: React.FC = () => {
     <>
       <Composition
         id="LongVideo"
-        component={LongVideo as any}
+        component={asCompositionComponent(LongVideo)}
         durationInFrames={9000}
         fps={30}
         width={1920}
@@ -29,7 +36,7 @@ export const RemotionRoot: React.FC = () => {
       />
       <Composition
         id="ShortVideo"
-        component={ShortVideo as any}
+        component={asCompositionComponent(ShortVideo)}
         durationInFrames={2700}
         fps={30}
         width={1080}
