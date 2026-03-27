@@ -4,7 +4,7 @@ import { generateScript } from '../../pipeline/script-generator';
 import { generateSceneAudios } from '../../pipeline/tts-engine';
 import { generateStoryboard } from '../../pipeline/storyboard';
 import { renderAllFormats } from '../../render/batch-render';
-import { getDemoSession } from '../../pipeline/content-loader';
+import { getDemoSession, loadTopicContent, extractSession } from '../../pipeline/content-loader';
 import crypto from 'crypto';
 
 const router = Router();
@@ -21,8 +21,19 @@ router.post('/', (req, res) => {
     try {
       updateRenderJob(jobId, { status: 'processing', progress: 10 });
 
-      // 1. Load content (use demo for now)
-      const session = getDemoSession();
+      // 1. Load content
+      let session;
+      if (topic && topic !== 'demo') {
+        try {
+          const content = loadTopicContent(topic);
+          session = extractSession(content, (session_number || 1) - 1);
+        } catch (e) {
+          console.warn('Failed to load topic content, using demo:', e);
+        }
+      }
+      if (!session) {
+        session = getDemoSession();
+      }
       updateRenderJob(jobId, { progress: 20 });
 
       // 2. Generate script

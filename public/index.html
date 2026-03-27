@@ -4,139 +4,1271 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Video Money Maker — AI Video Pipeline</title>
+  <meta name="description" content="AI-powered teaching video pipeline. Generate Fireship-style code tutorials and auto-publish daily to YouTube + Instagram. Zero cost. Maximum revenue.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    /* ═══════════════════════════════════════════
+       RESET & BASE
+       ═══════════════════════════════════════════ */
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
     body {
       background: #0C0A15;
+      color: #E2E4E9;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      line-height: 1.6;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: inherit; text-decoration: none; }
+    img { max-width: 100%; display: block; }
+
+    /* ═══════════════════════════════════════════
+       DESIGN TOKENS
+       ═══════════════════════════════════════════ */
+    :root {
+      --saffron: #E85D26;
+      --gold: #FFD700;
+      --teal: #20C997;
+      --indigo: #818CF8;
+      --bg: #0C0A15;
+      --bg-card: #13111C;
+      --bg-card-hover: #1A1730;
+      --border: rgba(255,255,255,0.06);
+      --text: #E2E4E9;
+      --text-muted: #8B8FA3;
+      --max-w: 1200px;
+    }
+
+    /* ═══════════════════════════════════════════
+       BACKGROUND DOT GRID
+       ═══════════════════════════════════════════ */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: radial-gradient(rgba(255,255,255,0.035) 1px, transparent 1px);
+      background-size: 32px 32px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ═══════════════════════════════════════════
+       UTILITY
+       ═══════════════════════════════════════════ */
+    .container { max-width: var(--max-w); margin: 0 auto; padding: 0 24px; position: relative; z-index: 1; }
+    .section { padding: 120px 0; }
+    .section-label {
+      display: inline-block;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--teal);
+      margin-bottom: 16px;
+      background: rgba(32,201,151,0.08);
+      padding: 6px 16px;
+      border-radius: 100px;
+      border: 1px solid rgba(32,201,151,0.15);
+    }
+    .section-title {
+      font-size: clamp(32px, 5vw, 48px);
+      font-weight: 800;
       color: #fff;
-      font-family: 'Inter', -apple-system, sans-serif;
+      margin-bottom: 16px;
+      line-height: 1.15;
+    }
+    .section-subtitle {
+      font-size: 18px;
+      color: var(--text-muted);
+      max-width: 600px;
+      margin: 0 auto 60px;
+      line-height: 1.7;
+    }
+
+    /* Scroll reveal */
+    .reveal {
+      opacity: 0;
+      transform: translateY(40px);
+      transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .reveal-delay-1 { transition-delay: 0.1s; }
+    .reveal-delay-2 { transition-delay: 0.2s; }
+    .reveal-delay-3 { transition-delay: 0.3s; }
+    .reveal-delay-4 { transition-delay: 0.4s; }
+    .reveal-delay-5 { transition-delay: 0.5s; }
+    .reveal-delay-6 { transition-delay: 0.6s; }
+
+    /* ═══════════════════════════════════════════
+       NAV
+       ═══════════════════════════════════════════ */
+    .nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      padding: 16px 24px;
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      background: rgba(12,10,21,0.7);
+      border-bottom: 1px solid var(--border);
+      transition: all 0.3s;
+    }
+    .nav-inner {
+      max-width: var(--max-w);
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .nav-logo {
+      font-size: 18px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .nav-logo span {
+      background: linear-gradient(135deg, var(--saffron), var(--gold));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .nav-links { display: flex; gap: 32px; align-items: center; }
+    .nav-links a {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-muted);
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: #fff; }
+    .nav-cta {
+      background: var(--saffron) !important;
+      color: #fff !important;
+      padding: 8px 20px;
+      border-radius: 8px;
+      font-weight: 600 !important;
+      transition: all 0.2s !important;
+    }
+    .nav-cta:hover { background: #d04f1e !important; transform: translateY(-1px); }
+
+    @media (max-width: 768px) {
+      .nav-links a:not(.nav-cta) { display: none; }
+    }
+
+    /* ═══════════════════════════════════════════
+       HERO
+       ═══════════════════════════════════════════ */
+    .hero {
       min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
-    }
-    .container {
-      max-width: 720px;
-      padding: 60px 40px;
       text-align: center;
+      padding: 120px 24px 80px;
+      position: relative;
+      overflow: hidden;
     }
-    h1 {
-      font-size: 48px;
-      font-weight: 800;
-      color: #E85D26;
-      margin-bottom: 16px;
+
+    /* Ambient glow */
+    .hero::before {
+      content: '';
+      position: absolute;
+      width: 800px;
+      height: 800px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(232,93,38,0.12) 0%, rgba(129,140,248,0.05) 40%, transparent 70%);
+      top: -200px;
+      left: 50%;
+      transform: translateX(-50%);
+      pointer-events: none;
+      animation: pulseGlow 8s ease-in-out infinite;
     }
-    .subtitle {
-      font-size: 20px;
-      color: #A9ACB3;
-      margin-bottom: 40px;
-      line-height: 1.6;
+    @keyframes pulseGlow {
+      0%, 100% { opacity: 0.6; transform: translateX(-50%) scale(1); }
+      50% { opacity: 1; transform: translateX(-50%) scale(1.15); }
     }
-    .stats {
+
+    /* Floating code snippet */
+    .hero-code {
+      position: absolute;
+      top: 15%;
+      right: 5%;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      color: rgba(129,140,248,0.15);
+      text-align: left;
+      line-height: 1.8;
+      pointer-events: none;
+      animation: floatCode 20s ease-in-out infinite;
+      white-space: pre;
+    }
+    .hero-code-left {
+      position: absolute;
+      bottom: 20%;
+      left: 3%;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: rgba(32,201,151,0.1);
+      text-align: left;
+      line-height: 1.8;
+      pointer-events: none;
+      animation: floatCode 25s ease-in-out infinite reverse;
+      white-space: pre;
+    }
+    @keyframes floatCode {
+      0%, 100% { transform: translateY(0) rotate(0.5deg); }
+      25% { transform: translateY(-20px) rotate(-0.5deg); }
+      50% { transform: translateY(-10px) rotate(0.3deg); }
+      75% { transform: translateY(-25px) rotate(-0.3deg); }
+    }
+
+    .hero-content { position: relative; z-index: 2; max-width: 900px; }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255,215,0,0.06);
+      border: 1px solid rgba(255,215,0,0.15);
+      padding: 8px 20px;
+      border-radius: 100px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--gold);
+      margin-bottom: 32px;
+      animation: fadeInDown 0.8s ease-out;
+    }
+    .hero-badge .pulse-dot {
+      width: 8px;
+      height: 8px;
+      background: var(--teal);
+      border-radius: 50%;
+      animation: pulseDot 2s ease-in-out infinite;
+    }
+    @keyframes pulseDot {
+      0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(32,201,151,0.5); }
+      50% { opacity: 0.7; box-shadow: 0 0 0 6px rgba(32,201,151,0); }
+    }
+    @keyframes fadeInDown {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .hero-title {
+      font-size: clamp(48px, 8vw, 88px);
+      font-weight: 900;
+      line-height: 1.05;
+      letter-spacing: -2px;
+      margin-bottom: 24px;
+      animation: fadeInUp 1s ease-out 0.2s both;
+    }
+    .hero-title .gradient-text {
+      background: linear-gradient(135deg, var(--saffron) 0%, var(--gold) 35%, var(--teal) 70%, var(--indigo) 100%);
+      background-size: 300% 300%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: gradientShift 6s ease infinite;
+    }
+    @keyframes gradientShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .hero-subtitle {
+      font-size: clamp(18px, 2.5vw, 22px);
+      color: var(--text-muted);
+      max-width: 600px;
+      margin: 0 auto 48px;
+      line-height: 1.7;
+      animation: fadeInUp 1s ease-out 0.4s both;
+    }
+
+    .hero-buttons {
       display: flex;
-      gap: 40px;
+      gap: 16px;
       justify-content: center;
-      margin-bottom: 40px;
       flex-wrap: wrap;
+      animation: fadeInUp 1s ease-out 0.6s both;
     }
-    .stat {
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 32px;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--saffron), #d04f1e);
+      color: #fff;
+      box-shadow: 0 0 30px rgba(232,93,38,0.3), 0 4px 12px rgba(0,0,0,0.3);
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 50px rgba(232,93,38,0.5), 0 8px 24px rgba(0,0,0,0.4);
+    }
+    .btn-secondary {
+      background: rgba(255,255,255,0.05);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.1);
+      backdrop-filter: blur(10px);
+    }
+    .btn-secondary:hover {
+      background: rgba(255,255,255,0.1);
+      border-color: rgba(255,255,255,0.2);
+      transform: translateY(-2px);
+    }
+
+    /* Stats */
+    .hero-stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 2px;
+      margin-top: 80px;
+      background: var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      animation: fadeInUp 1s ease-out 0.8s both;
+    }
+    .hero-stat {
+      background: var(--bg-card);
+      padding: 32px 16px;
       text-align: center;
     }
-    .stat-value {
-      font-size: 36px;
-      font-weight: 700;
-      color: #FFD700;
+    .hero-stat-value {
+      font-size: clamp(28px, 4vw, 40px);
+      font-weight: 800;
+      margin-bottom: 4px;
     }
-    .stat-label {
-      font-size: 14px;
-      color: #A9ACB3;
+    .hero-stat:nth-child(1) .hero-stat-value { color: var(--teal); }
+    .hero-stat:nth-child(2) .hero-stat-value { color: var(--gold); }
+    .hero-stat:nth-child(3) .hero-stat-value { color: var(--saffron); }
+    .hero-stat:nth-child(4) .hero-stat-value { color: var(--indigo); }
+    .hero-stat-label {
+      font-size: 13px;
+      color: var(--text-muted);
+      font-weight: 500;
       text-transform: uppercase;
       letter-spacing: 1px;
     }
-    .features {
-      text-align: left;
-      margin: 40px 0;
+    @media (max-width: 600px) {
+      .hero-stats { grid-template-columns: repeat(2, 1fr); }
     }
-    .feature {
+
+    /* ═══════════════════════════════════════════
+       HOW IT WORKS — PIPELINE
+       ═══════════════════════════════════════════ */
+    .pipeline { text-align: center; background: linear-gradient(180deg, var(--bg) 0%, #0F0D19 100%); }
+    .pipeline-steps {
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      gap: 0;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+    .pipeline-step {
+      flex: 0 0 180px;
+      text-align: center;
+      position: relative;
+      padding: 20px;
+    }
+    .pipeline-icon {
+      width: 72px;
+      height: 72px;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      margin: 0 auto 16px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      transition: all 0.5s;
+      position: relative;
+    }
+    .pipeline-step.active .pipeline-icon {
+      border-color: var(--saffron);
+      box-shadow: 0 0 30px rgba(232,93,38,0.2);
+      background: rgba(232,93,38,0.08);
+    }
+    .pipeline-step-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 6px;
+    }
+    .pipeline-step-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+    .pipeline-arrow {
+      flex: 0 0 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding-top: 32px;
+      color: rgba(255,255,255,0.15);
+      font-size: 24px;
+    }
+    @media (max-width: 900px) {
+      .pipeline-steps { flex-direction: column; align-items: center; }
+      .pipeline-arrow { transform: rotate(90deg); padding-top: 0; }
+    }
+
+    /* ═══════════════════════════════════════════
+       FEATURES — BENTO GRID
+       ═══════════════════════════════════════════ */
+    .features { text-align: center; }
+    .bento-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: auto;
+      gap: 16px;
+      margin-top: 20px;
+    }
+    .bento-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 36px 28px;
+      text-align: left;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .bento-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 20px;
+      padding: 1px;
+      background: linear-gradient(135deg, transparent 40%, rgba(232,93,38,0.2) 60%, transparent 80%);
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      opacity: 0;
+      transition: opacity 0.4s;
+    }
+    .bento-card:hover::before { opacity: 1; }
+    .bento-card:hover {
+      background: var(--bg-card-hover);
+      transform: translateY(-4px);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    }
+    .bento-card.span-2 { grid-column: span 2; }
+    .bento-card.span-row { grid-row: span 2; }
+    .bento-icon {
+      font-size: 36px;
+      margin-bottom: 20px;
+      display: block;
+    }
+    .bento-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 8px;
+    }
+    .bento-desc {
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+    /* Special card themes */
+    .bento-card.card-components { background: linear-gradient(135deg, var(--bg-card), rgba(232,93,38,0.06)); }
+    .bento-card.card-tts { background: linear-gradient(135deg, var(--bg-card), rgba(32,201,151,0.06)); }
+    .bento-card.card-free { background: linear-gradient(135deg, var(--bg-card), rgba(255,215,0,0.04)); }
+
+    /* Code preview inside bento card */
+    .bento-code-preview {
+      margin-top: 16px;
+      background: rgba(0,0,0,0.3);
+      border-radius: 10px;
+      padding: 16px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      line-height: 1.7;
+      overflow: hidden;
+    }
+    .bento-code-preview .kw { color: var(--indigo); }
+    .bento-code-preview .fn { color: var(--teal); }
+    .bento-code-preview .str { color: var(--gold); }
+    .bento-code-preview .cm { color: var(--text-muted); }
+
+    @media (max-width: 900px) {
+      .bento-grid { grid-template-columns: 1fr; }
+      .bento-card.span-2 { grid-column: span 1; }
+    }
+    @media (min-width: 901px) and (max-width: 1100px) {
+      .bento-grid { grid-template-columns: repeat(2, 1fr); }
+      .bento-card.span-2 { grid-column: span 2; }
+    }
+
+    /* ═══════════════════════════════════════════
+       TECH STACK
+       ═══════════════════════════════════════════ */
+    .tech-stack {
+      text-align: center;
+      padding: 80px 0;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      overflow: hidden;
+    }
+    .tech-scroll {
+      display: flex;
+      gap: 48px;
+      animation: scrollTech 30s linear infinite;
+      width: max-content;
+    }
+    .tech-scroll:hover { animation-play-state: paused; }
+    @keyframes scrollTech {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+    .tech-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+      padding: 12px 24px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-muted);
+      transition: all 0.3s;
+      white-space: nowrap;
+    }
+    .tech-item:hover {
+      color: #fff;
+      border-color: rgba(255,255,255,0.15);
+      background: var(--bg-card-hover);
+    }
+    .tech-item-icon { font-size: 22px; }
+
+    /* ═══════════════════════════════════════════
+       VIDEO PREVIEW
+       ═══════════════════════════════════════════ */
+    .video-preview { text-align: center; }
+    .video-player {
+      max-width: 800px;
+      margin: 0 auto;
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      background: #0A0816;
+      box-shadow: 0 40px 100px rgba(0,0,0,0.6), 0 0 60px rgba(232,93,38,0.08);
+    }
+    .video-player-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 20px;
+      background: #151222;
+      border-bottom: 1px solid var(--border);
+    }
+    .video-player-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+    }
+    .video-player-dot.red { background: #FF5F57; }
+    .video-player-dot.yellow { background: #FFBD2E; }
+    .video-player-dot.green { background: #28C840; }
+    .video-player-title {
+      flex: 1;
+      text-align: center;
+      font-size: 13px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+    .video-player-content {
+      padding: 40px;
+      text-align: left;
+      min-height: 350px;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .video-player-topic {
+      font-size: 14px;
+      color: var(--saffron);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 8px;
+    }
+    .video-player-heading {
+      font-size: clamp(24px, 4vw, 36px);
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 24px;
+    }
+    .video-player-code {
+      background: rgba(0,0,0,0.4);
+      border-radius: 12px;
+      padding: 24px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px;
+      line-height: 1.8;
+      border: 1px solid rgba(255,255,255,0.05);
+    }
+    .video-player-code .kw { color: var(--indigo); }
+    .video-player-code .fn { color: var(--teal); }
+    .video-player-code .str { color: var(--gold); }
+    .video-player-code .cm { color: #5A5E73; }
+    .video-player-code .num { color: var(--saffron); }
+    .video-player-overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.3);
+      opacity: 0;
+      transition: opacity 0.3s;
+      cursor: pointer;
+    }
+    .video-player:hover .video-player-overlay { opacity: 1; }
+    .play-button {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: var(--saffron);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 40px rgba(232,93,38,0.4);
+    }
+    .play-triangle {
+      width: 0;
+      height: 0;
+      border-style: solid;
+      border-width: 12px 0 12px 22px;
+      border-color: transparent transparent transparent #fff;
+      margin-left: 4px;
+    }
+    /* Bottom bar */
+    .video-player-bottom {
+      padding: 16px 24px;
+      background: #151222;
+      border-top: 1px solid var(--border);
       display: flex;
       align-items: center;
       gap: 12px;
-      padding: 12px 0;
-      font-size: 16px;
-      color: #ddd;
     }
-    .dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: #20C997;
-      flex-shrink: 0;
+    .video-progress {
+      flex: 1;
+      height: 4px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 4px;
+      overflow: hidden;
     }
-    .cta {
-      display: inline-block;
-      background: #E85D26;
-      color: white;
-      padding: 14px 32px;
-      border-radius: 8px;
-      text-decoration: none;
-      font-weight: 700;
-      font-size: 16px;
+    .video-progress-fill {
+      height: 100%;
+      width: 35%;
+      background: var(--saffron);
+      border-radius: 4px;
+      animation: progressFill 8s linear infinite;
+    }
+    @keyframes progressFill {
+      0% { width: 0%; }
+      100% { width: 100%; }
+    }
+    .video-time {
+      font-size: 12px;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--text-muted);
+    }
+
+    /* ═══════════════════════════════════════════
+       REVENUE
+       ═══════════════════════════════════════════ */
+    .revenue { text-align: center; background: linear-gradient(180deg, var(--bg), #0F0D1A); }
+    .revenue-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
       margin-top: 20px;
     }
-    .cta:hover { opacity: 0.9; }
-    .api-status {
-      margin-top: 40px;
-      padding: 16px;
-      background: #1A1625;
-      border-radius: 8px;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 14px;
-      color: #20C997;
+    .revenue-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 40px 28px;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.4s;
     }
-    code { color: #818CF8; }
+    .revenue-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    }
+    .revenue-card.featured {
+      border-color: rgba(232,93,38,0.3);
+      background: linear-gradient(135deg, var(--bg-card), rgba(232,93,38,0.06));
+    }
+    .revenue-card.featured::after {
+      content: 'MOST LIKELY';
+      position: absolute;
+      top: 16px;
+      right: -28px;
+      background: var(--saffron);
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      padding: 4px 32px;
+      transform: rotate(45deg);
+    }
+    .revenue-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 12px;
+    }
+    .revenue-value {
+      font-size: clamp(36px, 5vw, 52px);
+      font-weight: 900;
+      margin-bottom: 16px;
+    }
+    .revenue-card:nth-child(1) .revenue-value { color: var(--teal); }
+    .revenue-card:nth-child(2) .revenue-value { color: var(--gold); }
+    .revenue-card:nth-child(3) .revenue-value { color: var(--saffron); }
+    .revenue-period {
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+    .revenue-arrow {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 40px 0 0;
+      gap: 16px;
+    }
+    .revenue-arrow-line {
+      width: 120px;
+      height: 2px;
+      background: linear-gradient(90deg, var(--teal), var(--gold), var(--saffron));
+      border-radius: 2px;
+    }
+    .revenue-arrow-text {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--gold);
+    }
+    @media (max-width: 768px) {
+      .revenue-grid { grid-template-columns: 1fr; max-width: 400px; margin-left: auto; margin-right: auto; }
+    }
+
+    /* ═══════════════════════════════════════════
+       FOOTER
+       ═══════════════════════════════════════════ */
+    .footer {
+      text-align: center;
+      padding: 60px 24px;
+      border-top: 1px solid var(--border);
+    }
+    .footer-logo {
+      font-size: 24px;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+    .footer-logo span {
+      background: linear-gradient(135deg, var(--saffron), var(--gold));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .footer-sub {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-bottom: 24px;
+    }
+    .footer-links {
+      display: flex;
+      gap: 24px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 32px;
+    }
+    .footer-links a {
+      font-size: 14px;
+      color: var(--text-muted);
+      transition: color 0.2s;
+    }
+    .footer-links a:hover { color: #fff; }
+    .footer-copy {
+      font-size: 13px;
+      color: rgba(255,255,255,0.25);
+    }
+    .footer-copy a { color: var(--saffron); }
+
+    /* ═══════════════════════════════════════════
+       TYPING CURSOR
+       ═══════════════════════════════════════════ */
+    .typing-cursor {
+      display: inline-block;
+      width: 2px;
+      height: 1em;
+      background: var(--teal);
+      margin-left: 2px;
+      animation: blink 1s step-end infinite;
+      vertical-align: text-bottom;
+    }
+    @keyframes blink {
+      0%, 50% { opacity: 1; }
+      51%, 100% { opacity: 0; }
+    }
+
+    /* ═══════════════════════════════════════════
+       GLOW SEPARATOR
+       ═══════════════════════════════════════════ */
+    .glow-line {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--saffron), var(--gold), var(--teal), transparent);
+      opacity: 0.3;
+      margin: 0 auto;
+      max-width: 600px;
+    }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Video Money Maker</h1>
-    <p class="subtitle">
-      AI-powered teaching video pipeline that generates Fireship-style
-      code tutorials and auto-publishes daily to YouTube + Instagram.
-    </p>
 
-    <div class="stats">
-      <div class="stat">
-        <div class="stat-value">$0</div>
-        <div class="stat-label">Monthly Cost</div>
+  <!-- NAV -->
+  <nav class="nav">
+    <div class="nav-inner">
+      <div class="nav-logo">
+        <span>VMM</span>
       </div>
-      <div class="stat">
-        <div class="stat-value">1,342</div>
-        <div class="stat-label">Videos Planned</div>
-      </div>
-      <div class="stat">
-        <div class="stat-value">53</div>
-        <div class="stat-label">Topics</div>
+      <div class="nav-links">
+        <a href="#pipeline">How It Works</a>
+        <a href="#features">Features</a>
+        <a href="#preview">Preview</a>
+        <a href="#revenue">Revenue</a>
+        <a href="/dashboard.html">Dashboard</a>
+        <a href="https://github.com/Gaurav1112/video-money-maker" class="nav-cta" target="_blank">GitHub</a>
       </div>
     </div>
+  </nav>
 
-    <div class="features">
-      <div class="feature"><div class="dot"></div> 12 Remotion video components (Dark Scholar theme)</div>
-      <div class="feature"><div class="dot"></div> Kokoro TTS narration (human-quality, self-hosted)</div>
-      <div class="feature"><div class="dot"></div> Multi-language: Python + Java code examples</div>
-      <div class="feature"><div class="dot"></div> Khan GS-style viral hooks and teaching structure</div>
-      <div class="feature"><div class="dot"></div> Auto-publish daily to YouTube + Instagram Reels</div>
-      <div class="feature"><div class="dot"></div> YouTube SEO: titles, chapters, tags auto-generated</div>
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-code" aria-hidden="true">const pipeline = {
+  tts: 'kokoro',
+  style: 'dark-scholar',
+  output: '1080p',
+  publish: ['youtube', 'instagram'],
+  schedule: 'daily',
+  cost: '$0/month'
+};</div>
+    <div class="hero-code-left" aria-hidden="true">def generate_video(topic):
+    script = ai.write(topic)
+    voice = kokoro.speak(script)
+    video = remotion.render(
+        components=12,
+        theme="dark_scholar"
+    )
+    return publish(video)</div>
+
+    <div class="hero-content">
+      <div class="hero-badge">
+        <div class="pulse-dot"></div>
+        Pipeline Active
+      </div>
+
+      <h1 class="hero-title">
+        <span class="gradient-text">Video Money<br>Maker</span>
+      </h1>
+
+      <p class="hero-subtitle">
+        AI-powered teaching videos. Zero cost. Maximum revenue.<br>
+        Auto-publish Fireship-style code tutorials daily.
+      </p>
+
+      <div class="hero-buttons">
+        <a href="/dashboard.html" class="btn btn-primary">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+          Open Dashboard
+        </a>
+        <a href="#preview" class="btn btn-secondary">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          Watch Preview
+        </a>
+      </div>
+
+      <div class="hero-stats">
+        <div class="hero-stat">
+          <div class="hero-stat-value" data-count="0" data-prefix="$" data-suffix="/mo">$0/mo</div>
+          <div class="hero-stat-label">Cost</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-value" data-count="1342">0</div>
+          <div class="hero-stat-label">Videos</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-value" data-count="53">0</div>
+          <div class="hero-stat-label">Topics</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-value" data-count="2">0</div>
+          <div class="hero-stat-label">Languages</div>
+        </div>
+      </div>
     </div>
+  </section>
 
-    <a href="https://github.com/Gaurav1112/video-money-maker" class="cta">
-      View on GitHub
-    </a>
+  <div class="glow-line"></div>
 
-    <div class="api-status">
-      API: <code>GET /api/status</code> &nbsp;|&nbsp;
-      Queue: <code>GET /api/queue/stats</code> &nbsp;|&nbsp;
-      Render: <code>POST /api/render</code>
+  <!-- HOW IT WORKS -->
+  <section class="section pipeline" id="pipeline">
+    <div class="container">
+      <div class="reveal">
+        <div class="section-label">How It Works</div>
+        <h2 class="section-title">Five Steps. Fully Automated.</h2>
+        <p class="section-subtitle">From raw content to published video in minutes. No human intervention required.</p>
+      </div>
+      <div class="pipeline-steps">
+        <div class="pipeline-step reveal reveal-delay-1" data-pipeline="1">
+          <div class="pipeline-icon">📚</div>
+          <div class="pipeline-step-title">Content</div>
+          <div class="pipeline-step-desc">1,342 pre-written lessons across 53 topics</div>
+        </div>
+        <div class="pipeline-arrow reveal reveal-delay-1">→</div>
+        <div class="pipeline-step reveal reveal-delay-2" data-pipeline="2">
+          <div class="pipeline-icon">✍️</div>
+          <div class="pipeline-step-title">Script</div>
+          <div class="pipeline-step-desc">AI structures hook, teaching, and code demos</div>
+        </div>
+        <div class="pipeline-arrow reveal reveal-delay-2">→</div>
+        <div class="pipeline-step reveal reveal-delay-3" data-pipeline="3">
+          <div class="pipeline-icon">🎙️</div>
+          <div class="pipeline-step-title">Voice</div>
+          <div class="pipeline-step-desc">Kokoro TTS generates human-quality narration</div>
+        </div>
+        <div class="pipeline-arrow reveal reveal-delay-3">→</div>
+        <div class="pipeline-step reveal reveal-delay-4" data-pipeline="4">
+          <div class="pipeline-icon">🎬</div>
+          <div class="pipeline-step-title">Render</div>
+          <div class="pipeline-step-desc">Remotion composes 12 animated components</div>
+        </div>
+        <div class="pipeline-arrow reveal reveal-delay-4">→</div>
+        <div class="pipeline-step reveal reveal-delay-5" data-pipeline="5">
+          <div class="pipeline-icon">🚀</div>
+          <div class="pipeline-step-title">Publish</div>
+          <div class="pipeline-step-desc">Auto-upload to YouTube + Instagram daily</div>
+        </div>
+      </div>
     </div>
-  </div>
+  </section>
+
+  <div class="glow-line"></div>
+
+  <!-- FEATURES -->
+  <section class="section features" id="features">
+    <div class="container">
+      <div class="reveal">
+        <div class="section-label">Features</div>
+        <h2 class="section-title">Everything You Need. Nothing You Don't.</h2>
+        <p class="section-subtitle">A complete video production pipeline that runs on autopilot.</p>
+      </div>
+
+      <div class="bento-grid">
+        <div class="bento-card span-2 card-components reveal reveal-delay-1">
+          <div class="bento-icon">🎨</div>
+          <div class="bento-title">12 Video Components</div>
+          <div class="bento-desc">Dark Scholar theme with saffron, gold, teal, and indigo accents. Every frame looks like a premium course.</div>
+          <div class="bento-code-preview">
+            <span class="cm">// Dark Scholar Theme</span><br>
+            <span class="kw">const</span> theme = {<br>
+            &nbsp;&nbsp;bg: <span class="str">'#0C0A15'</span>,<br>
+            &nbsp;&nbsp;saffron: <span class="str">'#E85D26'</span>,<br>
+            &nbsp;&nbsp;gold: <span class="str">'#FFD700'</span>,<br>
+            &nbsp;&nbsp;teal: <span class="str">'#20C997'</span><br>
+            };
+          </div>
+        </div>
+        <div class="bento-card card-tts reveal reveal-delay-2">
+          <div class="bento-icon">🎙️</div>
+          <div class="bento-title">Kokoro TTS</div>
+          <div class="bento-desc">Human-quality AI voice synthesis. Self-hosted, zero API cost. Sounds natural, not robotic.</div>
+        </div>
+        <div class="bento-card reveal reveal-delay-3">
+          <div class="bento-icon">🌐</div>
+          <div class="bento-title">Multi-Language</div>
+          <div class="bento-desc">Every tutorial includes both Python and Java code examples, covering the widest audience.</div>
+        </div>
+        <div class="bento-card reveal reveal-delay-3">
+          <div class="bento-icon">📡</div>
+          <div class="bento-title">Auto-Publish</div>
+          <div class="bento-desc">n8n workflows publish to YouTube and Instagram Reels daily. Set it and forget it.</div>
+        </div>
+        <div class="bento-card reveal reveal-delay-4">
+          <div class="bento-icon">🎯</div>
+          <div class="bento-title">Khan GS Style</div>
+          <div class="bento-desc">Viral hooks, engaging teaching pace, and memorable explanations that students love.</div>
+        </div>
+        <div class="bento-card reveal reveal-delay-5">
+          <div class="bento-icon">🔍</div>
+          <div class="bento-title">YouTube SEO</div>
+          <div class="bento-desc">Auto-generated titles, descriptions, chapters, and tags optimized for search ranking.</div>
+        </div>
+        <div class="bento-card card-free reveal reveal-delay-6">
+          <div class="bento-icon">💸</div>
+          <div class="bento-title">$0 Infrastructure</div>
+          <div class="bento-desc">Completely free stack. Self-hosted TTS, local rendering, free tier APIs. Pure profit.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TECH STACK -->
+  <section class="tech-stack" id="tech">
+    <div class="container reveal">
+      <div class="section-label">Tech Stack</div>
+      <h2 class="section-title" style="font-size: 28px; margin-bottom: 40px;">Built With The Best</h2>
+    </div>
+    <div class="tech-scroll-wrapper" style="overflow:hidden;">
+      <div class="tech-scroll">
+        <div class="tech-item"><span class="tech-item-icon">⚛️</span> Remotion</div>
+        <div class="tech-item"><span class="tech-item-icon">⚛️</span> React</div>
+        <div class="tech-item"><span class="tech-item-icon">🔷</span> TypeScript</div>
+        <div class="tech-item"><span class="tech-item-icon">🎙️</span> Kokoro TTS</div>
+        <div class="tech-item"><span class="tech-item-icon">⚡</span> n8n</div>
+        <div class="tech-item"><span class="tech-item-icon">🗄️</span> SQLite</div>
+        <div class="tech-item"><span class="tech-item-icon">🐳</span> Docker</div>
+        <div class="tech-item"><span class="tech-item-icon">📺</span> YouTube API</div>
+        <div class="tech-item"><span class="tech-item-icon">📸</span> Instagram API</div>
+        <div class="tech-item"><span class="tech-item-icon">🎨</span> FFmpeg</div>
+        <!-- Duplicate for seamless loop -->
+        <div class="tech-item"><span class="tech-item-icon">⚛️</span> Remotion</div>
+        <div class="tech-item"><span class="tech-item-icon">⚛️</span> React</div>
+        <div class="tech-item"><span class="tech-item-icon">🔷</span> TypeScript</div>
+        <div class="tech-item"><span class="tech-item-icon">🎙️</span> Kokoro TTS</div>
+        <div class="tech-item"><span class="tech-item-icon">⚡</span> n8n</div>
+        <div class="tech-item"><span class="tech-item-icon">🗄️</span> SQLite</div>
+        <div class="tech-item"><span class="tech-item-icon">🐳</span> Docker</div>
+        <div class="tech-item"><span class="tech-item-icon">📺</span> YouTube API</div>
+        <div class="tech-item"><span class="tech-item-icon">📸</span> Instagram API</div>
+        <div class="tech-item"><span class="tech-item-icon">🎨</span> FFmpeg</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="glow-line"></div>
+
+  <!-- VIDEO PREVIEW -->
+  <section class="section video-preview" id="preview">
+    <div class="container">
+      <div class="reveal">
+        <div class="section-label">Preview</div>
+        <h2 class="section-title">See What Gets Generated</h2>
+        <p class="section-subtitle">Every video is a polished, animated code tutorial with professional narration.</p>
+      </div>
+
+      <div class="video-player reveal reveal-delay-1">
+        <div class="video-player-bar">
+          <div class="video-player-dot red"></div>
+          <div class="video-player-dot yellow"></div>
+          <div class="video-player-dot green"></div>
+          <div class="video-player-title">binary-search-explained.mp4</div>
+        </div>
+        <div class="video-player-content">
+          <div class="video-player-topic">Data Structures & Algorithms</div>
+          <div class="video-player-heading">Binary Search in 60 Seconds</div>
+          <div class="video-player-code">
+            <span class="cm"># The most elegant search algorithm</span><br>
+            <span class="kw">def</span> <span class="fn">binary_search</span>(arr, target):<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;lo, hi = <span class="num">0</span>, <span class="fn">len</span>(arr) - <span class="num">1</span><br>
+            <br>
+            &nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">while</span> lo <= hi:<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mid = (lo + hi) // <span class="num">2</span><br>
+            <br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">if</span> arr[mid] == target:<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">return</span> mid  <span class="cm"># Found it!</span><br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">elif</span> arr[mid] < target:<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lo = mid + <span class="num">1</span><br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">else</span>:<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;hi = mid - <span class="num">1</span><br>
+            <br>
+            &nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">return</span> -<span class="num">1</span>  <span class="cm"># O(log n) time</span><span class="typing-cursor"></span>
+          </div>
+          <div class="video-player-overlay">
+            <div class="play-button">
+              <div class="play-triangle"></div>
+            </div>
+          </div>
+        </div>
+        <div class="video-player-bottom">
+          <span class="video-time">0:23</span>
+          <div class="video-progress"><div class="video-progress-fill"></div></div>
+          <span class="video-time">1:02</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="glow-line"></div>
+
+  <!-- REVENUE -->
+  <section class="section revenue" id="revenue">
+    <div class="container">
+      <div class="reveal">
+        <div class="section-label">Revenue</div>
+        <h2 class="section-title">Turn Knowledge Into Revenue</h2>
+        <p class="section-subtitle">With 1,342 videos publishing daily, the math works in your favor.</p>
+      </div>
+
+      <div class="revenue-grid">
+        <div class="revenue-card reveal reveal-delay-1">
+          <div class="revenue-label">Infrastructure Cost</div>
+          <div class="revenue-value" data-count="0" data-prefix="$">$0</div>
+          <div class="revenue-period">per month<br><span style="color:var(--teal);font-weight:600;">Self-hosted everything</span></div>
+        </div>
+        <div class="revenue-card featured reveal reveal-delay-2">
+          <div class="revenue-label">Year 1 Potential</div>
+          <div class="revenue-value">$500<span style="font-size:0.5em;color:var(--text-muted)">/mo</span></div>
+          <div class="revenue-period">AdSense + Sponsorships<br><span style="color:var(--gold);font-weight:600;">With 1K+ subscribers</span></div>
+        </div>
+        <div class="revenue-card reveal reveal-delay-3">
+          <div class="revenue-label">Year 2+ Potential</div>
+          <div class="revenue-value">$2K<span style="font-size:0.5em;color:var(--text-muted)">/mo</span></div>
+          <div class="revenue-period">Ads + Courses + Sponsors<br><span style="color:var(--saffron);font-weight:600;">Compounding content library</span></div>
+        </div>
+      </div>
+
+      <div class="revenue-arrow reveal reveal-delay-4">
+        <div class="revenue-arrow-line"></div>
+        <div class="revenue-arrow-text">$0 cost = infinite ROI</div>
+        <div class="revenue-arrow-line"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer-logo"><span>Video Money Maker</span></div>
+    <div class="footer-sub">AI-powered teaching video pipeline</div>
+    <div class="footer-links">
+      <a href="https://github.com/Gaurav1112/video-money-maker" target="_blank">GitHub</a>
+      <a href="#pipeline">How It Works</a>
+      <a href="#features">Features</a>
+      <a href="#revenue">Revenue</a>
+    </div>
+    <div class="footer-copy">
+      Built by <a href="https://github.com/Gaurav1112" target="_blank">Gaurav</a> &nbsp;|&nbsp; Powered by Remotion + Kokoro TTS
+    </div>
+  </footer>
+
+  <script>
+    /* ═══════════════════════════════════════════
+       SCROLL REVEAL (IntersectionObserver)
+       ═══════════════════════════════════════════ */
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
+    }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+    /* ═══════════════════════════════════════════
+       COUNTER ANIMATION
+       ═══════════════════════════════════════════ */
+    function animateCounter(el) {
+      const target = parseInt(el.dataset.count);
+      const prefix = el.dataset.prefix || '';
+      const suffix = el.dataset.suffix || '';
+
+      if (target === 0) {
+        el.textContent = prefix + '0' + suffix;
+        return;
+      }
+
+      const duration = 2000;
+      const startTime = performance.now();
+
+      function update(currentTime) {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        // Ease out cubic
+        const eased = 1 - Math.pow(1 - progress, 3);
+        const current = Math.round(eased * target);
+
+        el.textContent = prefix + current.toLocaleString() + suffix;
+
+        if (progress < 1) {
+          requestAnimationFrame(update);
+        }
+      }
+
+      requestAnimationFrame(update);
+    }
+
+    const counterObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting && !entry.target.dataset.animated) {
+          entry.target.dataset.animated = 'true';
+          animateCounter(entry.target);
+        }
+      });
+    }, { threshold: 0.5 });
+
+    document.querySelectorAll('[data-count]').forEach(el => counterObserver.observe(el));
+
+    /* ═══════════════════════════════════════════
+       PIPELINE STEP ACTIVATION ON SCROLL
+       ═══════════════════════════════════════════ */
+    const pipelineObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('active');
+        }
+      });
+    }, { threshold: 0.5 });
+
+    document.querySelectorAll('.pipeline-step').forEach(el => pipelineObserver.observe(el));
+
+    /* ═══════════════════════════════════════════
+       NAV SCROLL EFFECT
+       ═══════════════════════════════════════════ */
+    let lastScroll = 0;
+    window.addEventListener('scroll', () => {
+      const nav = document.querySelector('.nav');
+      const scroll = window.scrollY;
+      if (scroll > 100) {
+        nav.style.background = 'rgba(12,10,21,0.9)';
+      } else {
+        nav.style.background = 'rgba(12,10,21,0.7)';
+      }
+      lastScroll = scroll;
+    }, { passive: true });
+  </script>
 </body>
 </html>
