@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Video Money Maker — AI Video Pipeline</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #0C0A15;
+      color: #fff;
+      font-family: 'Inter', -apple-system, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .container {
+      max-width: 720px;
+      padding: 60px 40px;
+      text-align: center;
+    }
+    h1 {
+      font-size: 48px;
+      font-weight: 800;
+      color: #E85D26;
+      margin-bottom: 16px;
+    }
+    .subtitle {
+      font-size: 20px;
+      color: #A9ACB3;
+      margin-bottom: 40px;
+      line-height: 1.6;
+    }
+    .stats {
+      display: flex;
+      gap: 40px;
+      justify-content: center;
+      margin-bottom: 40px;
+      flex-wrap: wrap;
+    }
+    .stat {
+      text-align: center;
+    }
+    .stat-value {
+      font-size: 36px;
+      font-weight: 700;
+      color: #FFD700;
+    }
+    .stat-label {
+      font-size: 14px;
+      color: #A9ACB3;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .features {
+      text-align: left;
+      margin: 40px 0;
+    }
+    .feature {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 0;
+      font-size: 16px;
+      color: #ddd;
+    }
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #20C997;
+      flex-shrink: 0;
+    }
+    .cta {
+      display: inline-block;
+      background: #E85D26;
+      color: white;
+      padding: 14px 32px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 16px;
+      margin-top: 20px;
+    }
+    .cta:hover { opacity: 0.9; }
+    .api-status {
+      margin-top: 40px;
+      padding: 16px;
+      background: #1A1625;
+      border-radius: 8px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px;
+      color: #20C997;
+    }
+    code { color: #818CF8; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Video Money Maker</h1>
+    <p class="subtitle">
+      AI-powered teaching video pipeline that generates Fireship-style
+      code tutorials and auto-publishes daily to YouTube + Instagram.
+    </p>
+
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-value">$0</div>
+        <div class="stat-label">Monthly Cost</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value">1,342</div>
+        <div class="stat-label">Videos Planned</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value">53</div>
+        <div class="stat-label">Topics</div>
+      </div>
+    </div>
+
+    <div class="features">
+      <div class="feature"><div class="dot"></div> 12 Remotion video components (Dark Scholar theme)</div>
+      <div class="feature"><div class="dot"></div> Kokoro TTS narration (human-quality, self-hosted)</div>
+      <div class="feature"><div class="dot"></div> Multi-language: Python + Java code examples</div>
+      <div class="feature"><div class="dot"></div> Khan GS-style viral hooks and teaching structure</div>
+      <div class="feature"><div class="dot"></div> Auto-publish daily to YouTube + Instagram Reels</div>
+      <div class="feature"><div class="dot"></div> YouTube SEO: titles, chapters, tags auto-generated</div>
+    </div>
+
+    <a href="https://github.com/Gaurav1112/video-money-maker" class="cta">
+      View on GitHub
+    </a>
+
+    <div class="api-status">
+      API: <code>GET /api/status</code> &nbsp;|&nbsp;
+      Queue: <code>GET /api/queue/stats</code> &nbsp;|&nbsp;
+      Render: <code>POST /api/render</code>
+    </div>
+  </div>
+</body>
+</html>
