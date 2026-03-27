@@ -2,5 +2,6 @@ node_modules/
 dist/
 output/
 *.db
+n8n-data/
 .env
 .DS_Store
