@@ -25,7 +25,62 @@ export function loadTopicContent(filename: string): any {
 
 export function extractSession(topicData: any, sessionIndex: number): SessionInput | null {
   // Handle different JSON structures in guru-sishya content
-  // Structure 1: { sessions: [...] }
+
+  // Structure A: Array of topic objects (main guru-sishya format)
+  // [ { topic: "SQL", sessions: { "2": "markdown...", "3": "markdown..." }, quizBank: [...] }, ... ]
+  if (Array.isArray(topicData)) {
+    // Flatten: iterate topics, then sessions within each topic
+    let globalIndex = 0;
+    for (const topicObj of topicData) {
+      if (!topicObj.sessions || typeof topicObj.sessions !== 'object') continue;
+      const sessionKeys = Object.keys(topicObj.sessions).sort((a, b) => Number(a) - Number(b));
+      for (const key of sessionKeys) {
+        if (globalIndex === sessionIndex) {
+          const content = topicObj.sessions[key];
+          // Extract title from first heading in markdown
+          const headingMatch = typeof content === 'string' ? content.match(/^##\s+(.+)/m) : null;
+          const title = headingMatch ? headingMatch[1] : `Session ${key}`;
+          // Extract review questions from quizBank if available
+          const reviewQuestions = (topicObj.quizBank || [])
+            .slice(0, 3)
+            .map((q: any) => q.question || q.q || '');
+          return {
+            topic: topicObj.topic || topicObj.title || topicObj.name || 'Unknown Topic',
+            sessionNumber: Number(key),
+            title,
+            content: typeof content === 'string' ? content : JSON.stringify(content),
+            objectives: extractObjectives(typeof content === 'string' ? content : ''),
+            reviewQuestions,
+          };
+        }
+        globalIndex++;
+      }
+    }
+    return null;
+  }
+
+  // Structure B: Single topic object with sessions as object { "2": "...", "3": "..." }
+  if (topicData.sessions && typeof topicData.sessions === 'object' && !Array.isArray(topicData.sessions)) {
+    const sessionKeys = Object.keys(topicData.sessions).sort((a, b) => Number(a) - Number(b));
+    const key = sessionKeys[sessionIndex];
+    if (!key) return null;
+    const content = topicData.sessions[key];
+    const headingMatch = typeof content === 'string' ? content.match(/^##\s+(.+)/m) : null;
+    const title = headingMatch ? headingMatch[1] : `Session ${key}`;
+    const reviewQuestions = (topicData.quizBank || [])
+      .slice(0, 3)
+      .map((q: any) => q.question || q.q || '');
+    return {
+      topic: topicData.topic || topicData.title || topicData.name || 'Unknown Topic',
+      sessionNumber: Number(key),
+      title,
+      content: typeof content === 'string' ? content : JSON.stringify(content),
+      objectives: extractObjectives(typeof content === 'string' ? content : ''),
+      reviewQuestions,
+    };
+  }
+
+  // Structure C: { sessions: [...] } (array of session objects)
   if (topicData.sessions && Array.isArray(topicData.sessions)) {
     const session = topicData.sessions[sessionIndex];
     if (!session) return null;
@@ -39,7 +94,7 @@ export function extractSession(topicData: any, sessionIndex: number): SessionInp
     };
   }
 
-  // Structure 2: { topics: [{ sessions: [...] }] }
+  // Structure D: { topics: [{ sessions: [...] }] }
   if (topicData.topics && Array.isArray(topicData.topics)) {
     for (const topic of topicData.topics) {
       if (topic.sessions && topic.sessions[sessionIndex]) {
@@ -56,7 +111,7 @@ export function extractSession(topicData: any, sessionIndex: number): SessionInp
     }
   }
 
-  // Structure 3: { questions: [...] } (QA format)
+  // Structure E: { questions: [...] } (QA format)
   if (topicData.questions && Array.isArray(topicData.questions)) {
     const batchSize = 10;
     const start = sessionIndex * batchSize;
@@ -75,6 +130,20 @@ export function extractSession(topicData: any, sessionIndex: number): SessionInp
   }
 
   return null;
+}
+
+/** Extract objectives from markdown content by finding bullet points under key headings */
+function extractObjectives(markdown: string): string[] {
+  const objectives: string[] = [];
+  // Look for heading lines that look like section titles
+  const headings = markdown.match(/^###?\s+.+/gm) || [];
+  for (const heading of headings.slice(0, 4)) {
+    objectives.push(heading.replace(/^#+\s*/, '').trim());
+  }
+  if (objectives.length === 0) {
+    objectives.push('Understand the core concepts');
+  }
+  return objectives;
 }
 
 // Demo session for testing when content files aren't available

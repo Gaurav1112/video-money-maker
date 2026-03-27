@@ -85,6 +85,36 @@ const SummarySlide: React.FC<SummarySlideProps> = ({
         })}
       </div>
 
+      {/* CTA / Branding */}
+      <div
+        style={{
+          opacity: fadeIn(frame, startFrame + 30 + takeaways.length * 15 + 15),
+          marginTop: 48,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 12,
+        }}
+      >
+        <div
+          style={{
+            fontSize: SIZES.body,
+            color: COLORS.teal,
+            fontWeight: 600,
+          }}
+        >
+          Practice this topic: gurusishya.com
+        </div>
+        <div
+          style={{
+            fontSize: SIZES.bodySmall,
+            color: COLORS.gold,
+            fontWeight: 500,
+          }}
+        >
+          Subscribe for daily interview prep
+        </div>
+      </div>
+
       <div
         style={{
           opacity: topicOpacity,

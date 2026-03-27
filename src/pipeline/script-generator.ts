@@ -1,5 +1,6 @@
 import { SessionInput, Scene, SceneType } from '../types';
 import { NARRATION_SPEEDS, SCENE_DEFAULTS, TIMING } from '../lib/constants';
+import { renderMermaidToSvg } from './mermaid-renderer';
 
 interface ScriptOptions {
   language?: string; // 'python' | 'java' -- which code examples to use
@@ -207,9 +208,19 @@ function sectionToScene(section: MarkdownSection, language: string, currentFrame
   const duration = Math.max(5, Math.ceil((wordCount / wpm) * 60));
   const frames = TIMING.secondsToFrames(duration);
 
+  // Convert mermaid diagrams to SVG
+  let content = section.content;
+  if (type === 'diagram') {
+    try {
+      content = renderMermaidToSvg(section.content);
+    } catch {
+      // Keep raw content if rendering fails
+    }
+  }
+
   const scene: Scene = {
     type,
-    content: section.content,
+    content,
     narration,
     duration,
     startFrame: currentFrame,

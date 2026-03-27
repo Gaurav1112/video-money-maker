@@ -1,3 +1,4 @@
+export { default as HookSlide } from './HookSlide';
 export { default as TitleSlide } from './TitleSlide';
 export { default as CodeReveal } from './CodeReveal';
 export { default as TextSection } from './TextSection';

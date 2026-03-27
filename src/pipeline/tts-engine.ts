@@ -74,22 +74,38 @@ async function kokoroTTS(
   return result;
 }
 
-function fallbackEstimate(text: string, _cacheKey: string): TTSResult {
+function fallbackEstimate(text: string, cacheKey: string): TTSResult {
   // Fallback: estimate duration from word count (150 WPM)
   const words = text.split(/\s+/).filter(Boolean);
   const duration = (words.length / 150) * 60;
-  const timePerWord = duration / words.length;
+
+  // Generate a silent audio placeholder so Remotion can render
+  const audioDir = path.join(OUTPUT_DIR, 'audio');
+  fs.mkdirSync(audioDir, { recursive: true });
+  const audioPath = path.join(audioDir, `fallback_${cacheKey.slice(0, 12)}.mp3`);
+
+  // Only create if doesn't exist
+  if (!fs.existsSync(audioPath)) {
+    // Create minimal valid MP3 (silent)
+    // A minimal MP3 frame header for silence
+    const silentMp3Header = Buffer.from([
+      0xFF, 0xFB, 0x90, 0x00, // MP3 frame header (MPEG1, Layer3, 128kbps, 44100Hz, stereo)
+    ]);
+    // Repeat for approximate duration (128kbps = 16KB/sec)
+    const framesNeeded = Math.ceil(duration * 38.28); // ~38.28 frames/sec at 128kbps
+    const frames = Buffer.alloc(framesNeeded * 418, 0); // 418 bytes per frame
+    // Write header to first frame
+    silentMp3Header.copy(frames, 0);
+    fs.writeFileSync(audioPath, frames);
+  }
+
   const wordTimestamps = words.map((word, i) => ({
     word,
-    start: i * timePerWord,
-    end: (i + 1) * timePerWord,
+    start: i * (duration / words.length),
+    end: (i + 1) * (duration / words.length),
   }));
 
-  return {
-    audioPath: '',
-    wordTimestamps,
-    duration,
-  };
+  return { audioPath, wordTimestamps, duration };
 }
 
 export async function generateSceneAudios(
