@@ -49,8 +49,8 @@ async function kokoroTTS(
     }
   );
 
-  // Save audio file
-  const audioDir = path.join(OUTPUT_DIR, 'audio');
+  // Save audio file to public/audio/ so Remotion's staticFile() can find them
+  const audioDir = path.join(process.cwd(), 'public', 'audio');
   fs.mkdirSync(audioDir, { recursive: true });
   const filename = outputName || `tts_${cacheKey.slice(0, 12)}.mp3`;
   const audioPath = path.join(audioDir, filename);
@@ -80,7 +80,7 @@ function fallbackEstimate(text: string, cacheKey: string): TTSResult {
   const duration = (words.length / 150) * 60;
 
   // Generate a silent audio placeholder so Remotion can render
-  const audioDir = path.join(OUTPUT_DIR, 'audio');
+  const audioDir = path.join(process.cwd(), 'public', 'audio');
   fs.mkdirSync(audioDir, { recursive: true });
   const audioPath = path.join(audioDir, `fallback_${cacheKey.slice(0, 12)}.mp3`);
 

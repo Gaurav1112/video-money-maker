@@ -29,7 +29,23 @@ export function extractSession(topicData: any, sessionIndex: number): SessionInp
   // Structure A: Array of topic objects (main guru-sishya format)
   // [ { topic: "SQL", sessions: { "2": "markdown...", "3": "markdown..." }, quizBank: [...] }, ... ]
   if (Array.isArray(topicData)) {
-    // Flatten: iterate topics, then sessions within each topic
+    // Check if this is a flat array of topic objects without sessions
+    // e.g. [ { topic: "SQL", category: "...", cheatSheet: "...", lesson: "..." }, ... ]
+    const firstItem = topicData[0];
+    if (firstItem && !firstItem.sessions) {
+      const item = topicData[sessionIndex];
+      if (!item) return null;
+      return {
+        topic: item.topic || item.question || 'Unknown',
+        sessionNumber: sessionIndex + 1,
+        title: item.topic || (item.question ? item.question.slice(0, 80) : '') || `Session ${sessionIndex + 1}`,
+        content: item.cheatSheet || item.lesson || item.answer || '',
+        objectives: item.objectives || extractObjectives(item.cheatSheet || item.lesson || ''),
+        reviewQuestions: item.reviewQuestions || [],
+      };
+    }
+
+    // Nested format: iterate topics, then sessions within each topic
     let globalIndex = 0;
     for (const topicObj of topicData) {
       if (!topicObj.sessions || typeof topicObj.sessions !== 'object') continue;

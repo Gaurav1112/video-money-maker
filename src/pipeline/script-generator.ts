@@ -32,6 +32,17 @@ export function generateScript(session: SessionInput, options: ScriptOptions = {
   for (const section of sections) {
     if (scenes.length >= maxScenes - 2) break; // Reserve space for review + summary
 
+    // Filter code blocks by selected language
+    if (section.type === 'code' && section.language) {
+      const sectionLang = section.language.toLowerCase();
+      const targetLang = language.toLowerCase();
+      // Skip code blocks that are for a different language
+      if (sectionLang !== targetLang &&
+          !['typescript', 'javascript', 'text', 'bash', 'shell', 'sql', 'json', 'yaml', 'html', 'css'].includes(sectionLang)) {
+        continue;
+      }
+    }
+
     const scene = sectionToScene(section, language, currentFrame);
     scenes.push(scene);
     currentFrame = scene.endFrame;
@@ -63,20 +74,59 @@ export function generateScript(session: SessionInput, options: ScriptOptions = {
     bullets: session.objectives.slice(0, 4),
   });
 
-  return scenes;
+  return addSceneTransitions(scenes);
+}
+
+function addSceneTransitions(scenes: Scene[]): Scene[] {
+  const transitions = [
+    "Now here's where it gets interesting. ",
+    "Let's take this a step further. ",
+    "Here's the key insight. ",
+    "Now pay close attention to this part. ",
+    "This is where most people get confused. ",
+    "Let me break this down for you. ",
+    "Building on what we just covered. ",
+    "And this is the important part. ",
+  ];
+
+  return scenes.map((scene, idx) => {
+    if (idx <= 1 || scene.type === 'title' || scene.type === 'summary') return scene;
+    const transition = transitions[(idx * 3) % transitions.length];
+    return {
+      ...scene,
+      narration: transition + scene.narration,
+    };
+  });
 }
 
 function generateHook(topic: string, title: string): string {
   const hooks = [
-    `Did you know most developers struggle with ${topic}? Today we're going to change that.`,
-    `${topic} is one of the most asked topics in technical interviews. Let's master it.`,
-    `If you want to ace your next interview, you need to understand ${topic}. Let's dive in.`,
-    `Here's what separates junior from senior developers: understanding ${topic}. Let's break it down.`,
+    // Curiosity gap
+    `Most developers get ${topic} completely wrong. Let me show you why.`,
+    `There's a secret about ${topic} that senior engineers don't tell you.`,
+    `${topic} is simpler than you think. And harder than you expect.`,
+    // Fear/urgency
+    `If you can't explain ${topic} in an interview, you're not getting the job.`,
+    `${topic} shows up in 90 percent of technical interviews. Are you ready?`,
+    `Your interviewer will ask about ${topic}. Here's exactly what to say.`,
+    // Contrarian
+    `Everything you learned about ${topic} in school is wrong.`,
+    `Stop memorizing ${topic}. Start understanding it.`,
+    `You don't need to be a genius to master ${topic}. You just need this video.`,
+    // Challenge
+    `Can you solve this ${topic} problem in under 60 seconds?`,
+    `I bet you can't explain ${topic} to a five year old. Challenge accepted.`,
+    // Authority
+    `Google, Amazon, and Meta all ask about ${topic}. Here's the pattern.`,
+    `After reviewing 500 interviews, this is the number one ${topic} mistake.`,
+    // Storytelling
+    `I failed my first interview because of ${topic}. Here's what I learned.`,
+    `The best engineer I ever worked with taught me this about ${topic}.`,
   ];
   // Deterministic selection based on topic+title to ensure reproducible builds
-  const seed = topic.length + title.length;
-  const hook = hooks[seed % hooks.length];
-  return `${hook} Today's lesson: ${title}.`;
+  const seed = (topic.length * 7 + title.length * 13) % hooks.length;
+  const hook = hooks[seed];
+  return `${hook} Today we're covering ${title}.`;
 }
 
 interface MarkdownSection {

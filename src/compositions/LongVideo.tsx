@@ -113,8 +113,8 @@ export const LongVideo: React.FC<LongVideoProps> = ({ storyboard }) => {
             name={`${scene.type}-${idx}`}
           >
             <Component {...props} />
-            {scene.audioFile && (
-              <Audio src={staticFile(scene.audioFile)} />
+            {scene.audioFile && scene.audioFile !== '' && (
+              <Audio src={staticFile(`audio/${scene.audioFile.split('/').pop()}`)} />
             )}
           </Sequence>
         );
@@ -130,8 +130,8 @@ export const LongVideo: React.FC<LongVideoProps> = ({ storyboard }) => {
 
       {/* Audio: per-scene audio is rendered inside each Sequence above.
          Fall back to global audio only if no per-scene audio exists. */}
-      {storyboard.audioFile && !storyboard.scenes.some(s => s.audioFile) && (
-        <Audio src={staticFile(storyboard.audioFile)} />
+      {storyboard.audioFile && storyboard.audioFile !== '' && !storyboard.scenes.some(s => s.audioFile) && (
+        <Audio src={staticFile(`audio/${storyboard.audioFile.split('/').pop()}`)} />
       )}
     </AbsoluteFill>
   );
