@@ -5,3 +5,5 @@ output/
 n8n-data/
 .env
 .DS_Store
+queue.db-shm
+queue.db-wal
