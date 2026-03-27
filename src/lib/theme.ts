@@ -1,3 +1,15 @@
+import { loadFont } from '@remotion/google-fonts/Inter';
+import { loadFont as loadCodeFont } from '@remotion/google-fonts/JetBrainsMono';
+
+const { fontFamily: interFont } = loadFont();
+const { fontFamily: jetbrainsFont } = loadCodeFont();
+
+export const LOADED_FONTS = {
+  text: interFont,
+  heading: interFont,
+  code: jetbrainsFont,
+} as const;
+
 export const COLORS = {
   dark: '#0C0A15',
   darkAlt: '#1A1625',

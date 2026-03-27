@@ -12,6 +12,7 @@ export interface Scene {
   highlightLines?: number[];
   bullets?: string[];
   heading?: string;
+  audioFile?: string;
 }
 
 export interface Storyboard {

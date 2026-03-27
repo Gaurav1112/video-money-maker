@@ -6,6 +6,10 @@ const db: DatabaseType = new Database(dbPath);
 // Enable WAL mode for better performance
 db.pragma('journal_mode = WAL');
 
+// Whitelists to prevent SQL injection via dynamic column names
+const ALLOWED_QUEUE_COLUMNS = new Set(['status', 'youtube_id', 'instagram_id', 'published_at', 'long_path', 'short_path', 'thumb_path', 'updated_at']);
+const ALLOWED_JOB_COLUMNS = new Set(['status', 'progress', 'long_path', 'short_path', 'thumb_path', 'error', 'started_at', 'completed_at']);
+
 export function initDatabase() {
   db.exec(`
     CREATE TABLE IF NOT EXISTS queue (
@@ -53,6 +57,7 @@ export function updateQueueStatus(id: number, status: string, extra?: Record<str
 
   if (extra) {
     for (const [key, value] of Object.entries(extra)) {
+      if (!ALLOWED_QUEUE_COLUMNS.has(key)) continue;
       sets.push(`${key} = ?`);
       values.push(value);
     }
@@ -69,8 +74,10 @@ export function createRenderJob(id: string, queueId: number) {
 }
 
 export function updateRenderJob(id: string, updates: Record<string, any>) {
-  const sets = Object.keys(updates).map(k => `${k} = ?`);
-  const values = Object.values(updates);
+  const safeEntries = Object.entries(updates).filter(([k]) => ALLOWED_JOB_COLUMNS.has(k));
+  if (safeEntries.length === 0) return;
+  const sets = safeEntries.map(([k]) => `${k} = ?`);
+  const values = safeEntries.map(([, v]) => v);
   values.push(id);
   db.prepare(`UPDATE render_jobs SET ${sets.join(', ')} WHERE id = ?`).run(...values);
 }

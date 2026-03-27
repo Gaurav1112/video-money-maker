@@ -39,6 +39,7 @@ export function generateStoryboard(
       startFrame,
       endFrame,
       duration,
+      audioFile: audio?.audioPath || undefined,
     });
 
     currentFrame = endFrame;

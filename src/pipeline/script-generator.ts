@@ -72,7 +72,9 @@ function generateHook(topic: string, title: string): string {
     `If you want to ace your next interview, you need to understand ${topic}. Let's dive in.`,
     `Here's what separates junior from senior developers: understanding ${topic}. Let's break it down.`,
   ];
-  const hook = hooks[Math.floor(Math.random() * hooks.length)];
+  // Deterministic selection based on topic+title to ensure reproducible builds
+  const seed = topic.length + title.length;
+  const hook = hooks[seed % hooks.length];
   return `${hook} Today's lesson: ${title}.`;
 }
 

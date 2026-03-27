@@ -59,13 +59,14 @@ function getSceneProps(scene: Scene, storyboard: Storyboard): Record<string, any
         title: scene.heading || '',
         startFrame: 0,
       };
-    case 'table':
-      return {
-        headers: [],
-        rows: [],
-        title: scene.heading || '',
-        startFrame: 0,
-      };
+    case 'table': {
+      // Parse table content from scene (pipe-separated markdown)
+      const lines = scene.content.split('\n').filter(l => l.includes('|'));
+      const parsed = lines.map(l => l.split('|').map(c => c.trim()).filter(Boolean));
+      const headers = parsed[0] || [];
+      const rows = parsed.slice(1) || [];
+      return { headers, rows, title: scene.heading || '', startFrame: 0 };
+    }
     case 'interview':
       return {
         insight: scene.content,
@@ -112,6 +113,9 @@ export const LongVideo: React.FC<LongVideoProps> = ({ storyboard }) => {
             name={`${scene.type}-${idx}`}
           >
             <Component {...props} />
+            {scene.audioFile && (
+              <Audio src={staticFile(scene.audioFile)} />
+            )}
           </Sequence>
         );
       })}
@@ -124,8 +128,9 @@ export const LongVideo: React.FC<LongVideoProps> = ({ storyboard }) => {
       />
       <ProgressBar progress={progress} />
 
-      {/* Audio track */}
-      {storyboard.audioFile && (
+      {/* Audio: per-scene audio is rendered inside each Sequence above.
+         Fall back to global audio only if no per-scene audio exists. */}
+      {storyboard.audioFile && !storyboard.scenes.some(s => s.audioFile) && (
         <Audio src={staticFile(storyboard.audioFile)} />
       )}
     </AbsoluteFill>

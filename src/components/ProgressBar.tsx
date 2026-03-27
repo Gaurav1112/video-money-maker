@@ -28,7 +28,6 @@ const ProgressBar: React.FC<ProgressBarProps> = ({ progress }) => {
             width: `${clampedProgress * 100}%`,
             backgroundColor: COLORS.saffron,
             borderRadius: '0 2px 2px 0',
-            transition: 'width 0.1s linear',
           }}
         />
       </div>

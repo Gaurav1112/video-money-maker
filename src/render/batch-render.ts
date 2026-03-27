@@ -1,4 +1,4 @@
-import { execSync } from 'child_process';
+import { execFileSync } from 'child_process';
 import path from 'path';
 import fs from 'fs';
 import { Storyboard, VideoFormat } from '../types';
@@ -34,43 +34,47 @@ export async function renderVideo(
   const propsPath = path.join(outputDir, `${format}-props.json`);
   fs.writeFileSync(propsPath, JSON.stringify({ storyboard }));
 
-  if (format === 'thumb') {
-    // Render single frame for thumbnail
-    const cmd = [
-      'npx remotion still',
-      `src/compositions/index.ts`,
-      compositionId,
-      outputPath,
-      `--props=${propsPath}`,
-      `--width=${dimensions.width}`,
-      `--height=${dimensions.height}`,
-    ].join(' ');
+  try {
+    if (format === 'thumb') {
+      // Render single frame for thumbnail
+      const args = [
+        'remotion', 'still',
+        `src/compositions/index.ts`,
+        compositionId,
+        outputPath,
+        `--props=${propsPath}`,
+        `--width=${dimensions.width}`,
+        `--height=${dimensions.height}`,
+      ];
 
-    console.log(`Rendering thumbnail: ${outputPath}`);
-    execSync(cmd, { stdio: 'inherit', cwd: process.cwd() });
-  } else {
-    // Render video
-    const cmd = [
-      'npx remotion render',
-      `src/compositions/index.ts`,
-      compositionId,
-      outputPath,
-      `--props=${propsPath}`,
-      `--width=${dimensions.width}`,
-      `--height=${dimensions.height}`,
-      `--fps=${storyboard.fps}`,
-      `--codec=${codec}`,
-      `--crf=${crf}`,
-      `--concurrency=${concurrency}`,
-      '--log=warn',
-    ].join(' ');
+      console.log(`Rendering thumbnail: ${outputPath}`);
+      execFileSync('npx', args, { stdio: 'inherit', cwd: process.cwd() });
+    } else {
+      // Render video
+      const args = [
+        'remotion', 'render',
+        `src/compositions/index.ts`,
+        compositionId,
+        outputPath,
+        `--props=${propsPath}`,
+        `--width=${dimensions.width}`,
+        `--height=${dimensions.height}`,
+        `--fps=${storyboard.fps}`,
+        `--codec=${codec}`,
+        `--crf=${crf}`,
+        `--concurrency=${concurrency}`,
+        '--log=warn',
+      ];
 
-    console.log(`Rendering ${format} video: ${outputPath}`);
-    execSync(cmd, { stdio: 'inherit', cwd: process.cwd() });
+      console.log(`Rendering ${format} video: ${outputPath}`);
+      execFileSync('npx', args, { stdio: 'inherit', cwd: process.cwd() });
+    }
+  } finally {
+    // Clean up props file
+    if (fs.existsSync(propsPath)) {
+      fs.unlinkSync(propsPath);
+    }
   }
-
-  // Clean up props file
-  fs.unlinkSync(propsPath);
 
   return outputPath;
 }
