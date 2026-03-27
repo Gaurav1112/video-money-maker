@@ -1,7 +1,7 @@
 import { registerRoot, Composition } from 'remotion';
 import React from 'react';
-import { LongVideo } from './LongVideo';
-import { ShortVideo } from './ShortVideo';
+import LongVideo from './LongVideo';
+import ShortVideo from './ShortVideo';
 import { Storyboard } from '../types';
 
 const defaultStoryboard: Storyboard = {
@@ -20,7 +20,7 @@ export const RemotionRoot: React.FC = () => {
     <>
       <Composition
         id="LongVideo"
-        component={LongVideo}
+        component={LongVideo as any}
         durationInFrames={9000}
         fps={30}
         width={1920}
@@ -29,7 +29,7 @@ export const RemotionRoot: React.FC = () => {
       />
       <Composition
         id="ShortVideo"
-        component={ShortVideo}
+        component={ShortVideo as any}
         durationInFrames={2700}
         fps={30}
         width={1080}
