@@ -1,0 +1,112 @@
+{
+  "name": "Daily Video Publish",
+  "nodes": [
+    {
+      "parameters": { "rule": { "interval": [{ "field": "hours", "hoursInterval": 24 }] } },
+      "name": "Daily Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "http://localhost:3000/api/queue/next",
+        "options": {}
+      },
+      "name": "Get Next Video",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "conditions": { "string": [{ "value1": "={{$json.topic}}", "operation": "isNotEmpty" }] }
+      },
+      "name": "Has Video?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:3000/api/render",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            { "name": "queue_id", "value": "={{$json.id}}" },
+            { "name": "topic", "value": "={{$json.topic}}" },
+            { "name": "session_number", "value": "={{$json.session_number}}" },
+            { "name": "language", "value": "={{$json.language}}" }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Start Render",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [850, 300]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=http://localhost:3000/api/render/{{$json.jobId}}",
+        "options": {}
+      },
+      "name": "Check Render Status",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1050, 300]
+    },
+    {
+      "parameters": { "amount": 30, "unit": "seconds" },
+      "name": "Wait 30s",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [1050, 450]
+    },
+    {
+      "parameters": {
+        "conditions": { "string": [{ "value1": "={{$json.status}}", "value2": "complete", "operation": "equals" }] }
+      },
+      "name": "Render Done?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [1250, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:3000/api/queue/publish",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            { "name": "id", "value": "={{$node['Get Next Video'].json.id}}" },
+            { "name": "youtube_id", "value": "pending" },
+            { "name": "instagram_id", "value": "pending" }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Mark Published",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1450, 300]
+    }
+  ],
+  "connections": {
+    "Daily Trigger": { "main": [[{ "node": "Get Next Video", "type": "main", "index": 0 }]] },
+    "Get Next Video": { "main": [[{ "node": "Has Video?", "type": "main", "index": 0 }]] },
+    "Has Video?": { "main": [[{ "node": "Start Render", "type": "main", "index": 0 }]] },
+    "Start Render": { "main": [[{ "node": "Check Render Status", "type": "main", "index": 0 }]] },
+    "Check Render Status": { "main": [[{ "node": "Render Done?", "type": "main", "index": 0 }]] },
+    "Render Done?": {
+      "main": [
+        [{ "node": "Mark Published", "type": "main", "index": 0 }],
+        [{ "node": "Wait 30s", "type": "main", "index": 0 }]
+      ]
+    },
+    "Wait 30s": { "main": [[{ "node": "Check Render Status", "type": "main", "index": 0 }]] }
+  }
+}
