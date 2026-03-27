@@ -1,0 +1,6 @@
+node_modules/
+dist/
+output/
+*.db
+.env
+.DS_Store
