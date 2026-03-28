@@ -10,3 +10,4 @@ export { default as SummarySlide } from './SummarySlide';
 export { default as ProgressBar } from './ProgressBar';
 export { default as TopicHeader } from './TopicHeader';
 export { default as Thumbnail } from './Thumbnail';
+export { default as BackgroundLayer } from './BackgroundLayer';

@@ -19,6 +19,7 @@
     "@remotion/cli": "^4.0.441",
     "@remotion/google-fonts": "^4.0.441",
     "@remotion/renderer": "^4.0.441",
+    "@remotion/transitions": "^4.0.441",
     "axios": "^1.14.0",
     "better-sqlite3": "^12.8.0",
     "express": "^5.2.1",

@@ -1,5 +1,9 @@
 import React from 'react';
 import { useCurrentFrame, AbsoluteFill, Sequence, Audio, staticFile } from 'remotion';
+import { TransitionSeries, linearTiming, TransitionPresentation } from '@remotion/transitions';
+import { fade } from '@remotion/transitions/fade';
+import { slide } from '@remotion/transitions/slide';
+import { wipe } from '@remotion/transitions/wipe';
 import { Storyboard, Scene } from '../types';
 import { COLORS } from '../lib/theme';
 import {
@@ -13,6 +17,7 @@ import {
   SummarySlide,
   ProgressBar,
   TopicHeader,
+  BackgroundLayer,
 } from '../components';
 
 interface LongVideoProps {
@@ -29,6 +34,31 @@ const SCENE_COMPONENT_MAP: Record<string, React.FC<any>> = {
   review: ReviewQuestion,
   summary: SummarySlide,
 };
+
+const TRANSITION_DURATION = 15; // 0.5 seconds at 30fps
+
+function getTransitionForScene(sceneType: string): TransitionPresentation<Record<string, unknown>> {
+  switch (sceneType) {
+    case 'title':
+      return fade() as TransitionPresentation<Record<string, unknown>>;
+    case 'code':
+      return slide({ direction: 'from-right' }) as TransitionPresentation<Record<string, unknown>>;
+    case 'text':
+      return fade() as TransitionPresentation<Record<string, unknown>>;
+    case 'interview':
+      return wipe({ direction: 'from-left' }) as TransitionPresentation<Record<string, unknown>>;
+    case 'summary':
+      return fade() as TransitionPresentation<Record<string, unknown>>;
+    case 'diagram':
+      return slide({ direction: 'from-bottom' }) as TransitionPresentation<Record<string, unknown>>;
+    case 'table':
+      return slide({ direction: 'from-left' }) as TransitionPresentation<Record<string, unknown>>;
+    case 'review':
+      return wipe({ direction: 'from-right' }) as TransitionPresentation<Record<string, unknown>>;
+    default:
+      return fade() as TransitionPresentation<Record<string, unknown>>;
+  }
+}
 
 function getSceneProps(scene: Scene, storyboard: Storyboard): Record<string, any> {
   switch (scene.type) {
@@ -60,7 +90,6 @@ function getSceneProps(scene: Scene, storyboard: Storyboard): Record<string, any
         startFrame: 0,
       };
     case 'table': {
-      // Parse table content from scene (pipe-separated markdown)
       const lines = scene.content.split('\n').filter(l => l.includes('|'));
       const parsed = lines.map(l => l.split('|').map(c => c.trim()).filter(Boolean));
       const headers = parsed[0] || [];
@@ -97,28 +126,40 @@ export const LongVideo: React.FC<LongVideoProps> = ({ storyboard }) => {
 
   return (
     <AbsoluteFill style={{ backgroundColor: COLORS.dark }}>
-      {/* Render each scene as a Sequence */}
-      {storyboard.scenes.map((scene, idx) => {
-        const Component = SCENE_COMPONENT_MAP[scene.type];
-        if (!Component) return null;
+      {/* Animated background layer */}
+      <BackgroundLayer />
 
-        const duration = scene.endFrame - scene.startFrame;
-        const props = getSceneProps(scene, storyboard);
+      {/* Render each scene with transitions */}
+      <TransitionSeries>
+        {storyboard.scenes.map((scene, idx) => {
+          const Component = SCENE_COMPONENT_MAP[scene.type];
+          if (!Component) return null;
 
-        return (
-          <Sequence
-            key={idx}
-            from={scene.startFrame}
-            durationInFrames={duration}
-            name={`${scene.type}-${idx}`}
-          >
-            <Component {...props} />
-            {scene.audioFile && scene.audioFile !== '' && (
-              <Audio src={staticFile(`audio/${scene.audioFile.split('/').pop()}`)} />
-            )}
-          </Sequence>
-        );
-      })}
+          const duration = scene.endFrame - scene.startFrame;
+          const props = getSceneProps(scene, storyboard);
+          const isFirst = idx === 0;
+
+          return (
+            <React.Fragment key={idx}>
+              {/* Add transition before each scene (except the first) */}
+              {!isFirst && (
+                <TransitionSeries.Transition
+                  presentation={getTransitionForScene(scene.type)}
+                  timing={linearTiming({ durationInFrames: TRANSITION_DURATION })}
+                />
+              )}
+              <TransitionSeries.Sequence durationInFrames={duration}>
+                <AbsoluteFill>
+                  <Component {...props} />
+                  {scene.audioFile && scene.audioFile !== '' && (
+                    <Audio src={staticFile(`audio/${scene.audioFile.split('/').pop()}`)} />
+                  )}
+                </AbsoluteFill>
+              </TransitionSeries.Sequence>
+            </React.Fragment>
+          );
+        })}
+      </TransitionSeries>
 
       {/* Persistent overlays */}
       <TopicHeader
