@@ -47,7 +47,10 @@ export function generateStoryboard(
     endFrame: INTRO_DURATION,
   };
 
-  let currentFrame = INTRO_DURATION;
+  // Content scenes are 0-based; the intro offset is applied in LongVideo.tsx
+  // via <Sequence from={INTRO_DURATION}>. Starting at INTRO_DURATION here would
+  // cause a double-offset (BUG 6).
+  let currentFrame = 0;
   const timedScenes: Scene[] = [introScene];
 
   for (let i = 0; i < scenes.length; i++) {
