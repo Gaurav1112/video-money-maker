@@ -15,7 +15,7 @@ const TitleSlide: React.FC<TitleSlideProps> = ({
   topic,
   sessionNumber,
   title,
-  objectives,
+  objectives = [],
   language,
 }) => {
   const frame = useCurrentFrame();
