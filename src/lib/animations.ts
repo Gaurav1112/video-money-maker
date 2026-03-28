@@ -73,3 +73,44 @@ export const wiggle = (frame: number, startFrame: number, amplitude = 4, speed =
   const decay = Math.max(0, 1 - elapsed / 30);
   return Math.sin(elapsed * speed) * amplitude * decay;
 };
+
+// Zoom into an element (simulates camera movement)
+export const zoomIn = (frame: number, startFrame: number, scale: number = 1.2, duration: number = 45) =>
+  interpolate(frame, [startFrame, startFrame + duration], [1, scale], {
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
+    easing: Easing.out(Easing.cubic),
+  });
+
+// Zoom out from an element
+export const zoomOut = (frame: number, startFrame: number, scale: number = 1.2, duration: number = 45) =>
+  interpolate(frame, [startFrame, startFrame + duration], [scale, 1], {
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
+    easing: Easing.out(Easing.cubic),
+  });
+
+// Spotlight effect — returns opacity for a dark overlay (dims everything except center)
+export const spotlight = (frame: number, startFrame: number, duration: number = 30) => ({
+  opacity: interpolate(frame, [startFrame, startFrame + duration], [0, 0.6], {
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
+  }),
+});
+
+// Ken Burns slow drift — subtle scale + position shift for cinematic feel
+export const kenBurns = (frame: number, startFrame: number, duration: number = 300) => {
+  const progress = interpolate(frame, [startFrame, startFrame + duration], [0, 1], {
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
+  });
+  return {
+    scale: 1 + progress * 0.08,
+    x: progress * -15,
+    y: progress * -8,
+  };
+};
+
+// Pulse glow effect — oscillates between two opacity values
+export const pulseGlow = (frame: number, speed: number = 0.08, min: number = 0.3, max: number = 0.8) =>
+  interpolate(Math.sin(frame * speed), [-1, 1], [min, max]);
