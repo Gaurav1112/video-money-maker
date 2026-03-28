@@ -43,80 +43,29 @@ export const BrandingLayer: React.FC<BrandingLayerProps> = ({
 
   return (
     <>
-      {/* Persistent branded badge — bottom-right corner */}
+      {/* Bottom-right subtle watermark — small, unobtrusive */}
       {frame >= watermarkStart && frame < watermarkEnd && (
         <div
           style={{
             position: 'absolute',
             bottom: isShort ? 110 : 28,
             right: isShort ? 16 : 30,
-            opacity: 0.97,
-            zIndex: 100,
-            display: 'flex',
-            alignItems: 'center',
-            gap: 10,
-            background: 'rgba(12, 10, 21, 0.85)',
-            borderRadius: 12,
-            padding: isShort ? '8px 16px' : '10px 20px',
-            border: '1.5px solid rgba(232, 93, 38, 0.5)',
-            backdropFilter: 'blur(10px)',
-            boxShadow: '0 4px 20px rgba(232, 93, 38, 0.2)',
-          }}
-        >
-          <div style={{
-            width: 12,
-            height: 12,
-            borderRadius: '50%',
-            background: '#20C997',
-            boxShadow: '0 0 10px #20C997, 0 0 20px #20C99755',
-            flexShrink: 0,
-          }} />
-          <span style={{
-            fontSize: isShort ? 16 : 20,
-            fontFamily: "'Inter', system-ui, sans-serif",
-            fontWeight: 800,
-            color: '#E85D26',
-            letterSpacing: 0.5,
-          }}>
-            www.guru-sishya.in
-          </span>
-          <span style={{
-            fontSize: isShort ? 11 : 13,
-            color: '#0C0A15',
-            background: '#20C997',
-            fontFamily: "'Inter', system-ui, sans-serif",
-            fontWeight: 800,
-            padding: '2px 8px',
-            borderRadius: 5,
-          }}>
-            FREE
-          </span>
-        </div>
-      )}
-
-      {/* Top-right corner brand — visible during content scenes */}
-      {frame >= watermarkStart && frame < watermarkEnd && (
-        <div
-          style={{
-            position: 'absolute',
-            top: isShort ? 16 : 20,
-            right: isShort ? 16 : 30,
-            opacity: 0.85,
+            opacity: 0.6,
             zIndex: 100,
             display: 'flex',
             alignItems: 'center',
             gap: 6,
-            background: 'rgba(12, 10, 21, 0.75)',
+            background: 'rgba(12, 10, 21, 0.65)',
             borderRadius: 8,
-            padding: isShort ? '5px 10px' : '6px 14px',
-            border: '1px solid rgba(232, 93, 38, 0.3)',
+            padding: isShort ? '4px 10px' : '5px 12px',
+            border: '1px solid rgba(232, 93, 38, 0.25)',
             backdropFilter: 'blur(8px)',
           }}
         >
           <span style={{
             fontSize: 14,
             fontFamily: "'Inter', system-ui, sans-serif",
-            fontWeight: 700,
+            fontWeight: 600,
             color: '#E85D26',
             letterSpacing: 0.3,
           }}>

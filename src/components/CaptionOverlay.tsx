@@ -11,6 +11,8 @@ interface CaptionOverlayProps {
   durationInFrames?: number;
   /** Words per minute for timing calculation */
   wordsPerMinute?: number;
+  /** Real word-level timestamps from TTS (overrides WPM estimate when provided) */
+  wordTimestamps?: Array<{ word: string; start: number; end: number }>;
 }
 
 /**
@@ -23,6 +25,7 @@ const CaptionOverlay: React.FC<CaptionOverlayProps> = ({
   startFrame = 0,
   durationInFrames,
   wordsPerMinute = 160,
+  wordTimestamps,
 }) => {
   const frame = useCurrentFrame();
 
@@ -43,7 +46,14 @@ const CaptionOverlay: React.FC<CaptionOverlayProps> = ({
 
   // Which word index are we on globally?
   const elapsed = Math.max(0, frame - startFrame);
-  const currentWordIndex = Math.floor(elapsed / framesPerWord);
+  let currentWordIndex = Math.floor(elapsed / framesPerWord);
+
+  // If real timestamps available, use them
+  if (wordTimestamps && wordTimestamps.length > 0) {
+    const elapsedSeconds = elapsed / 30; // frames to seconds
+    currentWordIndex = wordTimestamps.findIndex(wt => elapsedSeconds < wt.end);
+    if (currentWordIndex === -1) currentWordIndex = wordTimestamps.length - 1;
+  }
 
   // Which sentence chunk is active?
   let wordOffset = 0;
@@ -106,42 +116,6 @@ const CaptionOverlay: React.FC<CaptionOverlayProps> = ({
             position: 'relative',
           }}
         >
-          {/* Brand label pinned to right side of caption bar */}
-          <div
-            style={{
-              position: 'absolute',
-              right: 16,
-              top: '50%',
-              transform: 'translateY(-50%)',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 5,
-              background: 'rgba(232, 93, 38, 0.12)',
-              border: '1px solid rgba(232, 93, 38, 0.35)',
-              borderRadius: 7,
-              padding: '3px 10px',
-            }}
-          >
-            <div style={{
-              width: 6,
-              height: 6,
-              borderRadius: '50%',
-              background: '#20C997',
-              boxShadow: '0 0 6px #20C997',
-              flexShrink: 0,
-            }} />
-            <span style={{
-              fontSize: 13,
-              fontFamily: "'Inter', system-ui, sans-serif",
-              fontWeight: 700,
-              color: '#E85D26',
-              letterSpacing: 0.3,
-              whiteSpace: 'nowrap',
-            }}>
-              guru-sishya.in
-            </span>
-          </div>
-
           {activeSentence.map((word, idx) => {
             const isPast = idx < localWordIndex;
             const isCurrent = idx === localWordIndex;
