@@ -9,15 +9,26 @@ const cache = new NodeCache({ stdTTL: 2592000 }); // 30 days
 const KOKORO_API = process.env.KOKORO_API_URL || 'http://localhost:8880';
 const AUDIO_DIR = path.join(process.cwd(), 'public', 'audio');
 
+// Voice map for Edge TTS — supports multiple languages and accents
+const VOICE_MAP: Record<string, string> = {
+  'english': 'en-US-AriaNeural',        // Clear American English
+  'indian-english': 'en-IN-NeerjaNeural', // Indian English (relatable for Indian students)
+  'hindi': 'hi-IN-SwaraNeural',          // Hindi female
+  'hinglish': 'en-IN-NeerjaNeural',      // Indian English works for Hinglish too
+  'male-english': 'en-US-GuyNeural',     // Male American
+  'male-indian': 'en-IN-PrabhatNeural',  // Male Indian English
+};
+
 // Ensure audio directory exists
 fs.mkdirSync(AUDIO_DIR, { recursive: true });
 
 export async function generateAudio(
   text: string,
   voice: string = 'af_bella',
-  outputName?: string
+  outputName?: string,
+  voiceLanguage: string = 'indian-english'
 ): Promise<TTSResult> {
-  const cacheKey = crypto.createHash('sha256').update(text + voice).digest('hex');
+  const cacheKey = crypto.createHash('sha256').update(text + voice + voiceLanguage).digest('hex');
 
   // Check cache
   const cached = cache.get<TTSResult>(cacheKey);
@@ -32,7 +43,7 @@ export async function generateAudio(
 
   // Try Edge TTS (free Microsoft natural voices, works everywhere with internet)
   try {
-    return await edgeTTS(text, cacheKey, outputName);
+    return await edgeTTS(text, cacheKey, outputName, voiceLanguage);
   } catch (edgeErr) {
     console.warn('Edge TTS failed:', (edgeErr as Error).message);
   }
@@ -87,7 +98,8 @@ async function kokoroTTS(
 async function edgeTTS(
   text: string,
   cacheKey: string,
-  outputName?: string
+  outputName?: string,
+  voiceLanguage: string = 'indian-english'
 ): Promise<TTSResult> {
   const { execFileSync } = await import('child_process');
 
@@ -98,14 +110,13 @@ async function edgeTTS(
   const cleanText = text.replace(/"/g, '\\"').slice(0, 3000);
 
   // Use python3 edge-tts module (Microsoft neural voices - very natural)
-  // en-US-AriaNeural = warm, clear female voice
-  // en-IN-NeerjaNeural = Indian English female (great for Indian students!)
-  const voice = process.env.EDGE_TTS_VOICE || 'en-US-AriaNeural';
+  // Voice selection based on language preference from VOICE_MAP
+  const voice = process.env.EDGE_TTS_VOICE || VOICE_MAP[voiceLanguage] || VOICE_MAP['indian-english'];
 
   execFileSync('python3', [
     '-m', 'edge_tts',
     '--voice', voice,
-    '--rate', '-10%',   // Slightly slower — teacher pace, not rushed
+    '--rate', '-15%',   // Teacher pace — slower and clearer for learning
     '--pitch', '+0Hz',
     '--text', cleanText,
     '--write-media', audioPath,
@@ -189,7 +200,8 @@ function makeTimestamps(text: string, duration: number, audioPath: string): TTSR
 // ─── Batch: generate audio for all scenes ───
 export async function generateSceneAudios(
   scenes: Array<{ narration: string; type: string }>,
-  voice: string = 'af_bella'
+  voice: string = 'af_bella',
+  voiceLanguage: string = 'indian-english'
 ): Promise<TTSResult[]> {
   const results: TTSResult[] = [];
   for (let i = 0; i < scenes.length; i++) {
@@ -199,7 +211,7 @@ export async function generateSceneAudios(
       continue;
     }
     console.log(`  Generating audio for scene ${i + 1}/${scenes.length} [${scene.type}]...`);
-    const result = await generateAudio(scene.narration, voice, `scene_${i}.mp3`);
+    const result = await generateAudio(scene.narration, voice, `scene_${i}.mp3`, voiceLanguage);
     results.push(result);
   }
   return results;

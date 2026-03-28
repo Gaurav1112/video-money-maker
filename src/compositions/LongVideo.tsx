@@ -191,7 +191,17 @@ export const LongVideo: React.FC<LongVideoProps> = ({ storyboard }) => {
                     <SceneTransitionFlash sceneType={scene.type} />
                   )}
                   {scene.audioFile && scene.audioFile !== '' && (
-                    <Audio src={staticFile(`audio/${scene.audioFile.split('/').pop()}`)} />
+                    <Audio
+                      src={staticFile(`audio/${scene.audioFile.split('/').pop()}`)}
+                      volume={(f) => {
+                        // Fade out in last 15 frames to prevent overlap during transition
+                        const fadeOutStart = duration - 20;
+                        if (f >= fadeOutStart) {
+                          return interpolate(f, [fadeOutStart, duration], [1, 0], { extrapolateRight: 'clamp' });
+                        }
+                        return 1;
+                      }}
+                    />
                   )}
                 </AbsoluteFill>
               </TransitionSeries.Sequence>

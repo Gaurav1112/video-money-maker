@@ -303,23 +303,30 @@ function mapSectionType(type: string): SceneType {
 }
 
 function generateNarration(section: MarkdownSection): string {
+  let narration: string;
   switch (section.type) {
     case 'code':
-      return summarizeCode(section.content, section.language || 'typescript');
+      narration = summarizeCode(section.content, section.language || 'typescript');
+      break;
     case 'diagram':
-      return `Let's visualize this with a diagram. ${section.heading || 'Here\'s how the components interact.'}`;
+      narration = `Let's visualize this with a diagram. ${section.heading || 'Here\'s how the components interact.'}`;
+      break;
     case 'table':
-      return `Let's compare these in a table. ${section.heading || 'Notice the key differences.'}`;
+      narration = `Let's compare these in a table. ${section.heading || 'Notice the key differences.'}`;
+      break;
     case 'callout':
-      return `Here's an important interview insight. ${section.content}`;
+      narration = `Here's an important interview insight. ${section.content}`;
+      break;
     case 'text':
     default:
       // Clean and use as narration directly
-      return section.content
+      narration = section.content
         .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1') // Remove markdown links
         .replace(/[`*_#]/g, '') // Remove markdown formatting
         .slice(0, 500); // Cap length
+      break;
   }
+  return addTeachingPauses(narration);
 }
 
 function summarizeCode(code: string, language: string): string {
@@ -339,4 +346,13 @@ function summarizeCode(code: string, language: string): string {
   return `Let's examine this ${language} code. It has ${lines.length} lines and demonstrates a key concept. Pay attention to the logic flow.`;
 }
 
-export { parseMarkdown, generateNarration, generateHook };
+// Add teaching pauses to narration for a more natural, teacher-like delivery
+function addTeachingPauses(text: string): string {
+  return text
+    .replace(/\. /g, '... ')           // Pause after sentences
+    .replace(/: /g, '... ')            // Pause after colons
+    .replace(/\? /g, '?... ')          // Longer pause after questions
+    .replace(/! /g, '!... ');          // Pause after exclamations
+}
+
+export { parseMarkdown, generateNarration, generateHook, addTeachingPauses };
