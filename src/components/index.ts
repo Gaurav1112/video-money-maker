@@ -13,3 +13,4 @@ export { default as Thumbnail } from './Thumbnail';
 export { default as BackgroundLayer } from './BackgroundLayer';
 export { default as CaptionOverlay } from './CaptionOverlay';
 export { default as NarratorIndicator } from './NarratorIndicator';
+export { default as SceneTransitionFlash } from './SceneTransitionFlash';

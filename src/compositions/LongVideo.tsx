@@ -20,6 +20,7 @@ import {
   BackgroundLayer,
   CaptionOverlay,
   NarratorIndicator,
+  SceneTransitionFlash,
 } from '../components';
 
 interface LongVideoProps {
@@ -134,19 +135,34 @@ function getActiveScene(scenes: Scene[], frame: number): Scene | null {
   return null;
 }
 
+/**
+ * Generate scene markers for the progress bar.
+ */
+function getSceneMarkers(scenes: Scene[], totalFrames: number) {
+  return scenes.map((scene) => ({
+    position: scene.startFrame / totalFrames,
+    type: scene.type,
+    label: scene.heading || scene.type,
+  }));
+}
+
 export const LongVideo: React.FC<LongVideoProps> = ({ storyboard }) => {
   const frame = useCurrentFrame();
   const totalFrames = storyboard.durationInFrames;
   const progress = frame / totalFrames;
 
-  // Get active scene for captions
+  // Get active scene for captions and overlays
   const activeScene = getActiveScene(storyboard.scenes, frame);
   const hasNarration = activeScene && activeScene.narration && activeScene.narration.trim() !== '';
+  const currentSceneType = activeScene?.type || 'text';
+
+  // Scene markers for progress bar
+  const sceneMarkers = getSceneMarkers(storyboard.scenes, totalFrames);
 
   return (
     <AbsoluteFill style={{ backgroundColor: COLORS.dark }}>
-      {/* Animated background layer */}
-      <BackgroundLayer />
+      {/* Animated background layer - adapts to scene type */}
+      <BackgroundLayer sceneType={currentSceneType} />
 
       {/* Render each scene with transitions */}
       <TransitionSeries>
@@ -170,6 +186,10 @@ export const LongVideo: React.FC<LongVideoProps> = ({ storyboard }) => {
               <TransitionSeries.Sequence durationInFrames={duration}>
                 <AbsoluteFill>
                   <Component {...props} />
+                  {/* Scene transition flash effect */}
+                  {!isFirst && (
+                    <SceneTransitionFlash sceneType={scene.type} />
+                  )}
                   {scene.audioFile && scene.audioFile !== '' && (
                     <Audio src={staticFile(`audio/${scene.audioFile.split('/').pop()}`)} />
                   )}
@@ -185,8 +205,13 @@ export const LongVideo: React.FC<LongVideoProps> = ({ storyboard }) => {
         topic={storyboard.topic}
         sessionNumber={storyboard.sessionNumber}
         language="TypeScript"
+        sceneType={currentSceneType}
       />
-      <ProgressBar progress={progress} />
+      <ProgressBar
+        progress={progress}
+        sceneMarkers={sceneMarkers}
+        currentSceneType={currentSceneType}
+      />
 
       {/* Caption overlay - shows narration text word by word */}
       {hasNarration && activeScene && (
@@ -198,19 +223,18 @@ export const LongVideo: React.FC<LongVideoProps> = ({ storyboard }) => {
         />
       )}
 
-      {/* Narrator indicator - shows "someone is speaking" */}
+      {/* Narrator indicator */}
       <NarratorIndicator
         isActive={hasNarration || false}
         label="Guru Sishya"
       />
 
-      {/* Background music - plays if bgmFile is specified in storyboard */}
+      {/* Background music */}
       {storyboard.bgmFile && (
         <Sequence from={0}>
           <Audio
             src={staticFile(storyboard.bgmFile)}
             volume={(f) => {
-              // Fade in over 2 seconds, maintain at 12%
               return interpolate(f, [0, 60], [0, 0.12], { extrapolateRight: 'clamp' });
             }}
             loop
@@ -218,8 +242,7 @@ export const LongVideo: React.FC<LongVideoProps> = ({ storyboard }) => {
         </Sequence>
       )}
 
-      {/* Audio: per-scene audio is rendered inside each Sequence above.
-         Fall back to global audio only if no per-scene audio exists. */}
+      {/* Global audio fallback */}
       {storyboard.audioFile && storyboard.audioFile !== '' && !storyboard.scenes.some(s => s.audioFile) && (
         <Audio src={staticFile(`audio/${storyboard.audioFile.split('/').pop()}`)} />
       )}

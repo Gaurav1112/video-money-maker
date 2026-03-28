@@ -87,20 +87,20 @@ const CaptionOverlay: React.FC<CaptionOverlayProps> = ({
           zIndex: 100,
         }}
       >
-        {/* Dark strip background */}
+        {/* Dark strip background - more prominent */}
         <div
           style={{
-            backgroundColor: `${COLORS.dark}E8`,
-            backdropFilter: 'blur(12px)',
-            borderRadius: 12,
-            padding: '14px 32px',
-            maxWidth: 1200,
+            backgroundColor: `${COLORS.dark}F0`,
+            backdropFilter: 'blur(16px)',
+            borderRadius: 14,
+            padding: '18px 40px',
+            maxWidth: 1300,
             display: 'flex',
             flexWrap: 'wrap',
             justifyContent: 'center',
-            gap: '0 8px',
-            border: `1px solid ${COLORS.gray}15`,
-            boxShadow: `0 4px 30px ${COLORS.dark}88`,
+            gap: '0 10px',
+            border: `1px solid ${COLORS.saffron}18`,
+            boxShadow: `0 6px 40px ${COLORS.dark}AA, 0 0 0 1px ${COLORS.gray}08`,
           }}
         >
           {activeSentence.map((word, idx) => {
@@ -139,13 +139,14 @@ const CaptionOverlay: React.FC<CaptionOverlayProps> = ({
                 style={{
                   color,
                   fontWeight,
-                  fontSize: SIZES.body,
+                  fontSize: SIZES.body + 2,
                   fontFamily: FONTS.text,
                   lineHeight: 1.6,
                   transform: `scale(${wordScale})`,
                   display: 'inline-block',
                   transition: 'color 0.1s ease',
-                  textShadow: isCurrent ? `0 0 20px ${COLORS.saffron}44` : 'none',
+                  textShadow: isCurrent ? `0 0 24px ${COLORS.saffron}55` : 'none',
+                  letterSpacing: 0.3,
                 }}
               >
                 {word}

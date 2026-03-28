@@ -44,12 +44,27 @@ const TextSection: React.FC<TextSectionProps> = ({
   return (
     <AbsoluteFill
       style={{
-        backgroundColor: COLORS.dark,
+        background: `linear-gradient(135deg, #0C0A15 0%, #0E0B1A 50%, #0C0A15 100%)`,
         justifyContent: 'center',
         padding: '80px 100px',
         fontFamily: FONTS.text,
       }}
     >
+      {/* Subtle indigo gradient orb */}
+      <div
+        style={{
+          position: 'absolute',
+          top: '10%',
+          right: '-5%',
+          width: 500,
+          height: 400,
+          borderRadius: '50%',
+          background: `radial-gradient(ellipse, ${COLORS.indigo}08, transparent 70%)`,
+          filter: 'blur(60px)',
+          pointerEvents: 'none',
+        }}
+      />
+
       {/* Left accent line (Fireship-style) */}
       <div
         style={{

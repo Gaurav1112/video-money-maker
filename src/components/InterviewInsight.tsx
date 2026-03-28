@@ -49,23 +49,35 @@ const InterviewInsight: React.FC<InterviewInsightProps> = ({
   return (
     <AbsoluteFill
       style={{
-        backgroundColor: COLORS.dark,
+        background: `linear-gradient(160deg, #0F0C08 0%, #0C0A15 60%, #100C06 100%)`,
         justifyContent: 'center',
         alignItems: 'center',
         padding: '80px 100px',
         fontFamily: FONTS.text,
       }}
     >
-      {/* Background glow */}
+      {/* Warm gold background glow */}
       <div
         style={{
           position: 'absolute',
-          width: 800,
-          height: 500,
+          width: 900,
+          height: 600,
           borderRadius: '50%',
-          background: `radial-gradient(ellipse, ${COLORS.gold}15, transparent 70%)`,
+          background: `radial-gradient(ellipse, ${COLORS.gold}12, ${COLORS.saffron}06, transparent 70%)`,
           opacity: glowOpacity,
           filter: 'blur(60px)',
+        }}
+      />
+      {/* Secondary warm tint */}
+      <div
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: `radial-gradient(ellipse at 20% 80%, ${COLORS.gold}06, transparent 60%)`,
+          pointerEvents: 'none',
         }}
       />
 

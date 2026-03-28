@@ -74,8 +74,8 @@ const SummarySlide: React.FC<SummarySlideProps> = ({
         }}
       />
 
-      {/* Confetti particles */}
-      {showConfetti && Array.from({ length: 12 }).map((_, i) => {
+      {/* Confetti particles - more and varied */}
+      {showConfetti && Array.from({ length: 24 }).map((_, i) => {
         const confettiColors = [COLORS.saffron, COLORS.gold, COLORS.teal, COLORS.indigo, COLORS.white];
         const speed = 1.5 + (i % 3) * 0.5;
         const startX = 10 + (i * 7.5) % 80;

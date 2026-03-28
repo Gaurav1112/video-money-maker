@@ -1,7 +1,7 @@
 import React from 'react';
 import { useCurrentFrame, AbsoluteFill, interpolate } from 'remotion';
 import { COLORS, FONTS, SIZES } from '../lib/theme';
-import { fadeIn, slideUp, springIn } from '../lib/animations';
+import { fadeIn, slideUp } from '../lib/animations';
 
 interface CodeRevealProps {
   code: string;
@@ -10,6 +10,212 @@ interface CodeRevealProps {
   highlightLines?: number[];
   startFrame?: number;
   output?: string;
+}
+
+// Token types for syntax highlighting
+type TokenType =
+  | 'keyword'
+  | 'string'
+  | 'number'
+  | 'comment'
+  | 'function'
+  | 'operator'
+  | 'type'
+  | 'punctuation'
+  | 'decorator'
+  | 'plain';
+
+interface Token {
+  text: string;
+  type: TokenType;
+}
+
+// Color map for each token type
+const TOKEN_COLORS: Record<TokenType, string> = {
+  keyword: '#C792EA',     // soft purple
+  string: '#C3E88D',      // green
+  number: '#FFCB6B',      // gold
+  comment: '#546E7A',     // muted gray
+  function: '#82AAFF',    // light blue
+  operator: '#89DDFF',    // cyan-white
+  type: '#4EC9B0',        // teal
+  punctuation: '#BABED8', // soft white
+  decorator: '#FFCB6B',   // gold
+  plain: COLORS.white,
+};
+
+const KEYWORDS = new Set([
+  // JS/TS
+  'const', 'let', 'var', 'function', 'return', 'if', 'else', 'for', 'while',
+  'class', 'import', 'export', 'from', 'async', 'await', 'new', 'try', 'catch',
+  'throw', 'switch', 'case', 'break', 'continue', 'default', 'typeof', 'instanceof',
+  'in', 'of', 'do', 'yield', 'delete', 'void', 'with', 'finally',
+  'extends', 'implements', 'super', 'this', 'interface', 'type', 'enum', 'namespace',
+  'abstract', 'declare', 'module', 'require', 'as', 'is',
+  // Python
+  'def', 'self', 'lambda', 'with', 'as', 'pass', 'raise', 'except', 'True', 'False',
+  'None', 'and', 'or', 'not', 'is', 'in', 'elif', 'global', 'nonlocal', 'assert',
+  'yield', 'del', 'print',
+  // Java/general
+  'public', 'private', 'protected', 'static', 'final', 'void', 'int', 'String',
+  'boolean', 'double', 'float', 'long', 'char', 'byte', 'short', 'null',
+  'true', 'false', 'package', 'throws', 'implements', 'abstract', 'synchronized',
+]);
+
+const TYPE_NAMES = new Set([
+  'Array', 'Map', 'Set', 'Promise', 'Object', 'Number', 'Boolean', 'Record',
+  'Partial', 'Required', 'Readonly', 'Pick', 'Omit', 'Exclude', 'Extract',
+  'string', 'number', 'boolean', 'any', 'unknown', 'never', 'void', 'null',
+  'undefined', 'List', 'Dict', 'Tuple', 'Optional', 'Union', 'Iterator',
+  'int', 'float', 'str', 'bool', 'dict', 'list', 'tuple', 'set',
+  'HashMap', 'ArrayList', 'LinkedList', 'TreeMap', 'HashSet', 'TreeSet',
+  'Integer', 'Long', 'Double', 'Float', 'Character', 'Byte', 'Short',
+]);
+
+/**
+ * Tokenize a line of code into colored tokens.
+ * This is a simplified but visually effective tokenizer -- not a full parser,
+ * but handles the most common patterns for Python, TypeScript, and Java.
+ */
+function tokenizeLine(line: string, _language: string): Token[] {
+  const tokens: Token[] = [];
+  let i = 0;
+
+  while (i < line.length) {
+    // Whitespace
+    if (line[i] === ' ' || line[i] === '\t') {
+      let ws = '';
+      while (i < line.length && (line[i] === ' ' || line[i] === '\t')) {
+        ws += line[i];
+        i++;
+      }
+      tokens.push({ text: ws, type: 'plain' });
+      continue;
+    }
+
+    // Line comments: // or #
+    if ((line[i] === '/' && line[i + 1] === '/') || (line[i] === '#' && (i === 0 || line.slice(0, i).trim() === ''))) {
+      tokens.push({ text: line.slice(i), type: 'comment' });
+      break;
+    }
+
+    // Block comment markers: /* or */  or lines starting with *
+    if ((line[i] === '/' && line[i + 1] === '*') || (line[i] === '*' && line[i + 1] === '/') || (i === line.search(/\S/) && line[i] === '*')) {
+      tokens.push({ text: line.slice(i), type: 'comment' });
+      break;
+    }
+
+    // Decorators: @something
+    if (line[i] === '@') {
+      let dec = '@';
+      i++;
+      while (i < line.length && /[a-zA-Z0-9_.]/.test(line[i])) {
+        dec += line[i];
+        i++;
+      }
+      tokens.push({ text: dec, type: 'decorator' });
+      continue;
+    }
+
+    // Strings: single, double, backtick, triple quotes
+    if (line[i] === '"' || line[i] === "'" || line[i] === '`') {
+      const quote = line[i];
+      // Check for triple quotes
+      const isTriple = line.slice(i, i + 3) === quote.repeat(3);
+      const endQuote = isTriple ? quote.repeat(3) : quote;
+      let str = '';
+      const startQuoteLen = isTriple ? 3 : 1;
+      str += line.slice(i, i + startQuoteLen);
+      i += startQuoteLen;
+      while (i < line.length) {
+        if (line[i] === '\\' && i + 1 < line.length) {
+          str += line[i] + line[i + 1];
+          i += 2;
+          continue;
+        }
+        if (line.slice(i, i + endQuote.length) === endQuote) {
+          str += endQuote;
+          i += endQuote.length;
+          break;
+        }
+        str += line[i];
+        i++;
+      }
+      tokens.push({ text: str, type: 'string' });
+      continue;
+    }
+
+    // Numbers
+    if (/[0-9]/.test(line[i]) || (line[i] === '.' && i + 1 < line.length && /[0-9]/.test(line[i + 1]))) {
+      let num = '';
+      // Hex prefix
+      if (line[i] === '0' && i + 1 < line.length && (line[i + 1] === 'x' || line[i + 1] === 'X' || line[i + 1] === 'b' || line[i + 1] === 'o')) {
+        num += line[i] + line[i + 1];
+        i += 2;
+      }
+      while (i < line.length && /[0-9a-fA-F._]/.test(line[i])) {
+        num += line[i];
+        i++;
+      }
+      tokens.push({ text: num, type: 'number' });
+      continue;
+    }
+
+    // Identifiers and keywords
+    if (/[a-zA-Z_$]/.test(line[i])) {
+      let word = '';
+      while (i < line.length && /[a-zA-Z0-9_$]/.test(line[i])) {
+        word += line[i];
+        i++;
+      }
+
+      // Check if it's a function call (followed by '(')
+      const nextNonSpace = line.slice(i).search(/\S/);
+      const nextChar = nextNonSpace >= 0 ? line[i + nextNonSpace] : '';
+
+      if (KEYWORDS.has(word)) {
+        tokens.push({ text: word, type: 'keyword' });
+      } else if (TYPE_NAMES.has(word)) {
+        tokens.push({ text: word, type: 'type' });
+      } else if (nextChar === '(') {
+        tokens.push({ text: word, type: 'function' });
+      } else if (word[0] === word[0].toUpperCase() && word[0] !== word[0].toLowerCase()) {
+        // PascalCase = likely a type/class name
+        tokens.push({ text: word, type: 'type' });
+      } else {
+        tokens.push({ text: word, type: 'plain' });
+      }
+      continue;
+    }
+
+    // Operators and punctuation
+    const OPERATORS = new Set(['=', '+', '-', '*', '/', '%', '<', '>', '!', '&', '|', '^', '~', '?', ':']);
+    const PUNCTUATION = new Set(['{', '}', '(', ')', '[', ']', ',', ';', '.']);
+
+    if (OPERATORS.has(line[i])) {
+      let op = line[i];
+      i++;
+      // Multi-char operators: ==, ===, =>, !=, !==, <=, >=, &&, ||, ??, ++, --, **, ->, ::
+      while (i < line.length && OPERATORS.has(line[i])) {
+        op += line[i];
+        i++;
+      }
+      tokens.push({ text: op, type: 'operator' });
+      continue;
+    }
+
+    if (PUNCTUATION.has(line[i])) {
+      tokens.push({ text: line[i], type: 'punctuation' });
+      i++;
+      continue;
+    }
+
+    // Anything else
+    tokens.push({ text: line[i], type: 'plain' });
+    i++;
+  }
+
+  return tokens;
 }
 
 const CodeReveal: React.FC<CodeRevealProps> = ({
@@ -32,7 +238,7 @@ const CodeReveal: React.FC<CodeRevealProps> = ({
   // Total revealed lines
   const totalRevealed = Math.min(lines.length, currentRevealLine + 1);
 
-  // Cursor blink (faster blink = more alive feel)
+  // Cursor blink
   const cursorVisible = Math.sin(frame * 0.4) > 0;
 
   // After all lines revealed, show output
@@ -54,29 +260,58 @@ const CodeReveal: React.FC<CodeRevealProps> = ({
     ? 'Solution.java'
     : 'solution.ts';
 
-  // Minimap indicator (right side)
+  // Language icon color
+  const langIconColor = language === 'python'
+    ? '#3572A5'
+    : language === 'java'
+    ? '#B07219'
+    : '#3178C6';
+
+  // Minimap indicator
   const minimapProgress = totalRevealed / Math.max(1, lines.length);
+
+  // Editor ambient glow
+  const ambientGlow = interpolate(
+    Math.sin(frame * 0.02),
+    [-1, 1],
+    [0.3, 0.6],
+  );
 
   return (
     <AbsoluteFill
       style={{
         backgroundColor: COLORS.dark,
-        padding: 60,
+        padding: 50,
         display: 'flex',
         flexDirection: 'column',
       }}
     >
+      {/* Subtle ambient glow behind the editor */}
+      <div
+        style={{
+          position: 'absolute',
+          top: '30%',
+          left: '20%',
+          width: 800,
+          height: 400,
+          borderRadius: '50%',
+          background: `radial-gradient(ellipse, ${COLORS.indigo}08, transparent 70%)`,
+          opacity: ambientGlow,
+          filter: 'blur(80px)',
+          pointerEvents: 'none',
+        }}
+      />
+
       {/* Header bar */}
       <div
         style={{
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          marginBottom: 24,
+          marginBottom: 16,
           opacity: fadeIn(frame, startFrame, 20),
         }}
       >
-        {/* Title */}
         {title && (
           <div
             style={{
@@ -89,13 +324,11 @@ const CodeReveal: React.FC<CodeRevealProps> = ({
               gap: 12,
             }}
           >
-            {/* Code icon */}
             <span style={{ fontSize: 20, opacity: 0.7 }}>&#60;/&#62;</span>
             {title}
           </div>
         )}
 
-        {/* Language badge + line counter */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <div
             style={{
@@ -124,17 +357,18 @@ const CodeReveal: React.FC<CodeRevealProps> = ({
         </div>
       </div>
 
-      {/* Code container - editor frame */}
+      {/* Code container - premium IDE frame */}
       <div
         style={{
-          backgroundColor: COLORS.darkAlt,
+          backgroundColor: '#0D1117',
           borderRadius: 12,
           flex: 1,
           overflow: 'hidden',
-          border: `1px solid ${COLORS.gray}20`,
+          border: `1px solid ${COLORS.gray}22`,
           display: 'flex',
           flexDirection: 'column',
           position: 'relative',
+          boxShadow: `0 8px 40px ${COLORS.dark}CC, 0 0 0 1px ${COLORS.gray}10, inset 0 1px 0 ${COLORS.gray}08`,
         }}
       >
         {/* Title bar with dots + file tab */}
@@ -142,7 +376,7 @@ const CodeReveal: React.FC<CodeRevealProps> = ({
           style={{
             display: 'flex',
             alignItems: 'center',
-            backgroundColor: '#161222',
+            backgroundColor: '#161B22',
             borderBottom: `1px solid ${COLORS.gray}15`,
             padding: '10px 16px',
             gap: 0,
@@ -158,30 +392,30 @@ const CodeReveal: React.FC<CodeRevealProps> = ({
           {/* File tab */}
           <div
             style={{
-              backgroundColor: COLORS.darkAlt,
+              backgroundColor: '#0D1117',
               padding: '6px 16px',
               borderRadius: '6px 6px 0 0',
               fontSize: SIZES.caption,
               fontFamily: FONTS.code,
               color: COLORS.white,
               fontWeight: 500,
-              borderTop: `2px solid ${COLORS.saffron}`,
+              borderTop: `2px solid ${langIconColor}`,
               display: 'flex',
               alignItems: 'center',
               gap: 6,
             }}
           >
-            <span style={{ color: COLORS.saffron, fontSize: 12 }}>&#9679;</span>
+            <span style={{ color: langIconColor, fontSize: 12 }}>&#9679;</span>
             {fileName}
           </div>
 
-          {/* Breadcrumb path (right side) */}
+          {/* Breadcrumb path */}
           <div
             style={{
               marginLeft: 'auto',
               fontSize: SIZES.caption - 2,
               fontFamily: FONTS.code,
-              color: `${COLORS.gray}66`,
+              color: `${COLORS.gray}55`,
             }}
           >
             src / {fileName}
@@ -190,20 +424,47 @@ const CodeReveal: React.FC<CodeRevealProps> = ({
 
         {/* Code area + minimap */}
         <div style={{ display: 'flex', flex: 1, position: 'relative', overflow: 'hidden' }}>
-          {/* Main code area */}
-          <div style={{ padding: '24px 32px', flex: 1, position: 'relative', overflow: 'hidden' }}>
-            {/* Noise texture overlay */}
-            <div
-              style={{
-                position: 'absolute',
-                inset: 0,
-                backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.02'/%3E%3C/svg%3E")`,
-                backgroundSize: '128px 128px',
-                pointerEvents: 'none',
-                zIndex: 2,
-              }}
-            />
+          {/* Line number gutter */}
+          <div
+            style={{
+              width: 60,
+              backgroundColor: '#0D1117',
+              borderRight: `1px solid ${COLORS.gray}10`,
+              paddingTop: 24,
+              flexShrink: 0,
+            }}
+          >
+            {lines.map((_, idx) => {
+              const lineStart = startFrame + 20 + idx * framesPerLine;
+              const isVisible = frame >= lineStart;
+              const isCurrentLine = idx === currentRevealLine && isVisible;
+              const lineOpacity = isVisible ? fadeIn(frame, lineStart, 8) : 0;
 
+              return (
+                <div
+                  key={idx}
+                  style={{
+                    height: SIZES.code * 1.8,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'flex-end',
+                    paddingRight: 12,
+                    opacity: lineOpacity,
+                    fontSize: SIZES.codeSmall,
+                    fontFamily: FONTS.code,
+                    color: isCurrentLine ? COLORS.saffron + '88' : COLORS.gray + '44',
+                    fontWeight: isCurrentLine ? 600 : 400,
+                    backgroundColor: isCurrentLine ? `${COLORS.saffron}08` : 'transparent',
+                  }}
+                >
+                  {idx + 1}
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Main code area */}
+          <div style={{ padding: '24px 24px', flex: 1, position: 'relative', overflow: 'hidden' }}>
             {/* Scan line effect */}
             {currentRevealLine < lines.length && (
               <div
@@ -213,14 +474,14 @@ const CodeReveal: React.FC<CodeRevealProps> = ({
                   right: 0,
                   top: currentRevealLine * (SIZES.code * 1.8) + 4,
                   height: SIZES.code * 1.8 + 8,
-                  background: `linear-gradient(180deg, transparent, ${COLORS.saffron}08, ${COLORS.saffron}06, transparent)`,
+                  background: `linear-gradient(180deg, transparent, ${COLORS.saffron}06, ${COLORS.saffron}04, transparent)`,
                   pointerEvents: 'none',
                   zIndex: 1,
                 }}
               />
             )}
 
-            {/* Code lines */}
+            {/* Code lines with per-token coloring */}
             <div style={{ fontFamily: FONTS.code, fontSize: SIZES.code, lineHeight: 1.8, position: 'relative', zIndex: 1 }}>
               {lines.map((line, idx) => {
                 const lineStart = startFrame + 20 + idx * framesPerLine;
@@ -230,7 +491,7 @@ const CodeReveal: React.FC<CodeRevealProps> = ({
                 const lineOpacity = isVisible ? fadeIn(frame, lineStart, 8) : 0;
                 const lineSlide = isVisible ? slideUp(frame, lineStart, 15, 8) : 15;
 
-                // Character-by-character typing effect for current line
+                // Character-by-character typing for current line
                 const charsVisible = isCurrentLine
                   ? Math.floor(
                       interpolate(
@@ -244,21 +505,17 @@ const CodeReveal: React.FC<CodeRevealProps> = ({
                   ? line.length
                   : 0;
 
-                // Flash effect on each new character
-                const charFlash = isCurrentLine && charsVisible > 0
-                  ? interpolate(
-                      (frame - lineStart) % 2,
-                      [0, 1],
-                      [1, 0.85],
-                    )
-                  : 1;
+                const displayText = isCurrentLine ? line.slice(0, charsVisible) : (line || ' ');
 
-                // Line highlight glow for currently revealing line
+                // Tokenize the visible text
+                const tokens = tokenizeLine(displayText, language);
+
+                // Glow on currently revealing line
                 const glowOpacity = isCurrentLine
                   ? interpolate(
                       frame,
                       [lineStart, lineStart + framesPerLine * 0.7, lineStart + framesPerLine],
-                      [0.15, 0.08, 0],
+                      [0.12, 0.06, 0],
                       { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
                     )
                   : 0;
@@ -284,31 +541,23 @@ const CodeReveal: React.FC<CodeRevealProps> = ({
                       marginLeft: -15,
                       borderRadius: 2,
                       position: 'relative',
+                      height: SIZES.code * 1.8,
+                      alignItems: 'center',
                     }}
                   >
-                    {/* Line number */}
-                    <span
-                      style={{
-                        color: isCurrentLine ? COLORS.saffron + '88' : COLORS.gray + '60',
-                        minWidth: 45,
-                        textAlign: 'right',
-                        marginRight: 20,
-                        userSelect: 'none',
-                        fontSize: SIZES.codeSmall,
-                        fontWeight: isCurrentLine ? 600 : 400,
-                      }}
-                    >
-                      {idx + 1}
-                    </span>
-
-                    {/* Code content */}
-                    <span
-                      style={{
-                        color: colorizeCode(line, language),
-                        opacity: charFlash,
-                      }}
-                    >
-                      {isCurrentLine ? line.slice(0, charsVisible) : (line || ' ')}
+                    {/* Colored tokens */}
+                    <span style={{ display: 'flex' }}>
+                      {tokens.map((token, tIdx) => (
+                        <span
+                          key={tIdx}
+                          style={{
+                            color: TOKEN_COLORS[token.type],
+                            whiteSpace: 'pre',
+                          }}
+                        >
+                          {token.text}
+                        </span>
+                      ))}
                     </span>
 
                     {/* Blinking cursor */}
@@ -326,7 +575,7 @@ const CodeReveal: React.FC<CodeRevealProps> = ({
                       />
                     )}
 
-                    {/* Idle cursor on last revealed line (after its typing is done) */}
+                    {/* Idle cursor on last line */}
                     {!isCurrentLine && isVisible && idx === totalRevealed - 1 && currentRevealLine >= lines.length && cursorVisible && (
                       <span
                         style={{
@@ -348,14 +597,13 @@ const CodeReveal: React.FC<CodeRevealProps> = ({
           {/* Minimap (right side) */}
           <div
             style={{
-              width: 40,
-              backgroundColor: '#161222',
+              width: 50,
+              backgroundColor: '#161B22',
               borderLeft: `1px solid ${COLORS.gray}10`,
               position: 'relative',
-              padding: '8px 4px',
+              padding: '8px 6px',
             }}
           >
-            {/* Minimap lines */}
             {lines.map((line, idx) => {
               const isRevealed = idx < totalRevealed;
               const indent = line.search(/\S/);
@@ -371,8 +619,8 @@ const CodeReveal: React.FC<CodeRevealProps> = ({
                     backgroundColor: isRevealed
                       ? idx === currentRevealLine
                         ? COLORS.saffron + '88'
-                        : COLORS.gray + '30'
-                      : COLORS.gray + '10',
+                        : COLORS.gray + '25'
+                      : COLORS.gray + '08',
                     borderRadius: 1,
                   }}
                 />
@@ -387,8 +635,8 @@ const CodeReveal: React.FC<CodeRevealProps> = ({
                 left: 0,
                 right: 0,
                 height: `${Math.min(100, (10 / Math.max(1, lines.length)) * 100)}%`,
-                backgroundColor: COLORS.saffron + '10',
-                borderLeft: `2px solid ${COLORS.saffron}44`,
+                backgroundColor: COLORS.saffron + '08',
+                borderLeft: `2px solid ${COLORS.saffron}33`,
                 transform: `translateY(${minimapProgress * 60}%)`,
               }}
             />
@@ -399,8 +647,8 @@ const CodeReveal: React.FC<CodeRevealProps> = ({
         {output && (
           <div
             style={{
-              borderTop: `1px solid ${COLORS.gray}20`,
-              backgroundColor: '#0D0B17',
+              borderTop: `1px solid ${COLORS.gray}15`,
+              backgroundColor: '#0A0E14',
               padding: '12px 24px',
               opacity: outputOpacity,
             }}
@@ -423,7 +671,7 @@ const CodeReveal: React.FC<CodeRevealProps> = ({
                   letterSpacing: 1,
                 }}
               >
-                Output
+                Terminal
               </div>
               <div
                 style={{
@@ -452,37 +700,5 @@ const CodeReveal: React.FC<CodeRevealProps> = ({
     </AbsoluteFill>
   );
 };
-
-// Basic syntax coloring (without full Shiki to keep it simple for now)
-function colorizeCode(line: string, _language: string): string {
-  const trimmed = line.trim();
-
-  // Comments
-  if (trimmed.startsWith('//') || trimmed.startsWith('#') || trimmed.startsWith('*')) {
-    return COLORS.gray;
-  }
-
-  // Keywords
-  const keywords = ['function', 'const', 'let', 'var', 'return', 'if', 'else', 'for', 'while',
-    'class', 'import', 'export', 'from', 'async', 'await', 'def', 'self', 'public', 'private',
-    'static', 'void', 'int', 'String', 'boolean', 'new', 'try', 'catch', 'throw', 'interface',
-    'type', 'extends', 'implements', 'super', 'this', 'yield', 'lambda', 'with', 'as'];
-
-  if (keywords.some(k => trimmed.startsWith(k + ' ') || trimmed.startsWith(k + '('))) {
-    return COLORS.indigo;
-  }
-
-  // Strings
-  if (trimmed.includes('"') || trimmed.includes("'") || trimmed.includes('`')) {
-    return COLORS.teal;
-  }
-
-  // Numbers
-  if (/^\s*\d/.test(trimmed) || /=\s*\d/.test(trimmed)) {
-    return COLORS.gold;
-  }
-
-  return COLORS.white;
-}
 
 export default CodeReveal;
