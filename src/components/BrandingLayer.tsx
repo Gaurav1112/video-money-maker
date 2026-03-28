@@ -43,24 +43,48 @@ export const BrandingLayer: React.FC<BrandingLayerProps> = ({
 
   return (
     <>
-      {/* Persistent watermark — bottom-right corner */}
+      {/* Persistent branded badge — bottom-right corner */}
       {frame >= watermarkStart && frame < watermarkEnd && (
         <div
           style={{
             position: 'absolute',
-            bottom: isShort ? 100 : 30,
-            right: isShort ? 20 : 40,
-            opacity: 0.35,
-            fontSize: isShort ? 14 : 18,
-            fontFamily: "'Inter', system-ui, sans-serif",
-            fontWeight: 600,
-            color: '#E85D26',
-            letterSpacing: 1,
+            bottom: isShort ? 100 : 24,
+            right: isShort ? 16 : 30,
+            opacity: 0.9,
             zIndex: 100,
-            textShadow: '0 1px 3px rgba(0,0,0,0.8)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
+            background: 'rgba(12, 10, 21, 0.75)',
+            borderRadius: 10,
+            padding: '6px 14px',
+            border: '1px solid rgba(232, 93, 38, 0.3)',
+            backdropFilter: 'blur(8px)',
           }}
         >
-          guru-sishya.in
+          <div style={{
+            width: 8,
+            height: 8,
+            borderRadius: '50%',
+            background: '#20C997',
+            boxShadow: '0 0 6px #20C997',
+          }} />
+          <span style={{
+            fontSize: isShort ? 12 : 15,
+            fontFamily: "'Inter', system-ui, sans-serif",
+            fontWeight: 700,
+            color: '#E85D26',
+            letterSpacing: 0.5,
+          }}>
+            guru-sishya.in
+          </span>
+          <span style={{
+            fontSize: isShort ? 9 : 11,
+            color: '#A9ACB3',
+            fontFamily: "'Inter', system-ui, sans-serif",
+          }}>
+            FREE
+          </span>
         </div>
       )}
 
@@ -120,33 +144,51 @@ const MidVideoCta: React.FC<{ format: 'long' | 'short' }> = ({ format }) => {
       >
         <div
           style={{
-            fontSize: isShort ? 15 : 20,
-            fontWeight: 700,
+            fontSize: isShort ? 16 : 22,
+            fontWeight: 800,
             color: '#fff',
             fontFamily: "'Inter', system-ui, sans-serif",
           }}
         >
-          Practice this FREE
+          Want to ace this in interviews?
         </div>
         <div
           style={{
-            fontSize: isShort ? 12 : 14,
+            fontSize: isShort ? 12 : 15,
             color: 'rgba(255,255,255,0.9)',
             fontFamily: "'Inter', system-ui, sans-serif",
+            lineHeight: 1.4,
           }}
         >
-          Interactive lessons + quizzes + code playground
+          1933 questions + code playground + mock interviews
         </div>
         <div
           style={{
-            fontSize: isShort ? 13 : 16,
-            fontWeight: 700,
-            color: '#FFD700',
-            fontFamily: "'Inter', system-ui, sans-serif",
-            marginTop: 4,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
+            marginTop: 6,
           }}
         >
-          guru-sishya.in
+          <div style={{
+            background: '#20C997',
+            color: '#0C0A15',
+            padding: '4px 12px',
+            borderRadius: 6,
+            fontSize: isShort ? 11 : 13,
+            fontWeight: 800,
+            fontFamily: "'Inter', system-ui, sans-serif",
+          }}>
+            100% FREE
+          </div>
+          <span style={{
+            fontSize: isShort ? 14 : 18,
+            fontWeight: 800,
+            color: '#FFD700',
+            fontFamily: "'Inter', system-ui, sans-serif",
+          }}>
+            www.guru-sishya.in
+          </span>
         </div>
       </div>
     </div>

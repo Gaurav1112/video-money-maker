@@ -191,8 +191,8 @@ const TextSection: React.FC<TextSectionProps> = ({
                 {i + 1}
               </div>
 
-              {/* Text with word highlighting */}
-              <div style={{ lineHeight: 1.6, fontFamily: FONTS.text }}>
+              {/* Text with word highlighting — LARGE and filling space */}
+              <div style={{ lineHeight: 1.7, fontFamily: FONTS.text, fontSize: isCurrent ? 24 : 20 }}>
                 {highlightedText}
               </div>
             </div>
