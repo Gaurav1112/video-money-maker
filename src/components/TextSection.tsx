@@ -2,11 +2,16 @@ import React from 'react';
 import { useCurrentFrame, AbsoluteFill, interpolate } from 'remotion';
 import { COLORS, FONTS, SIZES } from '../lib/theme';
 import { fadeIn, slideUp, stagger, springIn } from '../lib/animations';
+import { useSync } from '../hooks/useSync';
+import type { AnimationCue } from '../types';
 
 interface TextSectionProps {
   heading: string;
   bullets: string[];
   startFrame?: number;
+  sceneIndex?: number;
+  sceneStartFrame?: number;
+  animationCues?: AnimationCue[];
 }
 
 // Rotating accent colors for bullet number badges
@@ -23,8 +28,12 @@ const TextSection: React.FC<TextSectionProps> = ({
   heading,
   bullets,
   startFrame = 0,
+  sceneIndex,
+  sceneStartFrame,
+  animationCues,
 }) => {
   const frame = useCurrentFrame();
+  const sync = useSync(sceneIndex ?? 0, sceneStartFrame ?? startFrame);
 
   const headingOpacity = fadeIn(frame, startFrame);
   const headingY = slideUp(frame, startFrame, 60);
@@ -40,6 +49,27 @@ const TextSection: React.FC<TextSectionProps> = ({
   // TUTORIAL FEEL: Stagger bullets with MORE delay so they appear one at a time
   // Each bullet gets 25 frames (almost 1 second) of exclusive screen time
   const BULLET_STAGGER = 25;
+
+  // Sync-driven bullet visibility: use phrase boundaries when narration data is present,
+  // otherwise fall back to time-based stagger for backward compatibility.
+  const hasSyncData = sync.isNarrating || sync.wordsSpoken > 0;
+  const getVisibleBullets = (): number => {
+    if (hasSyncData && sync.phraseBoundaries.length > 0) {
+      let visible = 0;
+      for (let i = 0; i < sync.phraseBoundaries.length && i < bullets.length; i++) {
+        if (sync.wordIndex >= sync.phraseBoundaries[i]) {
+          visible = i + 2;
+        }
+      }
+      return Math.max(1, Math.min(visible, bullets.length));
+    }
+    // Fallback: time-based stagger
+    return Math.min(
+      bullets.length,
+      Math.floor(Math.max(0, frame - startFrame - 20) / 25) + 1,
+    );
+  };
+  const visibleCount = getVisibleBullets();
 
   return (
     <AbsoluteFill
@@ -109,13 +139,17 @@ const TextSection: React.FC<TextSectionProps> = ({
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         {bullets.map((bullet, index) => {
           const itemStart = stagger(index, startFrame + 20, BULLET_STAGGER);
-          const itemSpring = springIn(frame, itemStart);
-          const itemY = slideUp(frame, itemStart, 30, 12);
+          // When sync data drives visibility, use visibleCount; otherwise rely on time-based itemStart
+          const isVisible = hasSyncData ? index < visibleCount : frame >= itemStart;
+          const itemSpring = isVisible ? springIn(frame, hasSyncData ? frame - 1 : itemStart) : 0;
+          const itemY = isVisible ? slideUp(frame, hasSyncData ? frame - 1 : itemStart, 30, 12) : 30;
           const accentColor = BULLET_COLORS[index % BULLET_COLORS.length];
 
           // Focus indicator: current bullet gets a glow
           const nextBulletStart = stagger(index + 1, startFrame + 20, BULLET_STAGGER);
-          const isCurrent = frame >= itemStart && frame < nextBulletStart;
+          const isCurrent = hasSyncData
+            ? index === visibleCount - 1
+            : frame >= itemStart && frame < nextBulletStart;
           const focusGlow = isCurrent
             ? interpolate(
                 Math.sin(frame * 0.1),
