@@ -220,24 +220,75 @@ export const LongVideo: React.FC<LongVideoProps> = ({ storyboard }) => {
               animationCues: scene.animationCues,
             };
 
-            // Text and interview scenes get SplitLayout with ConceptViz on the right
-            const renderedScene =
-              scene.type === 'text' || scene.type === 'interview' ? (
-                <SplitLayout
-                  left={<Component {...props} {...syncProps} />}
-                  right={
-                    <ConceptViz
-                      topic={storyboard.topic}
-                      sceneIndex={idx}
-                      sceneStartFrame={sceneStartFrame}
-                      keywords={scene.bullets || []}
-                      sceneDuration={duration}
-                    />
-                  }
-                />
-              ) : (
-                <Component {...props} {...syncProps} />
-              );
+            // GOD LEVEL: Visualization is FULL SCREEN background, text is overlay on top
+            // The VISUAL teaches the concept, text is just a subtitle
+            const isVisualScene = scene.type === 'text' || scene.type === 'interview';
+            const renderedScene = isVisualScene ? (
+              <>
+                {/* FULL SCREEN visualization — the star of the show */}
+                <AbsoluteFill>
+                  <ConceptViz
+                    topic={storyboard.topic}
+                    sceneIndex={idx}
+                    sceneStartFrame={sceneStartFrame}
+                    keywords={scene.bullets || []}
+                    sceneDuration={duration}
+                  />
+                </AbsoluteFill>
+                {/* Text overlay — heading + current point, semi-transparent */}
+                <div style={{
+                  position: 'absolute',
+                  top: 40,
+                  left: 40,
+                  right: '50%',
+                  zIndex: 10,
+                }}>
+                  {/* Heading badge */}
+                  <div style={{
+                    background: 'rgba(12, 10, 21, 0.85)',
+                    borderRadius: 12,
+                    padding: '12px 20px',
+                    borderLeft: '4px solid #E85D26',
+                    backdropFilter: 'blur(10px)',
+                    marginBottom: 12,
+                  }}>
+                    <div style={{
+                      fontSize: 28,
+                      fontWeight: 800,
+                      color: '#E85D26',
+                      fontFamily: "'Inter', system-ui, sans-serif",
+                    }}>
+                      {scene.heading || ''}
+                    </div>
+                  </div>
+                  {/* Current narration point */}
+                  <div style={{
+                    background: 'rgba(12, 10, 21, 0.75)',
+                    borderRadius: 10,
+                    padding: '10px 18px',
+                    backdropFilter: 'blur(8px)',
+                  }}>
+                    <div style={{
+                      fontSize: 20,
+                      fontWeight: 500,
+                      color: '#ffffff',
+                      fontFamily: "'Inter', system-ui, sans-serif",
+                      lineHeight: 1.5,
+                    }}>
+                      {(scene.bullets && scene.bullets.length > 0)
+                        ? scene.bullets[Math.min(
+                            Math.floor((scene.bullets.length) * (idx % scene.bullets.length + 1) / scene.bullets.length),
+                            scene.bullets.length - 1
+                          )]
+                        : scene.narration?.split(/[.!?]/)[0] || ''
+                      }
+                    </div>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <Component {...props} {...syncProps} />
+            );
 
             return (
               <React.Fragment key={idx}>
