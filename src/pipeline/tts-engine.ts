@@ -267,8 +267,126 @@ export async function generateSceneAudios(
       continue;
     }
     console.log(`  Generating audio for scene ${i + 1}/${scenes.length} [${scene.type}]...`);
-    const result = await generateAudio(scene.narration, voice, `scene_${i}.mp3`, voiceLanguage);
+    const spokenText = preprocessForSpeech(scene.narration);
+    const result = await generateAudio(spokenText, voice, `scene_${i}.mp3`, voiceLanguage);
     results.push(result);
   }
   return results;
+}
+
+// ─── Speech Preprocessor ───
+
+/**
+ * Convert text to speech-friendly format.
+ * - Numbers → spoken English (100000 → "one lakh", 1000000 → "ten lakh")
+ * - Code syntax → spoken (O(n) → "O of n", O(n²) → "O of n squared")
+ * - Abbreviations → spoken (API → "A P I", REST → "REST", SQL → "sequel")
+ * - Add pauses → "..." becomes a natural pause
+ */
+export function preprocessForSpeech(text: string): string {
+  let result = text;
+
+  // Convert large numbers to spoken English
+  // Must handle: 100000, 1,000,000, 10M, 200 million, 99.99%, 50x, 14ms
+  result = result.replace(/\b(\d{1,3}(,\d{3})+)\b/g, (match) => {
+    // Remove commas and convert
+    return numberToWords(parseInt(match.replace(/,/g, '')));
+  });
+
+  result = result.replace(/\b(\d+)\s*(million|billion|trillion|crore|lakh)\b/gi, (_, num, unit) => {
+    return `${numberToWords(parseInt(num))} ${unit}`;
+  });
+
+  // Plain large numbers without commas
+  result = result.replace(/\b(\d{4,})\b/g, (match) => {
+    const num = parseInt(match);
+    if (num > 999) return numberToWords(num);
+    return match;
+  });
+
+  // Code notation: O(n) → "O of n", O(n²) → "O of n squared"
+  result = result.replace(/O\(([^)]+)\)/g, (_, expr) => {
+    const spoken = expr
+      .replace(/n²/g, 'n squared')
+      .replace(/n³/g, 'n cubed')
+      .replace(/log\s*n/g, 'log n')
+      .replace(/n\s*log\s*n/g, 'n log n')
+      .replace(/\^2/g, ' squared')
+      .replace(/\^3/g, ' cubed');
+    return `O of ${spoken}`;
+  });
+
+  // Common tech abbreviations
+  result = result.replace(/\bAPI\b/g, 'A P I');
+  result = result.replace(/\bAPIs\b/g, 'A P Is');
+  result = result.replace(/\bSQL\b/g, 'sequel');
+  result = result.replace(/\bNoSQL\b/g, 'no sequel');
+  result = result.replace(/\bURL\b/g, 'U R L');
+  result = result.replace(/\bHTTP\b/g, 'H T T P');
+  result = result.replace(/\bHTTPS\b/g, 'H T T P S');
+  result = result.replace(/\bCPU\b/g, 'C P U');
+  result = result.replace(/\bGPU\b/g, 'G P U');
+  result = result.replace(/\bRAM\b/g, 'ram');
+  result = result.replace(/\bSSD\b/g, 'S S D');
+  result = result.replace(/\bDNS\b/g, 'D N S');
+  result = result.replace(/\bCDN\b/g, 'C D N');
+  result = result.replace(/\bLRU\b/g, 'L R U');
+  result = result.replace(/\bBFS\b/g, 'B F S');
+  result = result.replace(/\bDFS\b/g, 'D F S');
+  result = result.replace(/\bJSON\b/g, 'jason');
+  result = result.replace(/\bYAML\b/g, 'yammel');
+  result = result.replace(/\bAWS\b/g, 'A W S');
+  result = result.replace(/\bGCP\b/g, 'G C P');
+
+  // Percentages: "99.99%" → "ninety nine point nine nine percent"
+  result = result.replace(/(\d+\.?\d*)%/g, (_, num) => {
+    return `${numberToWords(parseFloat(num))} percent`;
+  });
+
+  // Multipliers: "50x" → "fifty times"
+  result = result.replace(/(\d+)x\b/g, (_, num) => {
+    return `${numberToWords(parseInt(num))} times`;
+  });
+
+  // Units: "14ms" → "14 milliseconds", "10MB" → "10 megabytes"
+  result = result.replace(/(\d+)\s*ms\b/g, '$1 milliseconds');
+  result = result.replace(/(\d+)\s*MB\b/g, '$1 megabytes');
+  result = result.replace(/(\d+)\s*GB\b/g, '$1 gigabytes');
+  result = result.replace(/(\d+)\s*TB\b/g, '$1 terabytes');
+  result = result.replace(/(\d+)\s*KB\b/g, '$1 kilobytes');
+
+  // Ellipsis → pause marker
+  result = result.replace(/\.\.\./g, ', ');
+
+  return result;
+}
+
+function numberToWords(num: number): string {
+  if (num === 0) return 'zero';
+  if (isNaN(num)) return String(num);
+
+  // Handle decimals
+  if (num % 1 !== 0) {
+    const [whole, decimal] = num.toString().split('.');
+    const wholeWords = numberToWords(parseInt(whole));
+    const decimalWords = decimal.split('').map(d => numberToWords(parseInt(d))).join(' ');
+    return `${wholeWords} point ${decimalWords}`;
+  }
+
+  if (num < 0) return 'negative ' + numberToWords(-num);
+
+  const ones = ['', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine',
+    'ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen'];
+  const tens = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'];
+
+  if (num < 20) return ones[num];
+  if (num < 100) return tens[Math.floor(num / 10)] + (num % 10 ? ' ' + ones[num % 10] : '');
+  if (num < 1000) return ones[Math.floor(num / 100)] + ' hundred' + (num % 100 ? ' and ' + numberToWords(num % 100) : '');
+
+  // Indian number system for Indian audience
+  if (num >= 10000000) return numberToWords(Math.floor(num / 10000000)) + ' crore' + (num % 10000000 ? ' ' + numberToWords(num % 10000000) : '');
+  if (num >= 100000) return numberToWords(Math.floor(num / 100000)) + ' lakh' + (num % 100000 ? ' ' + numberToWords(num % 100000) : '');
+  if (num >= 1000) return numberToWords(Math.floor(num / 1000)) + ' thousand' + (num % 1000 ? ' ' + numberToWords(num % 1000) : '');
+
+  return String(num);
 }
