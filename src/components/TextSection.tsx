@@ -242,9 +242,8 @@ const TextSection: React.FC<TextSectionProps> = ({
           style={{
             color,
             fontWeight: weight,
-            display: 'inline-block',
+            display: 'inline',
             transform: `scale(${wordScale})`,
-            transition: 'transform 0.1s',
           }}
         >
           {word}{' '}
