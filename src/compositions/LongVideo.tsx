@@ -181,9 +181,9 @@ export const LongVideo: React.FC<LongVideoProps> = ({ storyboard }) => {
   // globalTimeline to be null on frame 0 (BUG 5).
   setSyncTimeline(syncTimeline);
 
-  // Get active scene for captions and overlays (offset by intro duration)
+  // Get active scene for captions — search CONTENT scenes only (skip intro/outro)
   const contentFrame = frame - INTRO_DURATION;
-  const activeScene = getActiveScene(storyboard.scenes, contentFrame);
+  const activeScene = getActiveScene(contentScenes, contentFrame);
   const hasNarration = activeScene && activeScene.narration && activeScene.narration.trim() !== '';
   const currentSceneType = activeScene?.type || 'text';
 
@@ -248,45 +248,57 @@ export const LongVideo: React.FC<LongVideoProps> = ({ storyboard }) => {
                   right: '50%',
                   zIndex: 10,
                 }}>
-                  {/* Heading badge */}
+                  {/* Heading badge — LARGE */}
                   <div style={{
-                    background: 'rgba(12, 10, 21, 0.85)',
-                    borderRadius: 12,
-                    padding: '12px 20px',
-                    borderLeft: '4px solid #E85D26',
-                    backdropFilter: 'blur(10px)',
-                    marginBottom: 12,
+                    background: 'rgba(12, 10, 21, 0.9)',
+                    borderRadius: 16,
+                    padding: '16px 28px',
+                    borderLeft: '5px solid #E85D26',
+                    backdropFilter: 'blur(12px)',
+                    marginBottom: 16,
+                    boxShadow: '0 4px 20px rgba(0,0,0,0.5)',
                   }}>
                     <div style={{
-                      fontSize: 28,
+                      fontSize: 36,
                       fontWeight: 800,
                       color: '#E85D26',
                       fontFamily: "'Inter', system-ui, sans-serif",
+                      letterSpacing: '-0.02em',
                     }}>
                       {scene.heading || ''}
                     </div>
                   </div>
-                  {/* Current narration point */}
+                  {/* Current narration points — LARGE readable bullets */}
                   <div style={{
-                    background: 'rgba(12, 10, 21, 0.75)',
-                    borderRadius: 10,
-                    padding: '10px 18px',
-                    backdropFilter: 'blur(8px)',
+                    background: 'rgba(12, 10, 21, 0.8)',
+                    borderRadius: 14,
+                    padding: '16px 24px',
+                    backdropFilter: 'blur(10px)',
+                    boxShadow: '0 4px 16px rgba(0,0,0,0.4)',
                   }}>
-                    <div style={{
-                      fontSize: 20,
-                      fontWeight: 500,
-                      color: '#ffffff',
-                      fontFamily: "'Inter', system-ui, sans-serif",
-                      lineHeight: 1.5,
-                    }}>
-                      {(scene.bullets && scene.bullets.length > 0)
-                        ? scene.bullets.slice(0, 3).map((b, i) => (
-                            <div key={i} style={{ fontSize: 16, color: '#ccc', marginTop: 4 }}>• {b}</div>
-                          ))
-                        : scene.narration?.split(/[.!?]/)[0] || ''
-                      }
-                    </div>
+                    {(scene.bullets && scene.bullets.length > 0)
+                      ? scene.bullets.slice(0, 3).map((b, i) => (
+                          <div key={i} style={{
+                            fontSize: 24,
+                            color: i === 0 ? '#fff' : '#bbb',
+                            fontFamily: "'Inter', system-ui, sans-serif",
+                            fontWeight: i === 0 ? 600 : 400,
+                            marginTop: i > 0 ? 8 : 0,
+                            lineHeight: 1.4,
+                          }}>
+                            • {b}
+                          </div>
+                        ))
+                      : <div style={{
+                          fontSize: 26,
+                          color: '#fff',
+                          fontFamily: "'Inter', system-ui, sans-serif",
+                          fontWeight: 500,
+                          lineHeight: 1.5,
+                        }}>
+                          {scene.narration?.split(/[.!?]/)[0] || ''}
+                        </div>
+                    }
                   </div>
                 </div>
               </>
