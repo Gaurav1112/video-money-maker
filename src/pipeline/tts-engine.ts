@@ -105,6 +105,8 @@ async function edgeTTS(
   execFileSync('python3', [
     '-m', 'edge_tts',
     '--voice', voice,
+    '--rate', '-10%',   // Slightly slower — teacher pace, not rushed
+    '--pitch', '+0Hz',
     '--text', cleanText,
     '--write-media', audioPath,
   ], { timeout: 60000 });

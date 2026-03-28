@@ -24,12 +24,25 @@ export function generateStoryboard(
     const audio = audioResults[i];
 
     // Use audio duration if available, otherwise estimate from scene duration
-    const duration = audio && audio.duration > 0
-      ? audio.duration
-      : scene.duration;
+    const audioDuration = audio && audio.duration > 0 ? audio.duration : scene.duration;
 
-    // Add 0.5 second padding between scenes for transitions
-    const paddingFrames = i > 0 ? TIMING.secondsToFrames(0.5) : 0;
+    // Add breathing room AFTER narration ends so teacher doesn't feel rushed
+    // Title: +2s for objectives to sink in
+    // Code: +3s for viewer to read the code
+    // Table: +2s for viewer to scan rows
+    // Interview: +2s for the insight to land
+    // Review: +3s for viewer to think about the answer
+    // Summary: +2s for takeaways
+    // Text: +1.5s
+    const breathingRoom: Record<string, number> = {
+      title: 2, code: 3, table: 2, interview: 2,
+      review: 3, summary: 2, text: 1.5, diagram: 2,
+    };
+    const extraTime = breathingRoom[scene.type] || 1.5;
+    const duration = audioDuration + extraTime;
+
+    // Add 1.5 second gap between scenes (enough for transition + pause)
+    const paddingFrames = i > 0 ? TIMING.secondsToFrames(1.5) : 0;
     const startFrame = currentFrame + paddingFrames;
     const durationFrames = TIMING.secondsToFrames(duration);
     const endFrame = startFrame + durationFrames;

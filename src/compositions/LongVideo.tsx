@@ -242,10 +242,8 @@ export const LongVideo: React.FC<LongVideoProps> = ({ storyboard }) => {
         </Sequence>
       )}
 
-      {/* Global audio fallback */}
-      {storyboard.audioFile && storyboard.audioFile !== '' && !storyboard.scenes.some(s => s.audioFile) && (
-        <Audio src={staticFile(`audio/${storyboard.audioFile.split('/').pop()}`)} />
-      )}
+      {/* No global audio — each scene has its own audio track via TransitionSeries.
+         This prevents audio overlap between scenes. */}
     </AbsoluteFill>
   );
 };
