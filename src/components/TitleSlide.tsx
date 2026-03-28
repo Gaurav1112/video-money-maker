@@ -1,126 +1,149 @@
 import React from 'react';
-import { useCurrentFrame, AbsoluteFill, interpolate } from 'remotion';
+import { useCurrentFrame, AbsoluteFill, interpolate, spring, Easing } from 'remotion';
 import { COLORS, FONTS, SIZES } from '../lib/theme';
-import { fadeIn, slideUp, stagger, springIn } from '../lib/animations';
+import { fadeIn, slideUp, stagger, springIn, bounceIn, pulseGlow } from '../lib/animations';
 
 interface TitleSlideProps {
-  topic: string;
-  sessionNumber: number;
-  title: string;
-  objectives: string[];
+  topic?: string;
+  sessionNumber?: number;
+  totalSessions?: number;
+  title?: string;
+  objectives?: string[];
   language?: string;
+  hookText?: string;
 }
 
+// FPS = 30. Frame mapping:
+//  0-30   (0-1s)  : topic name dramatic zoom-in fills screen
+// 30-60   (1-2s)  : hook text fades + slides up below topic
+// 60-90   (2-3s)  : session badge + guru-sishya.in slide in from bottom
+// 90-150  (3-5s)  : objectives pill tags spring in at bottom
+
 const TitleSlide: React.FC<TitleSlideProps> = ({
-  topic = '',
+  topic = 'TOPIC',
   sessionNumber = 1,
+  totalSessions = 12,
   title = '',
   objectives = [],
   language,
+  hookText,
 }) => {
   const frame = useCurrentFrame();
 
-  // Animated gradient rotation
-  const gradientAngle = interpolate(frame, [0, 300], [0, 360], {
-    extrapolateRight: 'extend',
+  // ─── TOPIC NAME: massive zoom from 0.4x to 1.0x in first 30 frames ───
+  const topicZoomScale = spring({
+    frame: Math.max(0, frame),
+    fps: 30,
+    config: { damping: 14, stiffness: 90, mass: 1.1 },
+    from: 0.3,
+    to: 1,
   });
 
-  // Topic pulse: scale 1.0 -> 1.02 -> 1.0
-  const topicScale = interpolate(
-    frame,
-    [10, 30, 50, 70],
-    [0.92, 1.02, 1.0, 1.0],
-    { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
-  );
+  const topicOpacity = interpolate(frame, [0, 12], [0, 1], {
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
+  });
 
-  // Session badge slide from left
-  const badgeSlide = interpolate(
-    frame,
-    [5, 25],
-    [-200, 0],
-    { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
-  );
+  // Subtle ongoing glow pulse on the topic after it lands
+  const glowPulse = pulseGlow(frame, 0.07, 0.6, 1.0);
 
-  // Lens flare glow intensity
-  const glowIntensity = interpolate(
-    frame,
-    [10, 40, 80],
-    [0, 1, 0.5],
-    { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
-  );
+  // ─── HOOK TEXT: appears at frame 30, slides up ───
+  const hookOpacity = interpolate(frame, [30, 48], [0, 1], {
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
+  });
+  const hookSlide = interpolate(frame, [30, 52], [40, 0], {
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
+    easing: Easing.out(Easing.cubic),
+  });
 
-  // Animated border drawing effect
-  const borderProgress = interpolate(
-    frame,
-    [15, 80],
-    [0, 1],
-    { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
-  );
+  // ─── BADGE + BRANDING: slides in from bottom at frame 60 ───
+  const badgeSpring = spring({
+    frame: Math.max(0, frame - 60),
+    fps: 30,
+    config: { damping: 12, stiffness: 130, mass: 0.7 },
+  });
+  const badgeY = interpolate(badgeSpring, [0, 1], [80, 0]);
+  const badgeOpacity = interpolate(frame, [60, 72], [0, 1], {
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
+  });
 
-  // Play indicator pulse
-  const playPulse = interpolate(
-    Math.sin(frame * 0.1),
-    [-1, 1],
-    [0.4, 1],
-  );
-  const playScale = interpolate(
-    frame,
-    [0, 20, 40],
-    [0, 1.2, 1],
-    { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
-  );
+  // ─── ANIMATED BORDER drawing effect (starts at frame 20) ───
+  const borderProgress = interpolate(frame, [20, 100], [0, 1], {
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
+    easing: Easing.out(Easing.quad),
+  });
 
-  // Generate star field particles (more and varied)
-  const STAR_COUNT = 30;
+  // ─── GRADIENT BURST: saffron center glow that peaks at frame 15 ───
+  const burstIntensity = interpolate(frame, [0, 15, 40, 150], [0, 1, 0.55, 0.4], {
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
+  });
+
+  // ─── PLAY PULSE indicator ───
+  const playPulse = pulseGlow(frame, 0.1, 0.4, 1.0);
+  const playScale = spring({
+    frame: Math.max(0, frame - 5),
+    fps: 30,
+    config: { damping: 10, stiffness: 180, mass: 0.5 },
+  });
+
+  // ─── OBJECTIVE PILLS: stagger spring in from frame 90 ───
+  const PILL_COLORS = [
+    { bg: COLORS.saffron + '22', border: COLORS.saffron, text: COLORS.saffron },
+    { bg: COLORS.gold + '1A', border: COLORS.gold, text: COLORS.gold },
+    { bg: COLORS.teal + '1A', border: COLORS.teal, text: COLORS.teal },
+    { bg: COLORS.indigo + '1A', border: COLORS.indigo, text: COLORS.indigo },
+  ];
 
   return (
     <AbsoluteFill
       style={{
         backgroundColor: COLORS.dark,
-        padding: 80,
+        overflow: 'hidden',
         display: 'flex',
         flexDirection: 'column',
+        alignItems: 'center',
         justifyContent: 'center',
-        overflow: 'hidden',
       }}
     >
-      {/* Animated gradient background */}
-      <div
-        style={{
-          position: 'absolute',
-          inset: -200,
-          background: `conic-gradient(from ${gradientAngle}deg at 70% 30%, ${COLORS.saffron}08, ${COLORS.indigo}06, ${COLORS.teal}05, ${COLORS.saffron}08)`,
-        }}
-      />
-
-      {/* Dark overlay */}
+      {/* ── LAYER 1: Dramatic saffron gradient burst from center ── */}
       <div
         style={{
           position: 'absolute',
           inset: 0,
-          backgroundColor: `${COLORS.dark}E0`,
+          background: `radial-gradient(ellipse 80% 60% at 50% 45%, ${COLORS.saffron}${Math.round(burstIntensity * 38).toString(16).padStart(2, '0')} 0%, ${COLORS.dark}00 70%)`,
+          zIndex: 0,
+        }}
+      />
+      {/* Secondary indigo counter-glow at bottom */}
+      <div
+        style={{
+          position: 'absolute',
+          inset: 0,
+          background: `radial-gradient(ellipse 60% 40% at 50% 90%, ${COLORS.indigo}18, transparent 65%)`,
+          opacity: burstIntensity * 0.7,
+          zIndex: 0,
         }}
       />
 
-      {/* Animated star/particle field */}
-      {Array.from({ length: STAR_COUNT }).map((_, i) => {
-        const seed = i * 137.508; // golden angle for distribution
-        const baseX = ((seed * 7.31) % 100);
-        const baseY = ((seed * 3.97) % 100);
-        const driftX = Math.sin(frame * 0.008 + i * 0.7) * 3;
-        const driftY = Math.cos(frame * 0.006 + i * 1.1) * 2;
+      {/* ── LAYER 2: Star field particles ── */}
+      {Array.from({ length: 28 }).map((_, i) => {
+        const seed = i * 137.508;
+        const baseX = (seed * 7.31) % 100;
+        const baseY = (seed * 3.97) % 100;
+        const driftX = Math.sin(frame * 0.007 + i * 0.7) * 2.5;
+        const driftY = Math.cos(frame * 0.005 + i * 1.1) * 2;
         const twinkle = interpolate(
           Math.sin(frame * 0.05 + i * 1.3),
           [-1, 1],
-          [0.05, i < 8 ? 0.6 : 0.3],
+          [0.04, i < 6 ? 0.55 : 0.25],
         );
-        const size = i < 5 ? 3 : i < 12 ? 2 : 1;
-        const starColor = i % 5 === 0 ? COLORS.saffron
-          : i % 5 === 1 ? COLORS.gold
-          : i % 5 === 2 ? COLORS.teal
-          : i % 5 === 3 ? COLORS.indigo
-          : COLORS.white;
-
+        const size = i < 4 ? 3 : i < 10 ? 2 : 1;
+        const starColor = [COLORS.saffron, COLORS.gold, COLORS.teal, COLORS.indigo, COLORS.white][i % 5];
         return (
           <div
             key={`star-${i}`}
@@ -133,149 +156,106 @@ const TitleSlide: React.FC<TitleSlideProps> = ({
               borderRadius: '50%',
               backgroundColor: starColor,
               opacity: twinkle,
-              boxShadow: i < 8 ? `0 0 ${size * 3}px ${starColor}66` : 'none',
+              boxShadow: i < 6 ? `0 0 ${size * 3}px ${starColor}55` : 'none',
               zIndex: 1,
             }}
           />
         );
       })}
 
-      {/* Lens flare / glow behind title */}
+      {/* ── LAYER 3: Animated frame border (draws clockwise) ── */}
       <div
         style={{
           position: 'absolute',
-          top: '25%',
-          left: '10%',
-          width: 700,
-          height: 300,
-          borderRadius: '50%',
-          background: `radial-gradient(ellipse, ${COLORS.saffron}18, transparent 70%)`,
-          opacity: glowIntensity,
-          filter: 'blur(40px)',
-        }}
-      />
-
-      {/* Secondary glow orb */}
-      <div
-        style={{
-          position: 'absolute',
-          bottom: '15%',
-          right: '5%',
-          width: 400,
-          height: 250,
-          borderRadius: '50%',
-          background: `radial-gradient(ellipse, ${COLORS.indigo}12, transparent 70%)`,
-          opacity: glowIntensity * 0.6,
-          filter: 'blur(50px)',
-        }}
-      />
-
-      {/* Animated border that draws around content area */}
-      <div
-        style={{
-          position: 'absolute',
-          left: 40,
-          top: 40,
-          right: 40,
-          bottom: 40,
+          left: 36,
+          top: 36,
+          right: 36,
+          bottom: 36,
           pointerEvents: 'none',
-          zIndex: 1,
+          zIndex: 4,
         }}
       >
-        {/* Top border */}
+        {/* Top */}
         <div style={{
           position: 'absolute', top: 0, left: 0,
           width: `${Math.min(borderProgress * 4, 1) * 100}%`,
           height: 2,
-          background: `linear-gradient(90deg, ${COLORS.saffron}66, ${COLORS.gold}44)`,
+          background: `linear-gradient(90deg, ${COLORS.saffron}88, ${COLORS.gold}55)`,
           borderRadius: 1,
+          boxShadow: `0 0 8px ${COLORS.saffron}44`,
         }} />
-        {/* Right border */}
+        {/* Right */}
         <div style={{
           position: 'absolute', top: 0, right: 0,
           width: 2,
           height: `${Math.max(0, Math.min((borderProgress - 0.25) * 4, 1)) * 100}%`,
-          background: `linear-gradient(180deg, ${COLORS.gold}44, ${COLORS.teal}33)`,
+          background: `linear-gradient(180deg, ${COLORS.gold}55, ${COLORS.teal}44)`,
           borderRadius: 1,
         }} />
-        {/* Bottom border */}
+        {/* Bottom */}
         <div style={{
           position: 'absolute', bottom: 0, right: 0,
           width: `${Math.max(0, Math.min((borderProgress - 0.5) * 4, 1)) * 100}%`,
           height: 2,
-          background: `linear-gradient(270deg, ${COLORS.teal}33, ${COLORS.indigo}33)`,
+          background: `linear-gradient(270deg, ${COLORS.teal}44, ${COLORS.indigo}44)`,
           borderRadius: 1,
           transformOrigin: 'right',
         }} />
-        {/* Left border */}
+        {/* Left */}
         <div style={{
           position: 'absolute', bottom: 0, left: 0,
           width: 2,
           height: `${Math.max(0, Math.min((borderProgress - 0.75) * 4, 1)) * 100}%`,
-          background: `linear-gradient(0deg, ${COLORS.indigo}33, ${COLORS.saffron}44)`,
+          background: `linear-gradient(0deg, ${COLORS.indigo}44, ${COLORS.saffron}55)`,
           borderRadius: 1,
           transformOrigin: 'bottom',
         }} />
         {/* Corner dots */}
-        {borderProgress > 0.05 && (
-          <div style={{
-            position: 'absolute', top: -3, left: -3,
-            width: 8, height: 8, borderRadius: '50%',
-            backgroundColor: COLORS.saffron,
-            opacity: 0.5,
-            boxShadow: `0 0 8px ${COLORS.saffron}66`,
-          }} />
-        )}
-        {borderProgress > 0.3 && (
-          <div style={{
-            position: 'absolute', top: -3, right: -3,
-            width: 8, height: 8, borderRadius: '50%',
-            backgroundColor: COLORS.gold,
-            opacity: 0.4,
-            boxShadow: `0 0 8px ${COLORS.gold}66`,
-          }} />
-        )}
-        {borderProgress > 0.55 && (
-          <div style={{
-            position: 'absolute', bottom: -3, right: -3,
-            width: 8, height: 8, borderRadius: '50%',
-            backgroundColor: COLORS.teal,
-            opacity: 0.4,
-            boxShadow: `0 0 8px ${COLORS.teal}66`,
-          }} />
-        )}
-        {borderProgress > 0.8 && (
-          <div style={{
-            position: 'absolute', bottom: -3, left: -3,
-            width: 8, height: 8, borderRadius: '50%',
-            backgroundColor: COLORS.indigo,
-            opacity: 0.4,
-            boxShadow: `0 0 8px ${COLORS.indigo}66`,
-          }} />
+        {[
+          { style: { top: -4, left: -4 }, color: COLORS.saffron, show: borderProgress > 0.04 },
+          { style: { top: -4, right: -4 }, color: COLORS.gold, show: borderProgress > 0.28 },
+          { style: { bottom: -4, right: -4 }, color: COLORS.teal, show: borderProgress > 0.54 },
+          { style: { bottom: -4, left: -4 }, color: COLORS.indigo, show: borderProgress > 0.78 },
+        ].map(({ style, color, show }, idx) =>
+          show ? (
+            <div
+              key={`corner-${idx}`}
+              style={{
+                position: 'absolute',
+                ...style,
+                width: 8,
+                height: 8,
+                borderRadius: '50%',
+                backgroundColor: color,
+                opacity: 0.7,
+                boxShadow: `0 0 10px ${color}88`,
+              }}
+            />
+          ) : null
         )}
       </div>
 
-      {/* Pulsing PLAY indicator - top right */}
+      {/* ── LAYER 4: SESSION badge — top-right corner ── */}
       <div
         style={{
           position: 'absolute',
-          top: 70,
-          right: 80,
+          top: 60,
+          right: 72,
           display: 'flex',
           alignItems: 'center',
           gap: 10,
           opacity: playPulse * fadeIn(frame, 5),
           transform: `scale(${playScale})`,
-          zIndex: 3,
+          zIndex: 5,
         }}
       >
         <div
           style={{
-            width: 14,
-            height: 14,
+            width: 11,
+            height: 11,
             borderRadius: '50%',
             backgroundColor: COLORS.red,
-            boxShadow: `0 0 ${12 * playPulse}px ${COLORS.red}88`,
+            boxShadow: `0 0 ${10 * playPulse}px ${COLORS.red}99`,
           }}
         />
         <span
@@ -288,151 +268,221 @@ const TitleSlide: React.FC<TitleSlideProps> = ({
             textTransform: 'uppercase',
           }}
         >
-          guru-sishya.in
+          Session {sessionNumber} of {totalSessions}
         </span>
       </div>
 
-      {/* Session badge - slides in from left */}
+      {/* ── MAIN CONTENT: centered column ── */}
       <div
         style={{
-          opacity: fadeIn(frame, 5),
-          transform: `translateX(${badgeSlide}px)`,
-          display: 'flex',
-          alignItems: 'center',
-          gap: 12,
-          marginBottom: 20,
           position: 'relative',
-          zIndex: 2,
+          zIndex: 3,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          textAlign: 'center',
+          paddingLeft: 80,
+          paddingRight: 80,
+          width: '100%',
+          boxSizing: 'border-box',
         }}
       >
+        {/* ★ TOPIC NAME — HUGE, CINEMATIC, SCREEN-FILLING ★ */}
         <div
           style={{
-            backgroundColor: COLORS.saffron,
-            color: COLORS.white,
-            padding: '8px 20px',
-            borderRadius: 6,
-            fontSize: SIZES.caption,
-            fontFamily: FONTS.text,
-            fontWeight: 700,
-            letterSpacing: 1,
+            fontSize: SIZES.heading1,       // 72px
+            fontFamily: FONTS.heading,
+            fontWeight: 900,
+            color: COLORS.saffron,
+            lineHeight: 1.0,
+            letterSpacing: 3,
             textTransform: 'uppercase',
+            opacity: topicOpacity,
+            transform: `scale(${topicZoomScale})`,
+            textShadow: [
+              `0 0 ${60 * glowPulse}px ${COLORS.saffron}88`,
+              `0 0 ${120 * glowPulse}px ${COLORS.saffron}33`,
+              `0 0 200px ${COLORS.gold}22`,
+              `0 4px 20px ${COLORS.dark}CC`,
+            ].join(', '),
+            marginBottom: 24,
           }}
         >
-          Session {sessionNumber}
+          {topic}
         </div>
+
+        {/* ── Saffron divider bar — appears with topic ── */}
+        <div
+          style={{
+            width: interpolate(frame, [10, 45], [0, 320], {
+              extrapolateLeft: 'clamp',
+              extrapolateRight: 'clamp',
+              easing: Easing.out(Easing.cubic),
+            }),
+            height: 3,
+            background: `linear-gradient(90deg, transparent, ${COLORS.saffron}, ${COLORS.gold}, transparent)`,
+            borderRadius: 2,
+            marginBottom: 28,
+            boxShadow: `0 0 16px ${COLORS.saffron}55`,
+          }}
+        />
+
+        {/* ── HOOK TEXT — shocking statement, gold, 36px ── */}
+        {(hookText || title) ? (
+          <div
+            style={{
+              fontSize: SIZES.heading3,     // 36px
+              fontFamily: FONTS.text,
+              fontWeight: 600,
+              color: COLORS.gold,
+              lineHeight: 1.3,
+              maxWidth: 900,
+              opacity: hookOpacity,
+              transform: `translateY(${hookSlide}px)`,
+              textShadow: `0 0 40px ${COLORS.gold}44, 0 2px 8px ${COLORS.dark}`,
+              marginBottom: 52,
+            }}
+          >
+            {hookText || title}
+          </div>
+        ) : null}
+
+        {/* ── LANGUAGE badge (if present) ── */}
         {language && (
           <div
             style={{
-              backgroundColor: COLORS.teal + '20',
-              color: COLORS.teal,
-              padding: '8px 16px',
-              borderRadius: 6,
-              fontSize: SIZES.caption,
-              fontFamily: FONTS.code,
-              fontWeight: 600,
+              opacity: badgeOpacity,
+              transform: `translateY(${badgeY}px)`,
+              marginBottom: 32,
             }}
           >
-            {language.toUpperCase()}
+            <div
+              style={{
+                display: 'inline-block',
+                backgroundColor: COLORS.teal + '20',
+                border: `1px solid ${COLORS.teal}55`,
+                color: COLORS.teal,
+                padding: '6px 18px',
+                borderRadius: 20,
+                fontSize: SIZES.bodySmall,
+                fontFamily: FONTS.code,
+                fontWeight: 700,
+                letterSpacing: 2,
+                textTransform: 'uppercase',
+              }}
+            >
+              {language}
+            </div>
+          </div>
+        )}
+
+        {/* ── OBJECTIVE PILLS — spring in as colored tags ── */}
+        {objectives.length > 0 && (
+          <div
+            style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: 12,
+              justifyContent: 'center',
+              maxWidth: 1000,
+            }}
+          >
+            {objectives.map((obj, idx) => {
+              const delay = stagger(idx, 90, 12);
+              const pillSpring = springIn(frame, delay);
+              const pillColor = PILL_COLORS[idx % PILL_COLORS.length];
+              return (
+                <div
+                  key={idx}
+                  style={{
+                    opacity: pillSpring,
+                    transform: `scale(${interpolate(pillSpring, [0, 1], [0.6, 1])}) translateY(${interpolate(pillSpring, [0, 1], [20, 0])}px)`,
+                    backgroundColor: pillColor.bg,
+                    border: `1px solid ${pillColor.border}66`,
+                    borderRadius: 24,
+                    padding: '8px 18px',
+                    fontSize: SIZES.bodySmall,   // 22px
+                    fontFamily: FONTS.text,
+                    fontWeight: 600,
+                    color: pillColor.text,
+                    whiteSpace: 'nowrap',
+                    boxShadow: `0 0 12px ${pillColor.border}22`,
+                  }}
+                >
+                  {obj}
+                </div>
+              );
+            })}
           </div>
         )}
       </div>
 
-      {/* Topic name - cinematic with glow */}
+      {/* ── BOTTOM BAR: session badge + branding slide up at frame 60 ── */}
       <div
         style={{
-          fontSize: SIZES.heading1,
-          fontFamily: FONTS.heading,
-          fontWeight: 800,
-          color: COLORS.saffron,
-          lineHeight: 1.1,
-          marginBottom: 16,
-          opacity: fadeIn(frame, 10),
-          transform: `scale(${topicScale})`,
-          transformOrigin: 'left center',
-          textShadow: `0 0 ${80 * glowIntensity}px ${COLORS.saffron}55, 0 0 ${160 * glowIntensity}px ${COLORS.saffron}22, 0 2px 4px ${COLORS.dark}`,
-          position: 'relative',
-          zIndex: 2,
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          paddingLeft: 72,
+          paddingRight: 72,
+          paddingBottom: 40,
+          opacity: badgeOpacity,
+          transform: `translateY(${badgeY}px)`,
+          zIndex: 5,
         }}
       >
-        {topic}
-      </div>
-
-      {/* Subtitle / Title */}
-      <div
-        style={{
-          fontSize: SIZES.heading3,
-          fontFamily: FONTS.text,
-          fontWeight: 400,
-          color: COLORS.gray,
-          marginBottom: 50,
-          opacity: fadeIn(frame, 20),
-          transform: `translateY(${slideUp(frame, 20, 30)}px)`,
-          position: 'relative',
-          zIndex: 2,
-        }}
-      >
-        {title}
-      </div>
-
-      {/* Divider line - animated width with glow */}
-      <div
-        style={{
-          width: fadeIn(frame, 30) * 200,
-          height: 3,
-          background: `linear-gradient(90deg, ${COLORS.saffron}, ${COLORS.gold})`,
-          marginBottom: 40,
-          borderRadius: 2,
-          position: 'relative',
-          zIndex: 2,
-          boxShadow: `0 0 12px ${COLORS.saffron}44`,
-        }}
-      />
-
-      {/* Objectives */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 16, position: 'relative', zIndex: 2 }}>
+        {/* Session badge */}
         <div
           style={{
+            backgroundColor: COLORS.saffron,
+            color: COLORS.white,
+            padding: '10px 24px',
+            borderRadius: 8,
             fontSize: SIZES.bodySmall,
             fontFamily: FONTS.text,
-            color: COLORS.gray,
+            fontWeight: 800,
+            letterSpacing: 1,
             textTransform: 'uppercase',
-            letterSpacing: 2,
-            opacity: fadeIn(frame, 35),
+            boxShadow: `0 0 20px ${COLORS.saffron}55`,
           }}
         >
-          What You'll Learn
+          Session {sessionNumber} of {totalSessions}
         </div>
-        {objectives.map((obj, idx) => {
-          const delay = stagger(idx, 40, 10);
-          const itemSpring = springIn(frame, delay);
-          return (
-            <div
-              key={idx}
-              style={{
-                fontSize: SIZES.body,
-                fontFamily: FONTS.text,
-                color: COLORS.white,
-                opacity: itemSpring,
-                transform: `translateX(${(1 - itemSpring) * 40}px)`,
-                display: 'flex',
-                alignItems: 'center',
-                gap: 12,
-              }}
-            >
-              <div
-                style={{
-                  width: 8,
-                  height: 8,
-                  borderRadius: '50%',
-                  backgroundColor: COLORS.gold,
-                  flexShrink: 0,
-                  boxShadow: `0 0 8px ${COLORS.gold}44`,
-                }}
-              />
-              {obj}
-            </div>
-          );
-        })}
+
+        {/* guru-sishya.in branding */}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
+          }}
+        >
+          <div
+            style={{
+              width: 10,
+              height: 10,
+              borderRadius: '50%',
+              backgroundColor: COLORS.saffron,
+              boxShadow: `0 0 8px ${COLORS.saffron}88`,
+              opacity: playPulse,
+            }}
+          />
+          <span
+            style={{
+              fontSize: SIZES.bodySmall,
+              fontFamily: FONTS.code,
+              fontWeight: 700,
+              color: COLORS.gray,
+              letterSpacing: 1,
+            }}
+          >
+            guru-sishya.in
+          </span>
+        </div>
       </div>
     </AbsoluteFill>
   );
