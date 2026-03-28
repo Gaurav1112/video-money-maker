@@ -1,9 +1,20 @@
 node_modules/
 dist/
 output/
+out/
 *.db
 n8n-data/
 .env
 .DS_Store
 queue.db-shm
 queue.db-wal
+
+# Generated audio (master tracks, scene audio) — only keep BGM/SFX templates
+public/audio/master-*.mp3
+public/audio/scene_*.mp3
+
+# Remotion render cache
+.remotion/
+
+# Superpowers brainstorm sessions
+.superpowers/
