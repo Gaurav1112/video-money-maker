@@ -14,6 +14,7 @@ import { SplitLayout } from '../components/SplitLayout';
 import { ConceptViz } from '../components/ConceptViz';
 import { INTRO_DURATION, OUTRO_DURATION, TRANSITION_DURATION } from '../lib/constants';
 import { BrandingLayer } from '../components/BrandingLayer';
+import { AnimatedOverlay } from '../components/AnimatedOverlay';
 import {
   TitleSlide,
   CodeReveal,
@@ -285,12 +286,14 @@ export const LongVideo: React.FC<LongVideoProps> = ({ storyboard }) => {
         </>
       )}
 
-      {/* Caption overlay - shows narration text word by word */}
+      {/* Caption overlay - shows narration text word by word.
+          startFrame must be the ABSOLUTE global frame where the scene begins so
+          the elapsed = frame - startFrame calculation inside CaptionOverlay is correct. */}
       {!isIntro && !isOutro && hasNarration && activeScene && (
         <CaptionOverlay
           key={`caption-${activeScene.startFrame}`}
-          text={activeScene.narration}
-          startFrame={0}
+          text={activeScene.narration!}
+          startFrame={INTRO_DURATION + activeScene.startFrame}
           durationInFrames={activeScene.endFrame - activeScene.startFrame}
         />
       )}
