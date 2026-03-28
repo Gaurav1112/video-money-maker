@@ -27,3 +27,7 @@ export const SCENE_DEFAULTS = {
   summaryDuration: 8,
   reviewQuestionDuration: 10,
 } as const;
+
+export const INTRO_DURATION = 90;  // frames (3 seconds)
+export const OUTRO_DURATION = 150; // frames (5 seconds)
+export const TRANSITION_DURATION = 15; // frames (0.5 seconds)
