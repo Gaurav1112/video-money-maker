@@ -2,6 +2,7 @@ import React from 'react';
 import { useCurrentFrame } from 'remotion';
 import { useSync } from '../hooks/useSync';
 import { KeywordCloud } from './viz/KeywordCloud';
+import { PromoPanel } from './viz/PromoPanel';
 import { HashTableViz } from './viz/HashTableViz';
 import { TrafficFlow } from './viz/TrafficFlow';
 import { SystemArchViz } from './viz/SystemArchViz';
@@ -34,7 +35,7 @@ function getVisualization(topic: string) {
     if (normalizedTopic.includes(key)) return component;
   }
 
-  return KeywordCloud;
+  return PromoPanel; // Was KeywordCloud — now shows guru-sishya.in promo
 }
 
 interface ConceptVizProps {
