@@ -1,8 +1,10 @@
-import { execFileSync } from 'child_process';
+import { execFile } from 'child_process';
+import { promisify } from 'util';
 import path from 'path';
 import fs from 'fs';
 import { Storyboard, VideoFormat } from '../types';
 
+const execFileAsync = promisify(execFile);
 const OUTPUT_DIR = process.env.OUTPUT_DIR || './output';
 
 interface RenderOptions {
@@ -18,7 +20,7 @@ export async function renderVideo(
 ): Promise<string> {
   const { concurrency = 2, crf = 18, codec = 'h264' } = options;
 
-  const compositionId = format === 'short' ? 'ShortVideo' : 'LongVideo';
+  const compositionId = format === 'short' ? 'ShortVideo' : format === 'thumb' ? 'Thumbnail' : 'LongVideo';
   const dimensions = getDimensions(format);
   const safeTopic = storyboard.topic.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase();
   const outputDir = path.join(OUTPUT_DIR, safeTopic);
@@ -36,10 +38,9 @@ export async function renderVideo(
 
   try {
     if (format === 'thumb') {
-      // Render single frame for thumbnail
       const args = [
         'remotion', 'still',
-        `src/compositions/index.tsx`,
+        'src/compositions/index.tsx',
         compositionId,
         outputPath,
         `--props=${propsPath}`,
@@ -48,12 +49,11 @@ export async function renderVideo(
       ];
 
       console.log(`Rendering thumbnail: ${outputPath}`);
-      execFileSync('npx', args, { stdio: 'inherit', cwd: process.cwd() });
+      await execFileAsync('npx', args, { cwd: process.cwd(), timeout: 120000 });
     } else {
-      // Render video
       const args = [
         'remotion', 'render',
-        `src/compositions/index.tsx`,
+        'src/compositions/index.tsx',
         compositionId,
         outputPath,
         `--props=${propsPath}`,
@@ -67,10 +67,9 @@ export async function renderVideo(
       ];
 
       console.log(`Rendering ${format} video: ${outputPath}`);
-      execFileSync('npx', args, { stdio: 'inherit', cwd: process.cwd() });
+      await execFileAsync('npx', args, { cwd: process.cwd(), timeout: 600000 }); // 10 min timeout
     }
   } finally {
-    // Clean up props file
     if (fs.existsSync(propsPath)) {
       fs.unlinkSync(propsPath);
     }
@@ -86,6 +85,7 @@ export async function renderAllFormats(
   console.log(`\nRendering all formats for: ${storyboard.topic} Session ${storyboard.sessionNumber}`);
   console.log(`Total frames: ${storyboard.durationInFrames} (${(storyboard.durationInFrames / storyboard.fps).toFixed(1)}s)`);
 
+  // Render sequentially to avoid overloading the machine
   const long = await renderVideo(storyboard, 'long', options);
   const short = await renderVideo(storyboard, 'short', options);
   const thumb = await renderVideo(storyboard, 'thumb', options);
@@ -111,10 +111,9 @@ export function estimateRenderTime(storyboard: Storyboard): {
   total: number;
   formatted: string;
 } {
-  // Rough estimate: 10x realtime for local rendering
   const videoSeconds = storyboard.durationInFrames / storyboard.fps;
-  const perFormat = videoSeconds * 10; // 10x realtime
-  const total = perFormat * 3; // 3 formats
+  const perFormat = videoSeconds * 10;
+  const total = perFormat * 3;
   const minutes = Math.ceil(total / 60);
 
   return {
