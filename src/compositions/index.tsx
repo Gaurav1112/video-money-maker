@@ -3,8 +3,10 @@ import type { ComponentType } from 'react';
 import React from 'react';
 import { LongVideo } from './LongVideo';
 import { ShortVideo } from './ShortVideo';
+import { MultiShort } from './MultiShort';
 import { Thumbnail } from '../components';
 import type { Storyboard } from '../types';
+import type { ClipType } from './MultiShort';
 
 // Remotion's Composition generic expects Props extends Record<string, unknown>.
 // We cast components to satisfy this constraint while preserving runtime behavior.
@@ -63,6 +65,33 @@ export const RemotionRoot: React.FC = () => {
         height={720}
         defaultProps={{ topic: 'Demo', sessionNumber: 1, category: 'General', language: 'TypeScript' }}
       />
+
+      {/* MultiShort compositions — one per clip type (4-5 targeted Shorts per long-form video) */}
+      {(['hook', 'code-highlight', 'aha-moment', 'comparison', 'review-challenge'] as ClipType[]).map((clipType) => (
+        <Composition
+          key={`MultiShort-${clipType}`}
+          id={`MultiShort-${clipType}`}
+          component={asCompositionComponent(MultiShort)}
+          calculateMetadata={({ props }: { props: Record<string, unknown> }) => {
+            const storyboard = props.storyboard as Storyboard;
+            // Estimate: up to 3 scenes × avg 10s + 1s intro (30f) + 2s CTA (60f), capped at 900 frames (30s)
+            const estimatedDuration = Math.min(
+              30 + 3 * 10 * 30 + 60,
+              storyboard?.durationInFrames || 900,
+            );
+            return {
+              durationInFrames: estimatedDuration,
+              fps: 30,
+              width: 1080,
+              height: 1920,
+            };
+          }}
+          fps={30}
+          width={1080}
+          height={1920}
+          defaultProps={{ storyboard: defaultStoryboard, clipType }}
+        />
+      ))}
     </>
   );
 };
