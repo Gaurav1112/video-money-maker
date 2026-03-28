@@ -14,7 +14,7 @@
 
 ## File Structure Overview
 
-**New files (13):**
+**New files (15):**
 - `src/lib/sync-engine.ts` — Core sync timeline builder (pure data, no React)
 - `src/hooks/useSync.ts` — React hook returning `SyncState` per scene
 - `src/components/SplitLayout.tsx` — 55/45 wrapper for text/interview scenes
@@ -27,9 +27,11 @@
 - `src/components/viz/HashTableViz.tsx` — Hash map visualization
 - `src/components/viz/SystemArchViz.tsx` — System design visualization
 - `src/components/viz/MetricDashboard.tsx` — Generic metric visualization
+- `src/components/viz/TreeViz.tsx` — Binary tree visualization
+- `src/components/viz/SortingViz.tsx` — Sorting algorithm visualization
 - `src/__tests__/sync-engine.test.ts` — SyncEngine unit tests
 
-**Modified files (10):**
+**Modified files (11):**
 - `src/types.ts` — Add AnimationCue, SfxTrigger, SyncTimeline, WordTimestamp types
 - `src/pipeline/tts-engine.ts` — Real word timestamps from Edge TTS VTT + char-proportional fallback
 - `src/pipeline/audio-stitcher.ts` — Minor: ensure sceneOffsets handles -1 gracefully
@@ -204,13 +206,19 @@ export function makeTimestampsProportional(
 }
 ```
 
-Also update the old `makeTimestamps()` to call this instead (keep the function name for backward compat):
+Also update the old `makeTimestamps()` to call this internally while **preserving its existing signature** (it returns `TTSResult` and takes `audioPath`):
 
 ```typescript
-function makeTimestamps(text: string, duration: number) {
-  return makeTimestampsProportional(text, duration);
+function makeTimestamps(text: string, duration: number, audioPath: string): TTSResult {
+  return {
+    audioPath,
+    wordTimestamps: makeTimestampsProportional(text, duration),
+    duration,
+  };
 }
 ```
+
+**IMPORTANT:** Do NOT change the function signature of `makeTimestamps()`. It is called by `kokoroTTS()`, `edgeTTS()`, `macosTTS()`, and `silentFallback()` — all passing 3 args and expecting `TTSResult` back.
 
 - [ ] **Step 4: Run test to verify it passes**
 
@@ -663,13 +671,15 @@ git commit -m "feat: add useSync() hook for scene-level sync state"
 
 - [ ] **Step 1: Add named constants**
 
-In `src/lib/constants.ts`, add after the existing constants (after line 30):
+In `src/lib/constants.ts`, add at the end of the file (after the closing `};`):
 
 ```typescript
 export const INTRO_DURATION = 90;  // frames (3 seconds)
 export const OUTRO_DURATION = 150; // frames (5 seconds)
 export const TRANSITION_DURATION = 15; // frames (0.5 seconds)
 ```
+
+**NOTE:** `LongVideo.tsx` defines local `INTRO_DURATION` and `OUTRO_DURATION` constants (lines 28-29). Task 19 must remove these local declarations and import from constants instead to avoid duplication.
 
 - [ ] **Step 2: Refactor storyboard duration calculation**
 
@@ -839,11 +849,26 @@ export const BgmLayer: React.FC<BgmLayerProps> = ({ syncTimeline, bgmFile }) => 
       );
 
       // Sidechain ducking: 8% when narrating, 25% in gaps
+      // Smooth over 10 frames by checking nearby frames for transition ramp
       const isNarrating = syncTimeline.isFrameInNarration(f);
-      const targetVolume = isNarrating ? 0.08 : 0.25;
+      const wasNarrating = f > 0 ? syncTimeline.isFrameInNarration(f - 1) : false;
 
-      // Smooth the ducking over 10 frames by checking nearby frames
-      // (simple approach: just use the target directly, Remotion handles frame-by-frame)
+      // Find how many consecutive frames we've been in current state (up to 10)
+      let framesInState = 0;
+      for (let i = 0; i < 10; i++) {
+        if (syncTimeline.isFrameInNarration(f - i) === isNarrating) {
+          framesInState++;
+        } else {
+          break;
+        }
+      }
+
+      // Interpolate between 0.08 and 0.25 over 10 frames
+      const duckProgress = Math.min(1, framesInState / 10);
+      const targetVolume = isNarrating
+        ? interpolate(duckProgress, [0, 1], [0.25, 0.08])
+        : interpolate(duckProgress, [0, 1], [0.08, 0.25]);
+
       return fadeIn * fadeOut * targetVolume;
     },
     [syncTimeline, durationInFrames],
@@ -1022,7 +1047,7 @@ export const KeywordCloud: React.FC<KeywordCloudProps> = ({ sync, keywords, fram
               opacity,
               transform: `scale(${baseScale * pulseScale})`,
               fontFamily: THEME.fonts.heading,
-              transition: 'color 0.1s, font-size 0.1s',
+              // NOTE: Do NOT use CSS transitions — Remotion renders frame-by-frame, CSS transitions have no effect in rendered MP4
             }}
           >
             {keyword}
@@ -1128,12 +1153,13 @@ In the component body, replace the existing line reveal logic (around line 231):
 // OLD: const currentRevealLine = Math.floor(Math.max(0, (frame - startFrame - 20)) / framesPerLine);
 
 // NEW: Sync-driven line reveal
-const sync = sceneIndex !== undefined && sceneStartFrame !== undefined
-  ? useSync(sceneIndex, sceneStartFrame)
-  : null;
+// IMPORTANT: Always call useSync unconditionally (React Rules of Hooks).
+// Pass sceneIndex/sceneStartFrame with defaults — the hook returns empty state when no timeline is set.
+const sync = useSync(sceneIndex ?? 0, sceneStartFrame ?? startFrame);
 
 let currentRevealLine: number;
-if (sync && animationCues && animationCues.length > 0) {
+const hasSyncData = sync.isNarrating || sync.wordsSpoken > 0;
+if (hasSyncData && animationCues && animationCues.length > 0) {
   // Find the latest 'typeLine' cue that's been reached
   const typeLineCues = animationCues.filter(c => c.action === 'typeLine');
   const reachedCues = typeLineCues.filter(c => sync.wordIndex >= c.wordIndex);
@@ -1151,33 +1177,28 @@ if (sync && animationCues && animationCues.length > 0) {
 
 - [ ] **Step 3: Add auto-triggered keyboard SFX**
 
-Within the render, after the code lines are rendered, add SFX for typing. The component knows when a new line is being revealed:
+Within the render, add keyboard burst SFX for each line reveal. The SFX frame is computed from the word timestamps in `sync`:
 
 ```typescript
-{/* Auto-triggered keyboard click SFX */}
-{sync && animationCues && animationCues
+{/* Auto-triggered keyboard burst SFX — fires when each code line starts typing */}
+{animationCues && animationCues
   .filter(c => c.action === 'typeLine')
   .map((cue, i) => {
-    const cueFrame = sceneStartFrame! + Math.round((sync as any)._getWordStartTime?.(cue.wordIndex) ?? (cue.wordIndex * 0.3) * 30);
-    return null; // SFX is handled by scene-level inline Audio - see below
+    // Use scene-relative frame based on sync progress:
+    // Each cue fires when wordIndex reaches cue.wordIndex
+    // Approximate the frame using word position ratio * scene duration
+    const totalWords = sync.phraseBoundaries.length > 0
+      ? sync.phraseBoundaries[sync.phraseBoundaries.length - 1] + 1
+      : 30; // fallback estimate
+    const sceneFrames = endFrame - startFrame;
+    const cueFrame = Math.round((cue.wordIndex / totalWords) * sceneFrames);
+
+    return (
+      <Sequence key={`kb-${i}`} from={cueFrame} durationInFrames={15}>
+        <Audio src={staticFile('audio/sfx/keyboard-burst.wav')} volume={0.3} />
+      </Sequence>
+    );
   })
-}
-```
-
-Actually, for simplicity, add keyboard burst SFX at each line reveal cue via inline `<Sequence>` + `<Audio>`:
-
-```typescript
-{animationCues && sceneStartFrame !== undefined && animationCues
-  .filter(c => c.action === 'typeLine')
-  .map((cue, i) => (
-    <Sequence
-      key={`kb-${i}`}
-      from={Math.round(cue.wordIndex * 15)} // approximate frame from word index
-      durationInFrames={15}
-    >
-      <Audio src={staticFile('audio/sfx/keyboard-burst.wav')} volume={0.3} />
-    </Sequence>
-  ))
 }
 ```
 
@@ -1241,14 +1262,13 @@ export const TextSection: React.FC<TextSectionProps> = ({
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
-  const sync =
-    sceneIndex !== undefined && sceneStartFrame !== undefined
-      ? useSync(sceneIndex, sceneStartFrame)
-      : null;
+  // Always call hook unconditionally (React Rules of Hooks)
+  const sync = useSync(sceneIndex ?? 0, sceneStartFrame ?? startFrame);
 
   // Determine which bullets are visible
+  const hasSyncData = sync.isNarrating || sync.wordsSpoken > 0;
   const getVisibleBullets = (): number => {
-    if (sync && sync.phraseBoundaries.length > 0) {
+    if (hasSyncData && sync.phraseBoundaries.length > 0) {
       // Sync-driven: reveal one bullet per phrase boundary
       let visible = 0;
       for (let i = 0; i < sync.phraseBoundaries.length && i < bullets.length; i++) {
@@ -1598,6 +1618,36 @@ git commit -m "feat: add SystemArchViz and MetricDashboard visualizations"
 
 ---
 
+### Task 17b: TreeViz + SortingViz Visualizations
+
+**Files:**
+- Create: `src/components/viz/TreeViz.tsx`
+- Create: `src/components/viz/SortingViz.tsx`
+
+- [ ] **Step 1: Implement TreeViz**
+
+Binary tree visualization with node insert/rebalance animations. Nodes spring-in from parent, edges draw as paths. Traversal path highlights nodes in order synced to narration.
+
+- [ ] **Step 2: Implement SortingViz**
+
+Bar chart with swap/compare animations. Bars highlight during comparison, swap positions with spring animation. Sorted bars change color.
+
+- [ ] **Step 3: Register both in ConceptViz**
+
+```typescript
+'binary-tree': TreeViz, 'bst': TreeViz, 'heap': TreeViz,
+'sort': SortingViz, 'merge-sort': SortingViz, 'quick-sort': SortingViz,
+```
+
+- [ ] **Step 4: Commit**
+
+```bash
+git add src/components/viz/TreeViz.tsx src/components/viz/SortingViz.tsx src/components/ConceptViz.tsx
+git commit -m "feat: add TreeViz and SortingViz visualizations"
+```
+
+---
+
 ### Task 18: Script Generator — Animation Cues + SFX Triggers
 
 **Files:**
@@ -1735,7 +1785,7 @@ This is the critical integration task that wires everything together.
 
 - [ ] **Step 1: Add imports and SyncTimeline construction**
 
-At the top of `LongVideo.tsx`, add:
+At the top of `LongVideo.tsx`, add new imports and **remove the local `INTRO_DURATION`/`OUTRO_DURATION` constants** (lines 28-29) since they'll be imported from constants:
 
 ```typescript
 import { SyncTimeline } from '../lib/sync-engine';
@@ -1747,6 +1797,13 @@ import { ConceptViz } from '../components/ConceptViz';
 import { INTRO_DURATION, OUTRO_DURATION, TRANSITION_DURATION } from '../lib/constants';
 ```
 
+**Remove** the local declarations:
+```typescript
+// DELETE these lines (around lines 28-29):
+// const INTRO_DURATION = 90;
+// const OUTRO_DURATION = 150;
+```
+
 - [ ] **Step 2: Build SyncTimeline at composition top level**
 
 Inside the `LongVideo` component, before the return, construct the timeline:
@@ -1755,10 +1812,13 @@ Inside the `LongVideo` component, before the return, construct the timeline:
 const syncTimeline = React.useMemo(() => {
   const offsets = storyboard.sceneOffsets || [];
   const timestamps = storyboard.scenes.map(s => s.wordTimestamps || []);
-  const timeline = new SyncTimeline(offsets, timestamps, fps, INTRO_DURATION);
-  setSyncTimeline(timeline);
-  return timeline;
+  return new SyncTimeline(offsets, timestamps, fps, INTRO_DURATION);
 }, [storyboard, fps]);
+
+// Set the global timeline for useSync() consumers (side effect belongs in useEffect)
+React.useEffect(() => {
+  setSyncTimeline(syncTimeline);
+}, [syncTimeline]);
 ```
 
 - [ ] **Step 3: Update master audio placement**
