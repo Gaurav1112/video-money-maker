@@ -12,8 +12,8 @@ interface SummarySlideProps {
 }
 
 const SummarySlide: React.FC<SummarySlideProps> = ({
-  takeaways,
-  topic,
+  takeaways = [],
+  topic = '',
   sessionNumber = 1,
   nextTopic,
   startFrame = 0,

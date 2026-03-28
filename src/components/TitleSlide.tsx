@@ -12,9 +12,9 @@ interface TitleSlideProps {
 }
 
 const TitleSlide: React.FC<TitleSlideProps> = ({
-  topic,
-  sessionNumber,
-  title,
+  topic = '',
+  sessionNumber = 1,
+  title = '',
   objectives = [],
   language,
 }) => {

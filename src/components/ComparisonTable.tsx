@@ -17,9 +17,9 @@ interface ComparisonTableProps {
 }
 
 const ComparisonTable: React.FC<ComparisonTableProps> = ({
-  headers,
-  rows,
-  title,
+  headers = [],
+  rows = [],
+  title = '',
   startFrame = 0,
   endFrame,
   sceneIndex,

@@ -16,8 +16,8 @@ interface ReviewQuestionProps {
  * then answer slides up with a green checkmark "ding" effect.
  */
 const ReviewQuestion: React.FC<ReviewQuestionProps> = ({
-  question,
-  answer,
+  question = '',
+  answer = '',
   startFrame = 0,
   revealDelay = 90,
 }) => {

@@ -19,7 +19,7 @@ interface CaptionOverlayProps {
  * Critical for: accessibility, muted viewing, engagement, tutorial feel.
  */
 const CaptionOverlay: React.FC<CaptionOverlayProps> = ({
-  text,
+  text = '',
   startFrame = 0,
   durationInFrames,
   wordsPerMinute = 160,

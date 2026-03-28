@@ -26,7 +26,7 @@ const SCENE_ICONS: Record<string, string> = {
 };
 
 const ProgressBar: React.FC<ProgressBarProps> = ({
-  progress,
+  progress = 0,
   sceneMarkers = [],
   currentSceneType,
 }) => {

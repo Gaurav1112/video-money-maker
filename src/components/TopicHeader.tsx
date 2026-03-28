@@ -21,9 +21,9 @@ const SCENE_LABELS: Record<string, { icon: string; label: string; color: string 
 };
 
 const TopicHeader: React.FC<TopicHeaderProps> = ({
-  topic,
-  sessionNumber,
-  language,
+  topic = '',
+  sessionNumber = 1,
+  language = '',
   sceneType,
 }) => {
   const frame = useCurrentFrame();

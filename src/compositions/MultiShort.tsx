@@ -135,6 +135,9 @@ export const MultiShort: React.FC<MultiShortProps> = ({ storyboard, clipType }) 
           <Sequence key={index} from={sceneStart} durationInFrames={sceneDuration}>
             <BackgroundLayer sceneType={scene.type} />
             <SceneComp
+              topic={storyboard.topic ?? ''}
+              sessionNumber={storyboard.sessionNumber ?? 1}
+              language={scene.language ?? ''}
               {...scene}
               startFrame={0}
               endFrame={sceneDuration}

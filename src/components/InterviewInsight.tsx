@@ -10,8 +10,8 @@ interface InterviewInsightProps {
 }
 
 const InterviewInsight: React.FC<InterviewInsightProps> = ({
-  insight,
-  tip,
+  insight = '',
+  tip = '',
   startFrame = 0,
 }) => {
   const frame = useCurrentFrame();

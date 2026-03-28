@@ -16,8 +16,8 @@ interface DiagramSlideProps {
 }
 
 const DiagramSlide: React.FC<DiagramSlideProps> = ({
-  svgContent,
-  title,
+  svgContent = '',
+  title = '',
   startFrame = 0,
   endFrame,
   sceneIndex,

@@ -224,8 +224,8 @@ function tokenizeLine(line: string, _language: string): Token[] {
 }
 
 const CodeReveal: React.FC<CodeRevealProps> = ({
-  code,
-  language,
+  code = '',
+  language = 'typescript',
   title,
   highlightLines = [],
   startFrame = 0,
@@ -235,7 +235,7 @@ const CodeReveal: React.FC<CodeRevealProps> = ({
   animationCues,
 }) => {
   const frame = useCurrentFrame();
-  const lines = code.split('\n');
+  const lines = (code || '').split('\n');
   const framesPerLine = 12;
 
   // Sync hook — always called unconditionally (React Rules of Hooks)

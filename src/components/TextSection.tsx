@@ -25,8 +25,8 @@ const BULLET_COLORS = [
 ];
 
 const TextSection: React.FC<TextSectionProps> = ({
-  heading,
-  bullets,
+  heading = '',
+  bullets = [],
   startFrame = 0,
   sceneIndex,
   sceneStartFrame,
