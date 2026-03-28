@@ -59,12 +59,15 @@ function extractNumbers(sentence: string): string[] {
 }
 
 function extractKeyPhrase(sentence: string): string | null {
-  // Pull out quoted phrases, or bold-worthy fragments
+  // Pull out quoted phrases
   const quoted = sentence.match(/"([^"]+)"/);
   if (quoted) return quoted[1];
-  // Look for phrases after "called", "known as", "is a", "means"
-  const named = sentence.match(/(?:called|known as|is a|means|is the)\s+([A-Z][a-zA-Z\s]{2,20})/);
+  // Look for meaningful multi-word phrases after connector words (must be 3+ words to qualify)
+  const named = sentence.match(/(?:called|known as|is a|means|is the)\s+([A-Z][a-zA-Z]+(?:\s+[A-Za-z]+){2,})/);
   if (named) return named[1].trim();
+  // Look for strong conceptual phrases: 3+ capitalised/important words in sequence
+  const multiWord = sentence.match(/(?:[A-Z][a-zA-Z]+\s){2,}[A-Z][a-zA-Z]+/);
+  if (multiWord) return multiWord[0].trim();
   return null;
 }
 
@@ -165,7 +168,9 @@ const TextSection: React.FC<TextSectionProps> = ({
   const moodAccent = getMoodAccent(mood);
   const numbers = extractNumbers(currentSentence);
   const keyPhrase = extractKeyPhrase(currentSentence);
-  const hasHeroNumber = numbers.length > 0 && numbers[0].length > 1;
+  // A hero number must be meaningful: contains a digit and either a suffix (x, %, ms, MB…) or
+  // is accompanied by a magnitude word ("million", "billion", etc.) — plain single-digit counts don't qualify.
+  const hasHeroNumber = numbers.length > 0 && /\d[\d,.]*([%xX]|(\s*(million|billion|thousand|crore|lakh|ms|MB|GB|TB|KB))|\d{3,})/.test(numbers[0]);
 
   // --- Current narration word for karaoke ---
   const currentWord = sync.currentWord?.toLowerCase() || '';
@@ -353,9 +358,9 @@ const TextSection: React.FC<TextSectionProps> = ({
               overflow: 'hidden',
             }}
           >
-            {historySentences.slice(-3).map((s, i) => {
-              const age = activeSentenceIndex - i;
-              const fadeOpacity = interpolate(age, [1, 3], [0.4, 0.15], { extrapolateRight: 'clamp' });
+            {historySentences.slice(-2).map((s, i) => {
+              const age = historySentences.length - i; // 1 = most recent past, 2 = older
+              const fadeOpacity = interpolate(age, [1, 2], [0.25, 0.08], { extrapolateRight: 'clamp' });
               return (
                 <div
                   key={i}
@@ -387,14 +392,14 @@ const TextSection: React.FC<TextSectionProps> = ({
         >
           <div
             style={{
-              fontSize: SIZES.heading3,
+              fontSize: 34,
               lineHeight: 1.45,
               fontFamily: FONTS.text,
               fontWeight: 500,
               letterSpacing: '-0.01em',
             }}
           >
-            {renderHighlightedSentence(currentSentence, true, SIZES.heading3)}
+            {renderHighlightedSentence(currentSentence, true, 34)}
           </div>
         </div>
       </div>
@@ -424,7 +429,7 @@ const TextSection: React.FC<TextSectionProps> = ({
           >
             <div
               style={{
-                fontSize: numbers[0].length > 10 ? 72 : 96,
+                fontSize: numbers[0].replace(/[^0-9.]/g, '').length > 6 ? 72 : 96,
                 fontWeight: 900,
                 color: COLORS.gold,
                 fontFamily: FONTS.heading,
@@ -486,28 +491,27 @@ const TextSection: React.FC<TextSectionProps> = ({
           </div>
         )}
 
-        {/* FALLBACK: sentence emphasis — pick 2-3 most important words, show BIG */}
+        {/* FALLBACK: show the full current sentence centred, large */}
         {!hasHeroNumber && !keyPhrase && (
           <div
             style={{
               transform: `scale(${heroScale})`,
-              opacity: heroOpacity * 0.7,
+              opacity: heroOpacity * 0.85,
               textAlign: 'center',
-              padding: '0 20px',
+              padding: '0 30px',
             }}
           >
             <div
               style={{
-                fontSize: 52,
-                fontWeight: 800,
-                color: moodAccent,
-                fontFamily: FONTS.heading,
-                lineHeight: 1.15,
-                letterSpacing: '-0.02em',
-                textShadow: `0 0 ${25 * glowPulse}px ${moodAccent}25`,
+                fontSize: currentSentence.length > 80 ? 36 : 40,
+                fontWeight: 600,
+                color: COLORS.white,
+                fontFamily: FONTS.text,
+                lineHeight: 1.4,
+                letterSpacing: '-0.01em',
               }}
             >
-              {extractEmphasisWords(currentSentence)}
+              {renderHighlightedSentence(currentSentence, true, currentSentence.length > 80 ? 36 : 40)}
             </div>
           </div>
         )}
@@ -560,32 +564,5 @@ const TextSection: React.FC<TextSectionProps> = ({
     </AbsoluteFill>
   );
 };
-
-// --- Helper: extract 2-3 emphasis words from a sentence ---
-function extractEmphasisWords(sentence: string): string {
-  const words = sentence.split(/\s+/).filter(w => w.length > 3);
-  // Score words by importance
-  const scored = words.map(word => {
-    let score = 0;
-    const clean = word.toLowerCase().replace(/[^a-z]/g, '');
-    if (shouldHighlight(word)) score += 3;
-    if (/^[A-Z]/.test(word)) score += 2;
-    if (word.length > 6) score += 1;
-    // Skip common filler words
-    if (['this', 'that', 'with', 'from', 'have', 'been', 'they', 'their', 'there', 'when', 'what', 'which', 'where', 'about', 'would', 'could', 'should', 'into', 'also', 'more', 'most', 'than', 'then', 'some', 'like', 'just', 'very', 'each', 'does'].includes(clean)) {
-      score -= 5;
-    }
-    return { word: word.replace(/[.,!?;:]$/, ''), score };
-  });
-
-  scored.sort((a, b) => b.score - a.score);
-  const top = scored.slice(0, 3).map(s => s.word);
-  // Return in original order
-  const ordered = words
-    .map(w => w.replace(/[.,!?;:]$/, ''))
-    .filter(w => top.includes(w))
-    .slice(0, 3);
-  return ordered.join('  ');
-}
 
 export default TextSection;
