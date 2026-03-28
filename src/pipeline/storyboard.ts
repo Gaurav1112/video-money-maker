@@ -57,24 +57,8 @@ export function generateStoryboard(
 
     let durationSeconds: number;
 
-    if (offset !== -1) {
-      // Audio-driven timing: derive duration from the gap between this offset
-      // and the next scene's offset (or the last word end time for the final scene).
-      const nextOffset = sceneOffsets.find((o, idx) => idx > i && o !== -1);
-
-      if (nextOffset !== undefined) {
-        // Duration = gap to the next scene's audio start
-        durationSeconds = nextOffset - offset;
-      } else {
-        // Last scene with audio: use last word's end time + 1.5s
-        const words = audio?.wordTimestamps;
-        if (words && words.length > 0) {
-          durationSeconds = words[words.length - 1].end + 1.5;
-        } else {
-          // Fallback: audio duration + 1.5s
-          durationSeconds = (audio?.duration ?? FALLBACK_SCENE_DURATION[scene.type] ?? 5) + 1.5;
-        }
-      }
+    if (offset !== -1 && audio?.duration > 0) {
+      durationSeconds = audio.duration + 1.0; // actual audio + 1s visual breathing room
     } else {
       // No audio for this scene — use type-based default
       durationSeconds = FALLBACK_SCENE_DURATION[scene.type] ?? 5;
