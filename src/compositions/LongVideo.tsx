@@ -92,7 +92,10 @@ function getSceneProps(scene: Scene, storyboard: Storyboard): Record<string, any
       return {
         heading: scene.heading || '',
         bullets: scene.bullets || [scene.content],
+        content: scene.content || '',
+        narration: scene.narration || '',
         startFrame: 0,
+        endFrame: scene.endFrame - scene.startFrame,
       };
     case 'diagram':
       return {

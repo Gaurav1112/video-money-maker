@@ -1,215 +1,223 @@
 import React from 'react';
-import { useCurrentFrame, AbsoluteFill, interpolate } from 'remotion';
+import { useCurrentFrame, AbsoluteFill, interpolate, spring, useVideoConfig } from 'remotion';
 import { COLORS, FONTS, SIZES } from '../lib/theme';
-import { fadeIn, slideUp, stagger, springIn } from '../lib/animations';
 import { useSync } from '../hooks/useSync';
 import type { AnimationCue } from '../types';
 
 interface TextSectionProps {
   heading: string;
   bullets: string[];
+  content?: string;
+  narration?: string;
   startFrame?: number;
+  endFrame?: number;
   sceneIndex?: number;
   sceneStartFrame?: number;
   animationCues?: AnimationCue[];
 }
 
-// Rotating accent colors for bullet number badges
-const BULLET_COLORS = [
+const ACCENT_COLORS = [
   COLORS.saffron,
   COLORS.teal,
   COLORS.indigo,
   COLORS.gold,
-  COLORS.saffron,
-  COLORS.teal,
 ];
 
 const TextSection: React.FC<TextSectionProps> = ({
   heading = '',
   bullets = [],
+  content = '',
+  narration = '',
   startFrame = 0,
+  endFrame = 300,
   sceneIndex,
   sceneStartFrame,
   animationCues,
 }) => {
   const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
   const sync = useSync(sceneIndex ?? 0, sceneStartFrame ?? startFrame);
+  const sceneDuration = endFrame - startFrame;
 
-  const headingOpacity = fadeIn(frame, startFrame);
-  const headingY = slideUp(frame, startFrame, 60);
+  // Use narration text for visual display if bullets are too short/generic
+  const displayText = narration || content || '';
+  const sentences = displayText
+    .split(/(?<=[.!?])\s+/)
+    .filter(s => s.trim().length > 10);
 
-  // Progressive underline on heading
-  const underlineWidth = interpolate(
-    frame,
-    [startFrame + 10, startFrame + 40],
-    [0, 100],
-    { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
+  // Show MORE content: use sentences from narration if bullets are sparse
+  const displayBullets = bullets.length >= 3 ? bullets :
+    sentences.length > 0 ? sentences.slice(0, 5) : bullets;
+
+  // Progressive reveal: show one item at a time
+  const progress = frame / Math.max(1, sceneDuration);
+  const itemsPerStep = Math.max(1, Math.floor(sceneDuration / (displayBullets.length + 1) / fps * fps));
+  const visibleCount = Math.min(
+    displayBullets.length,
+    Math.floor(frame / Math.max(1, itemsPerStep)) + 1
   );
 
-  // TUTORIAL FEEL: Stagger bullets with MORE delay so they appear one at a time
-  // Each bullet gets 25 frames (almost 1 second) of exclusive screen time
-  const BULLET_STAGGER = 25;
+  // Current narration word for highlighting
+  const currentWord = sync.currentWord?.toLowerCase() || '';
 
-  // Sync-driven bullet visibility: use phrase boundaries when narration data is present,
-  // otherwise fall back to time-based stagger for backward compatibility.
-  const hasSyncData = sync.isNarrating || sync.wordsSpoken > 0;
-  const getVisibleBullets = (): number => {
-    if (hasSyncData && sync.phraseBoundaries.length > 0) {
-      let visible = 0;
-      for (let i = 0; i < sync.phraseBoundaries.length && i < bullets.length; i++) {
-        if (sync.wordIndex >= sync.phraseBoundaries[i]) {
-          visible = i + 2;
-        }
-      }
-      return Math.max(1, Math.min(visible, bullets.length));
-    }
-    // Fallback: time-based stagger
-    return Math.min(
-      bullets.length,
-      Math.floor(Math.max(0, frame - startFrame - 20) / 25) + 1,
-    );
-  };
-  const visibleCount = getVisibleBullets();
+  // Heading animation
+  const headingScale = spring({
+    frame,
+    fps,
+    config: { damping: 15, stiffness: 100 },
+  });
 
   return (
     <AbsoluteFill
       style={{
-        background: `linear-gradient(135deg, #0C0A15 0%, #0E0B1A 50%, #0C0A15 100%)`,
-        justifyContent: 'center',
-        padding: '80px 100px',
+        background: 'transparent',
+        padding: '60px 40px 60px 50px',
         fontFamily: FONTS.text,
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'flex-start',
+        overflow: 'hidden',
       }}
     >
-      {/* Subtle indigo gradient orb */}
+      {/* Decorative left accent line */}
       <div
         style={{
           position: 'absolute',
+          left: 30,
           top: '10%',
-          right: '-5%',
-          width: 500,
-          height: 400,
-          borderRadius: '50%',
-          background: `radial-gradient(ellipse, ${COLORS.indigo}08, transparent 70%)`,
-          filter: 'blur(60px)',
-          pointerEvents: 'none',
-        }}
-      />
-
-      {/* Left accent line (Fireship-style) */}
-      <div
-        style={{
-          position: 'absolute',
-          left: 60,
-          top: '15%',
-          bottom: '15%',
+          bottom: '10%',
           width: 3,
-          background: `linear-gradient(180deg, transparent, ${COLORS.saffron}40, ${COLORS.saffron}20, transparent)`,
+          background: `linear-gradient(180deg, transparent, ${COLORS.saffron}60, ${COLORS.teal}40, transparent)`,
           borderRadius: 2,
         }}
       />
 
-      {/* Heading with progressive underline */}
-      <div style={{ marginBottom: 40, position: 'relative' }}>
+      {/* Heading with animated underline */}
+      <div style={{ marginBottom: 24, transform: `scale(${headingScale})`, transformOrigin: 'left center' }}>
         <div
           style={{
-            opacity: headingOpacity,
-            transform: `translateY(${headingY}px)`,
-            fontSize: SIZES.heading2,
-            fontWeight: 700,
+            fontSize: 32,
+            fontWeight: 800,
             color: COLORS.saffron,
             fontFamily: FONTS.heading,
-            paddingBottom: 12,
+            lineHeight: 1.2,
           }}
         >
           {heading}
         </div>
-        {/* Animated underline */}
         <div
           style={{
-            width: `${underlineWidth}%`,
-            maxWidth: 300,
+            width: interpolate(frame, [5, 30], [0, 200], { extrapolateRight: 'clamp' }),
             height: 3,
             background: `linear-gradient(90deg, ${COLORS.saffron}, ${COLORS.gold}80)`,
             borderRadius: 2,
+            marginTop: 8,
           }}
         />
       </div>
 
-      {/* Card-style bullets with number badges - appear ONE AT A TIME */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-        {bullets.map((bullet, index) => {
-          const itemStart = stagger(index, startFrame + 20, BULLET_STAGGER);
-          // When sync data drives visibility, use visibleCount; otherwise rely on time-based itemStart
-          const isVisible = hasSyncData ? index < visibleCount : frame >= itemStart;
-          const itemSpring = isVisible ? springIn(frame, hasSyncData ? frame - 1 : itemStart) : 0;
-          const itemY = isVisible ? slideUp(frame, hasSyncData ? frame - 1 : itemStart, 30, 12) : 30;
-          const accentColor = BULLET_COLORS[index % BULLET_COLORS.length];
+      {/* Content items — fill the space with animated, revealing text */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12, flex: 1 }}>
+        {displayBullets.map((text, i) => {
+          const isVisible = i < visibleCount;
+          const isCurrent = i === visibleCount - 1;
+          const isPast = i < visibleCount - 1;
+          const accentColor = ACCENT_COLORS[i % ACCENT_COLORS.length];
 
-          // Focus indicator: current bullet gets a glow
-          const nextBulletStart = stagger(index + 1, startFrame + 20, BULLET_STAGGER);
-          const isCurrent = hasSyncData
-            ? index === visibleCount - 1
-            : frame >= itemStart && frame < nextBulletStart;
-          const focusGlow = isCurrent
-            ? interpolate(
-                Math.sin(frame * 0.1),
-                [-1, 1],
-                [0.5, 1],
-              )
-            : 0.7;
+          // Spring-in animation for each bullet
+          const revealFrame = i * itemsPerStep;
+          const bulletSpring = isVisible ? spring({
+            frame: frame - revealFrame,
+            fps,
+            config: { damping: 14, stiffness: 120 },
+          }) : 0;
+
+          // Highlight words that match current narration
+          const words = text.split(/\s+/);
+          const highlightedText = words.map((word, wi) => {
+            const isSpoken = currentWord && word.toLowerCase().includes(currentWord);
+            return (
+              <span
+                key={wi}
+                style={{
+                  color: isSpoken && isCurrent ? COLORS.gold : (isCurrent ? COLORS.white : '#888'),
+                  fontWeight: isSpoken && isCurrent ? 700 : (isCurrent ? 500 : 400),
+                  fontSize: isCurrent ? 22 : 19,
+                }}
+              >
+                {word}{' '}
+              </span>
+            );
+          });
+
+          if (!isVisible) return null;
 
           return (
             <div
-              key={index}
+              key={i}
               style={{
-                opacity: itemSpring * (isCurrent ? 1 : focusGlow),
-                transform: `translateY(${itemY}px) scale(${isCurrent ? 1.01 : 1})`,
+                opacity: bulletSpring,
+                transform: `translateX(${interpolate(bulletSpring, [0, 1], [-30, 0])}px)`,
                 display: 'flex',
                 alignItems: 'flex-start',
-                gap: 16,
-                backgroundColor: `${COLORS.darkAlt}`,
+                gap: 14,
+                padding: '14px 18px',
                 borderRadius: 10,
-                padding: '18px 24px',
-                borderLeft: `4px solid ${accentColor}`,
-                boxShadow: isCurrent
-                  ? `0 2px 20px ${accentColor}22, 0 0 0 1px ${accentColor}15`
-                  : `0 2px 12px ${COLORS.dark}88`,
-                transition: 'box-shadow 0.2s ease',
+                borderLeft: `3px solid ${isCurrent ? accentColor : accentColor + '40'}`,
+                background: isCurrent
+                  ? `linear-gradient(90deg, ${accentColor}15, transparent)`
+                  : 'transparent',
               }}
             >
-              {/* Number badge */}
+              {/* Number/icon badge */}
               <div
                 style={{
-                  width: 32,
-                  height: 32,
-                  borderRadius: 8,
-                  backgroundColor: accentColor + '20',
-                  color: accentColor,
+                  width: 28,
+                  height: 28,
+                  borderRadius: 7,
+                  background: isCurrent ? accentColor : accentColor + '30',
+                  color: isCurrent ? '#fff' : accentColor,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  fontSize: SIZES.caption,
+                  fontSize: 13,
                   fontWeight: 700,
                   fontFamily: FONTS.code,
                   flexShrink: 0,
-                  marginTop: 2,
                 }}
               >
-                {index + 1}
+                {i + 1}
               </div>
-              <div
-                style={{
-                  fontSize: SIZES.body,
-                  color: COLORS.white,
-                  lineHeight: 1.5,
-                }}
-              >
-                {bullet}
+
+              {/* Text with word highlighting */}
+              <div style={{ lineHeight: 1.6, fontFamily: FONTS.text }}>
+                {highlightedText}
               </div>
             </div>
           );
         })}
       </div>
+
+      {/* Key stat callout — appears when a number is mentioned in narration */}
+      {currentWord && /\d/.test(currentWord) && (
+        <div
+          style={{
+            position: 'absolute',
+            bottom: 80,
+            left: 50,
+            right: 20,
+            textAlign: 'center',
+            fontSize: 40,
+            fontWeight: 800,
+            color: COLORS.gold,
+            fontFamily: FONTS.heading,
+            opacity: 0.8,
+            textShadow: `0 0 30px ${COLORS.gold}40`,
+          }}
+        >
+          {currentWord}
+        </div>
+      )}
     </AbsoluteFill>
   );
 };
