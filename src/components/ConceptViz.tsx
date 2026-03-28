@@ -42,6 +42,7 @@ interface ConceptVizProps {
   sceneIndex: number;
   sceneStartFrame: number;
   keywords?: string[];
+  sceneDuration?: number;
 }
 
 export const ConceptViz: React.FC<ConceptVizProps> = ({
@@ -49,10 +50,22 @@ export const ConceptViz: React.FC<ConceptVizProps> = ({
   sceneIndex,
   sceneStartFrame,
   keywords = [],
+  sceneDuration = 300, // fallback 10s at 30fps
 }) => {
   const frame = useCurrentFrame();
-  const sync = useSync(sceneIndex, sceneStartFrame);
+  const rawSync = useSync(sceneIndex, sceneStartFrame);
   const Viz = getVisualization(topic);
+
+  // If sync isn't producing progress data, fall back to time-based progress.
+  // NOTE: useCurrentFrame() returns scene-relative frame inside TransitionSeries,
+  // so we use `frame` directly (not frame - sceneStartFrame).
+  const sync: SyncState = rawSync.sceneProgress > 0 || rawSync.wordsSpoken > 0
+    ? rawSync
+    : {
+        ...rawSync,
+        sceneProgress: Math.min(1, frame / Math.max(1, sceneDuration)),
+        isNarrating: true,
+      };
 
   return (
     <div style={{ width: '100%', height: '100%', position: 'relative' }}>

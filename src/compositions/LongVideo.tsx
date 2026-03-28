@@ -224,6 +224,7 @@ export const LongVideo: React.FC<LongVideoProps> = ({ storyboard }) => {
                       sceneIndex={idx}
                       sceneStartFrame={sceneStartFrame}
                       keywords={scene.bullets || []}
+                      sceneDuration={duration}
                     />
                   }
                 />
