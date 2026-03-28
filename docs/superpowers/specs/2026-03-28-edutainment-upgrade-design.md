@@ -17,6 +17,14 @@ Current videos score 5.4/10 average (Visual 6, Content 7, Audio 5, Polish 5, Eng
 
 **Target:** 10/10 on all dimensions. Videos should feel like 3Blue1Brown meets Khan GS — every word has a corresponding visual change.
 
+## Phase 0: Real Word Timestamps (Prerequisite)
+
+The current TTS engine's `makeTimestamps()` divides total duration evenly across words — every word gets identical duration regardless of actual speech cadence. This is fundamentally incompatible with word-level sync. **Before any sync work begins**, the TTS engine must produce real word-level timestamps:
+
+- **Edge TTS** — Use `--write-subtitles` flag which outputs VTT with word-level timing. Parse VTT into `WordTimestamp[]`.
+- **Kokoro** — Use the `/timestamps` endpoint if available, or post-process with `stable-ts` (Python forced alignment library) as documented in the Kokoro TTS memory file.
+- **Fallback** — If real timestamps are unavailable for a backend, distribute words proportionally by character count (not evenly) as a better-than-uniform approximation: `wordStart = sceneStart + (charsBeforeWord / totalChars) * duration`.
+
 ## Architecture
 
 All 6 systems are built on a single shared primitive: the **SyncEngine** with a `useSync()` React hook.
@@ -32,7 +40,7 @@ Script Generator → TTS Engine → Audio Stitcher → SyncEngine → Consumer S
 ### Data Flow
 
 1. **Script Generator** produces scenes with narration text and `animationCues[]`
-2. **TTS Engine** (Kokoro/Edge) generates audio + word-level timestamps per scene
+2. **TTS Engine** (Kokoro/Edge) generates audio + **real** word-level timestamps per scene (see Phase 0)
 3. **Audio Stitcher** concatenates into master track, returns `sceneOffsets[]` (exact start time of each scene in seconds)
 4. **SyncEngine** converts `sceneOffsets[]` + `wordTimestamps[]` into a frame-level timeline
 5. **Consumer systems** subscribe via `useSync()` and animate reactively
@@ -79,15 +87,46 @@ interface SyncState {
 The storyboard builder (`src/pipeline/storyboard.ts`) must be refactored:
 
 - Remove independent duration calculations (no more "audio + 2s" padding)
-- Scene `durationInFrames` = `Math.round((sceneOffsets[i+1] - sceneOffsets[i]) * fps)`
-- Last scene duration = remaining frames after last offset
-- Intro/outro durations remain fixed (90 and 150 frames)
+- Scene `durationInFrames` = `Math.round((sceneOffsets[i+1] - sceneOffsets[i]) * fps) + TRANSITION_DURATION`
+  - The `+ TRANSITION_DURATION` compensates for crossfade overlap consumed by adjacent TransitionSeries transitions
+- Last scene duration = remaining audio frames after last offset + TRANSITION_DURATION
+- **Scenes with missing audio** (offset === -1): assign a fixed fallback duration based on scene type defaults (title: 10s, text: 8s, etc.) and skip sync-driven animation (use time-based fallback animations instead)
+- Intro/outro durations remain fixed (90 and 150 frames) — these are outside the audio stitcher's scope
 - Store `wordTimestamps` per scene in the storyboard for `useSync()` consumption
+
+### Frame Offset Formula
+
+The intro scene sits before the master audio starts. The absolute frame position of any content scene is:
+
+```
+absoluteFrame(sceneIndex) = INTRO_FRAMES + Math.round(sceneOffsets[sceneIndex] * fps)
+```
+
+The master `<Audio>` component must use `from={INTRO_FRAMES}` so narration begins after the intro. `useSync(sceneIndex)` internally accounts for this offset.
+
+### Type Additions
+
+```typescript
+// Added to Scene interface
+interface Scene {
+  // ... existing fields ...
+  wordTimestamps?: WordTimestamp[];   // Real TTS word timing for this scene
+  animationCues?: AnimationCue[];    // Visual animation triggers
+  sfxTriggers?: SfxTrigger[];        // Sound effect triggers
+}
+
+// Added to Storyboard interface
+interface Storyboard {
+  // ... existing fields ...
+  sceneOffsets: number[];            // Master audio offset (seconds) per scene
+  allSfxTriggers: SfxTrigger[];     // Flattened SFX triggers for SfxLayer
+}
+```
 
 ### LongVideo/ShortVideo Composition Changes
 
-- TransitionSeries `<Transition.Presentation>` durations come from storyboard frame counts (which come from audio offsets)
-- Single `<Audio src={masterTrack}>` at frame 0 with intro offset
+- TransitionSeries `<Transition.Presentation>` durations come from storyboard frame counts (which come from audio offsets + transition compensation)
+- Single `<Audio src={masterTrack} from={INTRO_FRAMES}>` — starts after intro
 - Remove all per-scene audio logic
 - Add `<BgmLayer>` and `<SfxLayer>` as sibling audio components
 
@@ -107,11 +146,16 @@ interface AnimationCue {
 }
 ```
 
-Cues are auto-generated based on scene type:
-- **Code scenes** → one cue per code line, matched to narration phrases describing each line
-- **Diagram scenes** → one cue per node/edge, matched to entity mentions
-- **Text scenes** → one cue per bullet, matched to phrase boundaries
-- **Table scenes** → one cue per row, matched to comparison phrases
+Cues are auto-generated by the script generator based on scene type. The algorithm for each:
+
+- **Code scenes** → Narration typically has fewer phrases than code lines (e.g., 3 phrases for 15 lines). **Algorithm:** divide code lines evenly across narration phrases. If narration has N phrases and code has M lines, each phrase triggers `ceil(M/N)` lines. Cue wordIndex = first word of each phrase. Example: 3 phrases, 9 lines → lines 1-3 at phrase 1, lines 4-6 at phrase 2, lines 7-9 at phrase 3.
+- **Diagram scenes** → one cue per node/edge, matched to entity name mentions in narration text (string match on node labels)
+- **Text scenes** → one cue per bullet, matched to phrase boundaries (see below)
+- **Table scenes** → one cue per row, evenly distributed across narration duration if no explicit phrase matches
+
+### Phrase Boundary Detection
+
+`phraseBoundaries` are computed from the narration text by splitting on sentence-ending punctuation (`.`, `!`, `?`) and clause-breaking punctuation (`;`, `:`, `, and `, `, but `, `, or `). Each boundary is the `wordIndex` of the last word before the split. This is a simple text-based heuristic, not NLP.
 
 ### Per-Component Animation Behavior
 
@@ -150,9 +194,20 @@ Cues are auto-generated based on scene type:
 
 ### Split-Layout System
 
-Text and interview scenes get a 55/45 split layout:
-- **Left (55%):** Narration content (bullets, text, interview insights)
-- **Right (45%):** Animated ConceptViz component
+Text and interview scenes get a 55/45 split layout via a **`SplitLayout` wrapper component** (`src/components/SplitLayout.tsx`):
+
+```typescript
+function SplitLayout({ left, right }: { left: ReactNode; right: ReactNode }) {
+  return (
+    <div style={{ display: 'flex', width: '100%', height: '100%' }}>
+      <div style={{ flex: '0 0 55%' }}>{left}</div>
+      <div style={{ flex: '0 0 45%' }}>{right}</div>
+    </div>
+  );
+}
+```
+
+The parent composition (LongVideo/ShortVideo) wraps text/interview scenes in `SplitLayout`. Individual scene components (BulletReveal, InterviewInsight) render at whatever width they're given — they don't know about the split. ConceptViz fills the right side.
 
 Both sides consume the same `useSync()` timeline. The left side reveals bullets progressively, the right side animates the concept visualization in sync.
 
@@ -213,7 +268,7 @@ const TOPIC_VIZ_MAP: Record<string, string> = {
 | `lofi-chill-1.wav` | ~2 min | Guitar + vinyl crackle |
 | `lofi-ambient-1.wav` | ~2.5 min | Pad textures + subtle rhythm |
 
-All CC0 licensed, WAV 48kHz. Selected deterministically per video using seeded random (topic + session number as seed).
+All CC0 licensed, **MP3 format** (~3MB each vs ~34MB WAV — keeps repo lightweight for $8/month VPS). Selected deterministically per video using seeded random (topic + session number as seed).
 
 ### BgmLayer Component (`src/components/BgmLayer.tsx`)
 
@@ -221,7 +276,11 @@ A Remotion component placed in the composition alongside the master narration au
 
 **Behavior:**
 - Plays selected BGM loop for full video duration (loops if video > track length)
-- Volume controlled by `useSync().isNarrating`:
+- Volume ducking driven by the `SyncTimeline` directly (not via `useSync()` hook, since BgmLayer is composition-level). BgmLayer receives the full `SyncTimeline` object as a prop and computes `isNarrating` from the current frame by checking if the frame falls within any scene's word timestamp range:
+  ```
+  isNarrating = syncTimeline.isFrameInNarration(currentFrame)
+  ```
+- Volume levels:
   - Narrating → `interpolate()` volume to **0.08** (8%)
   - Silence gap → `interpolate()` volume to **0.25** (25%)
   - Attack/release: 10 frames (0.33s) for smooth transitions
@@ -257,7 +316,7 @@ All CC0 licensed, WAV format.
 
 ### SFX Trigger Types
 
-**Auto-triggered** (built into component animations):
+**Auto-triggered** — These are rendered by individual scene components using inline `<Sequence>` + `<Audio>` within the component itself (not via `SfxLayer`). Each component knows when its animation fires and plays the corresponding SFX at that frame:
 - Scene transition → `whoosh-in`
 - Code line typed → `keyboard-click` (or `keyboard-burst` on completion)
 - Bullet revealed → `soft-tap`
@@ -266,10 +325,11 @@ All CC0 licensed, WAV format.
 - Table row revealed → `ding`
 - Counter completed → `success-chime`
 
-**Cue-triggered** (via `sfxTriggers[]` in scene data):
+**Cue-triggered** — These are pre-computed by the script generator and rendered by the composition-level `SfxLayer` (via `sfxTriggers[]` in scene data):
 ```typescript
 interface SfxTrigger {
-  wordIndex: number;    // When to play (synced to narration)
+  sceneIndex: number;   // Which scene this trigger belongs to
+  wordIndex: number;    // When to play (synced to narration word)
   effect: string;       // SFX filename (without extension)
   volume?: number;      // Optional volume override (default 1.0)
 }
@@ -280,14 +340,21 @@ interface SfxTrigger {
 Renders each trigger as a positioned `<Sequence>` containing an `<Audio>`:
 
 ```typescript
-function SfxLayer({ triggers, sceneOffsets, fps }: Props) {
+function SfxLayer({ triggers, syncTimeline, fps }: Props) {
   return (
     <>
       {triggers.map((trigger, i) => {
-        const frame = computeFrame(trigger, sceneOffsets, fps);
+        // computeFrame: looks up the word timestamp for trigger.wordIndex
+        // in the scene identified by trigger.sceneIndex, adds INTRO_FRAMES
+        // offset, and converts to absolute frame number
+        const frame = syncTimeline.wordIndexToAbsoluteFrame(
+          trigger.sceneIndex, trigger.wordIndex
+        );
+        // sfxDuration: returns frame count for the SFX file
+        // (looked up from a static duration map, e.g. 'pop' → 6 frames)
         return (
           <Sequence key={i} from={frame} durationInFrames={sfxDuration(trigger.effect)}>
-            <Audio src={sfxPath(trigger.effect)} volume={trigger.volume ?? 1.0} />
+            <Audio src={staticFile(`audio/sfx/${trigger.effect}.wav`)} volume={trigger.volume ?? 1.0} />
           </Sequence>
         );
       })}
@@ -302,9 +369,10 @@ function SfxLayer({ triggers, sceneOffsets, fps }: Props) {
 src/
 ├── lib/
 │   └── sync-engine.ts              (NEW) Core sync timeline builder
-├── hooks/
+├── hooks/                           (NEW directory)
 │   └── useSync.ts                   (NEW) React hook for sync state
 ├── components/
+│   ├── SplitLayout.tsx              (NEW) 55/45 split wrapper for text/interview scenes
 │   ├── CodeReveal.tsx               (REWRITE) Sync-driven code typing
 │   ├── TextSection.tsx              (REWRITE) → BulletReveal with split layout
 │   ├── ComparisonTable.tsx          (REWRITE) → ComparisonReveal with row animations
@@ -330,11 +398,11 @@ src/
 └── types.ts                         (MODIFY) Add AnimationCue, SfxTrigger, SyncTimeline types
 
 public/audio/
-├── bgm/                             (NEW) 4 lo-fi loops
-│   ├── lofi-study-1.wav
-│   ├── lofi-study-2.wav
-│   ├── lofi-chill-1.wav
-│   └── lofi-ambient-1.wav
+├── bgm/                             (NEW) 4 lo-fi loops (MP3)
+│   ├── lofi-study-1.mp3
+│   ├── lofi-study-2.mp3
+│   ├── lofi-chill-1.mp3
+│   └── lofi-ambient-1.mp3
 └── sfx/                             (NEW) ~15 sound effects
     ├── whoosh-in.wav
     ├── whoosh-out.wav
