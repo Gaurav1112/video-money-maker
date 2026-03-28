@@ -270,7 +270,7 @@ export const LongVideo: React.FC<LongVideoProps> = ({ storyboard }) => {
           <TopicHeader
             topic={storyboard.topic}
             sessionNumber={storyboard.sessionNumber}
-            language="TypeScript"
+            language={storyboard.scenes[0]?.language || 'Python'}
             sceneType={currentSceneType}
           />
           <ProgressBar

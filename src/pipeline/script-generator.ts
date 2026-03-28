@@ -387,6 +387,7 @@ export function generateScript(session: SessionInput, options: ScriptOptions = {
     startFrame: currentFrame,
     endFrame: (currentFrame += TIMING.secondsToFrames(wrongAnswerDuration)),
     heading: 'The Common Mistake',
+    bullets: extractBulletsFromNarration(wrongAnswerNarration, 3),
   });
 
   // ── 4. THE REAL ANSWER — Transition into deep dive ────────────────────
@@ -400,6 +401,7 @@ export function generateScript(session: SessionInput, options: ScriptOptions = {
     startFrame: currentFrame,
     endFrame: (currentFrame += TIMING.secondsToFrames(realAnswerDuration)),
     heading: 'The Real Answer',
+    bullets: extractBulletsFromNarration(realAnswerNarration, 3),
   });
 
   // ── 5-7. Parse content → DEEP DIVE + VISUAL + COMPARISON ─────────────
@@ -519,6 +521,28 @@ function addStoryTransitions(scenes: Scene[]): Scene[] {
 
     return scene;
   });
+}
+
+// ---------------------------------------------------------------------------
+// Bullet Extraction — ensures every text scene has visible on-screen bullets
+// Extracts key sentences from narration when bullets aren't explicitly provided
+// ---------------------------------------------------------------------------
+function extractBulletsFromNarration(narration: string, maxBullets: number = 3): string[] {
+  const sentences = narration
+    .split(/[.!?]+/)
+    .map(s => s.trim())
+    .filter(s => s.length > 15 && s.length < 120);
+
+  if (sentences.length <= maxBullets) return sentences;
+
+  // Pick evenly spaced sentences for visual distribution
+  const step = Math.floor(sentences.length / maxBullets);
+  const bullets: string[] = [];
+  for (let i = 0; i < maxBullets; i++) {
+    const idx = Math.min(i * step, sentences.length - 1);
+    bullets.push(sentences[idx]);
+  }
+  return bullets;
 }
 
 // ---------------------------------------------------------------------------
