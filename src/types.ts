@@ -24,6 +24,10 @@ export interface Storyboard {
   audioFile: string;
   topic: string;
   sessionNumber: number;
+  /** Optional background music file path (relative to public/) */
+  bgmFile?: string;
+  /** Next topic name for end-of-session teaser */
+  nextTopic?: string;
 }
 
 export interface SessionInput {

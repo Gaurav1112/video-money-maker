@@ -37,6 +37,10 @@ const TextSection: React.FC<TextSectionProps> = ({
     { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
   );
 
+  // TUTORIAL FEEL: Stagger bullets with MORE delay so they appear one at a time
+  // Each bullet gets 25 frames (almost 1 second) of exclusive screen time
+  const BULLET_STAGGER = 25;
+
   return (
     <AbsoluteFill
       style={{
@@ -46,6 +50,19 @@ const TextSection: React.FC<TextSectionProps> = ({
         fontFamily: FONTS.text,
       }}
     >
+      {/* Left accent line (Fireship-style) */}
+      <div
+        style={{
+          position: 'absolute',
+          left: 60,
+          top: '15%',
+          bottom: '15%',
+          width: 3,
+          background: `linear-gradient(180deg, transparent, ${COLORS.saffron}40, ${COLORS.saffron}20, transparent)`,
+          borderRadius: 2,
+        }}
+      />
+
       {/* Heading with progressive underline */}
       <div style={{ marginBottom: 40, position: 'relative' }}>
         <div
@@ -73,20 +90,31 @@ const TextSection: React.FC<TextSectionProps> = ({
         />
       </div>
 
-      {/* Card-style bullets with number badges */}
+      {/* Card-style bullets with number badges - appear ONE AT A TIME */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         {bullets.map((bullet, index) => {
-          const itemStart = stagger(index, startFrame + 20, 8); // Faster stagger: 8 frames
+          const itemStart = stagger(index, startFrame + 20, BULLET_STAGGER);
           const itemSpring = springIn(frame, itemStart);
           const itemY = slideUp(frame, itemStart, 30, 12);
           const accentColor = BULLET_COLORS[index % BULLET_COLORS.length];
+
+          // Focus indicator: current bullet gets a glow
+          const nextBulletStart = stagger(index + 1, startFrame + 20, BULLET_STAGGER);
+          const isCurrent = frame >= itemStart && frame < nextBulletStart;
+          const focusGlow = isCurrent
+            ? interpolate(
+                Math.sin(frame * 0.1),
+                [-1, 1],
+                [0.5, 1],
+              )
+            : 0.7;
 
           return (
             <div
               key={index}
               style={{
-                opacity: itemSpring,
-                transform: `translateY(${itemY}px)`,
+                opacity: itemSpring * (isCurrent ? 1 : focusGlow),
+                transform: `translateY(${itemY}px) scale(${isCurrent ? 1.01 : 1})`,
                 display: 'flex',
                 alignItems: 'flex-start',
                 gap: 16,
@@ -94,7 +122,10 @@ const TextSection: React.FC<TextSectionProps> = ({
                 borderRadius: 10,
                 padding: '18px 24px',
                 borderLeft: `4px solid ${accentColor}`,
-                boxShadow: `0 2px 12px ${COLORS.dark}88`,
+                boxShadow: isCurrent
+                  ? `0 2px 20px ${accentColor}22, 0 0 0 1px ${accentColor}15`
+                  : `0 2px 12px ${COLORS.dark}88`,
+                transition: 'box-shadow 0.2s ease',
               }}
             >
               {/* Number badge */}

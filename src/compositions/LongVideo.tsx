@@ -1,5 +1,5 @@
 import React from 'react';
-import { useCurrentFrame, AbsoluteFill, Sequence, Audio, staticFile } from 'remotion';
+import { useCurrentFrame, AbsoluteFill, Sequence, Audio, staticFile, interpolate } from 'remotion';
 import { TransitionSeries, linearTiming, TransitionPresentation } from '@remotion/transitions';
 import { fade } from '@remotion/transitions/fade';
 import { slide } from '@remotion/transitions/slide';
@@ -18,6 +18,8 @@ import {
   ProgressBar,
   TopicHeader,
   BackgroundLayer,
+  CaptionOverlay,
+  NarratorIndicator,
 } from '../components';
 
 interface LongVideoProps {
@@ -112,6 +114,7 @@ function getSceneProps(scene: Scene, storyboard: Storyboard): Record<string, any
       return {
         takeaways: scene.bullets || [scene.content],
         topic: storyboard.topic,
+        sessionNumber: storyboard.sessionNumber,
         startFrame: 0,
       };
     default:
@@ -119,10 +122,26 @@ function getSceneProps(scene: Scene, storyboard: Storyboard): Record<string, any
   }
 }
 
+/**
+ * Determine the active scene at a given frame for caption overlay.
+ */
+function getActiveScene(scenes: Scene[], frame: number): Scene | null {
+  for (const scene of scenes) {
+    if (frame >= scene.startFrame && frame < scene.endFrame) {
+      return scene;
+    }
+  }
+  return null;
+}
+
 export const LongVideo: React.FC<LongVideoProps> = ({ storyboard }) => {
   const frame = useCurrentFrame();
   const totalFrames = storyboard.durationInFrames;
   const progress = frame / totalFrames;
+
+  // Get active scene for captions
+  const activeScene = getActiveScene(storyboard.scenes, frame);
+  const hasNarration = activeScene && activeScene.narration && activeScene.narration.trim() !== '';
 
   return (
     <AbsoluteFill style={{ backgroundColor: COLORS.dark }}>
@@ -168,6 +187,36 @@ export const LongVideo: React.FC<LongVideoProps> = ({ storyboard }) => {
         language="TypeScript"
       />
       <ProgressBar progress={progress} />
+
+      {/* Caption overlay - shows narration text word by word */}
+      {hasNarration && activeScene && (
+        <CaptionOverlay
+          key={`caption-${activeScene.startFrame}`}
+          text={activeScene.narration}
+          startFrame={0}
+          durationInFrames={activeScene.endFrame - activeScene.startFrame}
+        />
+      )}
+
+      {/* Narrator indicator - shows "someone is speaking" */}
+      <NarratorIndicator
+        isActive={hasNarration || false}
+        label="Guru Sishya"
+      />
+
+      {/* Background music - plays if bgmFile is specified in storyboard */}
+      {storyboard.bgmFile && (
+        <Sequence from={0}>
+          <Audio
+            src={staticFile(storyboard.bgmFile)}
+            volume={(f) => {
+              // Fade in over 2 seconds, maintain at 12%
+              return interpolate(f, [0, 60], [0, 0.12], { extrapolateRight: 'clamp' });
+            }}
+            loop
+          />
+        </Sequence>
+      )}
 
       {/* Audio: per-scene audio is rendered inside each Sequence above.
          Fall back to global audio only if no per-scene audio exists. */}
