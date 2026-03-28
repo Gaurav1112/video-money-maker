@@ -1,12 +1,73 @@
 import React from 'react';
-import { useCurrentFrame, AbsoluteFill, interpolate } from 'remotion';
+import { useCurrentFrame, interpolate } from 'remotion';
 import { COLORS, FONTS, SIZES } from '../lib/theme';
-import { fadeIn, springIn, springScale, wiggle } from '../lib/animations';
+import { fadeIn, slideIn, slideUp, springIn, bounceIn, pulseGlow } from '../lib/animations';
 
 interface InterviewInsightProps {
   insight: string;
   tip: string;
   startFrame?: number;
+  endFrame?: number;
+  sceneIndex?: number;
+  sceneStartFrame?: number;
+  animationCues?: unknown[];
+}
+
+/**
+ * Extracts 2-3 short bullet points from an insight/tip string.
+ * Looks for sentence boundaries and picks the most action-oriented ones.
+ */
+function extractBullets(insight: string, tip: string): string[] {
+  const combined = `${insight} ${tip}`;
+  // Split on sentence boundaries
+  const sentences = combined
+    .split(/[.!?]+/)
+    .map((s) => s.trim())
+    .filter((s) => s.length > 15 && s.length < 100);
+
+  if (sentences.length === 0) return [];
+
+  // Prefer sentences that contain interview-relevant keywords
+  const keywords = /\b(always|never|use|avoid|explain|show|demonstrate|mention|focus|remember|key|important|interviewers?|expect)\b/i;
+  const ranked = sentences.sort((a, b) => {
+    const aMatch = keywords.test(a) ? 1 : 0;
+    const bMatch = keywords.test(b) ? 1 : 0;
+    return bMatch - aMatch;
+  });
+
+  return ranked.slice(0, 3);
+}
+
+/**
+ * Highlights key phrases in a string by wrapping them in a styled span.
+ * Returns an array of React nodes (plain strings + highlighted spans).
+ */
+function highlightKeyPhrases(text: string): React.ReactNode[] {
+  const keywords = [
+    'always', 'never', 'key', 'critical', 'important', 'must', 'should',
+    'interviewer', 'interviewers', 'expect', 'O(n)', 'O(log n)', 'O(1)',
+    'trade-off', 'tradeoff', 'edge case', 'edge cases', 'time complexity',
+    'space complexity', 'optimize', 'optimal', 'efficient', 'explain',
+  ];
+  const pattern = new RegExp(`\\b(${keywords.map((k) => k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})\\b`, 'gi');
+
+  const parts = text.split(pattern);
+  return parts.map((part, i) => {
+    if (keywords.some((k) => k.toLowerCase() === part.toLowerCase())) {
+      return (
+        <span
+          key={i}
+          style={{
+            color: COLORS.gold,
+            fontWeight: 700,
+          }}
+        >
+          {part}
+        </span>
+      );
+    }
+    return part;
+  });
 }
 
 const InterviewInsight: React.FC<InterviewInsightProps> = ({
@@ -16,197 +77,245 @@ const InterviewInsight: React.FC<InterviewInsightProps> = ({
 }) => {
   const frame = useCurrentFrame();
 
-  const cardSpring = springIn(frame, startFrame);
-  const scale = springScale(frame, startFrame);
+  // ── Animation timing (all relative to startFrame) ──────────────────────
+  const headingDelay   = startFrame;
+  const insightDelay   = startFrame + 18;
+  const proTipDelay    = startFrame + 38;
+  const bulletsDelay   = startFrame + 55;
 
-  // Wiggle/shake on entry
-  const shakeX = wiggle(frame, startFrame, 5, 0.6);
+  // Heading: slides down from above
+  const headingSlide = slideUp(frame, headingDelay, -50, 35);
+  const headingOpacity = fadeIn(frame, headingDelay, 25);
 
-  // Animated border - "drawing itself" via dashoffset simulation
-  const borderProgress = interpolate(
+  // Star icon: bounces in
+  const iconScale = bounceIn(frame, headingDelay + 5);
+
+  // Insight text: fades in
+  const insightOpacity = fadeIn(frame, insightDelay, 30);
+  const insightSlide = slideUp(frame, insightDelay, 30, 35);
+
+  // Pro tip card: springs up from below
+  const tipSpring = springIn(frame, proTipDelay);
+  const tipSlide = slideUp(frame, proTipDelay, 60, 40);
+  const tipOpacity = fadeIn(frame, proTipDelay, 25);
+
+  // Bullets: staggered fade-in
+  const bullets = extractBullets(insight, tip);
+
+  // Pulsing gold glow on the star
+  const starGlow = pulseGlow(frame, 0.1, 0.5, 1.0);
+
+  // Subtle accent line width animation
+  const accentWidth = interpolate(
     frame,
-    [startFrame, startFrame + 40],
-    [0, 1],
-    { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
-  );
-
-  // Icon pulse
-  const iconScale = interpolate(
-    frame,
-    [startFrame + 10, startFrame + 25, startFrame + 40, startFrame + 55, startFrame + 70],
-    [0, 1.3, 1.0, 1.15, 1.0],
-    { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
-  );
-
-  // Gold glow pulse
-  const glowOpacity = interpolate(
-    frame,
-    [startFrame, startFrame + 30, startFrame + 60],
-    [0, 0.4, 0.2],
+    [headingDelay, headingDelay + 45],
+    [0, 100],
     { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
   );
 
   return (
-    <AbsoluteFill
+    <div
       style={{
-        background: `linear-gradient(160deg, #0F0C08 0%, #0C0A15 60%, #100C06 100%)`,
+        width: '100%',
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
         justifyContent: 'center',
-        alignItems: 'center',
-        padding: '80px 100px',
+        padding: '48px 56px',
         fontFamily: FONTS.text,
+        boxSizing: 'border-box',
+        gap: 32,
       }}
     >
-      {/* Warm gold background glow */}
+      {/* ── 1. HEADING ─────────────────────────────────────────────── */}
       <div
         style={{
-          position: 'absolute',
-          width: 900,
-          height: 600,
-          borderRadius: '50%',
-          background: `radial-gradient(ellipse, ${COLORS.gold}12, ${COLORS.saffron}06, transparent 70%)`,
-          opacity: glowOpacity,
-          filter: 'blur(60px)',
-        }}
-      />
-      {/* Secondary warm tint */}
-      <div
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: `radial-gradient(ellipse at 20% 80%, ${COLORS.gold}06, transparent 60%)`,
-          pointerEvents: 'none',
-        }}
-      />
-
-      <div
-        style={{
-          opacity: cardSpring,
-          transform: `translateX(${shakeX}px) scale(${scale})`,
-          position: 'relative',
-          maxWidth: 900,
-          width: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 14,
+          opacity: headingOpacity,
+          transform: `translateY(${headingSlide}px)`,
         }}
       >
-        {/* Animated border layers */}
-        {/* Top border */}
+        {/* Star icon */}
         <div
           style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            width: `${borderProgress * 100}%`,
-            height: 3,
-            backgroundColor: COLORS.gold,
-            borderRadius: '16px 0 0 0',
-          }}
-        />
-        {/* Right border */}
-        <div
-          style={{
-            position: 'absolute',
-            top: 0,
-            right: 0,
-            width: 3,
-            height: `${Math.max(0, (borderProgress - 0.25) / 0.25) * 100}%`,
-            backgroundColor: COLORS.gold,
-          }}
-        />
-        {/* Bottom border */}
-        <div
-          style={{
-            position: 'absolute',
-            bottom: 0,
-            right: 0,
-            width: `${Math.max(0, (borderProgress - 0.5) / 0.25) * 100}%`,
-            height: 3,
-            backgroundColor: COLORS.gold,
-            transformOrigin: 'right',
-          }}
-        />
-        {/* Left border */}
-        <div
-          style={{
-            position: 'absolute',
-            bottom: 0,
-            left: 0,
-            width: 3,
-            height: `${Math.max(0, (borderProgress - 0.75) / 0.25) * 100}%`,
-            backgroundColor: COLORS.gold,
-            transformOrigin: 'bottom',
-          }}
-        />
-
-        {/* Card content */}
-        <div
-          style={{
-            borderRadius: 16,
-            padding: '48px 56px',
-            backgroundColor: `${COLORS.darkAlt}`,
-            boxShadow: `0 0 60px ${COLORS.gold}11, inset 0 0 30px ${COLORS.gold}05`,
+            fontSize: 38,
+            transform: `scale(${iconScale})`,
+            filter: `drop-shadow(0 0 10px ${COLORS.gold})`,
+            opacity: starGlow,
+            lineHeight: 1,
           }}
         >
-          {/* Header with pulsing icon */}
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 16,
-              marginBottom: 28,
-            }}
-          >
-            {/* Star/lightbulb icon */}
-            <div
-              style={{
-                fontSize: 32,
-                transform: `scale(${iconScale})`,
-                filter: `drop-shadow(0 0 8px ${COLORS.gold}66)`,
-              }}
-            >
-              &#9733;
-            </div>
-            <div
-              style={{
-                fontSize: SIZES.heading3,
-                fontWeight: 700,
-                color: COLORS.gold,
-                fontFamily: FONTS.heading,
-              }}
-            >
-              Interview Insight
-            </div>
-          </div>
+          ★
+        </div>
 
+        <div>
           <div
             style={{
-              fontSize: SIZES.body + 2,
-              color: COLORS.white,
-              lineHeight: 1.6,
-              marginBottom: 24,
-              opacity: fadeIn(frame, startFrame + 15),
+              fontSize: SIZES.heading3,
+              fontWeight: 800,
+              color: COLORS.saffron,
+              fontFamily: FONTS.heading,
+              letterSpacing: '-0.5px',
+              lineHeight: 1,
             }}
           >
-            {insight}
+            Interview Insight
           </div>
-
+          {/* Animated underline accent */}
           <div
             style={{
-              fontSize: SIZES.body,
-              color: COLORS.teal,
-              lineHeight: 1.5,
-              fontStyle: 'italic',
-              borderTop: `1px solid ${COLORS.gold}44`,
-              paddingTop: 20,
-              opacity: fadeIn(frame, startFrame + 25),
+              height: 3,
+              width: `${accentWidth}%`,
+              background: `linear-gradient(90deg, ${COLORS.gold}, ${COLORS.saffron}88)`,
+              borderRadius: 2,
+              marginTop: 6,
             }}
-          >
-            {tip}
-          </div>
+          />
         </div>
       </div>
-    </AbsoluteFill>
+
+      {/* ── 2. KEY INSIGHT — large, clear, one sentence ────────────── */}
+      <div
+        style={{
+          opacity: insightOpacity,
+          transform: `translateY(${insightSlide}px)`,
+        }}
+      >
+        <p
+          style={{
+            fontSize: 30,
+            fontWeight: 600,
+            color: COLORS.white,
+            lineHeight: 1.5,
+            margin: 0,
+            letterSpacing: '-0.2px',
+          }}
+        >
+          {highlightKeyPhrases(insight)}
+        </p>
+      </div>
+
+      {/* ── 3. PRO TIP CARD ────────────────────────────────────────── */}
+      <div
+        style={{
+          opacity: tipOpacity * tipSpring,
+          transform: `translateY(${tipSlide}px)`,
+          background: `linear-gradient(135deg, ${COLORS.teal}18, ${COLORS.teal}08)`,
+          border: `2px solid ${COLORS.teal}55`,
+          borderLeft: `5px solid ${COLORS.teal}`,
+          borderRadius: 14,
+          padding: '24px 28px',
+        }}
+      >
+        {/* Card label */}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 10,
+            marginBottom: 12,
+          }}
+        >
+          <div
+            style={{
+              fontSize: 20,
+              lineHeight: 1,
+            }}
+          >
+            💡
+          </div>
+          <span
+            style={{
+              fontSize: SIZES.bodySmall,
+              fontWeight: 700,
+              color: COLORS.teal,
+              letterSpacing: '0.8px',
+              textTransform: 'uppercase' as const,
+            }}
+          >
+            Pro Tip
+          </span>
+        </div>
+
+        {/* Tip text */}
+        <p
+          style={{
+            fontSize: SIZES.body,
+            color: COLORS.white,
+            lineHeight: 1.55,
+            margin: 0,
+            fontWeight: 400,
+          }}
+        >
+          {highlightKeyPhrases(tip)}
+        </p>
+      </div>
+
+      {/* ── 4. WHAT INTERVIEWERS WANT — bullet points ──────────────── */}
+      {bullets.length > 0 && (
+        <div
+          style={{
+            opacity: fadeIn(frame, bulletsDelay, 25),
+          }}
+        >
+          <div
+            style={{
+              fontSize: SIZES.bodySmall,
+              fontWeight: 700,
+              color: COLORS.indigo,
+              letterSpacing: '0.6px',
+              textTransform: 'uppercase' as const,
+              marginBottom: 14,
+            }}
+          >
+            What Interviewers Want
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {bullets.map((bullet, i) => {
+              const bulletOpacity = fadeIn(frame, bulletsDelay + i * 12, 20);
+              const bulletSlide = slideIn(frame, bulletsDelay + i * 12, 30, 25);
+              return (
+                <div
+                  key={i}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    gap: 12,
+                    opacity: bulletOpacity,
+                    transform: `translateX(${bulletSlide}px)`,
+                  }}
+                >
+                  {/* Bullet dot */}
+                  <div
+                    style={{
+                      width: 8,
+                      height: 8,
+                      borderRadius: '50%',
+                      backgroundColor: COLORS.gold,
+                      marginTop: 7,
+                      flexShrink: 0,
+                      boxShadow: `0 0 6px ${COLORS.gold}88`,
+                    }}
+                  />
+                  <span
+                    style={{
+                      fontSize: SIZES.bodySmall,
+                      color: COLORS.gray,
+                      lineHeight: 1.5,
+                    }}
+                  >
+                    {bullet}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
   );
 };
 
