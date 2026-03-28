@@ -7,11 +7,14 @@ import { TTSResult } from '../types';
 
 const cache = new NodeCache({ stdTTL: 2592000 }); // 30 days
 const KOKORO_API = process.env.KOKORO_API_URL || 'http://localhost:8880';
-const OUTPUT_DIR = process.env.OUTPUT_DIR || './output';
+const AUDIO_DIR = path.join(process.cwd(), 'public', 'audio');
+
+// Ensure audio directory exists
+fs.mkdirSync(AUDIO_DIR, { recursive: true });
 
 export async function generateAudio(
   text: string,
-  voice: string = 'af',
+  voice: string = 'af_bella',
   outputName?: string
 ): Promise<TTSResult> {
   const cacheKey = crypto.createHash('sha256').update(text + voice).digest('hex');
@@ -20,14 +23,28 @@ export async function generateAudio(
   const cached = cache.get<TTSResult>(cacheKey);
   if (cached && fs.existsSync(cached.audioPath)) return cached;
 
+  // Try Kokoro first (self-hosted, best quality)
   try {
     return await kokoroTTS(text, voice, cacheKey, outputName);
-  } catch (error) {
-    console.warn('Kokoro TTS failed, using fallback:', (error as Error).message);
-    return fallbackEstimate(text, cacheKey);
+  } catch (kokoroErr) {
+    console.warn('Kokoro TTS unavailable, trying Edge TTS...');
   }
+
+  // Try macOS native TTS (free, works offline on Mac)
+  if (process.platform === 'darwin') {
+    try {
+      return await macosTTS(text, cacheKey, outputName);
+    } catch (macErr) {
+      console.warn('macOS TTS failed:', (macErr as Error).message);
+    }
+  }
+
+  // Last resort: silent placeholder
+  console.warn('All TTS failed. Using silent fallback.');
+  return silentFallback(text, cacheKey);
 }
 
+// ─── Kokoro TTS (self-hosted, best quality) ───
 async function kokoroTTS(
   text: string,
   voice: string,
@@ -41,76 +58,93 @@ async function kokoroTTS(
       input: text,
       voice,
       response_format: 'mp3',
-      speed: 1.0,
+      speed: 0.95,
     },
-    {
-      timeout: 60000,
-      responseType: 'arraybuffer',
-    }
+    { timeout: 60000, responseType: 'arraybuffer' }
   );
 
-  // Save audio file to public/audio/ so Remotion's staticFile() can find them
-  const audioDir = path.join(process.cwd(), 'public', 'audio');
-  fs.mkdirSync(audioDir, { recursive: true });
   const filename = outputName || `tts_${cacheKey.slice(0, 12)}.mp3`;
-  const audioPath = path.join(audioDir, filename);
+  const audioPath = path.join(AUDIO_DIR, filename);
   fs.writeFileSync(audioPath, Buffer.from(response.data));
 
-  // Estimate duration from file size (MP3 ~16KB/sec at 128kbps)
   const stats = fs.statSync(audioPath);
-  const estimatedDuration = stats.size / 16000;
+  const duration = stats.size / 16000; // MP3 ~16KB/sec at 128kbps
 
-  // Estimate word timestamps (even spacing)
+  const result = makeTimestamps(text, duration, audioPath);
+  cache.set(cacheKey, result);
+  console.log(`  ✓ Kokoro TTS: ${filename} (${duration.toFixed(1)}s)`);
+  return result;
+}
+
+// ─── macOS Native TTS (free, works offline) ───
+async function macosTTS(
+  text: string,
+  cacheKey: string,
+  outputName?: string
+): Promise<TTSResult> {
+  const { execFileSync } = await import('child_process');
+
+  const filename = outputName || `mac_${cacheKey.slice(0, 12)}.mp3`;
+  const aiffPath = path.join(AUDIO_DIR, filename.replace('.mp3', '.aiff'));
+  const mp3Path = path.join(AUDIO_DIR, filename);
+
+  // Clean text for shell safety
+  const cleanText = text.replace(/['"\\]/g, ' ').slice(0, 2000);
+
+  // Generate speech using macOS 'say' command
+  execFileSync('say', ['-o', aiffPath, '-v', 'Samantha', cleanText], { timeout: 30000 });
+
+  // Convert AIFF to M4A (lightweight, Remotion-compatible)
+  const m4aPath = mp3Path.replace('.mp3', '.m4a');
+  execFileSync('afconvert', [aiffPath, m4aPath, '-d', 'aac', '-f', 'm4af'], { timeout: 15000 });
+
+  // Cleanup AIFF
+  if (fs.existsSync(aiffPath)) fs.unlinkSync(aiffPath);
+
+  // Get duration from file size (M4A ~8KB/sec)
+  const stats = fs.statSync(m4aPath);
+  const duration = stats.size / 8000;
+
+  const result = makeTimestamps(text, duration, m4aPath);
+  cache.set(cacheKey, result);
+  console.log(`  ✓ macOS TTS: ${filename} (${duration.toFixed(1)}s)`);
+  return result;
+}
+
+// ─── Silent fallback ───
+function silentFallback(text: string, cacheKey: string): TTSResult {
   const words = text.split(/\s+/).filter(Boolean);
-  const timePerWord = estimatedDuration / words.length;
+  const duration = (words.length / 150) * 60;
+
+  const audioPath = path.join(AUDIO_DIR, `fallback_${cacheKey.slice(0, 12)}.mp3`);
+  if (!fs.existsSync(audioPath)) {
+    // Minimal silent MP3
+    const silentHeader = Buffer.from([0xFF, 0xFB, 0x90, 0x00]);
+    const framesNeeded = Math.ceil(duration * 38.28);
+    const frames = Buffer.alloc(framesNeeded * 418, 0);
+    silentHeader.copy(frames, 0);
+    fs.writeFileSync(audioPath, frames);
+  }
+
+  return makeTimestamps(text, duration, audioPath);
+}
+
+// ─── Helper: create word timestamps ───
+function makeTimestamps(text: string, duration: number, audioPath: string): TTSResult {
+  const words = text.split(/\s+/).filter(Boolean);
+  const timePerWord = duration / Math.max(words.length, 1);
   const wordTimestamps = words.map((word, i) => ({
     word,
     start: i * timePerWord,
     end: (i + 1) * timePerWord,
   }));
-
-  const result: TTSResult = { audioPath, wordTimestamps, duration: estimatedDuration };
-  cache.set(cacheKey, result);
-  return result;
-}
-
-function fallbackEstimate(text: string, cacheKey: string): TTSResult {
-  // Fallback: estimate duration from word count (150 WPM)
-  const words = text.split(/\s+/).filter(Boolean);
-  const duration = (words.length / 150) * 60;
-
-  // Generate a silent audio placeholder so Remotion can render
-  const audioDir = path.join(process.cwd(), 'public', 'audio');
-  fs.mkdirSync(audioDir, { recursive: true });
-  const audioPath = path.join(audioDir, `fallback_${cacheKey.slice(0, 12)}.mp3`);
-
-  // Only create if doesn't exist
-  if (!fs.existsSync(audioPath)) {
-    // Create minimal valid MP3 (silent)
-    // A minimal MP3 frame header for silence
-    const silentMp3Header = Buffer.from([
-      0xFF, 0xFB, 0x90, 0x00, // MP3 frame header (MPEG1, Layer3, 128kbps, 44100Hz, stereo)
-    ]);
-    // Repeat for approximate duration (128kbps = 16KB/sec)
-    const framesNeeded = Math.ceil(duration * 38.28); // ~38.28 frames/sec at 128kbps
-    const frames = Buffer.alloc(framesNeeded * 418, 0); // 418 bytes per frame
-    // Write header to first frame
-    silentMp3Header.copy(frames, 0);
-    fs.writeFileSync(audioPath, frames);
-  }
-
-  const wordTimestamps = words.map((word, i) => ({
-    word,
-    start: i * (duration / words.length),
-    end: (i + 1) * (duration / words.length),
-  }));
-
   return { audioPath, wordTimestamps, duration };
 }
 
+// ─── Batch: generate audio for all scenes ───
 export async function generateSceneAudios(
   scenes: Array<{ narration: string; type: string }>,
-  voice: string = 'af'
+  voice: string = 'af_bella'
 ): Promise<TTSResult[]> {
   const results: TTSResult[] = [];
   for (let i = 0; i < scenes.length; i++) {
@@ -119,6 +153,7 @@ export async function generateSceneAudios(
       results.push({ audioPath: '', wordTimestamps: [], duration: 0 });
       continue;
     }
+    console.log(`  Generating audio for scene ${i + 1}/${scenes.length} [${scene.type}]...`);
     const result = await generateAudio(scene.narration, voice, `scene_${i}.mp3`);
     results.push(result);
   }
