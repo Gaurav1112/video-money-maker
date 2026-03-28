@@ -27,23 +27,9 @@ export const BgmLayer: React.FC<BgmLayerProps> = ({ syncTimeline, bgmFile }) => 
         { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
       );
 
-      // Sidechain ducking with 10-frame smoothing
+      // Sidechain ducking — single check, no lookback loop
       const isNarrating = syncTimeline.isFrameInNarration(f);
-
-      // Count consecutive frames in current state (up to 10) for smooth transition
-      let framesInState = 0;
-      for (let i = 0; i < 10; i++) {
-        if (syncTimeline.isFrameInNarration(f - i) === isNarrating) {
-          framesInState++;
-        } else {
-          break;
-        }
-      }
-
-      const duckProgress = Math.min(1, framesInState / 10);
-      const targetVolume = isNarrating
-        ? interpolate(duckProgress, [0, 1], [0.25, 0.08])
-        : interpolate(duckProgress, [0, 1], [0.08, 0.25]);
+      const targetVolume = isNarrating ? 0.08 : 0.25;
 
       return fadeIn * fadeOut * targetVolume;
     },

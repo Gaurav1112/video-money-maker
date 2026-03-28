@@ -19,13 +19,18 @@ export class SyncTimeline {
     this.introFrames = introFrames;
 
     this.sceneDurationsInSeconds = sceneOffsets.map((offset, i) => {
+      if (offset === -1) return 8; // no audio: default 8 seconds
       if (i < sceneOffsets.length - 1) {
-        return sceneOffsets[i + 1] - offset;
+        // Find next valid offset
+        let nextOffset = -1;
+        for (let j = i + 1; j < sceneOffsets.length; j++) {
+          if (sceneOffsets[j] !== -1) { nextOffset = sceneOffsets[j]; break; }
+        }
+        if (nextOffset !== -1) return nextOffset - offset;
       }
+      // Last scene (or no valid next offset found)
       const lastWords = wordTimestamps[i];
-      if (lastWords && lastWords.length > 0) {
-        return lastWords[lastWords.length - 1].end + 1.0;
-      }
+      if (lastWords && lastWords.length > 0) return lastWords[lastWords.length - 1].end + 1.0;
       return 8;
     });
   }

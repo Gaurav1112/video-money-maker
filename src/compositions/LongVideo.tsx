@@ -165,10 +165,14 @@ export const LongVideo: React.FC<LongVideoProps> = ({ storyboard }) => {
   const totalFrames = INTRO_DURATION + contentFrames + OUTRO_DURATION;
   const progress = frame / totalFrames;
 
-  // Build SyncTimeline for audio/word sync across all scenes
+  // Build SyncTimeline for audio/word sync across content scenes only.
+  // scenes[0] = intro, scenes[last] = outro — sceneOffsets covers only content scenes.
+  // Using all scenes caused an off-by-one: timestamps[0] mapped to the intro (empty),
+  // not the first content scene (BUG 1).
+  const contentScenes = storyboard.scenes.slice(1, storyboard.scenes.length - 1);
   const syncTimeline = React.useMemo(() => {
     const offsets = storyboard.sceneOffsets || [];
-    const timestamps = storyboard.scenes.map(s => s.wordTimestamps || []);
+    const timestamps = contentScenes.map(s => s.wordTimestamps || []);
     return new SyncTimeline(offsets, timestamps, fps, INTRO_DURATION);
   }, [storyboard, fps]);
 
@@ -205,7 +209,7 @@ export const LongVideo: React.FC<LongVideoProps> = ({ storyboard }) => {
       {/* Render each scene with transitions, offset by intro duration */}
       <Sequence from={INTRO_DURATION} durationInFrames={contentFrames}>
         <TransitionSeries>
-          {storyboard.scenes.map((scene, idx) => {
+          {contentScenes.map((scene, idx) => {
             const Component = SCENE_COMPONENT_MAP[scene.type];
             if (!Component) return null;
 
@@ -276,10 +280,9 @@ export const LongVideo: React.FC<LongVideoProps> = ({ storyboard }) => {
                       lineHeight: 1.5,
                     }}>
                       {(scene.bullets && scene.bullets.length > 0)
-                        ? scene.bullets[Math.min(
-                            Math.floor((scene.bullets.length) * (idx % scene.bullets.length + 1) / scene.bullets.length),
-                            scene.bullets.length - 1
-                          )]
+                        ? scene.bullets.slice(0, 3).map((b, i) => (
+                            <div key={i} style={{ fontSize: 16, color: '#ccc', marginTop: 4 }}>• {b}</div>
+                          ))
                         : scene.narration?.split(/[.!?]/)[0] || ''
                       }
                     </div>
