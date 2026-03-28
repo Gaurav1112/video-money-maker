@@ -331,7 +331,7 @@ function generateCalloutNarration(content: string): string {
  * 10. SUMMARY + CTA (15s) — "Now go practice on guru-sishya.in"
  */
 export function generateScript(session: SessionInput, options: ScriptOptions = {}): Scene[] {
-  const { language = 'python', maxScenes = 20 } = options;
+  const { language = 'python', maxScenes = 30 } = options;
   const scenes: Scene[] = [];
   let currentFrame = 0;
 
@@ -602,8 +602,8 @@ function parseMarkdown(markdown: string): MarkdownSection[] {
   while (i < lines.length) {
     const line = lines[i];
 
-    // Headings
-    if (line.startsWith('## ') || line.startsWith('### ')) {
+    // Headings (## through ######)
+    if (/^#{2,6}\s/.test(line)) {
       currentHeading = line.replace(/^#+\s*/, '');
       i++;
       continue;

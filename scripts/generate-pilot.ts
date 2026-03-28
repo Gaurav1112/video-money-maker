@@ -1,4 +1,4 @@
-import { getDemoSession, extractSession, loadTopicContent, listAvailableTopics } from '../src/pipeline/content-loader';
+import { getDemoSession, listDemoTopics, extractSession, loadTopicContent, listAvailableTopics } from '../src/pipeline/content-loader';
 import { generateScript } from '../src/pipeline/script-generator';
 import { generateSceneAudios } from '../src/pipeline/tts-engine';
 import { generateStoryboard, getStoryboardDuration, validateStoryboard } from '../src/pipeline/storyboard';
@@ -6,15 +6,26 @@ import { generateStoryboard, getStoryboardDuration, validateStoryboard } from '.
 async function generatePilot() {
   console.log('=== AI Video Pipeline — Pilot Video Generator ===\n');
 
+  // Check for --demo flag or --demo=<topic> argument
+  const demoArg = process.argv.find(a => a.startsWith('--demo'));
+  const useDemo = !!demoArg;
+  const demoTopic = demoArg?.includes('=') ? demoArg.split('=')[1] : undefined;
+
   // 1. Load content
   console.log('Step 1: Loading content...');
   let session;
 
-  const topics = listAvailableTopics();
-  if (topics.length > 0) {
-    console.log(`  Found ${topics.length} topic files. Using first available.`);
-    const content = loadTopicContent(topics[0]);
-    session = extractSession(content, 0);
+  if (useDemo) {
+    console.log(`  Using demo session${demoTopic ? ` (${demoTopic})` : ''}.`);
+    console.log(`  Available demo topics: ${listDemoTopics().join(', ')}`);
+    session = getDemoSession(demoTopic);
+  } else {
+    const topics = listAvailableTopics();
+    if (topics.length > 0) {
+      console.log(`  Found ${topics.length} topic files. Using first available.`);
+      const content = loadTopicContent(topics[0]);
+      session = extractSession(content, 0);
+    }
   }
 
   if (!session) {
