@@ -475,8 +475,8 @@ const CodeReveal: React.FC<CodeRevealProps> = ({
                     opacity: lineOpacity,
                     fontSize: SIZES.codeSmall,
                     fontFamily: FONTS.code,
-                    color: isCurrentLine ? COLORS.saffron + '88' : COLORS.gray + '44',
-                    fontWeight: isCurrentLine ? 600 : 400,
+                    color: isCurrentLine ? COLORS.saffron : COLORS.gray + '44',
+                    fontWeight: isCurrentLine ? 700 : 400,
                     backgroundColor: isCurrentLine ? `${COLORS.saffron}08` : 'transparent',
                   }}
                 >
@@ -533,16 +533,6 @@ const CodeReveal: React.FC<CodeRevealProps> = ({
                 // Tokenize the visible text
                 const tokens = tokenizeLine(displayText, language);
 
-                // Glow on currently revealing line
-                const glowOpacity = isCurrentLine
-                  ? interpolate(
-                      frame,
-                      [lineStart, lineStart + framesPerLine * 0.7, lineStart + framesPerLine],
-                      [0.12, 0.06, 0],
-                      { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
-                    )
-                  : 0;
-
                 return (
                   <div
                     key={idx}
@@ -552,13 +542,16 @@ const CodeReveal: React.FC<CodeRevealProps> = ({
                       transform: `translateY(${lineSlide}px)`,
                       backgroundColor: isHighlighted
                         ? COLORS.gold + '10'
-                        : glowOpacity > 0
-                        ? `rgba(232, 93, 38, ${glowOpacity})`
+                        : isCurrentLine
+                        ? 'rgba(232, 93, 38, 0.1)'
                         : 'transparent',
+                      boxShadow: isCurrentLine
+                        ? '0 0 20px rgba(232, 93, 38, 0.15)'
+                        : 'none',
                       borderLeft: isHighlighted
                         ? `3px solid ${COLORS.gold}`
                         : isCurrentLine
-                        ? `3px solid ${COLORS.saffron}88`
+                        ? `3px solid ${COLORS.saffron}`
                         : '3px solid transparent',
                       paddingLeft: 12,
                       marginLeft: -15,
@@ -589,11 +582,11 @@ const CodeReveal: React.FC<CodeRevealProps> = ({
                         style={{
                           display: 'inline-block',
                           width: 2,
-                          height: SIZES.code,
+                          height: SIZES.code * 1.1,
                           backgroundColor: COLORS.saffron,
-                          marginLeft: 1,
+                          marginLeft: 2,
                           verticalAlign: 'middle',
-                          boxShadow: `0 0 6px ${COLORS.saffron}66`,
+                          boxShadow: `0 0 8px ${COLORS.saffron}, 0 0 16px ${COLORS.saffron}88`,
                         }}
                       />
                     )}
@@ -670,10 +663,11 @@ const CodeReveal: React.FC<CodeRevealProps> = ({
         {output && (
           <div
             style={{
-              borderTop: `1px solid ${COLORS.gray}15`,
-              backgroundColor: '#0A0E14',
+              borderTop: `1px solid rgba(35, 134, 54, 0.25)`,
+              backgroundColor: '#0A1210',
               padding: '12px 24px',
               opacity: outputOpacity,
+              boxShadow: 'inset 0 1px 0 rgba(35, 134, 54, 0.1)',
             }}
           >
             <div
