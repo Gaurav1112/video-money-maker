@@ -186,14 +186,71 @@ function silentFallback(text: string, cacheKey: string): TTSResult {
 
 // ─── Helper: create word timestamps ───
 function makeTimestamps(text: string, duration: number, audioPath: string): TTSResult {
-  const words = text.split(/\s+/).filter(Boolean);
-  const timePerWord = duration / Math.max(words.length, 1);
-  const wordTimestamps = words.map((word, i) => ({
-    word,
-    start: i * timePerWord,
-    end: (i + 1) * timePerWord,
-  }));
-  return { audioPath, wordTimestamps, duration };
+  return {
+    audioPath,
+    wordTimestamps: makeTimestampsProportional(text, duration),
+    duration,
+  };
+}
+
+/** Distribute timestamps proportionally by character count (better than uniform) */
+export function makeTimestampsProportional(
+  text: string,
+  duration: number,
+): Array<{ word: string; start: number; end: number }> {
+  const words = text.split(/\s+/).filter(w => w.length > 0);
+  if (words.length === 0) return [];
+
+  const totalChars = words.reduce((sum, w) => sum + w.length, 0);
+  const timestamps: Array<{ word: string; start: number; end: number }> = [];
+  let currentTime = 0;
+
+  for (const word of words) {
+    const wordDuration = (word.length / totalChars) * duration;
+    timestamps.push({
+      word,
+      start: currentTime,
+      end: currentTime + wordDuration,
+    });
+    currentTime += wordDuration;
+  }
+
+  return timestamps;
+}
+
+export function parseVttTimestamps(
+  vttContent: string,
+): Array<{ word: string; start: number; end: number }> {
+  const timestamps: Array<{ word: string; start: number; end: number }> = [];
+  const cuePattern = /(\d{2}:\d{2}:\d{2}\.\d{3})\s*-->\s*(\d{2}:\d{2}:\d{2}\.\d{3})\s*\n(.+)/g;
+  let match;
+
+  while ((match = cuePattern.exec(vttContent)) !== null) {
+    const start = parseVttTime(match[1]);
+    const end = parseVttTime(match[2]);
+    const text = match[3].trim();
+    const words = text.split(/\s+/);
+    if (words.length === 1) {
+      timestamps.push({ word: text, start, end });
+    } else {
+      const cueDuration = end - start;
+      words.forEach((w, i) => {
+        timestamps.push({
+          word: w,
+          start: start + (i / words.length) * cueDuration,
+          end: start + ((i + 1) / words.length) * cueDuration,
+        });
+      });
+    }
+  }
+
+  return timestamps;
+}
+
+function parseVttTime(time: string): number {
+  const [h, m, rest] = time.split(':');
+  const [s, ms] = rest.split('.');
+  return parseInt(h) * 3600 + parseInt(m) * 60 + parseInt(s) + parseInt(ms) / 1000;
 }
 
 // ─── Batch: generate audio for all scenes ───
