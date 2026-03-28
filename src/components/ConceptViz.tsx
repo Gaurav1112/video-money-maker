@@ -4,6 +4,10 @@ import { useSync } from '../hooks/useSync';
 import { KeywordCloud } from './viz/KeywordCloud';
 import { HashTableViz } from './viz/HashTableViz';
 import { TrafficFlow } from './viz/TrafficFlow';
+import { SystemArchViz } from './viz/SystemArchViz';
+import { MetricDashboard } from './viz/MetricDashboard';
+import { TreeViz } from './viz/TreeViz';
+import { SortingViz } from './viz/SortingViz';
 import type { SyncState } from '../types';
 
 const TOPIC_VIZ_MAP: Record<string, React.FC<{ sync: SyncState; frame: number; keywords: string[] }>> = {
@@ -13,6 +17,14 @@ const TOPIC_VIZ_MAP: Record<string, React.FC<{ sync: SyncState; frame: number; k
   'load-balanc': TrafficFlow,
   'cdn': TrafficFlow,
   'api-gateway': TrafficFlow,
+  'system-design': SystemArchViz,
+  'microservice': SystemArchViz,
+  'binary-tree': TreeViz,
+  'bst': TreeViz,
+  'heap': TreeViz,
+  'sort': SortingViz,
+  'merge-sort': SortingViz,
+  'quick-sort': SortingViz,
 };
 
 function getVisualization(topic: string) {
