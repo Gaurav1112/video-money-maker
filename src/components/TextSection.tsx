@@ -490,28 +490,37 @@ const TextSection: React.FC<TextSectionProps> = ({
           </div>
         )}
 
-        {/* FALLBACK: show the full current sentence centred, large */}
+        {/* FALLBACK: Show the HEADING again large + a visual divider —
+            DO NOT repeat the sentence (it's already in the top zone + caption bar) */}
         {!hasHeroNumber && !keyPhrase && (
           <div
             style={{
               transform: `scale(${heroScale})`,
-              opacity: heroOpacity * 0.85,
+              opacity: heroOpacity * 0.6,
               textAlign: 'center',
               padding: '0 30px',
             }}
           >
             <div
               style={{
-                fontSize: currentSentence.length > 80 ? 36 : 40,
-                fontWeight: 600,
-                color: COLORS.white,
-                fontFamily: FONTS.text,
-                lineHeight: 1.4,
-                letterSpacing: '-0.01em',
+                fontSize: 52,
+                fontWeight: 800,
+                color: moodAccent,
+                fontFamily: FONTS.heading,
+                lineHeight: 1.1,
+                letterSpacing: '-0.02em',
+                textShadow: `0 0 ${40 * glowPulse}px ${moodAccent}30`,
               }}
             >
-              {renderHighlightedSentence(currentSentence, true, currentSentence.length > 80 ? 36 : 40)}
+              {heading}
             </div>
+            <div style={{
+              width: 80,
+              height: 3,
+              background: `linear-gradient(90deg, transparent, ${moodAccent}, transparent)`,
+              margin: '16px auto 0',
+              borderRadius: 2,
+            }} />
           </div>
         )}
 
