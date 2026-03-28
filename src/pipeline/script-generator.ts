@@ -69,21 +69,18 @@ function reinforceConcept(concept: string, topic: string): string {
 }
 
 function rephrase(concept: string, topic: string): string {
-  // Strip trailing period and create a "put another way" version
   const clean = concept.replace(/\.\s*$/, '');
   return `When we talk about ${topic}, what this really means is: ${clean.toLowerCase()}`;
 }
 
 function simplify(concept: string): string {
   const clean = concept.replace(/\.\s*$/, '');
-  // Keep only first clause for the simplified version
   const firstClause = clean.split(/[,;]/)[0].trim();
   return firstClause.toLowerCase();
 }
 
 // ---------------------------------------------------------------------------
 // Teaching Technique: "Aha Moment" Phrases (NeetCode style)
-// Inserted before key insights so the viewer knows to pay extra attention.
 // ---------------------------------------------------------------------------
 const AHA_PHRASES = [
   'And HERE is the key insight that changes everything...',
@@ -101,7 +98,6 @@ function getAhaPhrase(seed: number): string {
 
 // ---------------------------------------------------------------------------
 // Teaching Technique: Emotional Encouragement (Khan GS style)
-// Placed between difficult sections to keep the viewer going.
 // ---------------------------------------------------------------------------
 const ENCOURAGEMENT = [
   'You are doing amazing. Most people give up at this point, but not you.',
@@ -119,7 +115,6 @@ function getEncouragement(seed: number): string {
 
 // ---------------------------------------------------------------------------
 // Teaching Technique: Interview Reality Check (NeetCode + real-world style)
-// Gives viewers insight into what interviewers actually think.
 // ---------------------------------------------------------------------------
 function generateInterviewReality(topic: string): string {
   const realities = [
@@ -134,7 +129,6 @@ function generateInterviewReality(topic: string): string {
 
 // ---------------------------------------------------------------------------
 // Teaching Technique: Line-by-Line Code Walkthrough (Fireship style)
-// Instead of "look at this code", we narrate each meaningful line.
 // ---------------------------------------------------------------------------
 function generateCodeWalkthrough(code: string, language: string): string {
   const lines = code.split('\n').filter(l => l.trim());
@@ -142,20 +136,16 @@ function generateCodeWalkthrough(code: string, language: string): string {
 
   if (lines.length === 0) return narration;
 
-  // Narrate first meaningful line
   if (lines[0]) {
     narration += `First, we ${describeCodeLine(lines[0])}. `;
   }
 
-  // Middle section
   if (lines.length > 2) {
     narration += `The core logic is in the middle section. `;
-    // Pick a representative middle line
     const midIdx = Math.floor(lines.length / 2);
     narration += `Here, we ${describeCodeLine(lines[midIdx])}. `;
   }
 
-  // Last line
   if (lines.length > 1 && lines[lines.length - 1]) {
     narration += `And finally, we ${describeCodeLine(lines[lines.length - 1])}. `;
   }
@@ -180,12 +170,221 @@ function describeCodeLine(line: string): string {
   return 'set up the next step';
 }
 
+// ---------------------------------------------------------------------------
+// Storytelling Arc: THE PROBLEM — Set up tension
+// ---------------------------------------------------------------------------
+function generateProblemSetup(topic: string): string {
+  const problems = [
+    `Imagine this. You've built an amazing app. Users love it. Then one morning you wake up and your app is on the front page of Hacker News. Suddenly 10 million people are trying to use your app at the same time. Your server crashes. Your users see error pages. Your boss is calling. This is the exact problem that ${topic} solves. And if you don't understand it, you WILL face this nightmare.`,
+
+    `Let me paint a picture for you. You're running a startup. Everything works great with 100 users. Then you get featured on Product Hunt. Traffic explodes. Without ${topic}, your entire system goes down in minutes. Real companies die because of this. Every. Single. Day. So let's make sure you never make this mistake.`,
+
+    `Here's a scenario that happens more often than you'd think. A developer builds a system that works perfectly in testing. Ships it to production. Three months later, traffic grows 50x, and the whole thing collapses like a house of cards. The missing piece? ${topic}. Every time.`,
+
+    `Think about this. Right now, somewhere in the world, a developer is debugging a production outage at 3 AM. They're stressed, they're tired, and they're desperately googling ${topic}. You do NOT want to be that developer. So let me teach you this now, while you have time to actually learn it properly.`,
+
+    `Close your eyes and imagine you're in a system design interview. The interviewer says, "Design a system that handles one billion requests per day." If your brain just went blank, that's because you don't fully understand ${topic} yet. But you will in about 4 minutes.`,
+
+    `Every second, the internet processes over 100,000 Google searches, 9,000 tweets, and 80,000 YouTube views. How does NONE of this crash? The answer starts with ${topic}. And most developers have no clue how it actually works under the hood.`,
+  ];
+
+  const seed = topic.length % problems.length;
+  return problems[seed];
+}
+
+// ---------------------------------------------------------------------------
+// Storytelling Arc: WRONG ANSWER — Create contrast
+// ---------------------------------------------------------------------------
+function generateWrongAnswer(topic: string): string {
+  const wrongAnswers = [
+    `Now, here's where most people go wrong. When someone asks about ${topic}, the typical answer is just the textbook definition. They recite it like a parrot. But that tells the interviewer NOTHING about your actual understanding. It's like saying a car is "a vehicle with four wheels." Technically correct. Completely useless.`,
+
+    `The most common mistake I see is this. People learn ${topic} as a buzzword. They can name-drop it in conversation, but when you push them on the details, on the trade-offs, on the edge cases, they fall apart. And interviewers push. Hard.`,
+
+    `Let me tell you what DOESN'T work. Memorizing the Wikipedia article on ${topic}. Watching a 2-hour lecture once and calling it done. These approaches give you a false sense of confidence that crumbles the moment someone asks a follow-up question.`,
+
+    `Here's the trap most developers fall into. They learn the WHAT of ${topic} but never the WHY. They can tell you what it does but not why it exists, what problem it solves, or what happens when it fails. And that gap? That's exactly where interviewers live.`,
+
+    `So many developers think they understand ${topic} because they've used it once or twice. But using something and understanding it are completely different. I've met engineers with 10 years of experience who can't explain the trade-offs. Don't be that person.`,
+
+    `The biggest misconception about ${topic}? That there's one right answer. People learn one approach and think they're done. But in reality, ${topic} involves trade-offs. The right answer always depends on the context. And THAT understanding is what gets you hired.`,
+  ];
+
+  const seed = (topic.length * 3) % wrongAnswers.length;
+  return wrongAnswers[seed];
+}
+
+// ---------------------------------------------------------------------------
+// Storytelling Arc: THE REAL ANSWER — Transition into deep dive
+// ---------------------------------------------------------------------------
+function generateRealAnswer(topic: string): string {
+  const realAnswers = [
+    `Okay, so what IS the right way to think about ${topic}? Forget everything you've memorized. Let me rebuild this from first principles. And I promise, by the end, it will click so hard you'll wonder why it ever seemed confusing.`,
+
+    `Now let me show you how ${topic} ACTUALLY works. Not the simplified version from tutorials. The real thing. The version that senior engineers at top companies use every day. And I'm going to make it simple.`,
+
+    `Alright, here's the real answer. ${topic} is fundamentally about solving one core problem. And once you see that core problem clearly, everything else is just details. Let me show you.`,
+
+    `So here's the truth about ${topic} that nobody tells beginners. It's not one thing. It's a family of solutions to a fundamental problem. And the magic is knowing which solution to apply when. Let me break it down.`,
+
+    `Ready for the real explanation? ${topic} comes down to understanding three key ideas. Just three. Master these three ideas, and you can answer any interview question about ${topic} they throw at you. Here they are.`,
+
+    `Okay, buckle up. This is where the actual learning happens. I'm going to explain ${topic} the way I wish someone had explained it to me. Step by step, with code, with visuals, with real examples. Let's go.`,
+  ];
+
+  const seed = (topic.length * 5) % realAnswers.length;
+  return realAnswers[seed];
+}
+
+// ---------------------------------------------------------------------------
+// Interview Secret (with guru-sishya.in reference)
+// ---------------------------------------------------------------------------
+function generateInterviewSecret(topic: string): string {
+  const secrets = [
+    `Here's the interview secret that most prep courses won't tell you. When they ask about ${topic}, they're not testing your memory. They want to see HOW you think. Start with the problem, walk through the trade-offs, and explain your reasoning out loud. That alone puts you in the top 10 percent. And you can practice this exact skill with interactive mock interviews on guru-sishya.in.`,
+
+    `The number one thing interviewers look for in ${topic} questions is this: can you reason about failure modes? What happens when things go wrong? How do you detect it? How do you recover? If you can discuss the unhappy path fluently, you've already won. Practice this pattern on the ${topic} module at guru-sishya.in.`,
+
+    `Want to know what ACTUALLY impresses interviewers? It's not reciting the textbook answer on ${topic}. It's asking clarifying questions first. "What's the expected scale? What are the consistency requirements? What's the latency budget?" These questions show senior-level thinking. You can drill this skill on guru-sishya.in.`,
+
+    `Here's the insider trick for ${topic} interviews. Always tie your answer to real numbers. Don't say "it's faster." Say "it reduces P99 latency from 200 milliseconds to 15 milliseconds." Quantifying your answers makes you unforgettable. The quiz system on guru-sishya.in trains you to think exactly this way.`,
+
+    `I'll let you in on a secret. The best answer to a ${topic} question starts with "it depends." Then you explain WHAT it depends on. This shows the interviewer you understand nuance, not just definitions. And that's the difference between an offer and a rejection.`,
+  ];
+
+  const seed = (topic.length * 11) % secrets.length;
+  return secrets[seed];
+}
+
+// ---------------------------------------------------------------------------
+// Practice Question Narration (with guru-sishya.in reference)
+// ---------------------------------------------------------------------------
+function generatePracticeNarration(question: string, topic: string): string {
+  const intros = [
+    `Okay, pop quiz time. Don't scroll ahead. Think about this for a second before I give you the answer.`,
+    `Alright, let's test if you were really paying attention. Here's a question that comes up all the time in interviews.`,
+    `Now I want you to pause this video for 10 seconds and think about this. Seriously. Pausing and thinking is how you actually learn.`,
+    `Here's a question that trips up even experienced developers. See if you can get it right.`,
+    `Before we wrap up, let me challenge you with this. If you can answer it, you truly understand ${topic}.`,
+  ];
+
+  const seed = question.length % intros.length;
+  return `${intros[seed]} ${question} You can practice more questions like this with detailed explanations on guru-sishya.in.`;
+}
+
+// ---------------------------------------------------------------------------
+// Summary + CTA Narration (with guru-sishya.in reference)
+// ---------------------------------------------------------------------------
+function generateSummaryNarration(topic: string, objectives: string[]): string {
+  const topObjectives = objectives.slice(0, 3).join('. ');
+  const closingEncouragement = getEncouragement(topic.length);
+
+  const summaries = [
+    `Alright, let's bring it all together. Today you learned ${topObjectives}. ${closingEncouragement} And here's the most important thing: don't just watch this and forget. Go practice. Build it in code. Explain it to someone else. That's how it sticks. If you want the complete ${topic} course with cheatsheets, interactive quizzes, and mock interview questions, head over to guru-sishya.in. It's all there waiting for you. Drop a like if this helped, and I'll see you in the next one.`,
+
+    `So here's the bottom line. ${topObjectives}. ${closingEncouragement} You now know more about ${topic} than 90 percent of developers who just skim blog posts. But knowledge without practice is worthless. Go build something with ${topic} today. And if you want a structured path with coding exercises and interview prep, check out guru-sishya.in. Hit subscribe so you don't miss the next topic. Let's go.`,
+
+    `Let me leave you with this. ${topic} is one of those topics that comes up again and again throughout your career. What you learned today gives you a massive advantage in interviews and in production. ${closingEncouragement} Now go cement it. The complete ${topic} module with practice problems, a cheatsheet, and a mock interview is waiting for you at guru-sishya.in. See you in the next video.`,
+  ];
+
+  const seed = topic.length % summaries.length;
+  return summaries[seed];
+}
+
+// ---------------------------------------------------------------------------
+// Conversational Tone (makeConversational)
+// Transforms formal textbook prose into friendly, teacher-like narration.
+// ---------------------------------------------------------------------------
+function makeConversational(text: string): string {
+  return text
+    // Transform formal constructions into conversational ones
+    .replace(/^(.+) is a (.+) that/m, 'So basically, $1 is like a $2 that')
+    .replace(/This ensures/g, "And this is the cool part, it ensures")
+    .replace(/For example,/g, "Think about it this way.")
+    .replace(/In conclusion,/g, "So here's the bottom line.")
+    .replace(/It is important to/g, "Here's why you should care about this.")
+    .replace(/Furthermore,/g, "And it gets better.")
+    .replace(/However,/g, "But here's the thing.")
+    .replace(/Therefore,/g, "So what does this mean?")
+    .replace(/In other words,/g, "Put simply,")
+    .replace(/It should be noted that/g, "And here's something people miss.")
+    .replace(/As mentioned earlier,/g, "Remember what I said earlier?")
+    .replace(/The following/g, "What comes next")
+    .replace(/Consequently,/g, "And because of that,")
+    .replace(/Additionally,/g, "Oh, and one more thing.")
+    // Add natural connectors (only on sentence boundaries)
+    .replace(/\. The /g, '. Now, the ')
+    .replace(/\. This /g, '. And this ')
+    .replace(/\. It /g, '. So it ')
+    .replace(/\. They /g, '. And they ')
+    .replace(/\. These /g, '. Now, these ')
+    // Remove overly academic phrasing
+    .replace(/utilize/gi, 'use')
+    .replace(/subsequently/gi, 'then')
+    .replace(/functionality/gi, 'feature')
+    .replace(/in order to/gi, 'to');
+}
+
+// ---------------------------------------------------------------------------
+// Section-Specific Narration Generators
+// ---------------------------------------------------------------------------
+function generateDiagramNarration(heading?: string): string {
+  const intros = [
+    "Okay, words can only do so much. Let me show you a visual that makes this click instantly.",
+    "Now let me draw this out so you can see the big picture. This diagram shows exactly how the pieces fit together.",
+    "Visual learner? Me too. Here's a diagram that explains everything we just talked about in one picture.",
+    "This is my favorite part. Let me show you the architecture visually. Once you see this diagram, it all makes sense.",
+  ];
+  const seed = (heading || '').length % intros.length;
+  return `${intros[seed]} ${heading ? `This shows ${heading.toLowerCase()}.` : 'Notice how each component connects to the others.'}`;
+}
+
+function generateTableNarration(heading?: string): string {
+  const intros = [
+    "Now let's put everything side by side in a table. This is the kind of comparison that saves you hours of confusion.",
+    "Here's a comparison table that I wish someone showed me when I was learning this. It cuts right to the trade-offs.",
+    "Let me lay out the options clearly. This table shows you exactly when to use what and why.",
+    "Time for a head-to-head comparison. Pay attention to the trade-offs column, that's where the real insight lives.",
+  ];
+  const seed = (heading || '').length % intros.length;
+  return `${intros[seed]} ${heading ? heading + '.' : 'Notice the key differences between each approach.'}`;
+}
+
+function generateCalloutNarration(content: string): string {
+  const intros = [
+    "Now here's something your interviewer REALLY wants to hear. Listen carefully.",
+    "This right here is worth the entire video. If you remember one thing, make it this.",
+    "Pro tip from someone who's been on both sides of the interview table.",
+    "Here's the insider insight that separates good answers from great ones.",
+  ];
+  const seed = content.length % intros.length;
+  return `${intros[seed]} ${content}`;
+}
+
+// =========================================================================
+// MAIN: generateScript — Khan GS / Fireship Storytelling Arc
+// =========================================================================
+
+/**
+ * Generate a video script following the Khan GS / Fireship storytelling arc:
+ *
+ *  1. HOOK (5s)          — Dramatic opening that creates curiosity
+ *  2. THE PROBLEM (15s)  — "Imagine you have 10 million users..."
+ *  3. WRONG ANSWER (12s) — "Most people think the solution is... but that's wrong"
+ *  4. THE REAL ANSWER (10s) — "The real solution is... let me show you"
+ *  5. DEEP DIVE (2-3 min) — Code walkthrough, step by step
+ *  6. VISUAL EXPLANATION (30s) — Diagram showing how it works
+ *  7. COMPARISON (30s)   — Table comparing approaches
+ *  8. INTERVIEW SECRET (20s) — "Here's what interviewers ACTUALLY want to hear..."
+ *  9. PRACTICE (30s)     — Quiz question with answer
+ * 10. SUMMARY + CTA (15s) — "Now go practice on guru-sishya.in"
+ */
 export function generateScript(session: SessionInput, options: ScriptOptions = {}): Scene[] {
   const { language = 'python', maxScenes = 20 } = options;
   const scenes: Scene[] = [];
   let currentFrame = 0;
 
-  // 1. Hook + Title Scene (Khan GS style: start with WHY)
+  // ── 1. HOOK — Dramatic opening ──────────────────────────────────────────
   let hookNarration = generateHook(session.topic, session.title);
 
   // Inject analogy right after the hook if one exists (3Blue1Brown: intuition first)
@@ -206,18 +405,64 @@ export function generateScript(session: SessionInput, options: ScriptOptions = {
     heading: session.topic,
   });
 
-  // 2. Parse markdown content into sections
+  // ── 2. THE PROBLEM — Set up tension ─────────────────────────────────────
+  const problemNarration = generateProblemSetup(session.topic);
+  const problemDuration = 15;
+  scenes.push({
+    type: 'text',
+    content: problemNarration,
+    narration: addTeachingPauses(problemNarration),
+    duration: problemDuration,
+    startFrame: currentFrame,
+    endFrame: (currentFrame += TIMING.secondsToFrames(problemDuration)),
+    heading: 'The Problem',
+    bullets: [
+      `Why ${session.topic} exists`,
+      'What happens without it',
+      'The real-world impact',
+    ],
+  });
+
+  // ── 3. WRONG ANSWER — Create contrast ──────────────────────────────────
+  const wrongAnswerNarration = generateWrongAnswer(session.topic);
+  const wrongAnswerDuration = 12;
+  scenes.push({
+    type: 'text',
+    content: wrongAnswerNarration,
+    narration: addTeachingPauses(wrongAnswerNarration),
+    duration: wrongAnswerDuration,
+    startFrame: currentFrame,
+    endFrame: (currentFrame += TIMING.secondsToFrames(wrongAnswerDuration)),
+    heading: 'The Common Mistake',
+  });
+
+  // ── 4. THE REAL ANSWER — Transition into deep dive ────────────────────
+  const realAnswerNarration = generateRealAnswer(session.topic);
+  const realAnswerDuration = 10;
+  scenes.push({
+    type: 'text',
+    content: realAnswerNarration,
+    narration: addTeachingPauses(realAnswerNarration),
+    duration: realAnswerDuration,
+    startFrame: currentFrame,
+    endFrame: (currentFrame += TIMING.secondsToFrames(realAnswerDuration)),
+    heading: 'The Real Answer',
+  });
+
+  // ── 5-7. Parse content → DEEP DIVE + VISUAL + COMPARISON ─────────────
   const sections = parseMarkdown(session.content);
   let sectionIndex = 0;
+  let hasInterview = false;
 
   for (const section of sections) {
-    if (scenes.length >= maxScenes - 2) break; // Reserve space for review + summary
+    if (scenes.length >= maxScenes - 3) break; // Reserve for interview + review + summary
+
+    if (section.type === 'callout') hasInterview = true;
 
     // Filter code blocks by selected language
     if (section.type === 'code' && section.language) {
       const sectionLang = section.language.toLowerCase();
       const targetLang = language.toLowerCase();
-      // Skip code blocks that are for a different language
       if (sectionLang !== targetLang &&
           !['typescript', 'javascript', 'text', 'bash', 'shell', 'sql', 'json', 'yaml', 'html', 'css'].includes(sectionLang)) {
         continue;
@@ -230,7 +475,22 @@ export function generateScript(session: SessionInput, options: ScriptOptions = {
     sectionIndex++;
   }
 
-  // 3. Interview Reality Check scene (NeetCode style — what interviewers actually think)
+  // ── 8. INTERVIEW SECRET — if not already covered by a callout ─────────
+  if (!hasInterview && scenes.length < maxScenes - 2) {
+    const secretNarration = generateInterviewSecret(session.topic);
+    const secretDuration = SCENE_DEFAULTS.interviewDuration;
+    scenes.push({
+      type: 'interview',
+      content: secretNarration,
+      narration: addTeachingPauses(secretNarration),
+      duration: secretDuration,
+      startFrame: currentFrame,
+      endFrame: (currentFrame += TIMING.secondsToFrames(secretDuration)),
+      heading: 'Interview Secret',
+    });
+  }
+
+  // Interview Reality Check scene (NeetCode style — what interviewers actually think)
   if (scenes.length < maxScenes - 1) {
     const realityNarration = generateInterviewReality(session.topic);
     const realityDuration = SCENE_DEFAULTS.interviewDuration;
@@ -245,70 +505,85 @@ export function generateScript(session: SessionInput, options: ScriptOptions = {
     });
   }
 
-  // 4. Review Questions (if any)
-  for (const question of session.reviewQuestions.slice(0, 3)) {
-    if (scenes.length >= maxScenes - 1) break;
+  // ── 9. PRACTICE — Review question with engaging framing ───────────────
+  if (session.reviewQuestions.length > 0 && scenes.length < maxScenes - 1) {
+    const question = session.reviewQuestions[0];
+    const practiceNarration = generatePracticeNarration(question, session.topic);
     const duration = SCENE_DEFAULTS.reviewQuestionDuration;
     scenes.push({
       type: 'review',
       content: question,
-      narration: `Let's test your understanding. ${question}`,
+      narration: addTeachingPauses(practiceNarration),
       duration,
       startFrame: currentFrame,
       endFrame: (currentFrame += TIMING.secondsToFrames(duration)),
     });
   }
 
-  // 5. Summary Scene with encouragement
-  const summaryDuration = SCENE_DEFAULTS.summaryDuration;
-  const closingEncouragement = getEncouragement(session.topic.length + session.sessionNumber);
+  // ── 10. SUMMARY + CTA ────────────────────────────────────────────────
+  const summaryNarration = generateSummaryNarration(session.topic, session.objectives);
+  const summaryDuration = SCENE_DEFAULTS.summaryDuration + 4; // Extra time for CTA
   scenes.push({
     type: 'summary',
     content: 'Key Takeaways',
-    narration: `Let's recap what we learned. ${session.objectives.slice(0, 3).join('. ')}. ${closingEncouragement} Practice these concepts and you'll ace your interview.`,
+    narration: addTeachingPauses(summaryNarration),
     duration: summaryDuration,
     startFrame: currentFrame,
     endFrame: (currentFrame += TIMING.secondsToFrames(summaryDuration)),
     bullets: session.objectives.slice(0, 4),
   });
 
-  return addSceneTransitions(scenes);
+  return addStoryTransitions(scenes);
 }
 
-function addSceneTransitions(scenes: Scene[]): Scene[] {
-  const transitions = [
-    "Now here's where it gets interesting. ",
-    "Let's take this a step further. ",
-    "Here's the key insight. ",
-    "Now pay close attention to this part. ",
-    "This is where most people get confused. ",
-    "Let me break this down for you. ",
-    "Building on what we just covered. ",
-    "And this is the important part. ",
-  ];
-
-  const empathyTransitions = [
-    "I know this might seem complex, but stay with me... ",
-    "Don't worry if this doesn't click right away... ",
-    "This is the part that trips up most people, so pay close attention... ",
-    "Trust me, once you understand this, everything else makes sense... ",
-    "I remember struggling with this concept too. Here's how it clicked for me... ",
-    "You're doing great. Let's keep going... ",
-  ];
+// ---------------------------------------------------------------------------
+// Story-Aware Transitions (builds narrative tension)
+// ---------------------------------------------------------------------------
+function addStoryTransitions(scenes: Scene[]): Scene[] {
+  const transitionsByType: Record<string, string[]> = {
+    text: [
+      "Now that you see the problem, let's go deeper. ",
+      "But here's where it gets interesting. ",
+      "And THIS is the part most people miss. ",
+      "Stay with me here, because this changes everything. ",
+      "Now here's the insight that separates juniors from seniors. ",
+      "Let me connect the dots for you. ",
+      "Okay, so now the question becomes... ",
+    ],
+    code: [
+      "Alright, enough theory. Let me show you the code. ",
+      "Now let me prove it to you with actual code. ",
+      "Time to get our hands dirty. Watch this. ",
+      "Here's where we turn theory into reality. ",
+      "Let me show you something that will click immediately. ",
+    ],
+    diagram: [
+      "Let me paint you a picture so this really clicks. ",
+      "Words are not enough. Let me show you visually. ",
+      "This diagram is going to make everything crystal clear. ",
+    ],
+    table: [
+      "Now let's put it all side by side so you can see the trade-offs. ",
+      "Here's the comparison that will help you make the right choice. ",
+      "Let me break down the options so you never pick the wrong one. ",
+    ],
+    interview: [
+      "Now here's the part you REALLY need to remember. ",
+      "This is your secret weapon for interviews. Listen carefully. ",
+      "And here's what your interviewer actually wants to hear. ",
+    ],
+    review: [
+      "Okay, time to test yourself. No peeking. ",
+      "Let's see if you were really paying attention. ",
+    ],
+  };
 
   return scenes.map((scene, idx) => {
-    if (idx <= 1 || scene.type === 'title' || scene.type === 'summary') return scene;
+    // Skip the first 4 scenes (hook, problem, wrong answer, real answer) and special types
+    if (idx <= 3 || scene.type === 'title' || scene.type === 'summary') return scene;
 
-    // Every 3rd or 4th transition uses an empathy phrase
-    const useEmpathy = idx % 4 === 2 || idx % 4 === 3;
-    let transition: string;
-
-    if (useEmpathy) {
-      transition = empathyTransitions[(idx * 5) % empathyTransitions.length];
-    } else {
-      transition = transitions[(idx * 3) % transitions.length];
-    }
-
+    const transitions = transitionsByType[scene.type] || transitionsByType.text;
+    const transition = transitions[(idx * 3) % transitions.length];
     return {
       ...scene,
       narration: transition + scene.narration,
@@ -316,36 +591,72 @@ function addSceneTransitions(scenes: Scene[]): Scene[] {
   });
 }
 
+// ---------------------------------------------------------------------------
+// Hook Generation (33 patterns)
+// Uses story openings, shocking questions/facts, challenges, pain points,
+// contrarian takes, authority, and curiosity gaps.
+// ---------------------------------------------------------------------------
 function generateHook(topic: string, title: string): string {
   const hooks = [
-    // Curiosity gap
-    `Most developers get ${topic} completely wrong. Let me show you why.`,
-    `There's a secret about ${topic} that senior engineers don't tell you.`,
-    `${topic} is simpler than you think. And harder than you expect.`,
-    // Fear/urgency
-    `If you can't explain ${topic} in an interview, you're not getting the job.`,
-    `${topic} shows up in 90 percent of technical interviews. Are you ready?`,
-    `Your interviewer will ask about ${topic}. Here's exactly what to say.`,
-    // Contrarian
-    `Everything you learned about ${topic} in school is wrong.`,
-    `Stop memorizing ${topic}. Start understanding it.`,
-    `You don't need to be a genius to master ${topic}. You just need this video.`,
-    // Challenge
-    `Can you solve this ${topic} problem in under 60 seconds?`,
-    `I bet you can't explain ${topic} to a five year old. Challenge accepted.`,
-    // Authority
-    `Google, Amazon, and Meta all ask about ${topic}. Here's the pattern.`,
-    `After reviewing 500 interviews, this is the number one ${topic} mistake.`,
-    // Storytelling
-    `I failed my first interview because of ${topic}. Here's what I learned.`,
-    `The best engineer I ever worked with taught me this about ${topic}.`,
+    // ── Story openings (5) ──
+    `In 2023, a major tech company lost 14 million dollars in revenue because of ONE poorly implemented ${topic} system. Fourteen. Million. Dollars. Let me make sure that never happens to you.`,
+    `I once watched a senior engineer get rejected at Google because they couldn't explain ${topic} properly. They had 10 years of experience. Let me tell you what they got wrong.`,
+    `The engineer who built Netflix's ${topic} system shared something in a blog post that changed how I think about software forever. Let me share it with you.`,
+    `Picture this. It's your final round interview at Amazon. The interviewer leans forward and says, "Tell me about ${topic}." Your next 5 minutes decide your career. Are you ready?`,
+    `A startup I advised went from 100 to 10 million users in 6 months. The ONLY reason they survived? They understood ${topic} deeply. Most companies don't.`,
+
+    // ── Shocking questions (5) ──
+    `What happens when 10 million users hit your server at the exact same time? If you don't know the answer, you don't understand ${topic}. Let's fix that right now.`,
+    `Can you explain ${topic} in 30 seconds? Because that's exactly how long you get in an interview before they decide if you know your stuff.`,
+    `Why do 73 percent of candidates fail system design interviews? One word: ${topic}. They memorize the definition but miss the point entirely.`,
+    `If I asked you to design ${topic} from scratch on a whiteboard right now, could you do it? Be honest. By the end of this video, you absolutely can.`,
+    `What's the ONE concept that separates a 100K developer from a 300K developer? It's not algorithms. It's not LeetCode. It's understanding ${topic} at a deep level.`,
+
+    // ── Shocking facts (4) ──
+    `Did you know? Every single request you make on the internet touches ${topic} at least three times before reaching its destination. And most developers have no idea how it works.`,
+    `Here's a stat that should terrify you. 89 percent of production outages at big tech companies trace back to ${topic} failures. 89 percent.`,
+    `Google processes 8.5 billion searches per day. Facebook handles 2.5 billion users. The secret sauce behind all of it? ${topic}. And I'm going to teach it to you in under 5 minutes.`,
+    `The average tech interview lasts 45 minutes. ${topic} questions take up 15 of those minutes. That's one third of your interview riding on THIS topic.`,
+
+    // ── Challenge hooks (4) ──
+    `I'm going to explain ${topic} so clearly that you will NEVER forget it. That's not a promise. That's a guarantee. Let's go.`,
+    `Give me 5 minutes. Just 5 minutes. And I'll teach you ${topic} better than any textbook, any course, any bootcamp ever could.`,
+    `By the end of this video, you'll understand ${topic} better than 90 percent of working developers. That sounds crazy, but stick with me.`,
+    `I challenge you to watch this entire video and NOT understand ${topic}. Seriously. Try. You can't. Let's begin.`,
+
+    // ── Pain point hooks (5) ──
+    `If your interviewer asks about ${topic} and you start with the textbook definition... you've already lost. Let me show you what to say instead.`,
+    `Stop memorizing ${topic}. Seriously, stop it. Memorization is why you keep forgetting it. Today I'm going to help you UNDERSTAND it.`,
+    `You've probably read 10 articles about ${topic} and still feel confused. That's not your fault. They explain it wrong. Let me show you the right way.`,
+    `The biggest lie in computer science education? That ${topic} is complicated. It's not. It's been taught badly. Let me prove it.`,
+    `Every time you open YouTube to learn ${topic}, you get a 45-minute lecture that puts you to sleep. Not today. Today you learn it in 5 minutes, and it sticks.`,
+
+    // ── Contrarian hooks (4) ──
+    `Everything your CS professor taught you about ${topic} is technically correct and completely useless in the real world. Here's what actually matters.`,
+    `Hot take: most "senior" engineers don't actually understand ${topic}. They know the buzzwords, but ask them WHY it works, and they freeze. Don't be that engineer.`,
+    `I'm about to explain ${topic} in a way your textbook never did. No jargon. No fluff. Just the raw truth about how it actually works.`,
+    `${topic} is not what you think it is. I know that sounds dramatic, but hear me out. What they teach in school and what happens in production are two completely different things.`,
+
+    // ── Authority hooks (4) ──
+    `Google, Amazon, Meta, and Netflix all ask about ${topic} in their interviews. After studying hundreds of interview questions, I found the exact pattern they follow. Let me share it.`,
+    `I've reviewed over 500 technical interview recordings. The number one reason candidates get rejected? They can't explain ${topic} with clarity and confidence. Let's fix that.`,
+    `The top 1 percent of engineers all have one thing in common. They don't just USE ${topic}. They understand it deeply enough to TEACH it. That's what we're doing today.`,
+    `After helping over 1000 students crack FAANG interviews, I can tell you the exact moment most interviews are won or lost. It's the ${topic} question. And here's how to nail it.`,
+
+    // ── Curiosity gap hooks (2) ──
+    `There's a reason ${topic} is asked in EVERY system design interview. And it's not the reason you think.`,
+    `What if I told you that ${topic} is actually about ONE simple idea? Just one. And once you see it, you can never unsee it.`,
   ];
-  // Deterministic selection based on topic+title to ensure reproducible builds
+
+  // Deterministic selection based on topic+title for reproducible builds
   const seed = (topic.length * 7 + title.length * 13) % hooks.length;
   const hook = hooks[seed];
   return `${hook} Today we're covering ${title}.`;
 }
 
+// ---------------------------------------------------------------------------
+// Markdown Parsing
+// ---------------------------------------------------------------------------
 interface MarkdownSection {
   type: 'text' | 'code' | 'diagram' | 'table' | 'callout';
   heading?: string;
@@ -466,6 +777,9 @@ function parseMarkdown(markdown: string): MarkdownSection[] {
   return sections;
 }
 
+// ---------------------------------------------------------------------------
+// Scene Construction
+// ---------------------------------------------------------------------------
 function sectionToScene(
   section: MarkdownSection,
   language: string,
@@ -488,7 +802,6 @@ function sectionToScene(
 
   // Teaching Technique: Reinforce key concept text sections with repetition
   if (type === 'text' && section.heading && narration.length > 80 && sectionIndex % 2 === 0) {
-    // Extract first sentence as the concept to reinforce
     const firstSentence = narration.split(/[.!?]/)[0].trim();
     if (firstSentence.length > 20 && firstSentence.length < 200) {
       narration = reinforceConcept(firstSentence, topic);
@@ -552,21 +865,22 @@ function generateNarration(section: MarkdownSection): string {
       narration = summarizeCode(section.content, section.language || 'typescript');
       break;
     case 'diagram':
-      narration = `Let's visualize this with a diagram. ${section.heading || 'Here\'s how the components interact.'}`;
+      narration = generateDiagramNarration(section.heading);
       break;
     case 'table':
-      narration = `Let's compare these in a table. ${section.heading || 'Notice the key differences.'}`;
+      narration = generateTableNarration(section.heading);
       break;
     case 'callout':
-      narration = `Here's an important interview insight. ${section.content}`;
+      narration = generateCalloutNarration(section.content);
       break;
     case 'text':
     default:
-      // Clean and use as narration directly
-      narration = section.content
+      // Clean markdown and make conversational
+      const cleaned = section.content
         .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1') // Remove markdown links
         .replace(/[`*_#]/g, '') // Remove markdown formatting
         .slice(0, 500); // Cap length
+      narration = makeConversational(cleaned);
       break;
   }
   return addTeachingPauses(narration);
@@ -574,30 +888,44 @@ function generateNarration(section: MarkdownSection): string {
 
 function summarizeCode(code: string, language: string): string {
   const lines = code.split('\n').filter(l => l.trim());
-
-  // Extract function/class names
   const funcMatch = code.match(/(?:function|def|public\s+\w+)\s+(\w+)/);
   const classMatch = code.match(/class\s+(\w+)/);
 
+  // Engaging intro lines (replaces boring "Let's look at...")
+  const intros = [
+    "Alright, this is where the magic happens. Let me walk you through this code.",
+    "Now watch this carefully. This is the kind of code that gets you hired.",
+    "Here's the implementation. Follow along line by line.",
+    "Let me show you exactly how to write this. This is interview-ready code.",
+    "Okay, time to build this for real. Pay close attention.",
+    "Here's where we turn theory into actual working code. Ready?",
+    "Now let me prove everything I just said with actual code. Watch this.",
+    "This right here is what separates talkers from builders. Let me show you.",
+  ];
+
+  const intro = intros[(code.length + lines.length) % intros.length];
+
   // Use line-by-line walkthrough for longer code blocks (Fireship style)
   if (lines.length >= 4) {
-    let intro = '';
+    let prefix = '';
     if (classMatch) {
-      intro = `Let's look at the ${classMatch[1]} class in ${language}. `;
+      prefix = `We're building the ${classMatch[1]} class in ${language}. `;
     } else if (funcMatch) {
-      intro = `Here's the ${funcMatch[1]} function in ${language}. `;
+      prefix = `This ${funcMatch[1]} function in ${language} is elegant. `;
     }
-    return intro + generateCodeWalkthrough(code, language);
+    return `${intro} ${prefix}${generateCodeWalkthrough(code, language)} Want to run this code yourself? Try our playground at guru-sishya.in.`;
   }
 
+  if (classMatch && funcMatch) {
+    return `${intro} We're building the ${classMatch[1]} class in ${language}. The ${funcMatch[1]} method is where the key logic lives. Each line here solves a specific problem, so don't skip ahead. Want to run this code yourself? Try our playground at guru-sishya.in.`;
+  }
   if (classMatch) {
-    return `Let's look at the ${classMatch[1]} class. This ${language} implementation shows the key structure and methods you need to understand.`;
+    return `${intro} We're building the ${classMatch[1]} class in ${language}. This is a clean, production-ready implementation. Notice how each method has a single responsibility. This is how senior engineers write code.`;
   }
   if (funcMatch) {
-    return `Here's the ${funcMatch[1]} function in ${language}. Let's walk through this line by line to understand what's happening.`;
+    return `${intro} This ${funcMatch[1]} function in ${language} is elegant but powerful. Let me break down exactly what each line does and why it's written this way.`;
   }
-
-  return `Let's examine this ${language} code. It has ${lines.length} lines and demonstrates a key concept. Pay attention to the logic flow.`;
+  return `${intro} This ${language} code is exactly what you'd write in an interview. It's ${lines.length} lines, it's clean, and it solves the problem efficiently. Let me walk you through it.`;
 }
 
 // Add teaching pauses to narration for a more natural, teacher-like delivery
@@ -614,6 +942,7 @@ export {
   generateNarration,
   generateHook,
   addTeachingPauses,
+  makeConversational,
   // Teaching technique exports
   getAnalogy,
   reinforceConcept,
@@ -622,6 +951,12 @@ export {
   generateInterviewReality,
   generateCodeWalkthrough,
   describeCodeLine,
+  generateProblemSetup,
+  generateWrongAnswer,
+  generateRealAnswer,
+  generateInterviewSecret,
+  generatePracticeNarration,
+  generateSummaryNarration,
   ANALOGIES,
   AHA_PHRASES,
   ENCOURAGEMENT,
