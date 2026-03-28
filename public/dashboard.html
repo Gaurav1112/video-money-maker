@@ -656,6 +656,130 @@
       color: var(--indigo);
     }
 
+    /* PROMPT INPUT SECTION */
+    .prompt-section {
+      margin-bottom: 28px;
+    }
+    .prompt-tabs {
+      display: flex;
+      gap: 0;
+      margin-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .prompt-tab {
+      padding: 10px 20px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-muted);
+      background: none;
+      border: none;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+    .prompt-tab:hover { color: #fff; }
+    .prompt-tab.active {
+      color: var(--saffron);
+      border-bottom-color: var(--saffron);
+    }
+    .prompt-input-group {
+      position: relative;
+    }
+    .prompt-input {
+      width: 100%;
+      padding: 14px 18px;
+      padding-right: 140px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: var(--text);
+      font-size: 15px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .prompt-input:focus { border-color: var(--saffron); }
+    .prompt-input::placeholder { color: var(--text-muted); }
+    .prompt-submit {
+      position: absolute;
+      right: 6px;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+    .content-textarea {
+      width: 100%;
+      min-height: 200px;
+      padding: 14px 18px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: var(--text);
+      font-size: 14px;
+      font-family: 'JetBrains Mono', monospace;
+      line-height: 1.7;
+      outline: none;
+      resize: vertical;
+      transition: border-color 0.2s;
+    }
+    .content-textarea:focus { border-color: var(--saffron); }
+    .content-textarea::placeholder { color: var(--text-muted); }
+    .prompt-options {
+      display: flex;
+      gap: 12px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .prompt-options select,
+    .prompt-options .lang-toggle {
+      flex-shrink: 0;
+    }
+    .prompt-options .btn {
+      margin-left: auto;
+    }
+    .option-select {
+      padding: 8px 14px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 13px;
+      font-family: inherit;
+      outline: none;
+      cursor: pointer;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+    .option-select:focus { border-color: var(--saffron); }
+    .option-select option { background: #13111C; color: var(--text); }
+    .option-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .option-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .source-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 100px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .source-badge.prompt { color: var(--indigo); background: rgba(129,140,248,0.1); }
+    .source-badge.content { color: var(--teal); background: rgba(32,201,151,0.1); }
+    .source-badge.topic { color: var(--saffron); background: rgba(232,93,38,0.1); }
+
     /* RESPONSIVE */
     @media (max-width: 1100px) {
       .dashboard {
@@ -711,7 +835,81 @@
 
     <!-- MAIN: Preview + Render -->
     <main class="main" id="mainContent">
-      <div class="empty-state" id="emptyState">
+      <!-- UNIVERSAL PROMPT INPUT -->
+      <div class="prompt-section">
+        <div class="prompt-tabs">
+          <button class="prompt-tab active" data-mode="prompt" onclick="setInputMode('prompt')">Any Topic</button>
+          <button class="prompt-tab" data-mode="content" onclick="setInputMode('content')">Paste Content</button>
+          <button class="prompt-tab" data-mode="topic" onclick="setInputMode('topic')">From Library</button>
+        </div>
+
+        <!-- Mode 1: Prompt input -->
+        <div id="promptMode">
+          <div class="prompt-input-group">
+            <input type="text" class="prompt-input" id="promptInput"
+                   placeholder="Enter any topic... e.g. &quot;Explain Load Balancing&quot; or &quot;Teach me React Hooks&quot;"
+                   onkeydown="if(event.key==='Enter')generateFromPrompt()">
+            <button class="btn btn-primary prompt-submit" onclick="generateFromPrompt()">
+              <span class="spinner" id="promptSpinner" style="display:none;"></span>
+              Generate
+            </button>
+          </div>
+          <div class="prompt-options">
+            <div class="option-group">
+              <span class="option-label">Language</span>
+              <div class="lang-toggle">
+                <button class="lang-btn active" data-lang="python" onclick="setLanguage('python')">Python</button>
+                <button class="lang-btn" data-lang="java" onclick="setLanguage('java')">Java</button>
+              </div>
+            </div>
+            <div class="option-group">
+              <span class="option-label">Duration</span>
+              <select class="option-select" id="durationSelect">
+                <option value="short">Short (~2 min)</option>
+                <option value="medium" selected>Medium (~5 min)</option>
+                <option value="long">Long (~10 min)</option>
+              </select>
+            </div>
+            <div class="option-group">
+              <span class="option-label">Style</span>
+              <select class="option-select" id="styleSelect">
+                <option value="fireship" selected>Fireship</option>
+                <option value="khan">Khan Academy</option>
+                <option value="tutorial">Tutorial</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mode 2: Paste content -->
+        <div id="contentMode" style="display:none;">
+          <textarea class="content-textarea" id="contentInput"
+                    placeholder="Paste your markdown, notes, or any text here...&#10;&#10;Supports:&#10;  - Markdown headings (## Section)&#10;  - Code blocks (```python)&#10;  - Tables (| col1 | col2 |)&#10;  - Bullet points&#10;&#10;The system will automatically structure it into video scenes."></textarea>
+          <div class="prompt-options">
+            <div class="option-group">
+              <span class="option-label">Language</span>
+              <div class="lang-toggle">
+                <button class="lang-btn active" data-lang="python" onclick="setLanguage('python')">Python</button>
+                <button class="lang-btn" data-lang="java" onclick="setLanguage('java')">Java</button>
+              </div>
+            </div>
+            <button class="btn btn-primary" onclick="generateFromContent()">
+              <span class="spinner" id="contentSpinner" style="display:none;"></span>
+              Generate from Content
+            </button>
+          </div>
+        </div>
+
+        <!-- Mode 3: From library (original topic selector - uses sidebar) -->
+        <div id="topicMode" style="display:none;">
+          <div style="padding:20px;text-align:center;color:var(--text-muted);font-size:14px;">
+            Select a topic from the sidebar to preview and render videos from the guru-sishya content library.
+          </div>
+        </div>
+      </div>
+
+      <!-- EMPTY STATE (shown only in topic mode when nothing selected) -->
+      <div class="empty-state" id="emptyState" style="display:none;">
         <div class="empty-state-icon">🎬</div>
         <div class="empty-state-title">Select a Topic</div>
         <div class="empty-state-desc">Pick a topic from the sidebar to preview generated scenes and trigger a video render.</div>
@@ -719,25 +917,28 @@
 
       <div id="previewContent" style="display:none;">
         <div class="preview-header">
-          <div class="preview-topic-label" id="previewTopicLabel"></div>
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+            <div class="preview-topic-label" id="previewTopicLabel"></div>
+            <span class="source-badge" id="sourceBadge" style="display:none;"></span>
+          </div>
           <div class="preview-title" id="previewTitle"></div>
         </div>
 
         <div class="controls-row">
-          <div class="lang-toggle">
+          <div class="lang-toggle" id="previewLangToggle">
             <button class="lang-btn active" data-lang="python" onclick="setLanguage('python')">Python</button>
             <button class="lang-btn" data-lang="java" onclick="setLanguage('java')">Java</button>
           </div>
-          <select class="session-select" id="sessionSelect" onchange="loadPreview()">
+          <select class="session-select" id="sessionSelect" onchange="loadPreview()" style="display:none;">
             <option value="0">Session 1</option>
             <option value="1">Session 2</option>
             <option value="2">Session 3</option>
             <option value="3">Session 4</option>
             <option value="4">Session 5</option>
           </select>
-          <button class="btn btn-secondary" onclick="loadPreview()">
+          <button class="btn btn-secondary" onclick="regeneratePreview()">
             <span class="spinner" id="previewSpinner" style="display:none;"></span>
-            Generate Preview
+            Regenerate
           </button>
           <button class="btn btn-teal" id="renderBtn" onclick="triggerRender()" disabled>
             Render Video
@@ -826,6 +1027,9 @@
     let pollInterval = null;
     let allTopics = [];
     const recentRenders = [];
+    let currentInputMode = 'prompt'; // 'prompt' | 'content' | 'topic'
+    let lastPrompt = '';
+    let lastContent = '';
 
     // ─── Init ───
     document.addEventListener('DOMContentLoaded', () => {
@@ -833,6 +1037,142 @@
       loadQueueStats();
       checkApiStatus();
     });
+
+    // ─── Input Mode Switching ───
+    function setInputMode(mode) {
+      currentInputMode = mode;
+      document.querySelectorAll('.prompt-tab').forEach(tab => {
+        tab.classList.toggle('active', tab.dataset.mode === mode);
+      });
+      document.getElementById('promptMode').style.display = mode === 'prompt' ? 'block' : 'none';
+      document.getElementById('contentMode').style.display = mode === 'content' ? 'block' : 'none';
+      document.getElementById('topicMode').style.display = mode === 'topic' ? 'block' : 'none';
+      document.getElementById('sessionSelect').style.display = mode === 'topic' ? 'inline-block' : 'none';
+
+      // Show empty state only in topic mode when no topic selected
+      if (mode === 'topic' && !selectedTopic) {
+        document.getElementById('emptyState').style.display = 'flex';
+        document.getElementById('previewContent').style.display = 'none';
+      } else {
+        document.getElementById('emptyState').style.display = 'none';
+      }
+    }
+
+    // ─── Generate from Prompt ───
+    async function generateFromPrompt() {
+      const prompt = document.getElementById('promptInput').value.trim();
+      if (!prompt) {
+        showToast('Enter a topic or prompt first', 'error');
+        return;
+      }
+      lastPrompt = prompt;
+      const spinner = document.getElementById('promptSpinner');
+      spinner.style.display = 'inline-block';
+
+      const duration = document.getElementById('durationSelect').value;
+      const style = document.getElementById('styleSelect').value;
+
+      try {
+        let data;
+        if (isApiAvailable) {
+          const res = await fetch('/api/preview', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              prompt,
+              language: currentLanguage,
+              duration,
+              style,
+            }),
+          });
+          data = await res.json();
+        } else {
+          // Demo preview in static mode
+          data = generateDemoPreview(prompt.replace(/\s+/g, '-').toLowerCase(), currentLanguage);
+          data.generatedFrom = 'prompt';
+        }
+        showPreviewResult(data);
+      } catch (e) {
+        showToast('Failed to generate preview', 'error');
+      } finally {
+        spinner.style.display = 'none';
+      }
+    }
+
+    // ─── Generate from Content ───
+    async function generateFromContent() {
+      const content = document.getElementById('contentInput').value.trim();
+      if (!content) {
+        showToast('Paste some content first', 'error');
+        return;
+      }
+      lastContent = content;
+      const spinner = document.getElementById('contentSpinner');
+      spinner.style.display = 'inline-block';
+
+      try {
+        let data;
+        if (isApiAvailable) {
+          const res = await fetch('/api/preview', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              content,
+              language: currentLanguage,
+            }),
+          });
+          data = await res.json();
+        } else {
+          data = generateDemoPreview('custom-content', currentLanguage);
+          data.generatedFrom = 'content';
+          data.topic = 'Custom Content';
+        }
+        showPreviewResult(data);
+      } catch (e) {
+        showToast('Failed to generate preview', 'error');
+      } finally {
+        spinner.style.display = 'none';
+      }
+    }
+
+    // ─── Show preview result (shared by all modes) ───
+    function showPreviewResult(data) {
+      currentPreview = data;
+      document.getElementById('emptyState').style.display = 'none';
+      document.getElementById('previewContent').style.display = 'block';
+      document.getElementById('previewTopicLabel').textContent = data.topic || 'Preview';
+      document.getElementById('previewTitle').textContent = data.title || 'Generated Lesson';
+      document.getElementById('previewMeta').style.display = 'flex';
+      document.getElementById('metaScenes').textContent = data.sceneCount;
+      document.getElementById('metaDuration').textContent = data.estimatedDuration;
+      document.getElementById('metaLang').textContent = data.language;
+
+      // Show source badge
+      const badge = document.getElementById('sourceBadge');
+      const source = data.generatedFrom || 'topic';
+      badge.style.display = 'inline-flex';
+      badge.className = 'source-badge ' + source;
+      badge.textContent = source === 'prompt' ? 'From Prompt' : source === 'content' ? 'From Content' : 'From Library';
+
+      renderScenes(data.scenes);
+      document.getElementById('renderBtn').disabled = !isApiAvailable;
+
+      // Scroll to preview
+      document.getElementById('previewContent').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    // ─── Regenerate (for the inline button) ───
+    function regeneratePreview() {
+      if (currentInputMode === 'prompt' && lastPrompt) {
+        generateFromPrompt();
+      } else if (currentInputMode === 'content' && lastContent) {
+        generateFromContent();
+      } else if (currentInputMode === 'topic' && selectedTopic) {
+        loadPreview();
+      } else {
+        showToast('Nothing to regenerate. Enter a prompt or select a topic first.', 'info');
+      }
+    }
 
     // ─── Demo topics (used when API is not running, e.g. on Vercel) ───
     const DEMO_TOPICS = [
@@ -893,6 +1233,16 @@
     // ─── Topic Selection ───
     function selectTopic(topic) {
       selectedTopic = topic;
+      currentInputMode = 'topic';
+      // Update tabs to reflect topic mode
+      document.querySelectorAll('.prompt-tab').forEach(tab => {
+        tab.classList.toggle('active', tab.dataset.mode === 'topic');
+      });
+      document.getElementById('promptMode').style.display = 'none';
+      document.getElementById('contentMode').style.display = 'none';
+      document.getElementById('topicMode').style.display = 'block';
+      document.getElementById('sessionSelect').style.display = 'inline-block';
+
       renderTopicList(allTopics.filter(t => {
         const q = document.getElementById('topicSearch').value.toLowerCase();
         return !q || t.toLowerCase().includes(q);
@@ -900,7 +1250,7 @@
       document.getElementById('emptyState').style.display = 'none';
       document.getElementById('previewContent').style.display = 'block';
       document.getElementById('previewTopicLabel').textContent = formatTopicName(topic);
-      document.getElementById('previewTitle').textContent = 'Click "Generate Preview" to see scenes';
+      document.getElementById('previewTitle').textContent = 'Loading preview...';
       document.getElementById('scenesContainer').innerHTML = '';
       document.getElementById('previewMeta').style.display = 'none';
       document.getElementById('renderBtn').disabled = true;
@@ -917,7 +1267,7 @@
       if (selectedTopic) loadPreview();
     }
 
-    // ─── Preview ───
+    // ─── Preview (topic mode) ───
     async function loadPreview() {
       if (!selectedTopic) return;
       const spinner = document.getElementById('previewSpinner');
@@ -943,17 +1293,8 @@
           // Demo preview when API is not available
           data = generateDemoPreview(selectedTopic, currentLanguage);
         }
-        currentPreview = data;
-
-        document.getElementById('previewTopicLabel').textContent = data.topic || formatTopicName(selectedTopic);
-        document.getElementById('previewTitle').textContent = data.title || 'Preview';
-        document.getElementById('previewMeta').style.display = 'flex';
-        document.getElementById('metaScenes').textContent = data.sceneCount;
-        document.getElementById('metaDuration').textContent = data.estimatedDuration;
-        document.getElementById('metaLang').textContent = data.language;
-
-        renderScenes(data.scenes);
-        document.getElementById('renderBtn').disabled = !isApiAvailable;
+        data.generatedFrom = 'topic';
+        showPreviewResult(data);
         if (!isApiAvailable) {
           showToast('Preview is demo data. Start API locally to render real videos.', 'info');
         }
@@ -988,9 +1329,6 @@
 
     // ─── Render ───
     async function triggerRender() {
-      if (!selectedTopic) return;
-      const sessionIndex = parseInt(document.getElementById('sessionSelect').value);
-
       document.getElementById('renderSection').style.display = 'block';
       document.getElementById('renderOutput').style.display = 'none';
       document.getElementById('renderError').style.display = 'none';
@@ -999,22 +1337,40 @@
       document.getElementById('renderProgressText').textContent = '0%';
       document.getElementById('renderBtn').disabled = true;
 
+      // Build request body based on current input mode
+      const body = { language: currentLanguage };
+      let renderLabel = 'Video';
+
+      if (currentInputMode === 'prompt' && lastPrompt) {
+        body.prompt = lastPrompt;
+        body.duration = document.getElementById('durationSelect').value;
+        body.style = document.getElementById('styleSelect').value;
+        renderLabel = lastPrompt.slice(0, 40);
+      } else if (currentInputMode === 'content' && lastContent) {
+        body.content = lastContent;
+        renderLabel = 'Custom Content';
+      } else if (selectedTopic) {
+        body.topic = selectedTopic;
+        body.session_number = parseInt(document.getElementById('sessionSelect').value) + 1;
+        renderLabel = formatTopicName(selectedTopic);
+      } else {
+        showToast('Nothing to render. Enter a prompt or select a topic first.', 'error');
+        document.getElementById('renderBtn').disabled = false;
+        return;
+      }
+
       try {
         const res = await fetch('/api/render', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            topic: selectedTopic,
-            session_number: sessionIndex + 1,
-            language: currentLanguage,
-          }),
+          body: JSON.stringify(body),
         });
         const data = await res.json();
         activeRenderJob = data.jobId;
 
         recentRenders.unshift({
           jobId: data.jobId,
-          topic: formatTopicName(selectedTopic),
+          topic: renderLabel,
           status: 'queued',
           time: new Date().toLocaleTimeString(),
         });
