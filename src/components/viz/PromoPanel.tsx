@@ -116,13 +116,13 @@ export const PromoPanel: React.FC<PromoPanelProps> = ({ sync, frame, keywords })
       }}>
         {/* Big stat number */}
         <div style={{
-          fontSize: 72,
+          fontSize: 96,
           fontWeight: 900,
           color: card.color,
           fontFamily: "'Inter', system-ui, sans-serif",
           lineHeight: 1,
-          textShadow: `0 0 ${40 * glowPulse}px ${card.color}40`,
-          marginBottom: 12,
+          textShadow: `0 0 ${60 * glowPulse}px ${card.color}60, 0 0 ${100 * glowPulse}px ${card.color}30`,
+          marginBottom: 14,
         }}>
           {displayStat}
         </div>
@@ -154,23 +154,27 @@ export const PromoPanel: React.FC<PromoPanelProps> = ({ sync, frame, keywords })
         position: 'absolute',
         bottom: 40,
         textAlign: 'center',
-        opacity: 0.7,
+        opacity: 0.95,
       }}>
         <div style={{
-          fontSize: 18,
-          fontWeight: 700,
+          fontSize: 24,
+          fontWeight: 800,
           color: '#E85D26',
           fontFamily: "'Inter', system-ui, sans-serif",
+          textShadow: `0 0 ${20 * glowPulse}px rgba(232, 93, 38, ${0.7 * glowPulse}), 0 0 ${40 * glowPulse}px rgba(232, 93, 38, ${0.35 * glowPulse})`,
+          letterSpacing: 0.5,
         }}>
           www.guru-sishya.in
         </div>
         <div style={{
-          fontSize: 11,
-          color: '#A9ACB3',
+          fontSize: 14,
+          color: '#FFD700',
           fontFamily: "'Inter', system-ui, sans-serif",
-          marginTop: 4,
+          fontWeight: 600,
+          marginTop: 5,
+          letterSpacing: 0.3,
         }}>
-          Your path to mastering tech interviews
+          Master Your Interview
         </div>
       </div>
 

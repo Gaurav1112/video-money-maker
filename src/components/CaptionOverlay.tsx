@@ -95,14 +95,53 @@ const CaptionOverlay: React.FC<CaptionOverlayProps> = ({
             borderRadius: 14,
             padding: '18px 40px',
             maxWidth: 1300,
+            width: '100%',
             display: 'flex',
             flexWrap: 'wrap',
+            alignItems: 'center',
             justifyContent: 'center',
             gap: '0 10px',
             border: `1px solid ${COLORS.saffron}18`,
             boxShadow: `0 6px 40px ${COLORS.dark}AA, 0 0 0 1px ${COLORS.gray}08`,
+            position: 'relative',
           }}
         >
+          {/* Brand label pinned to right side of caption bar */}
+          <div
+            style={{
+              position: 'absolute',
+              right: 16,
+              top: '50%',
+              transform: 'translateY(-50%)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 5,
+              background: 'rgba(232, 93, 38, 0.12)',
+              border: '1px solid rgba(232, 93, 38, 0.35)',
+              borderRadius: 7,
+              padding: '3px 10px',
+            }}
+          >
+            <div style={{
+              width: 6,
+              height: 6,
+              borderRadius: '50%',
+              background: '#20C997',
+              boxShadow: '0 0 6px #20C997',
+              flexShrink: 0,
+            }} />
+            <span style={{
+              fontSize: 13,
+              fontFamily: "'Inter', system-ui, sans-serif",
+              fontWeight: 700,
+              color: '#E85D26',
+              letterSpacing: 0.3,
+              whiteSpace: 'nowrap',
+            }}>
+              guru-sishya.in
+            </span>
+          </div>
+
           {activeSentence.map((word, idx) => {
             const isPast = idx < localWordIndex;
             const isCurrent = idx === localWordIndex;

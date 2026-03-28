@@ -48,42 +48,79 @@ export const BrandingLayer: React.FC<BrandingLayerProps> = ({
         <div
           style={{
             position: 'absolute',
-            bottom: isShort ? 100 : 24,
+            bottom: isShort ? 110 : 28,
             right: isShort ? 16 : 30,
-            opacity: 0.9,
+            opacity: 0.97,
             zIndex: 100,
             display: 'flex',
             alignItems: 'center',
-            gap: 8,
+            gap: 10,
+            background: 'rgba(12, 10, 21, 0.85)',
+            borderRadius: 12,
+            padding: isShort ? '8px 16px' : '10px 20px',
+            border: '1.5px solid rgba(232, 93, 38, 0.5)',
+            backdropFilter: 'blur(10px)',
+            boxShadow: '0 4px 20px rgba(232, 93, 38, 0.2)',
+          }}
+        >
+          <div style={{
+            width: 12,
+            height: 12,
+            borderRadius: '50%',
+            background: '#20C997',
+            boxShadow: '0 0 10px #20C997, 0 0 20px #20C99755',
+            flexShrink: 0,
+          }} />
+          <span style={{
+            fontSize: isShort ? 16 : 20,
+            fontFamily: "'Inter', system-ui, sans-serif",
+            fontWeight: 800,
+            color: '#E85D26',
+            letterSpacing: 0.5,
+          }}>
+            www.guru-sishya.in
+          </span>
+          <span style={{
+            fontSize: isShort ? 11 : 13,
+            color: '#0C0A15',
+            background: '#20C997',
+            fontFamily: "'Inter', system-ui, sans-serif",
+            fontWeight: 800,
+            padding: '2px 8px',
+            borderRadius: 5,
+          }}>
+            FREE
+          </span>
+        </div>
+      )}
+
+      {/* Top-right corner brand — visible during content scenes */}
+      {frame >= watermarkStart && frame < watermarkEnd && (
+        <div
+          style={{
+            position: 'absolute',
+            top: isShort ? 16 : 20,
+            right: isShort ? 16 : 30,
+            opacity: 0.85,
+            zIndex: 100,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 6,
             background: 'rgba(12, 10, 21, 0.75)',
-            borderRadius: 10,
-            padding: '6px 14px',
+            borderRadius: 8,
+            padding: isShort ? '5px 10px' : '6px 14px',
             border: '1px solid rgba(232, 93, 38, 0.3)',
             backdropFilter: 'blur(8px)',
           }}
         >
-          <div style={{
-            width: 8,
-            height: 8,
-            borderRadius: '50%',
-            background: '#20C997',
-            boxShadow: '0 0 6px #20C997',
-          }} />
           <span style={{
-            fontSize: isShort ? 12 : 15,
+            fontSize: 14,
             fontFamily: "'Inter', system-ui, sans-serif",
             fontWeight: 700,
             color: '#E85D26',
-            letterSpacing: 0.5,
+            letterSpacing: 0.3,
           }}>
             guru-sishya.in
-          </span>
-          <span style={{
-            fontSize: isShort ? 9 : 11,
-            color: '#A9ACB3',
-            fontFamily: "'Inter', system-ui, sans-serif",
-          }}>
-            FREE
           </span>
         </div>
       )}
@@ -144,7 +181,7 @@ const MidVideoCta: React.FC<{ format: 'long' | 'short' }> = ({ format }) => {
       >
         <div
           style={{
-            fontSize: isShort ? 16 : 22,
+            fontSize: isShort ? 21 : 29,
             fontWeight: 800,
             color: '#fff',
             fontFamily: "'Inter', system-ui, sans-serif",
@@ -154,7 +191,7 @@ const MidVideoCta: React.FC<{ format: 'long' | 'short' }> = ({ format }) => {
         </div>
         <div
           style={{
-            fontSize: isShort ? 12 : 15,
+            fontSize: isShort ? 16 : 20,
             color: 'rgba(255,255,255,0.9)',
             fontFamily: "'Inter', system-ui, sans-serif",
             lineHeight: 1.4,
@@ -166,23 +203,23 @@ const MidVideoCta: React.FC<{ format: 'long' | 'short' }> = ({ format }) => {
           style={{
             display: 'flex',
             alignItems: 'center',
-            gap: 8,
-            marginTop: 6,
+            gap: 10,
+            marginTop: 8,
           }}
         >
           <div style={{
             background: '#20C997',
             color: '#0C0A15',
-            padding: '4px 12px',
-            borderRadius: 6,
-            fontSize: isShort ? 11 : 13,
+            padding: '6px 16px',
+            borderRadius: 8,
+            fontSize: isShort ? 14 : 17,
             fontWeight: 800,
             fontFamily: "'Inter', system-ui, sans-serif",
           }}>
             100% FREE
           </div>
           <span style={{
-            fontSize: isShort ? 14 : 18,
+            fontSize: isShort ? 18 : 23,
             fontWeight: 800,
             color: '#FFD700',
             fontFamily: "'Inter', system-ui, sans-serif",
