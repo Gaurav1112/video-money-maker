@@ -7,6 +7,7 @@ import { SyncTimeline } from '../lib/sync-engine';
 interface ScriptOptions {
   language?: string; // 'python' | 'java' -- which code examples to use
   maxScenes?: number;
+  nextTopic?: string; // Optional: next session topic for end-of-video tease
 }
 
 // ---------------------------------------------------------------------------
@@ -68,6 +69,24 @@ function getAnalogy(topic: string): string | null {
 // ---------------------------------------------------------------------------
 function reinforceConcept(concept: string, _topic: string): string {
   return concept;
+}
+
+// ---------------------------------------------------------------------------
+// Retention Technique: Mid-Scene Open Loops (re-engagement phrases)
+// Injected every 60-90 seconds during the deep dive to keep viewers watching.
+// ---------------------------------------------------------------------------
+const OPEN_LOOP_PHRASES = [
+  'But here\'s where it gets really interesting...',
+  'Stay with me, because this next part is gold...',
+  'Now THIS is what actually matters in interviews...',
+  'Most people miss this completely...',
+  'Here\'s the part that will blow your mind...',
+  'Keep watching — this is the piece everyone skips...',
+  'This next idea changes everything...',
+];
+
+function getOpenLoopPhrase(seed: number): string {
+  return OPEN_LOOP_PHRASES[seed % OPEN_LOOP_PHRASES.length];
 }
 
 // ---------------------------------------------------------------------------
@@ -261,16 +280,26 @@ function generatePracticeNarration(question: string, topic: string): string {
 // ---------------------------------------------------------------------------
 // Summary + CTA Narration (with guru-sishya.in reference)
 // ---------------------------------------------------------------------------
-function generateSummaryNarration(topic: string, objectives: string[]): string {
+function generateSummaryNarration(topic: string, objectives: string[], nextTopic?: string): string {
   const topObjectives = objectives.slice(0, 3).join('. ');
   const closingEncouragement = getEncouragement(topic.length);
 
+  // "You now know how to..." closing — specific skills from objectives
+  const skill1 = objectives[0] ?? `understand ${topic}`;
+  const skill2 = objectives[1] ?? `apply ${topic} in code`;
+  const youLearnedClose = `You now know how to ${skill1.toLowerCase().replace(/^understand\s+/i, 'understand ')}, ${skill2.toLowerCase()}, and explain the trade-offs in an interview.`;
+
+  // Next episode tease (only if nextTopic provided)
+  const nextEpisodeTease = nextTopic
+    ? ` In the next video, we'll tackle ${nextTopic}. Don't miss it.`
+    : '';
+
   const summaries = [
-    `Alright, let's bring it all together. Today you learned ${topObjectives}. ${closingEncouragement} And here's the most important thing: don't just watch this and forget. Go practice. Build it in code. Explain it to someone else. That's how it sticks. If you want the complete ${topic} course with cheatsheets, interactive quizzes, and mock interview questions, head over to guru-sishya.in. It's all there waiting for you. Drop a like if this helped, and I'll see you in the next one.`,
+    `Alright, let's bring it all together. Today you learned ${topObjectives}. ${closingEncouragement} And here's the most important thing: don't just watch this and forget. Go practice. Build it in code. Explain it to someone else. That's how it sticks. If you want the complete ${topic} course with cheatsheets, interactive quizzes, and mock interview questions, head over to guru-sishya.in. It's all there waiting for you. Drop a like if this helped, and I'll see you in the next one. ${youLearnedClose}${nextEpisodeTease}`,
 
-    `So here's the bottom line. ${topObjectives}. ${closingEncouragement} You now know more about ${topic} than 90 percent of developers who just skim blog posts. But knowledge without practice is worthless. Go build something with ${topic} today. And if you want a structured path with coding exercises and interview prep, check out guru-sishya.in. Hit subscribe so you don't miss the next topic. Let's go.`,
+    `So here's the bottom line. ${topObjectives}. ${closingEncouragement} You now know more about ${topic} than 90 percent of developers who just skim blog posts. But knowledge without practice is worthless. Go build something with ${topic} today. And if you want a structured path with coding exercises and interview prep, check out guru-sishya.in. Hit subscribe so you don't miss the next topic. Let's go. ${youLearnedClose}${nextEpisodeTease}`,
 
-    `Let me leave you with this. ${topic} is one of those topics that comes up again and again throughout your career. What you learned today gives you a massive advantage in interviews and in production. ${closingEncouragement} Now go cement it. The complete ${topic} module with practice problems, a cheatsheet, and a mock interview is waiting for you at guru-sishya.in. See you in the next video.`,
+    `Let me leave you with this. ${topic} is one of those topics that comes up again and again throughout your career. What you learned today gives you a massive advantage in interviews and in production. ${closingEncouragement} Now go cement it. The complete ${topic} module with practice problems, a cheatsheet, and a mock interview is waiting for you at guru-sishya.in. See you in the next video. ${youLearnedClose}${nextEpisodeTease}`,
   ];
 
   const seed = topic.length % summaries.length;
@@ -333,7 +362,7 @@ function generateCalloutNarration(content: string): string {
  * 10. SUMMARY + CTA (15s) — "Now go practice on guru-sishya.in"
  */
 export function generateScript(session: SessionInput, options: ScriptOptions = {}): Scene[] {
-  const { language = 'python', maxScenes = 30 } = options;
+  const { language = 'python', maxScenes = 30, nextTopic } = options;
   const scenes: Scene[] = [];
   let currentFrame = 0;
 
@@ -345,6 +374,9 @@ export function generateScript(session: SessionInput, options: ScriptOptions = {
   if (analogy) {
     hookNarration += ` ${analogy}`;
   }
+
+  // Series awareness: "This is session N of our complete [topic] series."
+  hookNarration += ` This is session ${session.sessionNumber} of our complete ${session.topic} series.`;
 
   const titleDuration = SCENE_DEFAULTS.titleDuration;
   scenes.push({
@@ -408,6 +440,9 @@ export function generateScript(session: SessionInput, options: ScriptOptions = {
   const sections = parseMarkdown(session.content);
   let sectionIndex = 0;
   let hasInterview = false;
+  let openLoopCounter = 0;     // tracks elapsed deep-dive scenes for open-loop injection
+  let halfwayInjected = false; // 50% engagement prompt guard
+  let reHookInjected = false;  // 60% danger zone re-hook guard
 
   for (const section of sections) {
     if (scenes.length >= maxScenes - 3) break; // Reserve for interview + review + summary
@@ -424,7 +459,47 @@ export function generateScript(session: SessionInput, options: ScriptOptions = {
       }
     }
 
+    // ── 60% Danger Zone Re-Hook ─────────────────────────────────────────
+    if (!reHookInjected && scenes.length === Math.floor(maxScenes * 0.6)) {
+      reHookInjected = true;
+      const reHookNarration = `Okay, stay with me. You've already learned the fundamentals of ${session.topic}. But this next part? This is what separates the good developers from the GREAT ones. Don't leave now.`;
+      scenes.push({
+        type: 'text',
+        content: reHookNarration,
+        narration: reHookNarration,
+        duration: 8,
+        startFrame: currentFrame,
+        endFrame: (currentFrame += TIMING.secondsToFrames(8)),
+        heading: 'The Key Insight',
+        bullets: extractBulletsFromNarration(reHookNarration, 3),
+      });
+    }
+
+    // ── 50% Engagement Prompt ────────────────────────────────────────────
+    if (!halfwayInjected && scenes.length >= Math.floor(maxScenes * 0.5)) {
+      halfwayInjected = true;
+      const engagementNarration = `If you're finding this useful, drop a like. It genuinely helps more developers find this.`;
+      scenes.push({
+        type: 'text',
+        content: engagementNarration,
+        narration: engagementNarration,
+        duration: 4,
+        startFrame: currentFrame,
+        endFrame: (currentFrame += TIMING.secondsToFrames(4)),
+        heading: '',
+        bullets: [],
+      });
+    }
+
     const scene = sectionToScene(section, language, currentFrame, sectionIndex, session.topic);
+
+    // ── Mid-Scene Open Loop (every ~3 deep-dive scenes ≈ 60-90 seconds) ─
+    openLoopCounter++;
+    if (openLoopCounter % 3 === 0) {
+      const openLoop = getOpenLoopPhrase(openLoopCounter);
+      scene.narration = `${openLoop} ${scene.narration}`;
+    }
+
     scenes.push(scene);
     currentFrame = scene.endFrame;
     sectionIndex++;
@@ -476,7 +551,7 @@ export function generateScript(session: SessionInput, options: ScriptOptions = {
   }
 
   // ── 10. SUMMARY + CTA ────────────────────────────────────────────────
-  const summaryNarration = generateSummaryNarration(session.topic, session.objectives);
+  const summaryNarration = generateSummaryNarration(session.topic, session.objectives, nextTopic);
   const summaryDuration = SCENE_DEFAULTS.summaryDuration + 4; // Extra time for CTA
   scenes.push({
     type: 'summary',
@@ -605,7 +680,8 @@ function generateHook(topic: string, title: string): string {
   // Deterministic selection based on topic+title for reproducible builds
   const seed = (topic.length * 7 + title.length * 13) % hooks.length;
   const hook = hooks[seed];
-  return `${hook} Today we're covering ${title}.`;
+  // Hook punch fires FIRST — the topic intro follows the opening gut-punch
+  return `${hook} Today's topic: ${title}.`;
 }
 
 // ---------------------------------------------------------------------------
