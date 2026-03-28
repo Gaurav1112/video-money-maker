@@ -194,6 +194,9 @@ export const LongVideo: React.FC<LongVideoProps> = ({ storyboard }) => {
       {/* Animated background layer - adapts to scene type */}
       {!isIntro && !isOutro && <BackgroundLayer sceneType={currentSceneType} />}
 
+      {/* Animated overlay — particles, scan line, vignette, tech grid on every content frame */}
+      {!isIntro && !isOutro && <AnimatedOverlay sceneType={currentSceneType} />}
+
       {/* Branded Intro */}
       <Sequence from={0} durationInFrames={INTRO_DURATION}>
         <IntroSlide durationInFrames={INTRO_DURATION} />
