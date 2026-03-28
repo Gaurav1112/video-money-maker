@@ -9,6 +9,9 @@ interface StoryboardOptions {
   height?: number;
 }
 
+const INTRO_FRAMES = 90; // 3 seconds at 30fps
+const OUTRO_FRAMES = 150; // 5 seconds at 30fps
+
 export function generateStoryboard(
   scenes: Scene[],
   audioResults: TTSResult[],
@@ -16,8 +19,18 @@ export function generateStoryboard(
 ): Storyboard {
   const { topic, sessionNumber, fps = 30, width = 1920, height = 1080 } = options;
 
-  let currentFrame = 0;
-  const timedScenes: Scene[] = [];
+  // Prepend branded intro scene
+  const introScene: Scene = {
+    type: 'title' as const,
+    content: 'Guru Sishya',
+    narration: 'Welcome to Guru Sishya... Your path to mastering technical interviews.',
+    duration: 3,
+    startFrame: 0,
+    endFrame: INTRO_FRAMES,
+  };
+
+  let currentFrame = INTRO_FRAMES;
+  const timedScenes: Scene[] = [introScene];
 
   for (let i = 0; i < scenes.length; i++) {
     const scene = scenes[i];
@@ -42,7 +55,7 @@ export function generateStoryboard(
     const duration = audioDuration + extraTime;
 
     // Add 1.5 second gap between scenes (enough for transition + pause)
-    const paddingFrames = i > 0 ? TIMING.secondsToFrames(1.5) : 0;
+    const paddingFrames = TIMING.secondsToFrames(1.5);
     const startFrame = currentFrame + paddingFrames;
     const durationFrames = TIMING.secondsToFrames(duration);
     const endFrame = startFrame + durationFrames;
@@ -57,6 +70,18 @@ export function generateStoryboard(
 
     currentFrame = endFrame;
   }
+
+  // Append branded outro scene
+  const outroScene: Scene = {
+    type: 'summary' as const,
+    content: 'Thanks for watching',
+    narration: 'Thanks for watching. Practice this topic on guru-sishya.in... Subscribe for daily lessons. Your dream job is one interview away.',
+    duration: 5,
+    startFrame: currentFrame,
+    endFrame: currentFrame + OUTRO_FRAMES,
+  };
+  timedScenes.push(outroScene);
+  currentFrame = outroScene.endFrame;
 
   // Combine all audio into one file path (or use first available)
   const audioFile = audioResults.find(a => a.audioPath)?.audioPath || '';

@@ -287,9 +287,28 @@ function addSceneTransitions(scenes: Scene[]): Scene[] {
     "And this is the important part. ",
   ];
 
+  const empathyTransitions = [
+    "I know this might seem complex, but stay with me... ",
+    "Don't worry if this doesn't click right away... ",
+    "This is the part that trips up most people, so pay close attention... ",
+    "Trust me, once you understand this, everything else makes sense... ",
+    "I remember struggling with this concept too. Here's how it clicked for me... ",
+    "You're doing great. Let's keep going... ",
+  ];
+
   return scenes.map((scene, idx) => {
     if (idx <= 1 || scene.type === 'title' || scene.type === 'summary') return scene;
-    const transition = transitions[(idx * 3) % transitions.length];
+
+    // Every 3rd or 4th transition uses an empathy phrase
+    const useEmpathy = idx % 4 === 2 || idx % 4 === 3;
+    let transition: string;
+
+    if (useEmpathy) {
+      transition = empathyTransitions[(idx * 5) % empathyTransitions.length];
+    } else {
+      transition = transitions[(idx * 3) % transitions.length];
+    }
+
     return {
       ...scene,
       narration: transition + scene.narration,

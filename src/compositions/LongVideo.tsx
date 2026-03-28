@@ -21,7 +21,12 @@ import {
   CaptionOverlay,
   NarratorIndicator,
   SceneTransitionFlash,
+  IntroSlide,
+  OutroSlide,
 } from '../components';
+
+const INTRO_DURATION = 90; // 3 seconds at 30fps
+const OUTRO_DURATION = 150; // 5 seconds at 30fps
 
 interface LongVideoProps {
   storyboard: Storyboard;
@@ -148,83 +153,109 @@ function getSceneMarkers(scenes: Scene[], totalFrames: number) {
 
 export const LongVideo: React.FC<LongVideoProps> = ({ storyboard }) => {
   const frame = useCurrentFrame();
-  const totalFrames = storyboard.durationInFrames;
+  const contentFrames = storyboard.durationInFrames;
+  const totalFrames = INTRO_DURATION + contentFrames + OUTRO_DURATION;
   const progress = frame / totalFrames;
 
-  // Get active scene for captions and overlays
-  const activeScene = getActiveScene(storyboard.scenes, frame);
+  // Get active scene for captions and overlays (offset by intro duration)
+  const contentFrame = frame - INTRO_DURATION;
+  const activeScene = getActiveScene(storyboard.scenes, contentFrame);
   const hasNarration = activeScene && activeScene.narration && activeScene.narration.trim() !== '';
   const currentSceneType = activeScene?.type || 'text';
 
   // Scene markers for progress bar
   const sceneMarkers = getSceneMarkers(storyboard.scenes, totalFrames);
 
+  // Whether we are in the intro or outro phase
+  const isIntro = frame < INTRO_DURATION;
+  const isOutro = frame >= INTRO_DURATION + contentFrames;
+
   return (
     <AbsoluteFill style={{ backgroundColor: COLORS.dark }}>
       {/* Animated background layer - adapts to scene type */}
-      <BackgroundLayer sceneType={currentSceneType} />
+      {!isIntro && !isOutro && <BackgroundLayer sceneType={currentSceneType} />}
 
-      {/* Render each scene with transitions */}
-      <TransitionSeries>
-        {storyboard.scenes.map((scene, idx) => {
-          const Component = SCENE_COMPONENT_MAP[scene.type];
-          if (!Component) return null;
+      {/* Branded Intro */}
+      <Sequence from={0} durationInFrames={INTRO_DURATION}>
+        <IntroSlide durationInFrames={INTRO_DURATION} />
+      </Sequence>
 
-          const duration = scene.endFrame - scene.startFrame;
-          const props = getSceneProps(scene, storyboard);
-          const isFirst = idx === 0;
+      {/* Render each scene with transitions, offset by intro duration */}
+      <Sequence from={INTRO_DURATION} durationInFrames={contentFrames}>
+        <TransitionSeries>
+          {storyboard.scenes.map((scene, idx) => {
+            const Component = SCENE_COMPONENT_MAP[scene.type];
+            if (!Component) return null;
 
-          return (
-            <React.Fragment key={idx}>
-              {/* Add transition before each scene (except the first) */}
-              {!isFirst && (
-                <TransitionSeries.Transition
-                  presentation={getTransitionForScene(scene.type)}
-                  timing={linearTiming({ durationInFrames: TRANSITION_DURATION })}
-                />
-              )}
-              <TransitionSeries.Sequence durationInFrames={duration}>
-                <AbsoluteFill>
-                  <Component {...props} />
-                  {/* Scene transition flash effect */}
-                  {!isFirst && (
-                    <SceneTransitionFlash sceneType={scene.type} />
-                  )}
-                  {scene.audioFile && scene.audioFile !== '' && (
-                    <Audio
-                      src={staticFile(`audio/${scene.audioFile.split('/').pop()}`)}
-                      volume={(f) => {
-                        // Fade out in last 15 frames to prevent overlap during transition
-                        const fadeOutStart = duration - 20;
-                        if (f >= fadeOutStart) {
-                          return interpolate(f, [fadeOutStart, duration], [1, 0], { extrapolateRight: 'clamp' });
-                        }
-                        return 1;
-                      }}
-                    />
-                  )}
-                </AbsoluteFill>
-              </TransitionSeries.Sequence>
-            </React.Fragment>
-          );
-        })}
-      </TransitionSeries>
+            const duration = scene.endFrame - scene.startFrame;
+            const props = getSceneProps(scene, storyboard);
+            const isFirst = idx === 0;
 
-      {/* Persistent overlays */}
-      <TopicHeader
-        topic={storyboard.topic}
-        sessionNumber={storyboard.sessionNumber}
-        language="TypeScript"
-        sceneType={currentSceneType}
-      />
-      <ProgressBar
-        progress={progress}
-        sceneMarkers={sceneMarkers}
-        currentSceneType={currentSceneType}
-      />
+            return (
+              <React.Fragment key={idx}>
+                {/* Add transition before each scene (except the first) */}
+                {!isFirst && (
+                  <TransitionSeries.Transition
+                    presentation={getTransitionForScene(scene.type)}
+                    timing={linearTiming({ durationInFrames: TRANSITION_DURATION })}
+                  />
+                )}
+                <TransitionSeries.Sequence durationInFrames={duration}>
+                  <AbsoluteFill>
+                    <Component {...props} />
+                    {/* Scene transition flash effect */}
+                    {!isFirst && (
+                      <SceneTransitionFlash sceneType={scene.type} />
+                    )}
+                    {scene.audioFile && scene.audioFile !== '' && (
+                      <Audio
+                        src={staticFile(`audio/${scene.audioFile.split('/').pop()}`)}
+                        volume={(f) => {
+                          // Fade out in last 15 frames to prevent overlap during transition
+                          const fadeOutStart = duration - 20;
+                          if (f >= fadeOutStart) {
+                            return interpolate(f, [fadeOutStart, duration], [1, 0], { extrapolateRight: 'clamp' });
+                          }
+                          return 1;
+                        }}
+                      />
+                    )}
+                  </AbsoluteFill>
+                </TransitionSeries.Sequence>
+              </React.Fragment>
+            );
+          })}
+        </TransitionSeries>
+      </Sequence>
+
+      {/* Branded Outro */}
+      <Sequence from={INTRO_DURATION + contentFrames} durationInFrames={OUTRO_DURATION}>
+        <OutroSlide
+          topic={storyboard.topic}
+          nextTopic={storyboard.nextTopic}
+          durationInFrames={OUTRO_DURATION}
+        />
+      </Sequence>
+
+      {/* Persistent overlays (only during content) */}
+      {!isIntro && !isOutro && (
+        <>
+          <TopicHeader
+            topic={storyboard.topic}
+            sessionNumber={storyboard.sessionNumber}
+            language="TypeScript"
+            sceneType={currentSceneType}
+          />
+          <ProgressBar
+            progress={progress}
+            sceneMarkers={sceneMarkers}
+            currentSceneType={currentSceneType}
+          />
+        </>
+      )}
 
       {/* Caption overlay - shows narration text word by word */}
-      {hasNarration && activeScene && (
+      {!isIntro && !isOutro && hasNarration && activeScene && (
         <CaptionOverlay
           key={`caption-${activeScene.startFrame}`}
           text={activeScene.narration}
@@ -234,10 +265,12 @@ export const LongVideo: React.FC<LongVideoProps> = ({ storyboard }) => {
       )}
 
       {/* Narrator indicator */}
-      <NarratorIndicator
-        isActive={hasNarration || false}
-        label="Guru Sishya"
-      />
+      {!isIntro && !isOutro && (
+        <NarratorIndicator
+          isActive={hasNarration || false}
+          label="Guru Sishya"
+        />
+      )}
 
       {/* Background music */}
       {storyboard.bgmFile && (
@@ -251,9 +284,6 @@ export const LongVideo: React.FC<LongVideoProps> = ({ storyboard }) => {
           />
         </Sequence>
       )}
-
-      {/* No global audio — each scene has its own audio track via TransitionSeries.
-         This prevents audio overlap between scenes. */}
     </AbsoluteFill>
   );
 };

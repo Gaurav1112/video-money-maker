@@ -9,7 +9,12 @@ import {
   CodeReveal,
   TextSection,
   ProgressBar,
+  IntroSlide,
+  OutroSlide,
 } from '../components';
+
+const SHORT_INTRO_DURATION = 45; // 1.5 seconds at 30fps
+const SHORT_OUTRO_DURATION = 90; // 3 seconds at 30fps
 
 interface ShortVideoProps {
   storyboard: Storyboard;
@@ -21,14 +26,17 @@ export const ShortVideo: React.FC<ShortVideoProps> = ({ storyboard, maxScenes = 
   const scenes = storyboard.scenes.slice(0, maxScenes);
   const lastScene = scenes[scenes.length - 1];
   const contentEndFrame = lastScene ? lastScene.endFrame : 0;
-  const ctaStartFrame = contentEndFrame;
-  const ctaDuration = TIMING.secondsToFrames(5);
-  const totalFrames = ctaStartFrame + ctaDuration;
+  const totalFrames = SHORT_INTRO_DURATION + contentEndFrame + SHORT_OUTRO_DURATION;
   const progress = frame / totalFrames;
 
   return (
     <AbsoluteFill style={{ backgroundColor: COLORS.dark }}>
-      {/* Content scenes (first 2-3 only) */}
+      {/* Branded Intro (short version) */}
+      <Sequence from={0} durationInFrames={SHORT_INTRO_DURATION}>
+        <IntroSlide durationInFrames={SHORT_INTRO_DURATION} />
+      </Sequence>
+
+      {/* Content scenes (first 2-3 only), offset by intro */}
       {scenes.map((scene, idx) => {
         const duration = scene.endFrame - scene.startFrame;
         let Component: React.FC<any> = TextSection;
@@ -57,49 +65,18 @@ export const ShortVideo: React.FC<ShortVideoProps> = ({ storyboard, maxScenes = 
         }
 
         return (
-          <Sequence key={idx} from={scene.startFrame} durationInFrames={duration}>
+          <Sequence key={idx} from={SHORT_INTRO_DURATION + scene.startFrame} durationInFrames={duration}>
             <Component {...props} />
           </Sequence>
         );
       })}
 
-      {/* CTA Slide at the end */}
-      <Sequence from={ctaStartFrame} durationInFrames={ctaDuration}>
-        <AbsoluteFill
-          style={{
-            backgroundColor: COLORS.dark,
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center',
-            alignItems: 'center',
-            padding: 60,
-          }}
-        >
-          <div
-            style={{
-              fontSize: SIZES.heading2,
-              fontFamily: FONTS.heading,
-              fontWeight: 700,
-              color: COLORS.saffron,
-              textAlign: 'center',
-              opacity: fadeIn(frame - ctaStartFrame, 0),
-              marginBottom: 30,
-            }}
-          >
-            Full lesson on YouTube
-          </div>
-          <div
-            style={{
-              fontSize: SIZES.body,
-              fontFamily: FONTS.text,
-              color: COLORS.gold,
-              textAlign: 'center',
-              opacity: fadeIn(frame - ctaStartFrame, 15),
-            }}
-          >
-            Subscribe for daily interview prep
-          </div>
-        </AbsoluteFill>
+      {/* Branded Outro (short version) */}
+      <Sequence from={SHORT_INTRO_DURATION + contentEndFrame} durationInFrames={SHORT_OUTRO_DURATION}>
+        <OutroSlide
+          topic={storyboard.topic}
+          durationInFrames={SHORT_OUTRO_DURATION}
+        />
       </Sequence>
 
       {/* Progress bar */}
