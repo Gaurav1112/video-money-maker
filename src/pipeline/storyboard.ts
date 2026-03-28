@@ -1,5 +1,5 @@
 import { Scene, Storyboard, TTSResult } from '../types';
-import { TIMING } from '../lib/constants';
+import { TIMING, INTRO_DURATION, OUTRO_DURATION, TRANSITION_DURATION } from '../lib/constants';
 import { stitchAudio } from './audio-stitcher';
 
 interface StoryboardOptions {
@@ -10,8 +10,17 @@ interface StoryboardOptions {
   height?: number;
 }
 
-const INTRO_FRAMES = 90; // 3 seconds at 30fps
-const OUTRO_FRAMES = 150; // 5 seconds at 30fps
+// Type-based fallback durations (seconds) used when a scene has no audio offset.
+const FALLBACK_SCENE_DURATION: Record<string, number> = {
+  title: 5,
+  code: 8,
+  table: 6,
+  interview: 6,
+  review: 7,
+  summary: 6,
+  text: 5,
+  diagram: 6,
+};
 
 export function generateStoryboard(
   scenes: Scene[],
@@ -22,11 +31,11 @@ export function generateStoryboard(
 
   // ── Stitch all scene audio into ONE master track ──
   // This eliminates audio overlap during TransitionSeries crossfades.
-  const { masterPath, totalDuration: masterDuration, sceneOffsets } = stitchAudio(
+  const { masterPath, sceneOffsets, allSfxTriggers } = stitchAudio(
     audioResults,
     0.8, // 0.8s silence gap between scenes
     `master-${topic.replace(/[^a-z0-9]/gi, '-')}-s${sessionNumber}.mp3`
-  );
+  ) as ReturnType<typeof stitchAudio> & { allSfxTriggers?: Storyboard['allSfxTriggers'] };
 
   // Prepend branded intro scene
   const introScene: Scene = {
@@ -35,47 +44,54 @@ export function generateStoryboard(
     narration: 'Welcome to Guru Sishya... Your path to mastering technical interviews.',
     duration: 3,
     startFrame: 0,
-    endFrame: INTRO_FRAMES,
+    endFrame: INTRO_DURATION,
   };
 
-  let currentFrame = INTRO_FRAMES;
+  let currentFrame = INTRO_DURATION;
   const timedScenes: Scene[] = [introScene];
 
   for (let i = 0; i < scenes.length; i++) {
     const scene = scenes[i];
     const audio = audioResults[i];
+    const offset = sceneOffsets[i]; // seconds, or -1 if no audio
 
-    // Use audio duration if available, otherwise estimate from scene duration
-    const audioDuration = audio && audio.duration > 0 ? audio.duration : scene.duration;
+    let durationSeconds: number;
 
-    // Add breathing room AFTER narration ends so teacher doesn't feel rushed
-    // Title: +2s for objectives to sink in
-    // Code: +3s for viewer to read the code
-    // Table: +2s for viewer to scan rows
-    // Interview: +2s for the insight to land
-    // Review: +3s for viewer to think about the answer
-    // Summary: +2s for takeaways
-    // Text: +1.5s
-    const breathingRoom: Record<string, number> = {
-      title: 2, code: 3, table: 2, interview: 2,
-      review: 3, summary: 2, text: 1.5, diagram: 2,
-    };
-    const extraTime = breathingRoom[scene.type] || 1.5;
-    const duration = audioDuration + extraTime;
+    if (offset !== -1) {
+      // Audio-driven timing: derive duration from the gap between this offset
+      // and the next scene's offset (or the last word end time for the final scene).
+      const nextOffset = sceneOffsets.find((o, idx) => idx > i && o !== -1);
 
-    // Add 1.5 second gap between scenes (enough for transition + pause)
-    const paddingFrames = TIMING.secondsToFrames(1.5);
-    const startFrame = currentFrame + paddingFrames;
-    const durationFrames = TIMING.secondsToFrames(duration);
+      if (nextOffset !== undefined) {
+        // Duration = gap to the next scene's audio start
+        durationSeconds = nextOffset - offset;
+      } else {
+        // Last scene with audio: use last word's end time + 1.5s
+        const words = audio?.wordTimestamps;
+        if (words && words.length > 0) {
+          durationSeconds = words[words.length - 1].end + 1.5;
+        } else {
+          // Fallback: audio duration + 1.5s
+          durationSeconds = (audio?.duration ?? FALLBACK_SCENE_DURATION[scene.type] ?? 5) + 1.5;
+        }
+      }
+    } else {
+      // No audio for this scene — use type-based default
+      durationSeconds = FALLBACK_SCENE_DURATION[scene.type] ?? 5;
+    }
+
+    // + TRANSITION_DURATION compensates for crossfade overlap in TransitionSeries
+    const durationFrames = TIMING.secondsToFrames(durationSeconds) + TRANSITION_DURATION;
+    const startFrame = currentFrame;
     const endFrame = startFrame + durationFrames;
 
-    // No per-scene audioFile — we use the master track instead
     timedScenes.push({
       ...scene,
       startFrame,
       endFrame,
-      duration,
+      duration: durationSeconds,
       audioFile: undefined, // cleared: master audio handles all narration
+      wordTimestamps: audio?.wordTimestamps ?? scene.wordTimestamps,
     });
 
     currentFrame = endFrame;
@@ -88,7 +104,7 @@ export function generateStoryboard(
     narration: 'Thanks for watching. Practice this topic on guru-sishya.in... Subscribe for daily lessons. Your dream job is one interview away.',
     duration: 5,
     startFrame: currentFrame,
-    endFrame: currentFrame + OUTRO_FRAMES,
+    endFrame: currentFrame + OUTRO_DURATION,
   };
   timedScenes.push(outroScene);
   currentFrame = outroScene.endFrame;
@@ -102,6 +118,8 @@ export function generateStoryboard(
     audioFile: masterPath,
     topic,
     sessionNumber,
+    sceneOffsets,
+    ...(allSfxTriggers ? { allSfxTriggers } : {}),
   };
 }
 

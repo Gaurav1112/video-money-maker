@@ -1,6 +1,8 @@
 import { SessionInput, Scene, SceneType } from '../types';
+import type { AnimationCue, SfxTrigger } from '../types';
 import { NARRATION_SPEEDS, SCENE_DEFAULTS, TIMING } from '../lib/constants';
 import { renderMermaidToSvg } from './mermaid-renderer';
+import { SyncTimeline } from '../lib/sync-engine';
 
 interface ScriptOptions {
   language?: string; // 'python' | 'java' -- which code examples to use
@@ -706,6 +708,74 @@ function parseMarkdown(markdown: string): MarkdownSection[] {
 }
 
 // ---------------------------------------------------------------------------
+// Animation Cue + SFX Helpers
+// ---------------------------------------------------------------------------
+function generateCodeCues(narration: string, codeLineCount: number): AnimationCue[] {
+  const phrases = SyncTimeline.computePhraseBoundaries(narration);
+  const words = narration.split(/\s+/);
+  const cues: AnimationCue[] = [];
+
+  if (phrases.length === 0) {
+    const wordsPerGroup = Math.max(1, Math.floor(words.length / codeLineCount));
+    for (let line = 0; line < codeLineCount; line++) {
+      cues.push({ wordIndex: line * wordsPerGroup, action: 'typeLine', target: line });
+    }
+  } else {
+    const linesPerPhrase = Math.ceil(codeLineCount / (phrases.length + 1));
+    let lineIndex = 0;
+    cues.push({ wordIndex: 0, action: 'typeLine', target: 0 });
+    lineIndex += linesPerPhrase;
+    for (const boundary of phrases) {
+      if (lineIndex >= codeLineCount) break;
+      cues.push({ wordIndex: boundary + 1, action: 'typeLine', target: lineIndex });
+      lineIndex += linesPerPhrase;
+    }
+  }
+
+  return cues;
+}
+
+function generateTextCues(narration: string, bulletCount: number): AnimationCue[] {
+  const phrases = SyncTimeline.computePhraseBoundaries(narration);
+  const cues: AnimationCue[] = [
+    { wordIndex: 0, action: 'revealBullet', target: 0 },
+  ];
+
+  for (let i = 0; i < Math.min(phrases.length, bulletCount - 1); i++) {
+    cues.push({ wordIndex: phrases[i] + 1, action: 'revealBullet', target: i + 1 });
+  }
+
+  return cues;
+}
+
+function generateTableCues(narration: string, rowCount: number): AnimationCue[] {
+  const words = narration.split(/\s+/);
+  const wordsPerRow = Math.max(1, Math.floor(words.length / rowCount));
+  return Array.from({ length: rowCount }, (_, i) => ({
+    wordIndex: i * wordsPerRow,
+    action: 'revealRow',
+    target: i,
+  }));
+}
+
+function generateSceneSfxTriggers(
+  sceneIndex: number,
+  sceneType: string,
+  cues: AnimationCue[],
+): SfxTrigger[] {
+  const triggers: SfxTrigger[] = [];
+  triggers.push({ sceneIndex, wordIndex: 0, effect: 'whoosh-in', volume: 0.4 });
+
+  if (sceneType === 'table') {
+    cues.filter(c => c.action === 'revealRow').forEach(c => {
+      triggers.push({ sceneIndex, wordIndex: c.wordIndex, effect: 'ding', volume: 0.3 });
+    });
+  }
+
+  return triggers;
+}
+
+// ---------------------------------------------------------------------------
 // Scene Construction
 // ---------------------------------------------------------------------------
 function sectionToScene(
@@ -756,6 +826,19 @@ function sectionToScene(
       .filter(s => s.length > 10)
       .slice(0, 5);
   }
+
+  // Generate animation cues based on scene type
+  if (scene.type === 'code') {
+    const lineCount = scene.content.split('\n').filter(l => l.trim()).length;
+    scene.animationCues = generateCodeCues(scene.narration, lineCount);
+  } else if (scene.type === 'text' && scene.bullets) {
+    scene.animationCues = generateTextCues(scene.narration, scene.bullets.length);
+  } else if (scene.type === 'table') {
+    const rowCount = scene.content.split('\n').filter(l => l.includes('|')).length - 2;
+    scene.animationCues = generateTableCues(scene.narration, Math.max(1, rowCount));
+  }
+
+  scene.sfxTriggers = generateSceneSfxTriggers(0, scene.type, scene.animationCues || []);
 
   return scene;
 }

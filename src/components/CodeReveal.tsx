@@ -2,6 +2,8 @@ import React from 'react';
 import { useCurrentFrame, AbsoluteFill, interpolate } from 'remotion';
 import { COLORS, FONTS, SIZES } from '../lib/theme';
 import { fadeIn, slideUp } from '../lib/animations';
+import { useSync } from '../hooks/useSync';
+import type { AnimationCue } from '../types';
 
 interface CodeRevealProps {
   code: string;
@@ -10,6 +12,9 @@ interface CodeRevealProps {
   highlightLines?: number[];
   startFrame?: number;
   output?: string;
+  sceneIndex?: number;
+  sceneStartFrame?: number;
+  animationCues?: AnimationCue[];
 }
 
 // Token types for syntax highlighting
@@ -225,15 +230,33 @@ const CodeReveal: React.FC<CodeRevealProps> = ({
   highlightLines = [],
   startFrame = 0,
   output,
+  sceneIndex,
+  sceneStartFrame,
+  animationCues,
 }) => {
   const frame = useCurrentFrame();
   const lines = code.split('\n');
   const framesPerLine = 12;
 
+  // Sync hook — always called unconditionally (React Rules of Hooks)
+  const sync = useSync(sceneIndex ?? 0, sceneStartFrame ?? startFrame);
+
   // Scan line position (moves down as code is revealed)
-  const currentRevealLine = Math.floor(
-    Math.max(0, (frame - startFrame - 20)) / framesPerLine,
-  );
+  let currentRevealLine: number;
+  const hasSyncData = sync.isNarrating || sync.wordsSpoken > 0;
+  if (hasSyncData && animationCues && animationCues.length > 0) {
+    const typeLineCues = animationCues.filter(c => c.action === 'typeLine');
+    const reachedCues = typeLineCues.filter(c => sync.wordIndex >= c.wordIndex);
+    if (reachedCues.length > 0) {
+      const lastCue = reachedCues[reachedCues.length - 1];
+      currentRevealLine = typeof lastCue.target === 'number' ? lastCue.target : lines.length;
+    } else {
+      currentRevealLine = 0;
+    }
+  } else {
+    // Fallback: time-based reveal (backward compat)
+    currentRevealLine = Math.floor(Math.max(0, (frame - startFrame - 20)) / framesPerLine);
+  }
 
   // Total revealed lines
   const totalRevealed = Math.min(lines.length, currentRevealLine + 1);
