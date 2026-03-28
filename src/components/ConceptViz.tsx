@@ -2,10 +2,17 @@ import React from 'react';
 import { useCurrentFrame } from 'remotion';
 import { useSync } from '../hooks/useSync';
 import { KeywordCloud } from './viz/KeywordCloud';
+import { HashTableViz } from './viz/HashTableViz';
+import { TrafficFlow } from './viz/TrafficFlow';
 import type { SyncState } from '../types';
 
 const TOPIC_VIZ_MAP: Record<string, React.FC<{ sync: SyncState; frame: number; keywords: string[] }>> = {
-  // Will be populated in later tasks (TrafficFlow, HashTableViz, etc.)
+  'hash-map': HashTableViz,
+  'hash-table': HashTableViz,
+  'caching': HashTableViz,
+  'load-balanc': TrafficFlow,
+  'cdn': TrafficFlow,
+  'api-gateway': TrafficFlow,
 };
 
 function getVisualization(topic: string) {
