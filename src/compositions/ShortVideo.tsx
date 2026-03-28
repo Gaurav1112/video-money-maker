@@ -16,6 +16,7 @@ import { SyncTimeline } from '../lib/sync-engine';
 import { setSyncTimeline } from '../hooks/useSync';
 import { BgmLayer } from '../components/BgmLayer';
 import { SfxLayer } from '../components/SfxLayer';
+import { BrandingLayer } from '../components/BrandingLayer';
 
 const SHORT_INTRO_DURATION = 45; // 1.5 seconds at 30fps
 const SHORT_OUTRO_DURATION = 90; // 3 seconds at 30fps
@@ -123,6 +124,9 @@ export const ShortVideo: React.FC<ShortVideoProps> = ({ storyboard, maxScenes = 
       {syncTimeline && storyboard.allSfxTriggers && storyboard.allSfxTriggers.length > 0 && (
         <SfxLayer triggers={storyboard.allSfxTriggers} syncTimeline={syncTimeline} />
       )}
+
+      {/* Guru-sishya.in branding */}
+      <BrandingLayer durationInFrames={storyboard.durationInFrames + 135} format="short" />
     </AbsoluteFill>
   );
 };

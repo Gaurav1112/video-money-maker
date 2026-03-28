@@ -13,6 +13,7 @@ import { SfxLayer } from '../components/SfxLayer';
 import { SplitLayout } from '../components/SplitLayout';
 import { ConceptViz } from '../components/ConceptViz';
 import { INTRO_DURATION, OUTRO_DURATION, TRANSITION_DURATION } from '../lib/constants';
+import { BrandingLayer } from '../components/BrandingLayer';
 import {
   TitleSlide,
   CodeReveal,
@@ -324,6 +325,9 @@ export const LongVideo: React.FC<LongVideoProps> = ({ storyboard }) => {
       {storyboard.bgmFile && syncTimeline && (
         <BgmLayer syncTimeline={syncTimeline} bgmFile={storyboard.bgmFile} />
       )}
+
+      {/* Guru-sishya.in branding — watermark + mid-video CTA + end card */}
+      <BrandingLayer durationInFrames={totalFrames} format="long" />
 
       {/* SFX triggers synced to word timestamps */}
       {syncTimeline && storyboard.allSfxTriggers && storyboard.allSfxTriggers.length > 0 && (
