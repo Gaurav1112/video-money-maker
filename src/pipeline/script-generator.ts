@@ -61,22 +61,11 @@ function getAnalogy(topic: string): string | null {
 }
 
 // ---------------------------------------------------------------------------
-// Teaching Technique: Repetition (Khan GS style)
-// Key concepts are restated 3 times in different ways for retention.
+// Teaching Technique: Repetition (DISABLED — was causing word soup)
+// Kept as no-op for API compatibility; previously restated concepts 3x.
 // ---------------------------------------------------------------------------
-function reinforceConcept(concept: string, topic: string): string {
-  return `${concept}. Let me say that again differently... ${rephrase(concept, topic)}. In simple terms, ${simplify(concept)}.`;
-}
-
-function rephrase(concept: string, topic: string): string {
-  const clean = concept.replace(/\.\s*$/, '');
-  return `When we talk about ${topic}, what this really means is: ${clean.toLowerCase()}`;
-}
-
-function simplify(concept: string): string {
-  const clean = concept.replace(/\.\s*$/, '');
-  const firstClause = clean.split(/[,;]/)[0].trim();
-  return firstClause.toLowerCase();
+function reinforceConcept(concept: string, _topic: string): string {
+  return concept;
 }
 
 // ---------------------------------------------------------------------------
@@ -130,28 +119,23 @@ function generateInterviewReality(topic: string): string {
 // ---------------------------------------------------------------------------
 // Teaching Technique: Line-by-Line Code Walkthrough (Fireship style)
 // ---------------------------------------------------------------------------
-function generateCodeWalkthrough(code: string, language: string): string {
+function generateCodeWalkthrough(code: string, _language: string): string {
   const lines = code.split('\n').filter(l => l.trim());
-  let narration = `Alright, let me walk you through this ${language} code, line by line. `;
+  if (lines.length === 0) return '';
 
-  if (lines.length === 0) return narration;
-
+  const parts: string[] = [];
   if (lines[0]) {
-    narration += `First, we ${describeCodeLine(lines[0])}. `;
+    parts.push(`We ${describeCodeLine(lines[0])}`);
   }
-
   if (lines.length > 2) {
-    narration += `The core logic is in the middle section. `;
     const midIdx = Math.floor(lines.length / 2);
-    narration += `Here, we ${describeCodeLine(lines[midIdx])}. `;
+    parts.push(`then ${describeCodeLine(lines[midIdx])}`);
   }
-
   if (lines.length > 1 && lines[lines.length - 1]) {
-    narration += `And finally, we ${describeCodeLine(lines[lines.length - 1])}. `;
+    parts.push(`and ${describeCodeLine(lines[lines.length - 1])}`);
   }
 
-  narration += 'This is exactly how you would write it in a real interview.';
-  return narration;
+  return parts.join(', ') + '.';
 }
 
 function describeCodeLine(line: string): string {
@@ -297,68 +281,35 @@ function generateSummaryNarration(topic: string, objectives: string[]): string {
 // ---------------------------------------------------------------------------
 function makeConversational(text: string): string {
   return text
-    // Transform formal constructions into conversational ones
-    .replace(/^(.+) is a (.+) that/m, 'So basically, $1 is like a $2 that')
-    .replace(/This ensures/g, "And this is the cool part, it ensures")
-    .replace(/For example,/g, "Think about it this way.")
-    .replace(/In conclusion,/g, "So here's the bottom line.")
-    .replace(/It is important to/g, "Here's why you should care about this.")
-    .replace(/Furthermore,/g, "And it gets better.")
-    .replace(/However,/g, "But here's the thing.")
-    .replace(/Therefore,/g, "So what does this mean?")
-    .replace(/In other words,/g, "Put simply,")
-    .replace(/It should be noted that/g, "And here's something people miss.")
-    .replace(/As mentioned earlier,/g, "Remember what I said earlier?")
-    .replace(/The following/g, "What comes next")
-    .replace(/Consequently,/g, "And because of that,")
-    .replace(/Additionally,/g, "Oh, and one more thing.")
-    // Add natural connectors (only on sentence boundaries)
-    .replace(/\. The /g, '. Now, the ')
-    .replace(/\. This /g, '. And this ')
-    .replace(/\. It /g, '. So it ')
-    .replace(/\. They /g, '. And they ')
-    .replace(/\. These /g, '. Now, these ')
-    // Remove overly academic phrasing
+    // Only fix genuinely academic phrasing — keep everything else intact
     .replace(/utilize/gi, 'use')
     .replace(/subsequently/gi, 'then')
     .replace(/functionality/gi, 'feature')
-    .replace(/in order to/gi, 'to');
+    .replace(/in order to/gi, 'to')
+    .replace(/However,/g, "But")
+    .replace(/Furthermore,/g, "Also,")
+    .replace(/Therefore,/g, "So");
 }
 
 // ---------------------------------------------------------------------------
 // Section-Specific Narration Generators
 // ---------------------------------------------------------------------------
 function generateDiagramNarration(heading?: string): string {
-  const intros = [
-    "Okay, words can only do so much. Let me show you a visual that makes this click instantly.",
-    "Now let me draw this out so you can see the big picture. This diagram shows exactly how the pieces fit together.",
-    "Visual learner? Me too. Here's a diagram that explains everything we just talked about in one picture.",
-    "This is my favorite part. Let me show you the architecture visually. Once you see this diagram, it all makes sense.",
-  ];
-  const seed = (heading || '').length % intros.length;
-  return `${intros[seed]} ${heading ? `This shows ${heading.toLowerCase()}.` : 'Notice how each component connects to the others.'}`;
+  if (heading) {
+    return `Here's a diagram showing ${heading.toLowerCase()}. Notice how the components connect.`;
+  }
+  return 'This diagram shows how all the pieces fit together.';
 }
 
 function generateTableNarration(heading?: string): string {
-  const intros = [
-    "Now let's put everything side by side in a table. This is the kind of comparison that saves you hours of confusion.",
-    "Here's a comparison table that I wish someone showed me when I was learning this. It cuts right to the trade-offs.",
-    "Let me lay out the options clearly. This table shows you exactly when to use what and why.",
-    "Time for a head-to-head comparison. Pay attention to the trade-offs column, that's where the real insight lives.",
-  ];
-  const seed = (heading || '').length % intros.length;
-  return `${intros[seed]} ${heading ? heading + '.' : 'Notice the key differences between each approach.'}`;
+  if (heading) {
+    return `Here's a comparison of ${heading.toLowerCase()}. Pay attention to the trade-offs.`;
+  }
+  return 'Let\'s compare the approaches. Notice the key differences.';
 }
 
 function generateCalloutNarration(content: string): string {
-  const intros = [
-    "Now here's something your interviewer REALLY wants to hear. Listen carefully.",
-    "This right here is worth the entire video. If you remember one thing, make it this.",
-    "Pro tip from someone who's been on both sides of the interview table.",
-    "Here's the insider insight that separates good answers from great ones.",
-  ];
-  const seed = content.length % intros.length;
-  return `${intros[seed]} ${content}`;
+  return `Here's an important point. ${content}`;
 }
 
 // =========================================================================
@@ -411,7 +362,7 @@ export function generateScript(session: SessionInput, options: ScriptOptions = {
   scenes.push({
     type: 'text',
     content: problemNarration,
-    narration: addTeachingPauses(problemNarration),
+    narration: problemNarration,
     duration: problemDuration,
     startFrame: currentFrame,
     endFrame: (currentFrame += TIMING.secondsToFrames(problemDuration)),
@@ -429,7 +380,7 @@ export function generateScript(session: SessionInput, options: ScriptOptions = {
   scenes.push({
     type: 'text',
     content: wrongAnswerNarration,
-    narration: addTeachingPauses(wrongAnswerNarration),
+    narration: wrongAnswerNarration,
     duration: wrongAnswerDuration,
     startFrame: currentFrame,
     endFrame: (currentFrame += TIMING.secondsToFrames(wrongAnswerDuration)),
@@ -442,7 +393,7 @@ export function generateScript(session: SessionInput, options: ScriptOptions = {
   scenes.push({
     type: 'text',
     content: realAnswerNarration,
-    narration: addTeachingPauses(realAnswerNarration),
+    narration: realAnswerNarration,
     duration: realAnswerDuration,
     startFrame: currentFrame,
     endFrame: (currentFrame += TIMING.secondsToFrames(realAnswerDuration)),
@@ -482,7 +433,7 @@ export function generateScript(session: SessionInput, options: ScriptOptions = {
     scenes.push({
       type: 'interview',
       content: secretNarration,
-      narration: addTeachingPauses(secretNarration),
+      narration: secretNarration,
       duration: secretDuration,
       startFrame: currentFrame,
       endFrame: (currentFrame += TIMING.secondsToFrames(secretDuration)),
@@ -513,7 +464,7 @@ export function generateScript(session: SessionInput, options: ScriptOptions = {
     scenes.push({
       type: 'review',
       content: question,
-      narration: addTeachingPauses(practiceNarration),
+      narration: practiceNarration,
       duration,
       startFrame: currentFrame,
       endFrame: (currentFrame += TIMING.secondsToFrames(duration)),
@@ -526,7 +477,7 @@ export function generateScript(session: SessionInput, options: ScriptOptions = {
   scenes.push({
     type: 'summary',
     content: 'Key Takeaways',
-    narration: addTeachingPauses(summaryNarration),
+    narration: summaryNarration,
     duration: summaryDuration,
     startFrame: currentFrame,
     endFrame: (currentFrame += TIMING.secondsToFrames(summaryDuration)),
@@ -540,54 +491,31 @@ export function generateScript(session: SessionInput, options: ScriptOptions = {
 // Story-Aware Transitions (builds narrative tension)
 // ---------------------------------------------------------------------------
 function addStoryTransitions(scenes: Scene[]): Scene[] {
-  const transitionsByType: Record<string, string[]> = {
-    text: [
-      "Now that you see the problem, let's go deeper. ",
-      "But here's where it gets interesting. ",
-      "And THIS is the part most people miss. ",
-      "Stay with me here, because this changes everything. ",
-      "Now here's the insight that separates juniors from seniors. ",
-      "Let me connect the dots for you. ",
-      "Okay, so now the question becomes... ",
-    ],
-    code: [
-      "Alright, enough theory. Let me show you the code. ",
-      "Now let me prove it to you with actual code. ",
-      "Time to get our hands dirty. Watch this. ",
-      "Here's where we turn theory into reality. ",
-      "Let me show you something that will click immediately. ",
-    ],
-    diagram: [
-      "Let me paint you a picture so this really clicks. ",
-      "Words are not enough. Let me show you visually. ",
-      "This diagram is going to make everything crystal clear. ",
-    ],
-    table: [
-      "Now let's put it all side by side so you can see the trade-offs. ",
-      "Here's the comparison that will help you make the right choice. ",
-      "Let me break down the options so you never pick the wrong one. ",
-    ],
-    interview: [
-      "Now here's the part you REALLY need to remember. ",
-      "This is your secret weapon for interviews. Listen carefully. ",
-      "And here's what your interviewer actually wants to hear. ",
-    ],
-    review: [
-      "Okay, time to test yourself. No peeking. ",
-      "Let's see if you were really paying attention. ",
-    ],
+  // Transition phrases — one per type, used only on the FIRST occurrence
+  const transitionsByType: Record<string, string> = {
+    code: "Let me show you the code. ",
+    diagram: "Let me show you this visually. ",
+    table: "Let's compare the approaches side by side. ",
+    interview: "Now for the interview insight. ",
+    review: "Time to test yourself. ",
   };
 
+  const usedTypes = new Set<string>();
+
   return scenes.map((scene, idx) => {
-    // Skip the first 4 scenes (hook, problem, wrong answer, real answer) and special types
+    // Skip story arc scenes (hook, problem, wrong answer, real answer) and bookend types
     if (idx <= 3 || scene.type === 'title' || scene.type === 'summary') return scene;
 
-    const transitions = transitionsByType[scene.type] || transitionsByType.text;
-    const transition = transitions[(idx * 3) % transitions.length];
-    return {
-      ...scene,
-      narration: transition + scene.narration,
-    };
+    // Only prepend a transition for the FIRST scene of each type
+    if (!usedTypes.has(scene.type) && transitionsByType[scene.type]) {
+      usedTypes.add(scene.type);
+      return {
+        ...scene,
+        narration: transitionsByType[scene.type] + scene.narration,
+      };
+    }
+
+    return scene;
   });
 }
 
@@ -790,23 +718,8 @@ function sectionToScene(
   const type = mapSectionType(section.type);
   let narration = generateNarration(section);
 
-  // Teaching Technique: Inject "aha moment" before key sections (every 3rd section)
-  if (sectionIndex > 0 && sectionIndex % 3 === 0 && type !== 'text') {
-    narration = `${getAhaPhrase(sectionIndex)} ${narration}`;
-  }
-
-  // Teaching Technique: Add encouragement before difficult sections (code, diagrams)
-  if (sectionIndex > 2 && sectionIndex % 4 === 0 && (type === 'code' || type === 'diagram')) {
-    narration = `${getEncouragement(sectionIndex)} ${narration}`;
-  }
-
-  // Teaching Technique: Reinforce key concept text sections with repetition
-  if (type === 'text' && section.heading && narration.length > 80 && sectionIndex % 2 === 0) {
-    const firstSentence = narration.split(/[.!?]/)[0].trim();
-    if (firstSentence.length > 20 && firstSentence.length < 200) {
-      narration = reinforceConcept(firstSentence, topic);
-    }
-  }
+  // No more stacking of aha phrases, encouragement, or repetition on every scene.
+  // The narration from generateNarration() is already clean and complete.
 
   const speedKey = section.type === 'code' ? 'code' : section.type === 'callout' ? 'interview' : 'text';
   const wpm = NARRATION_SPEEDS[speedKey];
@@ -859,31 +772,25 @@ function mapSectionType(type: string): SceneType {
 }
 
 function generateNarration(section: MarkdownSection): string {
-  let narration: string;
   switch (section.type) {
     case 'code':
-      narration = summarizeCode(section.content, section.language || 'typescript');
-      break;
+      return summarizeCode(section.content, section.language || 'typescript');
     case 'diagram':
-      narration = generateDiagramNarration(section.heading);
-      break;
+      return generateDiagramNarration(section.heading);
     case 'table':
-      narration = generateTableNarration(section.heading);
-      break;
+      return generateTableNarration(section.heading);
     case 'callout':
-      narration = generateCalloutNarration(section.content);
-      break;
+      return generateCalloutNarration(section.content);
     case 'text':
-    default:
+    default: {
       // Clean markdown and make conversational
       const cleaned = section.content
         .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1') // Remove markdown links
         .replace(/[`*_#]/g, '') // Remove markdown formatting
         .slice(0, 500); // Cap length
-      narration = makeConversational(cleaned);
-      break;
+      return makeConversational(cleaned);
+    }
   }
-  return addTeachingPauses(narration);
 }
 
 function summarizeCode(code: string, language: string): string {
@@ -891,50 +798,23 @@ function summarizeCode(code: string, language: string): string {
   const funcMatch = code.match(/(?:function|def|public\s+\w+)\s+(\w+)/);
   const classMatch = code.match(/class\s+(\w+)/);
 
-  // Engaging intro lines (replaces boring "Let's look at...")
-  const intros = [
-    "Alright, this is where the magic happens. Let me walk you through this code.",
-    "Now watch this carefully. This is the kind of code that gets you hired.",
-    "Here's the implementation. Follow along line by line.",
-    "Let me show you exactly how to write this. This is interview-ready code.",
-    "Okay, time to build this for real. Pay close attention.",
-    "Here's where we turn theory into actual working code. Ready?",
-    "Now let me prove everything I just said with actual code. Watch this.",
-    "This right here is what separates talkers from builders. Let me show you.",
-  ];
-
-  const intro = intros[(code.length + lines.length) % intros.length];
-
-  // Use line-by-line walkthrough for longer code blocks (Fireship style)
-  if (lines.length >= 4) {
-    let prefix = '';
-    if (classMatch) {
-      prefix = `We're building the ${classMatch[1]} class in ${language}. `;
-    } else if (funcMatch) {
-      prefix = `This ${funcMatch[1]} function in ${language} is elegant. `;
-    }
-    return `${intro} ${prefix}${generateCodeWalkthrough(code, language)} Want to run this code yourself? Try our playground at guru-sishya.in.`;
-  }
-
+  // Brief, clear code description — no stacking of intro + walkthrough + CTA
   if (classMatch && funcMatch) {
-    return `${intro} We're building the ${classMatch[1]} class in ${language}. The ${funcMatch[1]} method is where the key logic lives. Each line here solves a specific problem, so don't skip ahead. Want to run this code yourself? Try our playground at guru-sishya.in.`;
+    return `Here's a ${classMatch[1]} class in ${language}. The ${funcMatch[1]} method handles the core logic. ${generateCodeWalkthrough(code, language)}`;
   }
   if (classMatch) {
-    return `${intro} We're building the ${classMatch[1]} class in ${language}. This is a clean, production-ready implementation. Notice how each method has a single responsibility. This is how senior engineers write code.`;
+    return `Here's the ${classMatch[1]} class in ${language}. ${generateCodeWalkthrough(code, language)}`;
   }
   if (funcMatch) {
-    return `${intro} This ${funcMatch[1]} function in ${language} is elegant but powerful. Let me break down exactly what each line does and why it's written this way.`;
+    return `This ${funcMatch[1]} function in ${language} does the heavy lifting. ${generateCodeWalkthrough(code, language)}`;
   }
-  return `${intro} This ${language} code is exactly what you'd write in an interview. It's ${lines.length} lines, it's clean, and it solves the problem efficiently. Let me walk you through it.`;
+  return `Here's the ${language} implementation in ${lines.length} lines. ${generateCodeWalkthrough(code, language)}`;
 }
 
-// Add teaching pauses to narration for a more natural, teacher-like delivery
+// Add teaching pauses — only at major transition points, not after every sentence
 function addTeachingPauses(text: string): string {
-  return text
-    .replace(/\. /g, '... ')           // Pause after sentences
-    .replace(/: /g, '... ')            // Pause after colons
-    .replace(/\? /g, '?... ')          // Longer pause after questions
-    .replace(/! /g, '!... ');          // Pause after exclamations
+  // Only add a pause after questions (natural thinking moment)
+  return text.replace(/\? /g, '? ... ');
 }
 
 export {

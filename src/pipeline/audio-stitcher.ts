@@ -1,0 +1,148 @@
+import { execFileSync } from 'child_process';
+import fs from 'fs';
+import path from 'path';
+import { TTSResult } from '../types';
+
+const AUDIO_DIR = path.join(process.cwd(), 'public', 'audio');
+
+/**
+ * Check if ffmpeg is available on the system.
+ */
+function hasFfmpeg(): boolean {
+  try {
+    execFileSync('ffmpeg', ['-version'], { timeout: 5000, stdio: 'pipe' });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Get accurate audio duration using ffprobe (falls back to file-size estimate).
+ */
+function probeDuration(filePath: string): number {
+  try {
+    const out = execFileSync('ffprobe', [
+      '-v', 'error',
+      '-show_entries', 'format=duration',
+      '-of', 'csv=p=0',
+      filePath,
+    ], { timeout: 10000, encoding: 'utf-8' });
+    const parsed = parseFloat(out.trim());
+    if (!isNaN(parsed) && parsed > 0) return parsed;
+  } catch {
+    // fall through
+  }
+  // Fallback: estimate from file size (~16KB/s for 128kbps MP3)
+  const stats = fs.statSync(filePath);
+  return stats.size / 16000;
+}
+
+/**
+ * Concatenate all scene audio files into one master audio file.
+ * Adds configurable silence gaps between scenes for breathing room.
+ *
+ * Returns the master file path, total duration, and per-scene offsets
+ * so captions can be synced to the single audio track.
+ */
+export function stitchAudio(
+  audioResults: TTSResult[],
+  gapSeconds: number = 0.8,
+  outputName: string = 'master-audio.mp3'
+): {
+  masterPath: string;
+  totalDuration: number;
+  /** Offset (in seconds) where each scene's audio begins in the master file */
+  sceneOffsets: number[];
+} {
+  // Ensure output directory exists
+  fs.mkdirSync(AUDIO_DIR, { recursive: true });
+
+  const masterPath = path.join(AUDIO_DIR, outputName);
+
+  // Collect valid audio files
+  const validEntries: { index: number; path: string }[] = [];
+  for (let i = 0; i < audioResults.length; i++) {
+    const audio = audioResults[i];
+    if (audio.audioPath && fs.existsSync(audio.audioPath)) {
+      validEntries.push({ index: i, path: audio.audioPath });
+    }
+  }
+
+  // If no valid audio at all, return empty result
+  if (validEntries.length === 0) {
+    console.warn('⚠ No audio files to stitch');
+    return { masterPath: '', totalDuration: 0, sceneOffsets: audioResults.map(() => 0) };
+  }
+
+  // If only one audio file, just copy it
+  if (validEntries.length === 1) {
+    fs.copyFileSync(validEntries[0].path, masterPath);
+    const duration = probeDuration(masterPath);
+    const offsets = audioResults.map(() => 0);
+    offsets[validEntries[0].index] = 0;
+    console.log(`✓ Master audio (single scene): ${outputName} (${duration.toFixed(1)}s)`);
+    return { masterPath, totalDuration: duration, sceneOffsets: offsets };
+  }
+
+  // Check ffmpeg availability
+  if (!hasFfmpeg()) {
+    console.warn('⚠ ffmpeg not available — using first audio file as master (no stitching)');
+    fs.copyFileSync(validEntries[0].path, masterPath);
+    const duration = probeDuration(masterPath);
+    return { masterPath, totalDuration: duration, sceneOffsets: audioResults.map(() => 0) };
+  }
+
+  // Generate silence file for gaps between scenes
+  const silencePath = path.join(AUDIO_DIR, `_silence_${gapSeconds}s.mp3`);
+  if (!fs.existsSync(silencePath)) {
+    execFileSync('ffmpeg', [
+      '-y', '-f', 'lavfi', '-i', `anullsrc=r=24000:cl=mono`,
+      '-t', String(gapSeconds),
+      '-codec:a', 'libmp3lame', '-b:a', '128k',
+      silencePath,
+    ], { timeout: 10000, stdio: 'pipe' });
+  }
+
+  // Build ffmpeg concat list and calculate per-scene offsets
+  const listPath = path.join(AUDIO_DIR, '_concat-list.txt');
+  const lines: string[] = [];
+  const sceneOffsets: number[] = audioResults.map(() => -1); // -1 = no audio
+  let cursor = 0; // seconds into the master file
+
+  for (let vi = 0; vi < validEntries.length; vi++) {
+    const entry = validEntries[vi];
+    const sceneDuration = probeDuration(entry.path);
+
+    // Record where this scene starts in the master
+    sceneOffsets[entry.index] = cursor;
+
+    lines.push(`file '${entry.path}'`);
+    cursor += sceneDuration;
+
+    // Add silence gap after each scene except the last
+    if (vi < validEntries.length - 1) {
+      lines.push(`file '${silencePath}'`);
+      cursor += gapSeconds;
+    }
+  }
+
+  fs.writeFileSync(listPath, lines.join('\n'));
+
+  // Concatenate with ffmpeg
+  execFileSync('ffmpeg', [
+    '-y', '-f', 'concat', '-safe', '0',
+    '-i', listPath,
+    '-codec:a', 'libmp3lame', '-b:a', '128k',
+    masterPath,
+  ], { timeout: 120000, stdio: 'pipe' });
+
+  // Cleanup temp file
+  try { fs.unlinkSync(listPath); } catch { /* ignore */ }
+
+  // Get actual total duration from the output file
+  const totalDuration = probeDuration(masterPath);
+
+  console.log(`✓ Master audio: ${outputName} (${totalDuration.toFixed(1)}s, ${validEntries.length} scenes stitched)`);
+  return { masterPath, totalDuration, sceneOffsets };
+}

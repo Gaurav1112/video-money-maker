@@ -82,9 +82,9 @@ export const ShortVideo: React.FC<ShortVideoProps> = ({ storyboard, maxScenes = 
       {/* Progress bar */}
       <ProgressBar progress={progress} />
 
-      {/* Audio */}
+      {/* Single master narration audio */}
       {storyboard.audioFile && (
-        <Audio src={staticFile(storyboard.audioFile)} />
+        <Audio src={staticFile(`audio/${storyboard.audioFile.split('/').pop()}`)} />
       )}
     </AbsoluteFill>
   );

@@ -1,5 +1,6 @@
 import { Scene, Storyboard, TTSResult } from '../types';
 import { TIMING } from '../lib/constants';
+import { stitchAudio } from './audio-stitcher';
 
 interface StoryboardOptions {
   topic: string;
@@ -18,6 +19,14 @@ export function generateStoryboard(
   options: StoryboardOptions
 ): Storyboard {
   const { topic, sessionNumber, fps = 30, width = 1920, height = 1080 } = options;
+
+  // ── Stitch all scene audio into ONE master track ──
+  // This eliminates audio overlap during TransitionSeries crossfades.
+  const { masterPath, totalDuration: masterDuration, sceneOffsets } = stitchAudio(
+    audioResults,
+    0.8, // 0.8s silence gap between scenes
+    `master-${topic.replace(/[^a-z0-9]/gi, '-')}-s${sessionNumber}.mp3`
+  );
 
   // Prepend branded intro scene
   const introScene: Scene = {
@@ -60,12 +69,13 @@ export function generateStoryboard(
     const durationFrames = TIMING.secondsToFrames(duration);
     const endFrame = startFrame + durationFrames;
 
+    // No per-scene audioFile — we use the master track instead
     timedScenes.push({
       ...scene,
       startFrame,
       endFrame,
       duration,
-      audioFile: audio?.audioPath || undefined,
+      audioFile: undefined, // cleared: master audio handles all narration
     });
 
     currentFrame = endFrame;
@@ -83,16 +93,13 @@ export function generateStoryboard(
   timedScenes.push(outroScene);
   currentFrame = outroScene.endFrame;
 
-  // Combine all audio into one file path (or use first available)
-  const audioFile = audioResults.find(a => a.audioPath)?.audioPath || '';
-
   return {
     fps,
     width,
     height,
     durationInFrames: currentFrame,
     scenes: timedScenes,
-    audioFile,
+    audioFile: masterPath,
     topic,
     sessionNumber,
   };

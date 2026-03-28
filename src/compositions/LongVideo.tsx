@@ -207,19 +207,7 @@ export const LongVideo: React.FC<LongVideoProps> = ({ storyboard }) => {
                     {!isFirst && (
                       <SceneTransitionFlash sceneType={scene.type} />
                     )}
-                    {scene.audioFile && scene.audioFile !== '' && (
-                      <Audio
-                        src={staticFile(`audio/${scene.audioFile.split('/').pop()}`)}
-                        volume={(f) => {
-                          // Fade out in last 15 frames to prevent overlap during transition
-                          const fadeOutStart = duration - 20;
-                          if (f >= fadeOutStart) {
-                            return interpolate(f, [fadeOutStart, duration], [1, 0], { extrapolateRight: 'clamp' });
-                          }
-                          return 1;
-                        }}
-                      />
-                    )}
+                    {/* Per-scene audio REMOVED — single master audio track below */}
                   </AbsoluteFill>
                 </TransitionSeries.Sequence>
               </React.Fragment>
@@ -269,6 +257,23 @@ export const LongVideo: React.FC<LongVideoProps> = ({ storyboard }) => {
         <NarratorIndicator
           isActive={hasNarration || false}
           label="Guru Sishya"
+        />
+      )}
+
+      {/* Single master narration audio — no overlap possible */}
+      {storyboard.audioFile && (
+        <Audio
+          src={staticFile(`audio/${storyboard.audioFile.split('/').pop()}`)}
+          volume={(f) => {
+            // Gentle fade-in over the first second
+            const fadeIn = interpolate(f, [0, 30], [0, 1], { extrapolateRight: 'clamp' });
+            // Gentle fade-out over the last 2 seconds
+            const fadeOutStart = totalFrames - 60;
+            const fadeOut = f >= fadeOutStart
+              ? interpolate(f, [fadeOutStart, totalFrames], [1, 0], { extrapolateRight: 'clamp' })
+              : 1;
+            return fadeIn * fadeOut;
+          }}
         />
       )}
 
