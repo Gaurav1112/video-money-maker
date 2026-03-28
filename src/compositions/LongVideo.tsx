@@ -176,9 +176,10 @@ export const LongVideo: React.FC<LongVideoProps> = ({ storyboard }) => {
     return new SyncTimeline(offsets, timestamps, fps, INTRO_DURATION);
   }, [storyboard, fps]);
 
-  React.useEffect(() => {
-    setSyncTimeline(syncTimeline);
-  }, [syncTimeline]);
+  // Set synchronously during render — setSyncTimeline is a simple variable assignment
+  // with no side effects, so calling it during render is safe. Using useEffect caused
+  // globalTimeline to be null on frame 0 (BUG 5).
+  setSyncTimeline(syncTimeline);
 
   // Get active scene for captions and overlays (offset by intro duration)
   const contentFrame = frame - INTRO_DURATION;
@@ -352,6 +353,7 @@ export const LongVideo: React.FC<LongVideoProps> = ({ storyboard }) => {
           text={activeScene.narration!}
           startFrame={INTRO_DURATION + activeScene.startFrame}
           durationInFrames={activeScene.endFrame - activeScene.startFrame}
+          wordTimestamps={activeScene.wordTimestamps}
         />
       )}
 
