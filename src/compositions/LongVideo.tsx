@@ -1,11 +1,18 @@
 import React from 'react';
-import { useCurrentFrame, AbsoluteFill, Sequence, Audio, staticFile, interpolate } from 'remotion';
+import { useCurrentFrame, useVideoConfig, AbsoluteFill, Sequence, Audio, staticFile, interpolate } from 'remotion';
 import { TransitionSeries, linearTiming, TransitionPresentation } from '@remotion/transitions';
 import { fade } from '@remotion/transitions/fade';
 import { slide } from '@remotion/transitions/slide';
 import { wipe } from '@remotion/transitions/wipe';
 import { Storyboard, Scene } from '../types';
 import { COLORS } from '../lib/theme';
+import { SyncTimeline } from '../lib/sync-engine';
+import { setSyncTimeline } from '../hooks/useSync';
+import { BgmLayer } from '../components/BgmLayer';
+import { SfxLayer } from '../components/SfxLayer';
+import { SplitLayout } from '../components/SplitLayout';
+import { ConceptViz } from '../components/ConceptViz';
+import { INTRO_DURATION, OUTRO_DURATION, TRANSITION_DURATION } from '../lib/constants';
 import {
   TitleSlide,
   CodeReveal,
@@ -25,9 +32,6 @@ import {
   OutroSlide,
 } from '../components';
 
-const INTRO_DURATION = 90; // 3 seconds at 30fps
-const OUTRO_DURATION = 150; // 5 seconds at 30fps
-
 interface LongVideoProps {
   storyboard: Storyboard;
 }
@@ -42,8 +46,6 @@ const SCENE_COMPONENT_MAP: Record<string, React.FC<any>> = {
   review: ReviewQuestion,
   summary: SummarySlide,
 };
-
-const TRANSITION_DURATION = 15; // 0.5 seconds at 30fps
 
 function getTransitionForScene(sceneType: string): TransitionPresentation<Record<string, unknown>> {
   switch (sceneType) {
@@ -153,9 +155,21 @@ function getSceneMarkers(scenes: Scene[], totalFrames: number) {
 
 export const LongVideo: React.FC<LongVideoProps> = ({ storyboard }) => {
   const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
   const contentFrames = storyboard.durationInFrames;
   const totalFrames = INTRO_DURATION + contentFrames + OUTRO_DURATION;
   const progress = frame / totalFrames;
+
+  // Build SyncTimeline for audio/word sync across all scenes
+  const syncTimeline = React.useMemo(() => {
+    const offsets = storyboard.sceneOffsets || [];
+    const timestamps = storyboard.scenes.map(s => s.wordTimestamps || []);
+    return new SyncTimeline(offsets, timestamps, fps, INTRO_DURATION);
+  }, [storyboard, fps]);
+
+  React.useEffect(() => {
+    setSyncTimeline(syncTimeline);
+  }, [syncTimeline]);
 
   // Get active scene for captions and overlays (offset by intro duration)
   const contentFrame = frame - INTRO_DURATION;
@@ -190,6 +204,31 @@ export const LongVideo: React.FC<LongVideoProps> = ({ storyboard }) => {
             const duration = scene.endFrame - scene.startFrame;
             const props = getSceneProps(scene, storyboard);
             const isFirst = idx === 0;
+            // Absolute frame at which this scene starts (relative to the full composition)
+            const sceneStartFrame = INTRO_DURATION + scene.startFrame;
+            const syncProps = {
+              sceneIndex: idx,
+              sceneStartFrame,
+              animationCues: scene.animationCues,
+            };
+
+            // Text and interview scenes get SplitLayout with ConceptViz on the right
+            const renderedScene =
+              scene.type === 'text' || scene.type === 'interview' ? (
+                <SplitLayout
+                  left={<Component {...props} {...syncProps} />}
+                  right={
+                    <ConceptViz
+                      topic={storyboard.topic}
+                      sceneIndex={idx}
+                      sceneStartFrame={sceneStartFrame}
+                      keywords={scene.bullets || []}
+                    />
+                  }
+                />
+              ) : (
+                <Component {...props} {...syncProps} />
+              );
 
             return (
               <React.Fragment key={idx}>
@@ -202,12 +241,11 @@ export const LongVideo: React.FC<LongVideoProps> = ({ storyboard }) => {
                 )}
                 <TransitionSeries.Sequence durationInFrames={duration}>
                   <AbsoluteFill>
-                    <Component {...props} />
+                    {renderedScene}
                     {/* Scene transition flash effect */}
                     {!isFirst && (
                       <SceneTransitionFlash sceneType={scene.type} />
                     )}
-                    {/* Per-scene audio REMOVED — single master audio track below */}
                   </AbsoluteFill>
                 </TransitionSeries.Sequence>
               </React.Fragment>
@@ -262,32 +300,34 @@ export const LongVideo: React.FC<LongVideoProps> = ({ storyboard }) => {
 
       {/* Single master narration audio — no overlap possible */}
       {storyboard.audioFile && (
-        <Audio
-          src={staticFile(`audio/${storyboard.audioFile.split('/').pop()}`)}
-          volume={(f) => {
-            // Gentle fade-in over the first second
-            const fadeIn = interpolate(f, [0, 30], [0, 1], { extrapolateRight: 'clamp' });
-            // Gentle fade-out over the last 2 seconds
-            const fadeOutStart = totalFrames - 60;
-            const fadeOut = f >= fadeOutStart
-              ? interpolate(f, [fadeOutStart, totalFrames], [1, 0], { extrapolateRight: 'clamp' })
-              : 1;
-            return fadeIn * fadeOut;
-          }}
-        />
-      )}
-
-      {/* Background music */}
-      {storyboard.bgmFile && (
-        <Sequence from={0}>
+        <Sequence from={INTRO_DURATION}>
           <Audio
-            src={staticFile(storyboard.bgmFile)}
+            src={staticFile(`audio/${storyboard.audioFile.split('/').pop()}`)}
             volume={(f) => {
-              return interpolate(f, [0, 60], [0, 0.12], { extrapolateRight: 'clamp' });
+              // Gentle fade-in over the first 0.5 second
+              const fadeIn = interpolate(f, [0, 15], [0, 1], { extrapolateRight: 'clamp' });
+              // Gentle fade-out over the last 0.5 second
+              const totalAudioFrames = storyboard.durationInFrames - INTRO_DURATION - OUTRO_DURATION;
+              const fadeOut = interpolate(
+                f,
+                [totalAudioFrames - 15, totalAudioFrames],
+                [1, 0],
+                { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
+              );
+              return fadeIn * fadeOut;
             }}
-            loop
           />
         </Sequence>
+      )}
+
+      {/* Background music with sidechain ducking during narration */}
+      {storyboard.bgmFile && syncTimeline && (
+        <BgmLayer syncTimeline={syncTimeline} bgmFile={storyboard.bgmFile} />
+      )}
+
+      {/* SFX triggers synced to word timestamps */}
+      {syncTimeline && storyboard.allSfxTriggers && storyboard.allSfxTriggers.length > 0 && (
+        <SfxLayer triggers={storyboard.allSfxTriggers} syncTimeline={syncTimeline} />
       )}
     </AbsoluteFill>
   );
