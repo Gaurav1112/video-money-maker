@@ -30,6 +30,13 @@ export async function generateAudio(
     console.warn('Kokoro TTS unavailable, trying Edge TTS...');
   }
 
+  // Try Edge TTS (free Microsoft natural voices, works everywhere with internet)
+  try {
+    return await edgeTTS(text, cacheKey, outputName);
+  } catch (edgeErr) {
+    console.warn('Edge TTS failed:', (edgeErr as Error).message);
+  }
+
   // Try macOS native TTS (free, works offline on Mac)
   if (process.platform === 'darwin') {
     try {
@@ -73,6 +80,42 @@ async function kokoroTTS(
   const result = makeTimestamps(text, duration, audioPath);
   cache.set(cacheKey, result);
   console.log(`  ✓ Kokoro TTS: ${filename} (${duration.toFixed(1)}s)`);
+  return result;
+}
+
+// ─── Edge TTS (free Microsoft natural voices) ───
+async function edgeTTS(
+  text: string,
+  cacheKey: string,
+  outputName?: string
+): Promise<TTSResult> {
+  const { execFileSync } = await import('child_process');
+
+  const filename = outputName || `edge_${cacheKey.slice(0, 12)}.mp3`;
+  const audioPath = path.join(AUDIO_DIR, filename);
+
+  // Clean text for command safety
+  const cleanText = text.replace(/"/g, '\\"').slice(0, 3000);
+
+  // Use python3 edge-tts module (Microsoft neural voices - very natural)
+  // en-US-AriaNeural = warm, clear female voice
+  // en-IN-NeerjaNeural = Indian English female (great for Indian students!)
+  const voice = process.env.EDGE_TTS_VOICE || 'en-US-AriaNeural';
+
+  execFileSync('python3', [
+    '-m', 'edge_tts',
+    '--voice', voice,
+    '--text', cleanText,
+    '--write-media', audioPath,
+  ], { timeout: 60000 });
+
+  const stats = fs.statSync(audioPath);
+  // Edge TTS MP3 is ~12KB/sec at the default quality
+  const duration = stats.size / 12000;
+
+  const result = makeTimestamps(text, duration, audioPath);
+  cache.set(cacheKey, result);
+  console.log(`  ✓ Edge TTS (${voice}): ${filename} (${duration.toFixed(1)}s)`);
   return result;
 }
 
