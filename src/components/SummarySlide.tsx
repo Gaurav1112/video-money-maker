@@ -1,58 +1,70 @@
 import React from 'react';
 import { useCurrentFrame, AbsoluteFill, interpolate } from 'remotion';
 import { COLORS, FONTS, SIZES } from '../lib/theme';
-import { fadeIn, slideUp, stagger, springIn, springScale, bounceIn } from '../lib/animations';
+import { fadeIn, slideUp, stagger, springIn, springScale } from '../lib/animations';
 
 interface SummarySlideProps {
-  takeaways: string[];
-  topic: string;
+  takeaways?: string[];
+  topic?: string;
   sessionNumber?: number;
   nextTopic?: string;
   startFrame?: number;
+  endFrame?: number;
 }
 
 const SummarySlide: React.FC<SummarySlideProps> = ({
   takeaways = [],
-  topic = '',
+  topic = 'this topic',
   sessionNumber = 1,
   nextTopic,
   startFrame = 0,
+  endFrame,
 }) => {
   const frame = useCurrentFrame();
+
+  // Default takeaways so the slide is never blank
+  const displayTakeaways =
+    takeaways && takeaways.length > 0
+      ? takeaways
+      : [
+          `You learned the fundamentals of ${topic}`,
+          `You can now explain ${topic} clearly in interviews`,
+          `Practice quizzes and flashcards at guru-sishya.in`,
+        ];
 
   // Celebration flash at start
   const flashOpacity = interpolate(
     frame,
     [startFrame, startFrame + 5, startFrame + 15],
-    [0, 0.3, 0],
+    [0, 0.4, 0],
     { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
   );
 
+  // Heading animations
   const headingSpring = springIn(frame, startFrame);
   const headingY = slideUp(frame, startFrame, 60);
 
-  // Checkmark animation stagger
-  const checkmarkDelay = 20;
+  // Checkmark stagger — each item appears 18 frames after the previous
+  const checkmarkDelay = 18;
 
-  // Subscribe button animation
-  const subscribeStart = startFrame + 30 + takeaways.length * 15;
-  const subscribeSpring = springIn(frame, subscribeStart);
-  const subscribePulse = interpolate(
-    Math.sin((frame - subscribeStart) * 0.08),
+  // Badge appears after all takeaways
+  const badgeStart = startFrame + 20 + displayTakeaways.length * checkmarkDelay;
+  const badgeSpring = springIn(frame, badgeStart);
+  const badgeY = slideUp(frame, badgeStart, 40);
+
+  // CTA appears after badge
+  const ctaStart = badgeStart + 20;
+  const ctaSpring = springIn(frame, ctaStart);
+  const ctaScale = springScale(frame, ctaStart);
+
+  // Pulse glow on CTA
+  const ctaPulse = interpolate(
+    Math.sin((frame - ctaStart) * 0.07),
     [-1, 1],
-    [0.97, 1.03],
+    [0.98, 1.02],
   );
 
-  // Branding reveal
-  const brandStart = subscribeStart + 20;
-  const brandOpacity = fadeIn(frame, brandStart);
-
-  // Next lesson teaser
-  const nextStart = brandStart + 15;
-  const nextOpacity = fadeIn(frame, nextStart);
-  const nextSlide = slideUp(frame, nextStart, 30);
-
-  // Confetti particles
+  // Confetti
   const showConfetti = frame > startFrame + 5;
 
   return (
@@ -74,98 +86,107 @@ const SummarySlide: React.FC<SummarySlideProps> = ({
         }}
       />
 
-      {/* Confetti particles - more and varied */}
-      {showConfetti && Array.from({ length: 24 }).map((_, i) => {
-        const confettiColors = [COLORS.saffron, COLORS.gold, COLORS.teal, COLORS.indigo, COLORS.white];
-        const speed = 1.5 + (i % 3) * 0.5;
-        const startX = 10 + (i * 7.5) % 80;
-        const y = interpolate(
-          frame - startFrame - 5,
-          [0, 200],
-          [-10, 120],
-          { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
-        );
-        const x = startX + Math.sin(frame * 0.03 + i * 2) * 8;
-        const rotation = frame * speed * 3 + i * 45;
-        const confettiOpacity = interpolate(
-          frame - startFrame - 5,
-          [0, 20, 120, 180],
-          [0, 0.8, 0.6, 0],
-          { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
-        );
+      {/* Confetti particles */}
+      {showConfetti &&
+        Array.from({ length: 24 }).map((_, i) => {
+          const confettiColors = [
+            COLORS.saffron,
+            COLORS.gold,
+            COLORS.teal,
+            COLORS.indigo,
+            COLORS.white,
+          ];
+          const startX = 10 + (i * 7.5) % 80;
+          const speed = 1.5 + (i % 3) * 0.5;
+          const yProgress = interpolate(
+            frame - startFrame - 5,
+            [0, 200],
+            [-10, 120],
+            { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
+          );
+          const x = startX + Math.sin(frame * 0.03 + i * 2) * 8;
+          const rotation = frame * speed * 3 + i * 45;
+          const confettiOpacity = interpolate(
+            frame - startFrame - 5,
+            [0, 20, 100, 160],
+            [0, 0.9, 0.6, 0],
+            { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
+          );
 
-        return (
-          <div
-            key={i}
-            style={{
-              position: 'absolute',
-              left: `${x}%`,
-              top: `${y}%`,
-              width: i % 2 === 0 ? 8 : 12,
-              height: i % 2 === 0 ? 12 : 4,
-              backgroundColor: confettiColors[i % confettiColors.length],
-              opacity: confettiOpacity,
-              transform: `rotate(${rotation}deg)`,
-              borderRadius: i % 3 === 0 ? '50%' : 2,
-              zIndex: 5,
-            }}
-          />
-        );
-      })}
+          return (
+            <div
+              key={i}
+              style={{
+                position: 'absolute',
+                left: `${x}%`,
+                top: `${yProgress}%`,
+                width: i % 2 === 0 ? 8 : 12,
+                height: i % 2 === 0 ? 12 : 4,
+                backgroundColor: confettiColors[i % confettiColors.length],
+                opacity: confettiOpacity,
+                transform: `rotate(${rotation}deg)`,
+                borderRadius: i % 3 === 0 ? '50%' : 2,
+                zIndex: 5,
+              }}
+            />
+          );
+        })}
 
-      {/* Background gradient orb */}
+      {/* Background glow orb */}
       <div
         style={{
           position: 'absolute',
-          top: '20%',
+          top: '10%',
           left: '50%',
-          width: 800,
-          height: 600,
+          width: 900,
+          height: 700,
           borderRadius: '50%',
-          background: `radial-gradient(ellipse, ${COLORS.gold}08, transparent 70%)`,
+          background: `radial-gradient(ellipse, ${COLORS.gold}12 0%, ${COLORS.saffron}06 40%, transparent 70%)`,
           transform: 'translateX(-50%)',
-          filter: 'blur(60px)',
+          filter: 'blur(80px)',
+          zIndex: 1,
         }}
       />
 
-      {/* Main content */}
+      {/* ── MAIN CONTENT ── */}
       <div
         style={{
           position: 'relative',
           zIndex: 6,
-          padding: '60px 100px',
+          padding: '56px 96px',
           display: 'flex',
           flexDirection: 'column',
           height: '100%',
+          gap: 0,
         }}
       >
-        {/* Completion badge */}
+        {/* ── TOP LABEL: "Session X Complete" ── */}
         <div
           style={{
             opacity: headingSpring,
             transform: `translateY(${headingY}px)`,
             display: 'flex',
             alignItems: 'center',
-            gap: 16,
-            marginBottom: 12,
+            gap: 14,
+            marginBottom: 10,
           }}
         >
-          {/* Trophy icon */}
           <div
             style={{
-              fontSize: 36,
+              fontSize: 34,
               transform: `scale(${springScale(frame, startFrame + 5)})`,
-              filter: `drop-shadow(0 0 12px ${COLORS.gold}66)`,
+              filter: `drop-shadow(0 0 10px ${COLORS.gold}88)`,
+              lineHeight: 1,
             }}
           >
-            &#127942;
+            🏆
           </div>
           <div
             style={{
               fontSize: SIZES.bodySmall,
               fontWeight: 700,
               color: COLORS.gold,
-              textTransform: 'uppercase',
+              textTransform: 'uppercase' as const,
               letterSpacing: 3,
             }}
           >
@@ -173,29 +194,37 @@ const SummarySlide: React.FC<SummarySlideProps> = ({
           </div>
         </div>
 
-        {/* Main heading */}
+        {/* ── HEADING: "Key Takeaways" ── */}
         <div
           style={{
             opacity: headingSpring,
             transform: `translateY(${headingY}px)`,
             fontSize: SIZES.heading2,
-            fontWeight: 700,
-            color: COLORS.white,
-            marginBottom: 40,
+            fontWeight: 800,
+            color: COLORS.saffron,
+            marginBottom: 36,
             fontFamily: FONTS.heading,
-            lineHeight: 1.2,
+            lineHeight: 1.15,
+            letterSpacing: -0.5,
           }}
         >
           Key Takeaways
         </div>
 
-        {/* Takeaways with animated checkmarks */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 20, flex: 1 }}>
-          {takeaways.map((takeaway, index) => {
-            const itemStart = stagger(index, startFrame + checkmarkDelay, 12);
+        {/* ── TAKEAWAY ITEMS ── */}
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 18,
+            flex: 1,
+          }}
+        >
+          {displayTakeaways.map((takeaway, index) => {
+            const itemStart = stagger(index, startFrame + checkmarkDelay, 18);
             const itemSpring = springIn(frame, itemStart);
             const checkScale = springScale(frame, itemStart);
-            const itemY = slideUp(frame, itemStart, 25);
+            const itemY = slideUp(frame, itemStart, 30);
 
             return (
               <div
@@ -204,21 +233,24 @@ const SummarySlide: React.FC<SummarySlideProps> = ({
                   opacity: itemSpring,
                   transform: `translateY(${itemY}px)`,
                   display: 'flex',
-                  alignItems: 'flex-start',
-                  gap: 16,
+                  alignItems: 'center',
+                  gap: 20,
                   backgroundColor: `${COLORS.darkAlt}`,
-                  borderRadius: 10,
-                  padding: '16px 24px',
-                  borderLeft: `3px solid ${COLORS.teal}`,
+                  borderRadius: 12,
+                  padding: '20px 28px',
+                  border: `1px solid ${COLORS.teal}30`,
+                  borderLeft: `4px solid ${COLORS.teal}`,
+                  boxShadow: `0 2px 24px ${COLORS.teal}10`,
                 }}
               >
-                {/* Animated checkmark */}
+                {/* Animated checkmark circle */}
                 <div
                   style={{
-                    width: 28,
-                    height: 28,
-                    borderRadius: 8,
-                    backgroundColor: COLORS.teal + '20',
+                    width: 36,
+                    height: 36,
+                    borderRadius: '50%',
+                    backgroundColor: COLORS.teal + '25',
+                    border: `2px solid ${COLORS.teal}80`,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -229,18 +261,22 @@ const SummarySlide: React.FC<SummarySlideProps> = ({
                   <span
                     style={{
                       color: COLORS.teal,
-                      fontSize: 16,
-                      fontWeight: 700,
+                      fontSize: 20,
+                      fontWeight: 900,
+                      lineHeight: 1,
                     }}
                   >
-                    &#10003;
+                    ✓
                   </span>
                 </div>
+
+                {/* Takeaway text */}
                 <div
                   style={{
                     fontSize: SIZES.body,
                     color: COLORS.white,
                     lineHeight: 1.5,
+                    fontWeight: 500,
                   }}
                 >
                   {takeaway}
@@ -250,149 +286,98 @@ const SummarySlide: React.FC<SummarySlideProps> = ({
           })}
         </div>
 
-        {/* Bottom section: branding + subscribe + next */}
+        {/* ── MASTERY BADGE ── */}
         <div
           style={{
+            opacity: badgeSpring,
+            transform: `translateY(${badgeY}px)`,
+            marginTop: 28,
             display: 'flex',
-            alignItems: 'flex-end',
-            justifyContent: 'space-between',
-            marginTop: 32,
+            alignItems: 'center',
+            gap: 18,
+            backgroundColor: `${COLORS.gold}12`,
+            border: `2px solid ${COLORS.gold}50`,
+            borderRadius: 16,
+            padding: '18px 28px',
+            boxShadow: `0 4px 32px ${COLORS.gold}20`,
           }}
         >
-          {/* Left: Branding */}
-          <div style={{ opacity: brandOpacity }}>
-            {/* Guru Sishya logo text */}
-            <div
-              style={{
-                fontSize: SIZES.heading3,
-                fontWeight: 800,
-                fontFamily: FONTS.heading,
-                marginBottom: 6,
-              }}
-            >
-              <span style={{ color: COLORS.saffron }}>Guru</span>
-              <span style={{ color: COLORS.gold }}> Sishya</span>
-            </div>
-            <div
-              style={{
-                fontSize: SIZES.caption,
-                color: COLORS.gray,
-                fontWeight: 400,
-              }}
-            >
-              guru-sishya.in
-            </div>
-          </div>
-
-          {/* Center: Subscribe button */}
+          {/* Shield / badge icon */}
           <div
             style={{
-              opacity: subscribeSpring,
-              transform: `scale(${frame > subscribeStart ? subscribePulse : 0.8})`,
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              gap: 10,
+              fontSize: 42,
+              lineHeight: 1,
+              filter: `drop-shadow(0 0 10px ${COLORS.gold}66)`,
+              transform: `scale(${springScale(frame, badgeStart + 5)})`,
             }}
           >
+            🛡️
+          </div>
+          <div>
             <div
               style={{
-                background: `linear-gradient(135deg, #FF0000, #CC0000)`,
-                color: COLORS.white,
-                padding: '14px 40px',
-                borderRadius: 8,
-                fontSize: SIZES.body,
+                fontSize: SIZES.bodySmall,
                 fontWeight: 700,
-                fontFamily: FONTS.text,
-                display: 'flex',
-                alignItems: 'center',
-                gap: 10,
-                boxShadow: `0 4px 20px rgba(255, 0, 0, 0.3)`,
+                color: COLORS.gold,
+                textTransform: 'uppercase' as const,
+                letterSpacing: 2,
+                marginBottom: 4,
               }}
             >
-              {/* Play button icon */}
-              <div
-                style={{
-                  width: 0,
-                  height: 0,
-                  borderLeft: '10px solid white',
-                  borderTop: '6px solid transparent',
-                  borderBottom: '6px solid transparent',
-                }}
-              />
-              SUBSCRIBE
+              Topic Mastery Unlocked
             </div>
             <div
               style={{
-                fontSize: SIZES.caption,
-                color: COLORS.gray,
-                fontWeight: 500,
+                fontSize: SIZES.body,
+                fontWeight: 600,
+                color: COLORS.white,
               }}
             >
-              Daily interview prep tutorials
+              You've completed{' '}
+              <span style={{ color: COLORS.saffron }}>{topic}</span>
+              {' '}— Session {sessionNumber}
             </div>
           </div>
+        </div>
 
-          {/* Right: Next lesson teaser */}
-          {nextTopic ? (
-            <div
+        {/* ── CTA BUTTON ── */}
+        <div
+          style={{
+            opacity: ctaSpring,
+            transform: `scale(${frame > ctaStart ? ctaPulse : ctaScale})`,
+            marginTop: 24,
+            display: 'flex',
+            justifyContent: 'center',
+          }}
+        >
+          <div
+            style={{
+              background: `linear-gradient(135deg, ${COLORS.saffron} 0%, ${COLORS.gold} 100%)`,
+              color: '#0C0A15',
+              padding: '18px 56px',
+              borderRadius: 50,
+              fontSize: SIZES.body,
+              fontWeight: 800,
+              fontFamily: FONTS.text,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 14,
+              boxShadow: `0 6px 30px ${COLORS.saffron}55`,
+              letterSpacing: 0.5,
+            }}
+          >
+            {/* Arrow icon */}
+            <span style={{ fontSize: SIZES.body + 4 }}>🎯</span>
+            Practice now →&nbsp;
+            <span
               style={{
-                opacity: nextOpacity,
-                transform: `translateY(${nextSlide}px)`,
-                textAlign: 'right',
+                textDecoration: 'underline',
+                textUnderlineOffset: 3,
               }}
             >
-              <div
-                style={{
-                  fontSize: SIZES.caption,
-                  color: COLORS.gray,
-                  textTransform: 'uppercase',
-                  letterSpacing: 2,
-                  marginBottom: 6,
-                }}
-              >
-                Up Next
-              </div>
-              <div
-                style={{
-                  fontSize: SIZES.body,
-                  color: COLORS.saffron,
-                  fontWeight: 600,
-                }}
-              >
-                {nextTopic}
-              </div>
-            </div>
-          ) : (
-            <div
-              style={{
-                opacity: nextOpacity,
-                transform: `translateY(${nextSlide}px)`,
-                textAlign: 'right',
-              }}
-            >
-              <div
-                style={{
-                  fontSize: SIZES.caption,
-                  color: COLORS.gray,
-                  textTransform: 'uppercase',
-                  letterSpacing: 2,
-                  marginBottom: 6,
-                }}
-              >
-                Practice this topic
-              </div>
-              <div
-                style={{
-                  fontSize: SIZES.body,
-                  color: COLORS.teal,
-                  fontWeight: 600,
-                }}
-              >
-                {topic}
-              </div>
-            </div>
-          )}
+              www.guru-sishya.in
+            </span>
+          </div>
         </div>
       </div>
     </AbsoluteFill>

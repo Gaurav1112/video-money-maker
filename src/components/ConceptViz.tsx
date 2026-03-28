@@ -55,7 +55,13 @@ export const ConceptViz: React.FC<ConceptVizProps> = ({
 }) => {
   const frame = useCurrentFrame();
   const rawSync = useSync(sceneIndex, sceneStartFrame);
-  const Viz = getVisualization(topic);
+  const TopicViz = getVisualization(topic);
+
+  // VISUAL VARIETY: Alternate between topic visualization and PromoPanel
+  // Even scenes → topic viz (TrafficFlow, HashTable, etc.)
+  // Odd scenes → PromoPanel (guru-sishya.in stats, features, selling content)
+  // This prevents the same animation repeating on every scene
+  const Viz = sceneIndex % 2 === 0 ? TopicViz : PromoPanel;
 
   // If sync isn't producing progress data, fall back to time-based progress.
   // NOTE: useCurrentFrame() returns scene-relative frame inside TransitionSeries,
