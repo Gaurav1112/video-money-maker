@@ -39,15 +39,17 @@ const TextSection: React.FC<TextSectionProps> = ({
   const sync = useSync(sceneIndex ?? 0, sceneStartFrame ?? startFrame);
   const sceneDuration = endFrame - startFrame;
 
-  // Use narration text for visual display if bullets are too short/generic
+  // ALWAYS use narration sentences as visual content — they're richer than generic bullets
   const displayText = narration || content || '';
   const sentences = displayText
     .split(/(?<=[.!?])\s+/)
-    .filter(s => s.trim().length > 10);
+    .map(s => s.trim())
+    .filter(s => s.length > 15 && s.length < 150);
 
-  // Show MORE content: use sentences from narration if bullets are sparse
-  const displayBullets = bullets.length >= 3 ? bullets :
-    sentences.length > 0 ? sentences.slice(0, 5) : bullets;
+  // Prefer narration sentences (5-7 items), fall back to bullets only if no narration
+  const displayBullets = sentences.length >= 3
+    ? sentences.slice(0, 7)
+    : bullets.length > 0 ? bullets : ['...'];
 
   // Progressive reveal: show one item at a time
   const progress = frame / Math.max(1, sceneDuration);
