@@ -288,7 +288,7 @@ const TitleSlide: React.FC<TitleSlideProps> = ({
             textTransform: 'uppercase',
           }}
         >
-          LIVE
+          guru-sishya.in
         </span>
       </div>
 
