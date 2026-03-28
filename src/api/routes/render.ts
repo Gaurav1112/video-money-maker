@@ -28,6 +28,9 @@ router.post('/', (req, res) => {
     duration = 'medium',
     style = 'fireship',
     secondary_language = 'java',
+    // TTS voice settings — default to Indian male (im_nicola) for Guru Sishya
+    voice = 'im_nicola',
+    voice_language = 'indian-english',
   } = req.body;
 
   const jobId = `job_${crypto.randomUUID().slice(0, 8)}`;
@@ -72,13 +75,18 @@ router.post('/', (req, res) => {
       }
       updateRenderJob(jobId, { progress: 20 });
 
-      // 2. Generate script
-      const script = generateScript(session, { language });
+      // 2. Generate script (pass session number for series-aware content)
+      const script = generateScript(session, {
+        language,
+        sessionNumber: session.sessionNumber,
+      });
       updateRenderJob(jobId, { progress: 40 });
 
-      // 3. Generate TTS audio
+      // 3. Generate TTS audio (language-aware voice selection)
       const audioResults = await generateSceneAudios(
-        script.map(s => ({ narration: s.narration, type: s.type }))
+        script.map(s => ({ narration: s.narration, type: s.type })),
+        voice,
+        voice_language,
       );
       updateRenderJob(jobId, { progress: 60 });
 

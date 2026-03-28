@@ -22,10 +22,9 @@ const OUTPUT_BASE = path.join(process.env.HOME || '~', 'Documents', 'GuruSishya-
 const LANGUAGES = ['python', 'java'];
 const CLIP_TYPES = ['hook', 'code-highlight', 'aha-moment', 'comparison', 'review-challenge'] as const;
 const BGM_FILES = [
-  'audio/bgm/lofi-study-1.mp3',
-  'audio/bgm/lofi-study-2.mp3',
-  'audio/bgm/lofi-chill-1.mp3',
-  'audio/bgm/lofi-ambient-1.mp3',
+  'audio/bgm/gentle-drone.mp3',
+  'audio/bgm/study-pad.mp3',
+  'audio/bgm/warm-ambient.mp3',
 ];
 
 function slugify(text: string): string {
@@ -101,9 +100,13 @@ async function renderTopic() {
       console.log('═'.repeat(60));
 
       try {
-        // 1. Generate script
+        // 1. Generate script (session-aware: pass session number and total for series linking)
         console.log('  📝 Script...');
-        const script = generateScript(session, { language });
+        const script = generateScript(session, {
+          language,
+          sessionNumber: session.sessionNumber,
+          totalSessions: sessions.length,
+        });
 
         // 2. Generate TTS
         console.log('  🎙️ TTS audio...');

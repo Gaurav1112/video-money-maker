@@ -9,7 +9,9 @@ async function main() {
   const session = getDemoSession();
   const script = generateScript(session, { language: 'python' });
   const audioResults = await generateSceneAudios(
-    script.map(s => ({ narration: s.narration, type: s.type }))
+    script.map(s => ({ narration: s.narration, type: s.type })),
+    'im_nicola',
+    'indian-english'
   );
   const storyboard = generateStoryboard(script, audioResults, {
     topic: session.topic,

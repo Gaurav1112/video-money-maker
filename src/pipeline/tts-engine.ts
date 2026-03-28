@@ -4,19 +4,45 @@ import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
 import { TTSResult } from '../types';
+import { refineTimestamps, isWhisperEnabled } from './whisper-timestamps';
 
 const cache = new NodeCache({ stdTTL: 2592000 }); // 30 days
 const KOKORO_API = process.env.KOKORO_API_URL || 'http://localhost:8880';
 const AUDIO_DIR = path.join(process.cwd(), 'public', 'audio');
 
+// Default voice for Guru Sishya — Indian English male teacher
+// Primary: Edge TTS PrabhatNeural (free, unlimited, Indian male)
+// Fallback: Kokoro im_nicola (self-hosted)
+const DEFAULT_VOICE = 'en-IN-PrabhatNeural';
+const DEFAULT_VOICE_LANGUAGE = 'indian-english';
+const EDGE_TTS_PRIMARY = true; // Edge TTS is our primary engine
+
 // Voice map for Edge TTS — supports multiple languages and accents
 const VOICE_MAP: Record<string, string> = {
   'english': 'en-US-AriaNeural',        // Clear American English
-  'indian-english': 'en-IN-NeerjaNeural', // Indian English (relatable for Indian students)
-  'hindi': 'hi-IN-SwaraNeural',          // Hindi female
-  'hinglish': 'en-IN-NeerjaNeural',      // Indian English works for Hinglish too
-  'male-english': 'en-US-GuyNeural',     // Male American
-  'male-indian': 'en-IN-PrabhatNeural',  // Male Indian English
+  'indian-english': 'en-IN-PrabhatNeural', // Indian English male teacher (PRIMARY)
+  'hindi': 'hi-IN-MadhurNeural',          // Hindi male
+  'hinglish': 'en-IN-PrabhatNeural',      // Indian English male — handles Hinglish naturally
+  'male-english': 'en-US-GuyNeural',      // Male American
+  'male-indian': 'en-IN-PrabhatNeural',   // Male Indian English
+};
+
+// Voice map for Kokoro TTS — language-aware voice selection
+// Tested voices: hf_alpha, hf_beta (Hindi female), hm_omega, hm_psi (Hindi male),
+// if_sara (Indian English female), im_nicola (Indian English male),
+// af_bella (American English female), am_puck (American English male)
+// Hindi voices handle Devanagari + romanized Hindi well.
+// Indian English voices (if_sara, im_nicola) handle Hinglish naturally.
+// Blends like "hm_omega+am_puck" also work for mixed-language narration.
+const KOKORO_VOICE_MAP: Record<string, string> = {
+  'english': 'af_bella',            // American English female — clear, engaging
+  'indian-english': 'im_nicola',     // Indian English male — authoritative, Khan Sir style
+  'hindi': 'hm_omega',              // Hindi male — deep, authoritative tone
+  'hinglish': 'im_nicola',          // Indian English male — handles Hindi+English mix naturally
+  'male-english': 'am_puck',        // American English male
+  'male-indian': 'im_nicola',       // Indian English male
+  'male-hindi': 'hm_omega',         // Hindi male — deep, authoritative tone
+  'male-hinglish': 'im_nicola',     // Indian English male — good Hinglish delivery
 };
 
 // Ensure audio directory exists
@@ -24,31 +50,37 @@ fs.mkdirSync(AUDIO_DIR, { recursive: true });
 
 export async function generateAudio(
   text: string,
-  voice: string = 'af_bella',
+  voice: string = DEFAULT_VOICE,
   outputName?: string,
-  voiceLanguage: string = 'indian-english'
+  voiceLanguage: string = DEFAULT_VOICE_LANGUAGE
 ): Promise<TTSResult> {
-  const cacheKey = crypto.createHash('sha256').update(text + voice + voiceLanguage).digest('hex');
+  // Resolve voices from language maps
+  const kokoroVoice = KOKORO_VOICE_MAP[voiceLanguage] || voice;
+  const edgeVoice = process.env.EDGE_TTS_VOICE || VOICE_MAP[voiceLanguage] || 'en-IN-PrabhatNeural';
+  console.log(`  [TTS] generateAudio edge=${edgeVoice} kokoro=${kokoroVoice} (lang=${voiceLanguage})`);
+
+  const cacheKey = crypto.createHash('sha256').update(text + edgeVoice + voiceLanguage).digest('hex');
 
   // Check cache
   const cached = cache.get<TTSResult>(cacheKey);
   if (cached && fs.existsSync(cached.audioPath)) return cached;
 
-  // Try Kokoro first (self-hosted, best quality)
-  try {
-    return await kokoroTTS(text, voice, cacheKey, outputName);
-  } catch (kokoroErr) {
-    console.warn('Kokoro TTS unavailable, trying Edge TTS...');
-  }
-
-  // Try Edge TTS (free Microsoft natural voices, works everywhere with internet)
+  // Priority 1: Edge TTS (free, unlimited, PrabhatNeural Indian male teacher)
+  // Gets real sentence-level timestamps from VTT — no Whisper needed!
   try {
     return await edgeTTS(text, cacheKey, outputName, voiceLanguage);
   } catch (edgeErr) {
-    console.warn('Edge TTS failed:', (edgeErr as Error).message);
+    console.warn('Edge TTS failed:', (edgeErr as Error).message, '— trying Kokoro...');
   }
 
-  // Try macOS native TTS (free, works offline on Mac)
+  // Priority 2: Kokoro (self-hosted, good quality)
+  try {
+    return await kokoroTTS(text, kokoroVoice, cacheKey, outputName);
+  } catch (kokoroErr) {
+    console.warn('Kokoro TTS unavailable, trying macOS...');
+  }
+
+  // Priority 3: macOS native TTS (free, works offline on Mac)
   if (process.platform === 'darwin') {
     try {
       return await macosTTS(text, cacheKey, outputName);
@@ -62,6 +94,22 @@ export async function generateAudio(
   return silentFallback(text, cacheKey);
 }
 
+/**
+ * Post-process a TTS result with Whisper to get real word timestamps.
+ * Runs by default for accurate sync. Disable with USE_WHISPER=false or --no-whisper.
+ * Falls back to original proportional timestamps on failure.
+ */
+async function whisperRefine(result: TTSResult): Promise<TTSResult> {
+  if (!isWhisperEnabled() || !result.audioPath) return result;
+
+  const refined = await refineTimestamps(result.audioPath, result.wordTimestamps, result.duration);
+  return {
+    audioPath: result.audioPath,
+    wordTimestamps: refined.wordTimestamps,
+    duration: refined.duration,
+  };
+}
+
 // ─── Kokoro TTS (self-hosted, best quality) ───
 async function kokoroTTS(
   text: string,
@@ -69,6 +117,20 @@ async function kokoroTTS(
   cacheKey: string,
   outputName?: string
 ): Promise<TTSResult> {
+  const filename = outputName || `tts_${cacheKey.slice(0, 12)}.mp3`;
+  const audioPath = path.join(AUDIO_DIR, filename);
+
+  // Try /dev/captioned_speech first for REAL word-level timestamps
+  try {
+    const captionedResult = await kokoroCaptionedSpeech(text, voice, audioPath);
+    cache.set(cacheKey, captionedResult);
+    console.log(`  ✓ Kokoro TTS (captioned): ${filename} (${captionedResult.duration.toFixed(1)}s, ${captionedResult.wordTimestamps.length} words)`);
+    return captionedResult;
+  } catch (captionedErr) {
+    console.warn('  Kokoro /dev/captioned_speech unavailable, falling back to /v1/audio/speech...');
+  }
+
+  // Fall back to standard /v1/audio/speech with proportional timestamps
   const response = await axios.post(
     `${KOKORO_API}/v1/audio/speech`,
     {
@@ -76,25 +138,88 @@ async function kokoroTTS(
       input: text,
       voice,
       response_format: 'mp3',
-      speed: 0.95,
+      speed: 0.9,
     },
     { timeout: 60000, responseType: 'arraybuffer' }
   );
 
-  const filename = outputName || `tts_${cacheKey.slice(0, 12)}.mp3`;
-  const audioPath = path.join(AUDIO_DIR, filename);
   fs.writeFileSync(audioPath, Buffer.from(response.data));
 
   const stats = fs.statSync(audioPath);
   const duration = stats.size / 16000; // MP3 ~16KB/sec at 128kbps
 
   const result = makeTimestamps(text, duration, audioPath);
-  cache.set(cacheKey, result);
-  console.log(`  ✓ Kokoro TTS: ${filename} (${duration.toFixed(1)}s)`);
-  return result;
+  const refined = await whisperRefine(result);
+  cache.set(cacheKey, refined);
+  console.log(`  ✓ Kokoro TTS (${isWhisperEnabled() ? 'whisper' : 'proportional'}): ${filename} (${refined.duration.toFixed(1)}s)`);
+  return refined;
 }
 
-// ─── Edge TTS (free Microsoft natural voices) ───
+// ─── Kokoro Captioned Speech (real word-level timestamps) ───
+async function kokoroCaptionedSpeech(
+  text: string,
+  voice: string,
+  audioPath: string
+): Promise<TTSResult> {
+  const response = await axios.post(
+    `${KOKORO_API}/dev/captioned_speech`,
+    {
+      model: 'kokoro',
+      input: text,
+      voice,
+      speed: 0.9,
+      response_format: 'mp3',
+    },
+    { timeout: 60000, responseType: 'json' }
+  );
+
+  const data = response.data;
+
+  // Extract base64 audio — handle both possible field names
+  const audioBase64: string = data.audio || data.audio_data;
+  if (!audioBase64) {
+    throw new Error('No audio data in captioned_speech response');
+  }
+
+  // Decode and save audio
+  const audioBuffer = Buffer.from(audioBase64, 'base64');
+  fs.writeFileSync(audioPath, audioBuffer);
+
+  // Extract timestamps — handle multiple possible response formats
+  const rawTimestamps: Array<{ word: string; start_time?: number; end_time?: number; start?: number; end?: number }> =
+    data.timestamps || data.words || data.word_timestamps || [];
+
+  // Map to our { word, start, end } format
+  const wordTimestamps: Array<{ word: string; start: number; end: number }> = rawTimestamps.map((t) => ({
+    word: t.word,
+    start: t.start_time ?? t.start ?? 0,
+    end: t.end_time ?? t.end ?? 0,
+  }));
+
+  // Derive duration from the last timestamp's end time, or estimate from file size
+  let duration: number;
+  if (wordTimestamps.length > 0) {
+    duration = wordTimestamps[wordTimestamps.length - 1].end;
+  } else {
+    const stats = fs.statSync(audioPath);
+    duration = stats.size / 16000;
+  }
+
+  // If API returned no timestamps, fall back to proportional
+  if (wordTimestamps.length === 0) {
+    return {
+      audioPath,
+      wordTimestamps: makeTimestampsProportional(text, duration),
+      duration,
+    };
+  }
+
+  return { audioPath, wordTimestamps, duration };
+}
+
+// ─── Edge TTS (free Microsoft neural voices — PRIMARY ENGINE) ───
+// Uses en-IN-PrabhatNeural (Indian English male teacher voice)
+// Generates VTT subtitles for real sentence-level timestamps (no Whisper needed!)
 async function edgeTTS(
   text: string,
   cacheKey: string,
@@ -105,30 +230,105 @@ async function edgeTTS(
 
   const filename = outputName || `edge_${cacheKey.slice(0, 12)}.mp3`;
   const audioPath = path.join(AUDIO_DIR, filename);
+  const vttPath = audioPath.replace(/\.mp3$/, '.vtt');
 
   // Clean text for command safety
-  const cleanText = text.replace(/"/g, '\\"').slice(0, 3000);
+  const cleanText = text.slice(0, 5000);
 
-  // Use python3 edge-tts module (Microsoft neural voices - very natural)
-  // Voice selection based on language preference from VOICE_MAP
-  const voice = process.env.EDGE_TTS_VOICE || VOICE_MAP[voiceLanguage] || VOICE_MAP['indian-english'];
+  // Voice: PrabhatNeural (Indian English male) is the primary voice
+  const voice = process.env.EDGE_TTS_VOICE || VOICE_MAP[voiceLanguage] || 'en-IN-PrabhatNeural';
 
   execFileSync('python3', [
     '-m', 'edge_tts',
     '--voice', voice,
-    '--rate=-15%',   // Teacher pace — slower and clearer for learning
+    '--rate=-5%',           // Slightly slower for teacher clarity
     '--text', cleanText,
     '--write-media', audioPath,
-  ], { timeout: 60000 });
+    '--write-subtitles', vttPath,  // Real VTT timestamps!
+  ], { timeout: 120000 });
 
-  const stats = fs.statSync(audioPath);
-  // Edge TTS MP3 is ~12KB/sec at the default quality
-  const duration = stats.size / 12000;
+  // Parse VTT for sentence-level timestamps, then distribute words within sentences
+  let wordTimestamps: Array<{ word: string; start: number; end: number }> = [];
+  let duration: number;
 
-  const result = makeTimestamps(text, duration, audioPath);
+  if (fs.existsSync(vttPath)) {
+    const vttContent = fs.readFileSync(vttPath, 'utf-8');
+    wordTimestamps = parseEdgeVttToWords(vttContent);
+    // Duration from last timestamp or file size
+    if (wordTimestamps.length > 0) {
+      duration = wordTimestamps[wordTimestamps.length - 1].end;
+    } else {
+      const stats = fs.statSync(audioPath);
+      duration = stats.size / 12000;
+      wordTimestamps = makeTimestampsProportional(text, duration);
+    }
+    console.log(`  ✓ Edge TTS VTT: ${wordTimestamps.length} word timestamps from real sentence boundaries`);
+  } else {
+    // No VTT file — fall back to proportional
+    const stats = fs.statSync(audioPath);
+    duration = stats.size / 12000;
+    wordTimestamps = makeTimestampsProportional(text, duration);
+    console.warn('  ⚠ Edge TTS: no VTT file, using proportional timestamps');
+  }
+
+  const result: TTSResult = { audioPath, wordTimestamps, duration };
   cache.set(cacheKey, result);
-  console.log(`  ✓ Edge TTS (${voice}): ${filename} (${duration.toFixed(1)}s)`);
+  console.log(`  ✓ Edge TTS (${voice}): ${filename} (${duration.toFixed(1)}s, ${wordTimestamps.length} words)`);
   return result;
+}
+
+/**
+ * Parse Edge TTS VTT output into word-level timestamps.
+ * Edge TTS v7+ outputs sentence-level cues. We split each sentence into words
+ * and distribute timing proportionally within each sentence boundary.
+ * This gives us accurate sentence boundaries (from Microsoft's neural model)
+ * with proportional word timing within each sentence — much better than
+ * pure proportional across the entire audio.
+ */
+function parseEdgeVttToWords(vttContent: string): Array<{ word: string; start: number; end: number }> {
+  const timestamps: Array<{ word: string; start: number; end: number }> = [];
+
+  // Parse VTT cues: "HH:MM:SS,mmm --> HH:MM:SS,mmm\ntext"
+  // Edge TTS uses comma (,) as ms separator, not dot (.)
+  const cuePattern = /(\d{2}:\d{2}:\d{2}[.,]\d{3})\s*-->\s*(\d{2}:\d{2}:\d{2}[.,]\d{3})\s*\n(.+?)(?=\n\n|\n\d+\n|$)/gs;
+  let match;
+
+  while ((match = cuePattern.exec(vttContent)) !== null) {
+    const start = parseVttTimeEdge(match[1]);
+    const end = parseVttTimeEdge(match[2]);
+    const text = match[3].trim();
+    const words = text.split(/\s+/).filter(w => w.length > 0);
+
+    if (words.length === 0) continue;
+
+    if (words.length === 1) {
+      timestamps.push({ word: words[0], start, end });
+    } else {
+      // Distribute words proportionally within sentence boundaries
+      const totalChars = words.reduce((sum, w) => sum + w.length, 0);
+      const cueDuration = end - start;
+      let currentTime = start;
+
+      for (const word of words) {
+        const wordDuration = (word.length / totalChars) * cueDuration;
+        timestamps.push({
+          word,
+          start: currentTime,
+          end: currentTime + wordDuration,
+        });
+        currentTime += wordDuration;
+      }
+    }
+  }
+
+  return timestamps;
+}
+
+/** Parse VTT time format: "00:00:12,839" or "00:00:12.839" → seconds */
+function parseVttTimeEdge(time: string): number {
+  const [h, m, rest] = time.split(':');
+  const [s, ms] = rest.split(/[.,]/);
+  return parseInt(h) * 3600 + parseInt(m) * 60 + parseInt(s) + parseInt(ms) / 1000;
 }
 
 // ─── macOS Native TTS (free, works offline) ───
@@ -161,9 +361,10 @@ async function macosTTS(
   const duration = stats.size / 8000;
 
   const result = makeTimestamps(text, duration, m4aPath);
-  cache.set(cacheKey, result);
-  console.log(`  ✓ macOS TTS: ${filename} (${duration.toFixed(1)}s)`);
-  return result;
+  const refined = await whisperRefine(result);
+  cache.set(cacheKey, refined);
+  console.log(`  ✓ macOS TTS: ${filename} (${refined.duration.toFixed(1)}s)`);
+  return refined;
 }
 
 // ─── Silent fallback ───
@@ -256,9 +457,13 @@ function parseVttTime(time: string): number {
 // ─── Batch: generate audio for all scenes ───
 export async function generateSceneAudios(
   scenes: Array<{ narration: string; type: string }>,
-  voice: string = 'af_bella',
-  voiceLanguage: string = 'indian-english'
+  voice: string = DEFAULT_VOICE,
+  voiceLanguage: string = DEFAULT_VOICE_LANGUAGE
 ): Promise<TTSResult[]> {
+  // Edge TTS is primary — resolve voice from Edge voice map
+  const resolvedVoice = VOICE_MAP[voiceLanguage] || voice;
+  console.log(`  [TTS] generateSceneAudios voice=${voice} → resolved=${resolvedVoice} (lang=${voiceLanguage})`);
+
   const results: TTSResult[] = [];
   for (let i = 0; i < scenes.length; i++) {
     const scene = scenes[i];
@@ -268,7 +473,7 @@ export async function generateSceneAudios(
     }
     console.log(`  Generating audio for scene ${i + 1}/${scenes.length} [${scene.type}]...`);
     const spokenText = preprocessForSpeech(scene.narration);
-    const result = await generateAudio(spokenText, voice, `scene_${i}.mp3`, voiceLanguage);
+    const result = await generateAudio(spokenText, resolvedVoice, `scene_${i}.mp3`, voiceLanguage);
     results.push(result);
   }
   return results;

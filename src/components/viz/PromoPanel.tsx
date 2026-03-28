@@ -6,6 +6,7 @@ interface PromoPanelProps {
   sync: SyncState;
   frame: number;
   keywords: string[];
+  variant?: string;
 }
 
 // Rotating promo cards — each shows for ~5 seconds

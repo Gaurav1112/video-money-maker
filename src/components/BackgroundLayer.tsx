@@ -50,6 +50,91 @@ const AmbientParticles: React.FC<{ frame: number; color: string; count?: number 
   );
 };
 
+// ============= SHARED: Floating code symbols =============
+const CODE_SYMBOLS = ['<', '>', '{', '}', ';', '=>', '/>', '()', '[]', '&&', '||', '!=', '++', '::'];
+
+const SCENE_SYMBOL_COLORS: Record<string, string> = {
+  title: COLORS.saffron,
+  hook: COLORS.saffron,
+  code: COLORS.teal,
+  text: COLORS.indigo,
+  concept: COLORS.indigo,
+  table: COLORS.gold,
+  comparison: COLORS.gold,
+  interview: COLORS.saffron,
+  diagram: COLORS.indigo,
+  review: COLORS.teal,
+  quiz: COLORS.teal,
+  summary: COLORS.gold,
+};
+
+/** Intensity multiplier per scene type: 0.0-1.0 */
+const SCENE_INTENSITY: Record<string, number> = {
+  title: 0.6,
+  hook: 0.8,
+  code: 1.0,
+  text: 0.5,
+  concept: 0.5,
+  table: 0.4,
+  comparison: 0.4,
+  interview: 0.7,
+  diagram: 0.6,
+  review: 0.8,
+  quiz: 0.8,
+  summary: 0.3,
+};
+
+const FloatingCodeSymbols: React.FC<{
+  frame: number;
+  sceneType?: string;
+  count?: number;
+}> = ({ frame, sceneType = 'text', count = 10 }) => {
+  const color = SCENE_SYMBOL_COLORS[sceneType] || COLORS.indigo;
+  const intensity = SCENE_INTENSITY[sceneType] ?? 0.5;
+  const symbolCount = Math.round(count * intensity);
+
+  return (
+    <>
+      {Array.from({ length: symbolCount }).map((_, i) => {
+        const seed = i * 173.205; // different seed from particles
+        const symbol = CODE_SYMBOLS[(i * 3 + Math.floor(seed)) % CODE_SYMBOLS.length];
+        const baseX = (seed * 5.71) % 95 + 2;
+        const baseY = (seed * 3.83) % 90 + 5;
+        // Very slow drift
+        const driftX = Math.sin(frame * 0.003 + i * 1.4) * 6;
+        const driftY = Math.cos(frame * 0.002 + i * 0.8) * 4;
+        // Slow rotation
+        const rotation = Math.sin(frame * 0.004 + i * 2.1) * 15;
+        const opacity = interpolate(
+          Math.sin(frame * 0.015 + i * 1.9),
+          [-1, 1],
+          [0.02, 0.06 * intensity],
+        );
+
+        return (
+          <div
+            key={`sym-${i}`}
+            style={{
+              position: 'absolute',
+              left: `${baseX + driftX}%`,
+              top: `${baseY + driftY}%`,
+              fontSize: 14 + (i % 4) * 3,
+              fontFamily: 'JetBrains Mono, monospace',
+              color,
+              opacity,
+              transform: `rotate(${rotation}deg)`,
+              pointerEvents: 'none',
+              userSelect: 'none',
+            }}
+          >
+            {symbol}
+          </div>
+        );
+      })}
+    </>
+  );
+};
+
 // ============= SHARED: Accent radial glow overlay =============
 const AccentGlow: React.FC<{
   frame: number;
@@ -97,7 +182,7 @@ const AccentGlow: React.FC<{
   );
 };
 
-const BackgroundLayer: React.FC<BackgroundLayerProps> = ({ sceneType }) => {
+const BackgroundLayer: React.FC<BackgroundLayerProps> = ({ sceneType = 'text' }) => {
   const frame = useCurrentFrame();
 
   // Slow rotating gradient
@@ -188,6 +273,8 @@ const BackgroundLayer: React.FC<BackgroundLayerProps> = ({ sceneType }) => {
           background: `radial-gradient(ellipse at center, transparent 50%, ${COLORS.dark}88 100%)`,
         }}
       />
+      {/* Floating code symbols */}
+      <FloatingCodeSymbols frame={frame} sceneType={sceneType} />
     </AbsoluteFill>
   );
 };
@@ -290,6 +377,8 @@ const TitleBackground: React.FC<{ frame: number; rotation: number }> = ({ frame,
           background: `radial-gradient(ellipse at center, transparent 30%, #0E0804CC 100%)`,
         }}
       />
+      {/* Floating code symbols */}
+      <FloatingCodeSymbols frame={frame} sceneType="title" count={8} />
     </AbsoluteFill>
   );
 };
@@ -409,6 +498,8 @@ const TextBackground: React.FC<{ frame: number; rotation: number }> = ({ frame, 
           background: `radial-gradient(ellipse at center, transparent 50%, #080A1C88 100%)`,
         }}
       />
+      {/* Floating code symbols */}
+      <FloatingCodeSymbols frame={frame} sceneType="text" count={10} />
     </AbsoluteFill>
   );
 };
@@ -500,6 +591,8 @@ const CodeBackground: React.FC<{ frame: number }> = ({ frame }) => {
           background: `radial-gradient(ellipse at center, transparent 40%, #050F0CAA 100%)`,
         }}
       />
+      {/* Floating code symbols — higher density for code scenes */}
+      <FloatingCodeSymbols frame={frame} sceneType="code" count={14} />
     </AbsoluteFill>
   );
 };
@@ -588,6 +681,8 @@ const TableBackground: React.FC<{ frame: number }> = ({ frame }) => {
           background: `radial-gradient(ellipse at center, transparent 50%, #0A0C08AA 100%)`,
         }}
       />
+      {/* Floating code symbols */}
+      <FloatingCodeSymbols frame={frame} sceneType="table" count={8} />
     </AbsoluteFill>
   );
 };
@@ -687,6 +782,8 @@ const InterviewBackground: React.FC<{ frame: number }> = ({ frame }) => {
           background: `radial-gradient(ellipse at center, transparent 40%, #0F0804AA 100%)`,
         }}
       />
+      {/* Floating code symbols */}
+      <FloatingCodeSymbols frame={frame} sceneType="interview" count={10} />
     </AbsoluteFill>
   );
 };
@@ -775,6 +872,8 @@ const DiagramBackground: React.FC<{ frame: number; rotation: number }> = ({ fram
           background: `radial-gradient(ellipse at center, transparent 40%, #060810AA 100%)`,
         }}
       />
+      {/* Floating code symbols */}
+      <FloatingCodeSymbols frame={frame} sceneType="diagram" count={10} />
     </AbsoluteFill>
   );
 };
@@ -852,6 +951,8 @@ const ReviewBackground: React.FC<{ frame: number }> = ({ frame }) => {
           background: `radial-gradient(ellipse at 50% 40%, transparent 25%, #050E0CCC 100%)`,
         }}
       />
+      {/* Floating code symbols */}
+      <FloatingCodeSymbols frame={frame} sceneType="review" count={12} />
     </AbsoluteFill>
   );
 };
@@ -954,6 +1055,8 @@ const SummaryBackground: React.FC<{ frame: number }> = ({ frame }) => {
           background: `radial-gradient(ellipse at center, transparent 40%, #0A0C08AA 100%)`,
         }}
       />
+      {/* Floating code symbols — low density for celebration */}
+      <FloatingCodeSymbols frame={frame} sceneType="summary" count={6} />
     </AbsoluteFill>
   );
 };

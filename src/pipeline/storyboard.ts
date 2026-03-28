@@ -1,6 +1,7 @@
 import { Scene, Storyboard, TTSResult } from '../types';
 import { TIMING, INTRO_DURATION, OUTRO_DURATION, TRANSITION_DURATION } from '../lib/constants';
 import { stitchAudio } from './audio-stitcher';
+import { assignVizVariants } from './script-generator';
 
 interface StoryboardOptions {
   topic: string;
@@ -47,6 +48,26 @@ export function generateStoryboard(
     endFrame: INTRO_DURATION,
   };
 
+  // ── SYNC MATH — aligning visual scene timing to audio offsets ──
+  //
+  // The master audio track has each scene's audio at sceneOffsets[i] seconds.
+  // The visual content is rendered inside a TransitionSeries where crossfade
+  // transitions of TRANSITION_DURATION frames overlap adjacent scenes.
+  //
+  // In TransitionSeries, scene[i] starts at:
+  //   sum(D0..D(i-1)) - i * TRANSITION_DURATION   (in frames)
+  //
+  // We want this to equal sceneOffsets[i] * fps so audio and visuals align.
+  // Solving: D(i) = (sceneOffsets[i+1] - sceneOffsets[i]) * fps + TRANSITION_DURATION
+  //
+  // For the last scene (no next offset), we use audio.duration + breathing room.
+  //
+  // This ensures that inside each TransitionSeries.Sequence, frame 0 corresponds
+  // to the start of that scene's audio in the master track. Without this, the
+  // visual breathing room (+1.0s) and audio gap (+0.8s) diverge by 0.2s per scene,
+  // plus the TRANSITION_DURATION adds another 0.5s drift — totalling ~0.7s per scene.
+  // By scene 10, captions would be 7 seconds out of sync with the audio.
+  //
   // Content scenes are 0-based; the intro offset is applied in LongVideo.tsx
   // via <Sequence from={INTRO_DURATION}>. Starting at INTRO_DURATION here would
   // cause a double-offset (BUG 6).
@@ -58,17 +79,32 @@ export function generateStoryboard(
     const audio = audioResults[i];
     const offset = sceneOffsets[i]; // seconds, or -1 if no audio
 
-    let durationSeconds: number;
+    let durationFrames: number;
 
     if (offset !== -1 && audio?.duration > 0) {
-      durationSeconds = audio.duration + 1.0; // actual audio + 1s visual breathing room
+      // Find the next valid scene offset to determine how long this scene should last
+      let nextOffset = -1;
+      for (let j = i + 1; j < scenes.length; j++) {
+        if (sceneOffsets[j] !== -1) {
+          nextOffset = sceneOffsets[j];
+          break;
+        }
+      }
+
+      if (nextOffset !== -1) {
+        // Duration = time until next scene's audio starts + transition overlap compensation.
+        // This ensures TransitionSeries places the next scene exactly when its audio starts.
+        durationFrames = TIMING.secondsToFrames(nextOffset - offset) + TRANSITION_DURATION;
+      } else {
+        // Last scene with audio: use actual audio duration + 1s breathing room + transition
+        durationFrames = TIMING.secondsToFrames(audio.duration + 1.0) + TRANSITION_DURATION;
+      }
     } else {
-      // No audio for this scene — use type-based default
-      durationSeconds = FALLBACK_SCENE_DURATION[scene.type] ?? 5;
+      // No audio for this scene — use type-based default + transition compensation
+      const durationSeconds = FALLBACK_SCENE_DURATION[scene.type] ?? 5;
+      durationFrames = TIMING.secondsToFrames(durationSeconds) + TRANSITION_DURATION;
     }
 
-    // + TRANSITION_DURATION compensates for crossfade overlap in TransitionSeries
-    const durationFrames = TIMING.secondsToFrames(durationSeconds) + TRANSITION_DURATION;
     const startFrame = currentFrame;
     const endFrame = startFrame + durationFrames;
 
@@ -76,9 +112,10 @@ export function generateStoryboard(
       ...scene,
       startFrame,
       endFrame,
-      duration: durationSeconds,
+      duration: durationFrames / TIMING.fps,
       audioFile: undefined, // cleared: master audio handles all narration
       wordTimestamps: audio?.wordTimestamps ?? scene.wordTimestamps,
+      audioOffsetSeconds: offset, // -1 if no audio; seconds into master track
     });
 
     currentFrame = endFrame;
@@ -96,12 +133,17 @@ export function generateStoryboard(
   timedScenes.push(outroScene);
   currentFrame = outroScene.endFrame;
 
+  // ── Assign per-scene visualization variants ──
+  // This enriches text/interview scenes with vizVariant so each scene
+  // shows a UNIQUE animation state instead of repeating the same viz.
+  const enrichedScenes = assignVizVariants(timedScenes, topic);
+
   return {
     fps,
     width,
     height,
     durationInFrames: currentFrame,
-    scenes: timedScenes,
+    scenes: enrichedScenes,
     audioFile: masterPath,
     topic,
     sessionNumber,

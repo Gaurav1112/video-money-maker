@@ -18,3 +18,6 @@ export { default as ProblemVisualization } from './ProblemVisualization';
 export { default as AnimatedDiagram } from './AnimatedDiagram';
 export { default as IntroSlide } from './IntroSlide';
 export { default as OutroSlide } from './OutroSlide';
+export { ZoomPulse } from './ZoomPulse';
+export { default as AnimatedCallout } from './AnimatedCallout';
+export { AnimatedOverlay } from './AnimatedOverlay';

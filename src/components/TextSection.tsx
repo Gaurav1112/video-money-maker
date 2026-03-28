@@ -345,7 +345,7 @@ const TextSection: React.FC<TextSectionProps> = ({
           />
         </div>
 
-        {/* History — faded small past sentences */}
+        {/* History — faded small past sentences with slide-in entrance */}
         {historySentences.length > 0 && (
           <div
             style={{
@@ -360,18 +360,28 @@ const TextSection: React.FC<TextSectionProps> = ({
             {historySentences.slice(-2).map((s, i) => {
               const age = historySentences.length - i; // 1 = most recent past, 2 = older
               const fadeOpacity = interpolate(age, [1, 2], [0.25, 0.08], { extrapolateRight: 'clamp' });
+              // Entrance: slide from left + fade in
+              const bulletEntranceFrame = (historySentences.length - 2 + i) * framesPerSentence;
+              const bulletSlideProgress = spring({
+                frame: Math.max(0, frame - bulletEntranceFrame),
+                fps,
+                config: { damping: 16, stiffness: 100, mass: 0.7 },
+              });
+              const bulletSlideX = interpolate(bulletSlideProgress, [0, 1], [-30, 0]);
+              const bulletSlideOpacity = interpolate(bulletSlideProgress, [0, 1], [0, fadeOpacity]);
               return (
                 <div
                   key={i}
                   style={{
                     fontSize: 15,
                     color: COLORS.white,
-                    opacity: fadeOpacity,
+                    opacity: bulletSlideOpacity,
                     lineHeight: 1.4,
                     fontFamily: FONTS.text,
                     whiteSpace: 'nowrap',
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
+                    transform: `translateX(${bulletSlideX}px)`,
                   }}
                 >
                   {s.length > 80 ? s.slice(0, 77) + '...' : s}
@@ -381,12 +391,13 @@ const TextSection: React.FC<TextSectionProps> = ({
           </div>
         )}
 
-        {/* Current Sentence — LARGE, animated slide-in */}
+        {/* Current Sentence — LARGE, animated slide from left + fade in */}
         <div
           style={{
             marginTop: historySentences.length > 0 ? 10 : 20,
-            transform: `translateY(${sentenceY}px)`,
+            transform: `translateX(${interpolate(sentenceSpring, [0, 1], [-40, 0])}px) translateY(${sentenceY}px)`,
             opacity: sentenceOpacity,
+            position: 'relative',
           }}
         >
           <div
@@ -400,6 +411,25 @@ const TextSection: React.FC<TextSectionProps> = ({
           >
             {renderHighlightedSentence(currentSentence, true, 34)}
           </div>
+          {/* Animated underline on current sentence — sweeps in from left */}
+          <div
+            style={{
+              marginTop: 6,
+              height: 2,
+              borderRadius: 1,
+              background: `linear-gradient(90deg, ${moodAccent}90, ${moodAccent}40, transparent)`,
+              width: interpolate(
+                sentenceSpring,
+                [0, 1],
+                [0, Math.min(currentSentence.length * 6, 500)],
+              ),
+              opacity: interpolate(
+                Math.sin(frame * 0.06),
+                [-1, 1],
+                [0.5, 0.9],
+              ),
+            }}
+          />
         </div>
       </div>
 

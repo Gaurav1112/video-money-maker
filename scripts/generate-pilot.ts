@@ -66,10 +66,9 @@ async function generatePilot() {
 
     // Add BGM selection (deterministic based on topic + session + language)
     const BGM_FILES = [
-      'audio/bgm/lofi-study-1.mp3',
-      'audio/bgm/lofi-study-2.mp3',
-      'audio/bgm/lofi-chill-1.mp3',
-      'audio/bgm/lofi-ambient-1.mp3',
+      'audio/bgm/gentle-drone.mp3',
+      'audio/bgm/study-pad.mp3',
+      'audio/bgm/warm-ambient.mp3',
     ];
     const bgmSeed = (session.topic + session.sessionNumber + language)
       .split('').reduce((a, c) => a + c.charCodeAt(0), 0);

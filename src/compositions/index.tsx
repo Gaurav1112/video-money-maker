@@ -4,7 +4,7 @@ import React from 'react';
 import { LongVideo } from './LongVideo';
 import { ShortVideo } from './ShortVideo';
 import { MultiShort } from './MultiShort';
-import { Thumbnail } from '../components';
+import { ThumbnailComposition } from './Thumbnail';
 import type { Storyboard } from '../types';
 import type { ClipType } from './MultiShort';
 
@@ -42,6 +42,21 @@ export const RemotionRoot: React.FC = () => {
         height={1080}
         defaultProps={{ storyboard: defaultStoryboard }}
       />
+      {/* 4K variant — same component, double resolution */}
+      <Composition
+        id="LongVideo4K"
+        component={asCompositionComponent(LongVideo)}
+        calculateMetadata={({ props }: { props: Record<string, unknown> }) => ({
+          durationInFrames: ((props.storyboard as Storyboard)?.durationInFrames || 9000) + 240,
+          fps: 30,
+          width: 3840,
+          height: 2160,
+        })}
+        fps={30}
+        width={3840}
+        height={2160}
+        defaultProps={{ storyboard: defaultStoryboard }}
+      />
       <Composition
         id="ShortVideo"
         component={asCompositionComponent(ShortVideo)}
@@ -58,7 +73,7 @@ export const RemotionRoot: React.FC = () => {
       />
       <Composition
         id="Thumbnail"
-        component={asCompositionComponent(Thumbnail)}
+        component={asCompositionComponent(ThumbnailComposition)}
         durationInFrames={1}
         fps={30}
         width={1280}

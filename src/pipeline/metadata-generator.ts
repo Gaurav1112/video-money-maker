@@ -6,14 +6,52 @@ export interface YouTubeMetadata {
   title: string;
   description: string;
   tags: string[];
-  categoryId: string;
-  chapters: string;
+  hashtags: string[];
+  chapters: { time: string; title: string }[];
+  category: number;
+  language: string;
+  playlist: string;
+  thumbnailText: string;
+  endScreen: string;
+  cardLink: string;
+  /** @deprecated Use `category` instead */
+  categoryId?: string;
+}
+
+export interface InstagramMetadata {
+  caption: string;
+  hashtags: string[];
+  coverText: string;
+}
+
+export interface SeoMetadata {
+  keywords: string[];
+  metaDescription: string;
 }
 
 export interface VideoMetadata {
   youtube: YouTubeMetadata;
-  instagramCaption: string;
-  thumbnailText: string;
+  instagram: InstagramMetadata;
+  seo: SeoMetadata;
+}
+
+export interface ShortMetadata {
+  id: string;
+  segment: string;
+  youtube: {
+    title: string;
+    description: string;
+    tags: string[];
+  };
+  instagram: {
+    caption: string;
+    hashtags: string[];
+    coverText: string;
+  };
+}
+
+export interface ShortsMetadata {
+  shorts: ShortMetadata[];
 }
 
 // ─── Deterministic Seeding ────────────────────────────────────────────────────
@@ -56,152 +94,112 @@ function classifyTopic(topic: string): TopicType {
 }
 
 // ─── Title Templates ──────────────────────────────────────────────────────────
-// Each template is under 60 chars when formatted with a typical topic.
-// Curiosity-driven patterns proven to lift CTR on YouTube.
+// MrBeast + Fireship + NeetCode energy. Under 70 chars. Curiosity gaps + numbers.
 
-const TITLE_TEMPLATES_BY_TYPE: Record<TopicType, string[]> = {
+const TITLE_TEMPLATES_BY_TYPE: Record<TopicType, string[][]> = {
   'data-structure': [
-    'Stop Using {topic} Wrong',
-    'Why Most Devs Get {topic} Wrong',
-    '{topic} in 5 Minutes (Interview Ready)',
-    '{topic} vs Arrays: Which to Use?',
-    'The {topic} Trick Nobody Teaches You',
-    'Master {topic} Before Your Interview',
-    '{topic} Explained in 4 Minutes',
-    'Google Asked This {topic} Question',
+    // Session variants [s1, s2, s3]
+    ['{topic} Explained in {duration} — FAANG Interview Prep', 'I Coded {topic} From Scratch — Every Dev Needs This', '{topic} Advanced Patterns — The Senior Engineer Guide'],
+    ['Stop Using {topic} Wrong — Here\'s the Fix', 'Why 90% of Devs Get {topic} Wrong (With Code)', '{topic} Deep Dive — What Google Actually Tests'],
+    ['{topic} in {duration} (Interview Ready)', '{topic} Algorithms You Must Know for FAANG', 'The {topic} Trick Nobody Teaches — Final Boss Level'],
+    ['Why Most Devs Get {topic} Wrong', 'I Built {topic} in Python — Watch This Before Interviews', 'Master {topic} — The Complete System Design Guide'],
   ],
   'algorithm': [
-    'Why {topic} Breaks Most Code',
-    '{topic} in 5 Minutes (With Code)',
-    'Stop Memorizing {topic} — Do This',
-    'The {topic} Pattern You Must Know',
-    'Crack Any {topic} Interview Question',
-    '{topic} Explained Simply (With Code)',
-    'Why You Keep Failing {topic} Problems',
-    '{topic}: The O(1) Secret',
+    ['{topic} Explained in {duration} | Interview Ready', 'I Coded Every {topic} Pattern in Python', '{topic} — The Patterns That Get You Hired'],
+    ['Why {topic} Breaks Most Code (And How to Fix It)', '{topic} With Code — Stop Memorizing, Start Understanding', '{topic} Advanced — What FAANG Actually Tests'],
+    ['{topic} in {duration} — From Zero to Interview Ready', '5 {topic} Patterns Every Dev Must Know', 'The {topic} Secret Senior Engineers Use'],
+    ['Stop Memorizing {topic} — Do This Instead', 'I Solved 100 {topic} Problems — Here\'s What I Learned', '{topic} Master Class — The Complete Guide'],
   ],
   'system-design': [
-    'Why {topic} Crashes at Scale',
-    'How Netflix Uses {topic} (Explained)',
-    '{topic} in 5 Minutes — Interview Prep',
-    'Stop Building {topic} Wrong',
-    '{topic} Design: What Google Does',
-    'Senior vs Junior: {topic} Explained',
-    '{topic}: The Trade-offs Nobody Tells You',
-    'Design {topic} Like a Senior Engineer',
+    ['{topic} Explained in {duration} | System Design Interview', 'I Coded {topic} From Scratch in Python | System Design', '{topic} — The Senior Engineer Answer | System Design'],
+    ['How Netflix Uses {topic} (Most Tutorials Get This Wrong)', '{topic} Algorithms Deep Dive — With Python Code', 'Layer 4 vs Layer 7 {topic} — Pick Wrong and You\'re Done'],
+    ['{topic} in {duration} — What Google Actually Tests', '{topic} With Code — 5 Algorithms You Must Know', '{topic} Complete Guide — From Junior to Senior'],
+    ['Why {topic} Crashes at Scale (And How to Fix It)', 'Stop Building {topic} Wrong — Here\'s the Right Way', 'The {topic} Trade-offs Nobody Tells You About'],
   ],
   'concept': [
-    'Why {topic} Trips Up Senior Devs',
-    '{topic} in 5 Minutes — Simplified',
-    'Stop Confusing {topic} With This',
-    'The {topic} Concept You Must Master',
-    'Master {topic} for Your Interview',
-    '{topic}: What No Tutorial Teaches',
-    'Most Devs Get {topic} Wrong. Do You?',
-    '{topic} Explained Like You\'re 5',
+    ['{topic} Explained in {duration} — Simplified', 'I Built {topic} From Scratch — With Code', '{topic} Advanced — The Complete Deep Dive'],
+    ['Why {topic} Trips Up Senior Devs', '{topic} With Code — Stop Getting It Wrong', '{topic} — What No Tutorial Teaches You'],
+    ['{topic} in {duration} — Interview Ready', '5 {topic} Patterns Every Dev Must Know', 'The {topic} Insight That Changes Everything'],
+    ['Most Devs Get {topic} Wrong. Do You?', 'I Spent 100 Hours Learning {topic} — Here\'s Everything', '{topic} Master Class — The Final Guide'],
   ],
   'language': [
-    '{topic} Tricks Most Devs Don\'t Know',
-    'Stop Writing Bad {topic} Code',
-    '{topic} Tips That 10x Your Speed',
-    'Advanced {topic} in 5 Minutes',
-    '{topic} Patterns You Must Know',
-    'Why Your {topic} Code Is Slow',
-    'Clean {topic} Code — Step by Step',
-    '{topic}: The Secrets Senior Devs Use',
+    ['{topic} Tricks Most Devs Don\'t Know', 'Advanced {topic} Patterns — With Code', '{topic} Deep Dive — Senior Level'],
+    ['Stop Writing Bad {topic} Code — Do This', '{topic} Tips That 10x Your Speed', '{topic} Secrets Senior Engineers Use'],
+    ['{topic} in {duration} — Interview Ready', '5 {topic} Patterns You Must Know', 'The {topic} Guide Nobody Made Until Now'],
+    ['Why Your {topic} Code Is Slow (Fix It Now)', 'Clean {topic} Code — Step by Step', '{topic} Optimization — The Complete Guide'],
   ],
 };
 
-function truncateTitle(title: string, max = 60): string {
-  return title.length > max ? title.slice(0, max - 1).trimEnd() + '…' : title;
-}
-
-function generateTitle(topic: string, sessionNumber: number): string {
+function generateTitle(topic: string, sessionNumber: number, durationSecs: number): string {
   const type = classifyTopic(topic);
-  const templates = TITLE_TEMPLATES_BY_TYPE[type];
-  const idx = seededIndex(topic, sessionNumber, 17, templates.length);
-  const raw = templates[idx].replace('{topic}', topic);
-  return truncateTitle(raw);
+  const templateSets = TITLE_TEMPLATES_BY_TYPE[type];
+  const setIdx = seededIndex(topic, sessionNumber, 17, templateSets.length);
+  const sessionIdx = Math.min(sessionNumber - 1, 2); // 0, 1, or 2
+  const mins = Math.round(durationSecs / 60);
+  const duration = `${mins} Minutes`;
+
+  let raw = templateSets[setIdx][sessionIdx]
+    .replace('{topic}', topic)
+    .replace('{duration}', duration);
+
+  // Truncate to 70 chars max
+  if (raw.length > 70) {
+    raw = raw.slice(0, 69).trimEnd() + '…';
+  }
+  return raw;
 }
 
 // ─── Thumbnail Text Templates ─────────────────────────────────────────────────
-// 3-5 words max. High curiosity / shock value. Shown over video thumbnail.
+// 3-5 words max. High curiosity / shock value.
 
-const THUMBNAIL_TEMPLATES_BY_TYPE: Record<TopicType, string[]> = {
+const THUMBNAIL_TEMPLATES_BY_TYPE: Record<TopicType, string[][]> = {
   'data-structure': [
-    'DON\'T Use {topic}!',
-    '{topic} = O(1) Trick',
-    'Google Asked This',
-    'Stop Using {topic} Wrong',
-    '{topic} Secret Revealed',
-    '90% Get This Wrong',
-    'Know THIS or Fail',
-    '{topic} in 60s',
+    ['DON\'T Use {topic}!', '{topic}\nCODED', '{topic}\nFinal Boss'],
+    ['{topic} = O(1) Trick', '5 Algorithms\nYou MUST Know', 'The REAL\nDifference'],
+    ['Google Asked This', 'I CODED\nEvery Pattern', '{topic}\nMaster Class'],
+    ['90% Get This Wrong', '{topic}\nWith Python', 'Senior vs Junior\n{topic}'],
   ],
   'algorithm': [
-    'This Pattern = Hired',
-    'Stop Brute Forcing!',
-    '90% Fail This',
-    '{topic} = Easy Wins',
-    'O(n) → O(log n)',
-    'FAANG Loves This',
-    'The Hidden Pattern',
-    'Know This, Get Hired',
+    ['This Pattern = Hired', 'I CODED\n5 Patterns', '{topic}\nAdvanced'],
+    ['Stop Brute Forcing!', 'The SECRET\nPattern', '{topic}\nComplete Guide'],
+    ['FAANG Loves This', '{topic}\nin Python', 'The Missing\nInsight'],
+    ['90% Fail This', '5 Algorithms\nCoded', 'Know THIS\nor Fail'],
   ],
   'system-design': [
-    'This Crashes at Scale',
-    'Netflix Does THIS',
-    'Senior vs Junior Design',
-    'Trade-offs Nobody Knows',
-    'The $14M Mistake',
-    'Scale to 1B Users',
-    '{topic} = Career Changer',
-    'Juniors Miss This',
+    ['{topic}\nExplained', 'I CODED\n5 Algorithms', 'L4 vs L7\nThe REAL Difference'],
+    ['Netflix Does THIS', '{topic}\nWith Python', 'Pick Wrong\n= Cooked'],
+    ['This Crashes\nat Scale', 'The Interview\nSecret', 'Senior vs Junior\nAnswer'],
+    ['Scale to\n1B Users', '{topic}\nDeep Dive', 'The Complete\nPicture'],
   ],
   'concept': [
-    'This Changes Everything',
-    '90% Get This Wrong',
-    'You\'re Doing It Wrong',
-    'Know THIS or Fail',
-    'The Missing Concept',
-    'Interview Killer',
-    '{topic} = Job Offer',
-    'Watch Before Interview',
+    ['This Changes\nEverything', '{topic}\nCoded', '{topic}\nAdvanced'],
+    ['90% Get\nThis Wrong', 'The SECRET\nInsight', 'Complete\nGuide'],
+    ['Know THIS\nor Fail', '5 Patterns\nYou Need', 'Master\nClass'],
+    ['Interview\nKiller', 'With Code\n+ Examples', 'The Final\nBoss'],
   ],
   'language': [
-    'Stop Writing Bad Code',
-    'This 1 Trick = 10x',
-    'Senior Dev Secret',
-    'Clean Code in 5 Min',
-    'Most Devs Miss This',
-    'Write Code Like THIS',
-    'Instant Code Review',
-    '10x Your Code Speed',
+    ['Stop Writing\nBad Code', '10x Your\nSpeed', '{topic}\nAdvanced'],
+    ['This 1 Trick\n= 10x', 'Senior Dev\nSecret', 'The Complete\nGuide'],
+    ['Most Devs\nMiss This', 'Clean Code\nin 5 Min', 'Master\nClass'],
+    ['Write Code\nLike THIS', '5 Patterns\nYou Need', '{topic}\nFinal Boss'],
   ],
 };
 
 function generateThumbnailText(topic: string, sessionNumber: number): string {
   const type = classifyTopic(topic);
-  const templates = THUMBNAIL_TEMPLATES_BY_TYPE[type];
-  const idx = seededIndex(topic, sessionNumber, 31, templates.length);
-  // Replace {topic} but keep it short — only use first word of multi-word topics
+  const templateSets = THUMBNAIL_TEMPLATES_BY_TYPE[type];
+  const setIdx = seededIndex(topic, sessionNumber, 31, templateSets.length);
+  const sessionIdx = Math.min(sessionNumber - 1, 2);
   const shortTopic = topic.split(' ')[0];
-  return templates[idx].replace('{topic}', shortTopic);
+  return templateSets[setIdx][sessionIdx].replace('{topic}', shortTopic);
 }
 
 // ─── YouTube Tags ─────────────────────────────────────────────────────────────
 
 const UNIVERSAL_TAGS = [
-  'coding interview',
-  'interview prep',
-  'software engineer',
-  'leetcode',
-  'faang interview',
-  'tech interview',
-  'software engineering',
-  'programming tutorial',
-  'learn to code',
-  'coding tips',
+  'coding interview', 'interview prep', 'software engineer', 'leetcode',
+  'faang interview', 'tech interview', 'software engineering',
+  'programming tutorial', 'learn to code', 'coding tips',
 ];
 
 const LANGUAGE_TAGS: Record<string, string[]> = {
@@ -219,24 +217,57 @@ const TYPE_TAGS: Record<TopicType, string[]> = {
   'language': ['programming', 'clean code', 'coding best practices', 'developer tips'],
 };
 
-function generateTags(topic: string, language: string): string[] {
+const SESSION_SPECIFIC_TAGS: Record<TopicType, string[][]> = {
+  'system-design': [
+    ['fundamentals', 'explained', 'tutorial', 'health checks', 'failover'],
+    ['algorithms', 'implementation', 'python code', 'deep dive', 'with code'],
+    ['advanced', 'layer 4', 'layer 7', 'complete guide', 'senior engineer'],
+  ],
+  'data-structure': [
+    ['fundamentals', 'explained', 'basics', 'tutorial', 'introduction'],
+    ['implementation', 'code walkthrough', 'with code', 'python', 'patterns'],
+    ['advanced', 'optimization', 'complete guide', 'master class', 'trade-offs'],
+  ],
+  'algorithm': [
+    ['fundamentals', 'explained', 'basics', 'tutorial', 'introduction'],
+    ['implementation', 'patterns', 'with code', 'python', 'deep dive'],
+    ['advanced', 'optimization', 'complete guide', 'master class', 'interview'],
+  ],
+  'concept': [
+    ['fundamentals', 'explained', 'basics', 'tutorial', 'introduction'],
+    ['implementation', 'with code', 'deep dive', 'patterns', 'examples'],
+    ['advanced', 'complete guide', 'master class', 'trade-offs', 'architecture'],
+  ],
+  'language': [
+    ['basics', 'tutorial', 'for beginners', 'introduction', 'fundamentals'],
+    ['intermediate', 'patterns', 'tips', 'tricks', 'deep dive'],
+    ['advanced', 'optimization', 'best practices', 'master class', 'senior'],
+  ],
+};
+
+function generateTags(topic: string, language: string, sessionNumber: number): string[] {
   const type = classifyTopic(topic);
   const topicLower = language.toLowerCase() as keyof typeof LANGUAGE_TAGS;
+  const sessionIdx = Math.min(sessionNumber - 1, 2);
 
   const topicSpecific = [
     topic.toLowerCase(),
+    `${topic.toLowerCase()} explained`,
     `${topic.toLowerCase()} interview`,
     `${topic.toLowerCase()} ${language.toLowerCase()}`,
     `${topic.toLowerCase()} tutorial`,
-    `${topic.toLowerCase()} explained`,
     `how ${topic.toLowerCase()} works`,
   ];
+
+  const sessionTags = (SESSION_SPECIFIC_TAGS[type]?.[sessionIdx] || []).map(
+    t => `${topic.toLowerCase()} ${t}`
+  );
 
   const langTags = LANGUAGE_TAGS[topicLower] || LANGUAGE_TAGS['python'];
   const typeTags = TYPE_TAGS[type];
 
-  // Deduplicate and limit to YouTube's 500-char total / 30 tag max recommendation
-  const all = [...topicSpecific, ...langTags, ...typeTags, ...UNIVERSAL_TAGS];
+  // Deduplicate and limit to 30 tags
+  const all = [...topicSpecific, ...sessionTags, ...langTags, ...typeTags, ...UNIVERSAL_TAGS];
   const seen = new Set<string>();
   const unique: string[] = [];
   for (const tag of all) {
@@ -245,61 +276,12 @@ function generateTags(topic: string, language: string): string[] {
       seen.add(t);
       unique.push(tag);
     }
-    if (unique.length >= 25) break;
+    if (unique.length >= 30) break;
   }
   return unique;
 }
 
-// ─── YouTube Description ──────────────────────────────────────────────────────
-// Critical: first 2 lines appear before "Show more" — must hook immediately.
-
-const DESCRIPTION_HOOKS_BY_TYPE: Record<TopicType, string[]> = {
-  'data-structure': [
-    'Most developers use {topic} every day — but almost nobody understands WHY it works.\nIn this video, I break down {topic} step by step with code, and show you exactly how to answer it in interviews.',
-    'If you can\'t explain {topic} clearly in 30 seconds, this video is for you.\nI\'ll teach you the core concept, walk through the code, and give you the exact interview answer template.',
-    '{topic} is one of the most common interview topics — and one of the most misunderstood.\nHere\'s everything you need to know, with {language} code examples and real interview strategies.',
-  ],
-  'algorithm': [
-    'Most candidates fail {topic} problems because they\'re memorizing solutions instead of patterns.\nWatch this to understand the pattern — and you\'ll solve any {topic} variant on the fly.',
-    'Stop grinding {topic} problems without understanding WHY they work.\nThis video teaches the core insight that makes {topic} click instantly — with {language} code.',
-    '{topic} trips up even experienced developers in interviews.\nHere\'s the honest breakdown: why it\'s tricky, what the pattern is, and how to explain it confidently.',
-  ],
-  'system-design': [
-    'One wrong decision about {topic} can bring down your entire system at scale.\nHere\'s how to think about {topic} the way senior engineers at Google and Netflix actually do.',
-    'System design interviews always ask about {topic} — and most candidates answer the same generic way.\nWatch this to give an answer that actually impresses senior engineers.',
-    '{topic} is not as simple as most tutorials make it sound.\nThis video covers the real trade-offs, the failure modes, and the answer that gets you hired.',
-  ],
-  'concept': [
-    'If {topic} is still fuzzy for you, this 5-minute explanation will make it click.\nClear visuals, real code, and the interview-ready answer — all in one video.',
-    'Here\'s the honest explanation of {topic} that most tutorials skip.\nNo jargon, no filler — just the concept, the code, and what interviewers actually want to hear.',
-    '{topic} comes up constantly in tech interviews — but most courses explain it wrong.\nThis video gives you the first-principles understanding that sticks.',
-  ],
-  'language': [
-    'Writing {language} code that\'s slow, messy, or hard to maintain? {topic} will fix that.\nThis video covers the patterns and techniques that senior {language} engineers use every day.',
-    'Most {language} developers pick up bad {topic} habits and never realize it.\nHere\'s what to do instead — with clean code examples you can use immediately.',
-    '{topic} in {language} is more powerful than you think.\nThis video breaks down the advanced patterns that will level up your code quality right now.',
-  ],
-};
-
-function generateDescriptionHook(topic: string, language: string, sessionNumber: number): string {
-  const type = classifyTopic(topic);
-  const hooks = DESCRIPTION_HOOKS_BY_TYPE[type];
-  const idx = seededIndex(topic, sessionNumber, 43, hooks.length);
-  return hooks[idx]
-    .replace(/{topic}/g, topic)
-    .replace(/{language}/g, language);
-}
-
-function generateChapters(storyboard: Storyboard): string {
-  return storyboard.scenes.map((scene) => {
-    const seconds = Math.floor(scene.startFrame / storyboard.fps);
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    const timestamp = `${mins}:${String(secs).padStart(2, '0')}`;
-    const label = scene.heading || scene.type.charAt(0).toUpperCase() + scene.type.slice(1);
-    return `${timestamp} ${label}`;
-  }).join('\n');
-}
+// ─── YouTube Hashtags ─────────────────────────────────────────────────────────
 
 const HASHTAG_SETS_BY_TYPE: Record<TopicType, string[]> = {
   'data-structure': ['#DataStructures', '#DSA', '#CodingInterview', '#LeetCode', '#Programming'],
@@ -309,144 +291,438 @@ const HASHTAG_SETS_BY_TYPE: Record<TopicType, string[]> = {
   'language': ['#Python', '#Java', '#Programming', '#CleanCode', '#SoftwareEngineering'],
 };
 
-function generateDescription(
-  storyboard: Storyboard,
-  language: string,
-  chapters: string,
-): string {
-  const { topic, sessionNumber } = storyboard;
+function generateHashtags(topic: string, sessionNumber: number): string[] {
   const type = classifyTopic(topic);
-
-  const hook = generateDescriptionHook(topic, language, sessionNumber);
-  const langHashtag = `#${language.charAt(0).toUpperCase()}${language.slice(1)}`;
   const topicHashtag = `#${topic.replace(/\s+/g, '')}`;
-  const typeHashtags = HASHTAG_SETS_BY_TYPE[type];
-  const allHashtags = [langHashtag, topicHashtag, ...typeHashtags]
-    .filter((v, i, a) => a.indexOf(v) === i) // deduplicate
-    .join(' ');
-
-  return `${hook}
-
-⏱️ Chapters:
-${chapters}
-
-──────────────────────────────
-Practice these concepts interactively at guru-sishya.in
-Full playlist: https://www.youtube.com/@guru-sishya
-──────────────────────────────
-
-${allHashtags} #InterviewPrep #Coding #Developer`;
+  const base = HASHTAG_SETS_BY_TYPE[type];
+  return [topicHashtag, ...base].filter((v, i, a) => a.indexOf(v) === i).slice(0, 5);
 }
 
-// ─── Instagram Caption ────────────────────────────────────────────────────────
-// Pattern: Hook → Value → Share bait → CTA
-// First line is the hook (shown in feed before "more").
+// ─── YouTube Description ──────────────────────────────────────────────────────
 
-const INSTAGRAM_HOOKS_BY_TYPE: Record<TopicType, string[]> = {
+const DESCRIPTION_HOOKS_BY_TYPE: Record<TopicType, string[][]> = {
   'data-structure': [
-    '90% of developers can\'t explain {topic} under pressure 👀',
-    'The {topic} interview question that trips everyone up 🎯',
-    'Why your {topic} code is slower than it should be 🐢',
-    'If you don\'t understand {topic}, watch this before your next interview 👇',
-    '{topic} explained in a way that actually makes sense 🧠',
+    [
+      'Most developers use {topic} every day — but almost nobody understands WHY it works.\nIn this video, I break down {topic} step by step with code, and show you exactly how to answer it in interviews.',
+      'You memorized the theory. But can you actually CODE it?\nIn this video, I implement {topic} operations from scratch in {language} — and show you the interview patterns that matter.',
+      'This is the video that takes you from "I know {topic}" to "I can design systems with {topic}."\nAdvanced patterns, real-world trade-offs, and the answer template senior engineers use.',
+    ],
+    [
+      'If you can\'t explain {topic} clearly in 30 seconds, this video is for you.\nCore concept + {language} code + interview answer template — everything in one video.',
+      'Theory is useless without code. In this video, every {topic} pattern gets implemented in {language}.\nCopy the code, understand the pattern, ace the interview.',
+      '{topic} at scale is a completely different game. This video covers what most tutorials skip:\nthe failure modes, the performance cliffs, and what Google engineers actually worry about.',
+    ],
   ],
   'algorithm': [
-    'Stop memorizing {topic} patterns. Understand THIS instead 🔥',
-    'The one {topic} insight that makes all problems easy 💡',
-    'Why most devs fail {topic} problems in interviews 😬',
-    '{topic} clicked for me the moment I understood THIS 🤯',
-    'Solve any {topic} problem with this single pattern 🎯',
+    [
+      'Most candidates fail {topic} problems because they\'re memorizing solutions instead of patterns.\nWatch this to understand the pattern — and you\'ll solve any {topic} variant on the fly.',
+      'Stop grinding problems. Start understanding patterns.\nIn this video, I code every major {topic} pattern in {language} and explain WHEN to use each one.',
+      'This is the {topic} knowledge that separates senior from junior engineers.\nAdvanced patterns, edge cases, and the exact answer that gets you the offer.',
+    ],
+    [
+      'Stop grinding {topic} problems without understanding WHY they work.\nThis video teaches the core insight that makes {topic} click instantly — with {language} code.',
+      'Five {topic} patterns. All coded. All explained.\nThis is the video I wish existed when I was preparing for my FAANG interview.',
+      'The advanced {topic} concepts that most tutorials skip entirely.\nReal trade-offs, production patterns, and what interviewers at Google/Meta actually test.',
+    ],
   ],
   'system-design': [
-    'This {topic} mistake will crash your system at scale 🚨',
-    'How Netflix actually uses {topic} (most tutorials get this wrong) 👀',
-    'System design interview tip: here\'s what they\'re really testing with {topic} 🎯',
-    'The {topic} trade-off nobody talks about 🔥',
-    'Junior vs Senior: how they approach {topic} differently 💡',
+    [
+      'One wrong decision about {topic} can bring down your entire system at scale.\nHere\'s how to think about {topic} the way senior engineers at Google and Netflix actually do.',
+      'You memorized the names. But can you actually CODE them?\nIn this video, I implement all the major {topic} approaches from scratch in {language} — and reveal the interview secret that separates senior from junior answers.',
+      'This is the question that separates mid-level from senior engineers in system design interviews.\nIf you can\'t explain the trade-offs, you\'re not getting the senior offer.',
+    ],
+    [
+      'System design interviews always ask about {topic} — and most candidates answer the same generic way.\nWatch this to give an answer that actually impresses senior engineers.',
+      '{topic} isn\'t just theory — it\'s code you can run.\nThis video implements every major approach in {language} with the decision framework interviewers want to hear.',
+      'The {topic} deep dive that covers what 99% of tutorials skip.\nLayers, protocols, real-world architecture — and the exact answer template for FAANG interviews.',
+    ],
   ],
   'concept': [
-    '{topic} explained in a way nobody else does 🧠',
-    'The {topic} concept that separates juniors from seniors 🎯',
-    'Why {topic} trips up even experienced developers 👀',
-    'This is how {topic} actually works under the hood 🔥',
-    'You\'ve been thinking about {topic} wrong this whole time 🤯',
+    [
+      'If {topic} is still fuzzy for you, this video will make it click.\nClear visuals, real code, and the interview-ready answer — all in one video.',
+      'Theory meets code. In this video, every {topic} concept gets implemented in {language}.\nNo hand-waving, no "left as an exercise" — actual working code.',
+      'This is the {topic} video that ties everything together.\nAdvanced patterns, real-world applications, and the complete mental model.',
+    ],
+    [
+      'Here\'s the honest explanation of {topic} that most tutorials skip.\nNo jargon, no filler — just the concept, the code, and what interviewers actually want to hear.',
+      '{topic} patterns that separate the good from the great.\nFive approaches, all coded in {language}, with the decision framework that impresses interviewers.',
+      'The advanced {topic} guide that nobody else made.\nTrade-offs, failure modes, and the answer that gets you hired at senior level.',
+    ],
   ],
   'language': [
-    'Stop writing bad {language} code. Do THIS instead 🔥',
-    'The {language} trick that 10x\'s your productivity 🚀',
-    'Senior {language} devs do this. Junior devs don\'t 💡',
-    'Most {language} developers skip this step. Big mistake 😬',
-    'Clean {language} code in 5 minutes — here\'s how 🧠',
+    [
+      'Writing {language} code that\'s slow, messy, or hard to maintain? {topic} will fix that.\nThis video covers the patterns and techniques that senior {language} engineers use every day.',
+      'Five {topic} patterns that will transform your {language} code.\nEach one implemented, explained, and ready to use in your next project.',
+      'The advanced {topic} knowledge that separates 10x engineers from everyone else.\nReal-world patterns, performance insights, and production-grade code.',
+    ],
+    [
+      'Most {language} developers pick up bad {topic} habits and never realize it.\nHere\'s what to do instead — with clean code examples you can use immediately.',
+      '{topic} in {language} is more powerful than you think.\nThis video breaks down the advanced patterns that will level up your code quality right now.',
+      'The complete {topic} guide for {language} — from fundamentals to advanced patterns.\nEverything you need in one video.',
+    ],
   ],
 };
 
-function generateInstagramHook(topic: string, language: string, sessionNumber: number): string {
+function generateDescriptionHook(topic: string, language: string, sessionNumber: number): string {
   const type = classifyTopic(topic);
-  const hooks = INSTAGRAM_HOOKS_BY_TYPE[type];
-  const idx = seededIndex(topic, sessionNumber, 67, hooks.length);
-  return hooks[idx]
+  const hookSets = DESCRIPTION_HOOKS_BY_TYPE[type];
+  const setIdx = seededIndex(topic, sessionNumber, 43, hookSets.length);
+  const sessionIdx = Math.min(sessionNumber - 1, 2);
+  return hookSets[setIdx][sessionIdx]
     .replace(/{topic}/g, topic)
     .replace(/{language}/g, language);
 }
 
-const INSTAGRAM_VALUE_LINES: string[] = [
-  'In this video I break it down step by step with real {language} code.',
-  'Full breakdown with {language} code examples — watch the whole thing.',
-  'Watch the full video for the code walkthrough and interview tips.',
-  'I cover the core concept, the code, and exactly what to say in interviews.',
-  'Real {language} examples + the interview answer template included.',
+function generateChapters(storyboard: Storyboard): { time: string; title: string }[] {
+  const seen = new Set<string>();
+  const chapters: { time: string; title: string }[] = [];
+
+  for (const scene of storyboard.scenes) {
+    const label = scene.heading || scene.type.charAt(0).toUpperCase() + scene.type.slice(1);
+    // Skip duplicate headings, overly long headings, and generic types
+    if (seen.has(label) || label.length > 60 || label === 'text') continue;
+    seen.add(label);
+
+    const seconds = Math.floor(scene.startFrame / storyboard.fps);
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    const time = `${mins}:${String(secs).padStart(2, '0')}`;
+    chapters.push({ time, title: label });
+  }
+
+  return chapters;
+}
+
+function formatChaptersForDescription(chapters: { time: string; title: string }[]): string {
+  return chapters.map(c => `${c.time} ${c.title}`).join('\n');
+}
+
+// ─── Session Navigation ──────────────────────────────────────────────────────
+
+function generateSessionNav(sessionNumber: number, topic: string, totalSessions = 3): string {
+  const lines: string[] = [];
+  for (let i = 1; i <= totalSessions; i++) {
+    const marker = i === sessionNumber ? '★' : i < sessionNumber ? '←' : '→';
+    const suffix = i === sessionNumber ? ' (You are here)' : '';
+    lines.push(`${marker} Session ${i}${suffix}`);
+  }
+  return lines.join('\n');
+}
+
+function generateEndScreen(topic: string, sessionNumber: number, totalSessions = 3): string {
+  if (sessionNumber < totalSessions) {
+    return `Session ${sessionNumber + 1} goes even deeper — don't miss it! Subscribe + Bell for the full ${topic} series.`;
+  }
+  return `You just completed the entire ${topic} series! Subscribe for the next system design topic — more interview-critical content dropping soon!`;
+}
+
+function generateCardLink(topic: string, sessionNumber: number, totalSessions = 3): string {
+  if (sessionNumber < totalSessions) {
+    return `Session ${sessionNumber + 1}: ${topic} Deep Dive → [link to S${sessionNumber + 1}]`;
+  }
+  return `Next Topic Coming Soon → [link]`;
+}
+
+function generateDescription(
+  storyboard: Storyboard,
+  language: string,
+  chapters: { time: string; title: string }[],
+): string {
+  const { topic, sessionNumber } = storyboard;
+  const type = classifyTopic(topic);
+  const durationSecs = Math.round(storyboard.durationInFrames / storyboard.fps);
+  const mins = Math.round(durationSecs / 60);
+
+  const hook = generateDescriptionHook(topic, language, sessionNumber);
+  const chaptersText = formatChaptersForDescription(chapters);
+  const sessionNav = generateSessionNav(sessionNumber, topic);
+  const hashtags = generateHashtags(topic, sessionNumber);
+
+  return `${hook}
+
+⏱️ Chapters:
+${chaptersText}
+
+──────────────────────────────────────
+🔥 FREE Interview Prep: https://guru-sishya.in
+📺 Full Playlist: https://www.youtube.com/@GuruSishya-India
+📱 Instagram: https://instagram.com/guru_sishya.in
+──────────────────────────────────────
+
+📌 Series:
+${sessionNav}
+
+${hashtags.join(' ')} #InterviewPrep #Coding #Developer`;
+}
+
+// ─── Instagram ────────────────────────────────────────────────────────────────
+
+const INSTAGRAM_HOOKS_BY_TYPE: Record<TopicType, string[][]> = {
+  'data-structure': [
+    [
+      '90% of developers can\'t explain {topic} under pressure 👀',
+      'I coded every {topic} operation from scratch. Here\'s what I learned 🧠',
+      'The {topic} knowledge that gets you the SENIOR offer 🎯',
+    ],
+    [
+      'The {topic} interview question that trips everyone up 🎯',
+      '{topic} with real code — stop memorizing, start understanding 💡',
+      'This is the {topic} video that ties everything together 🔥',
+    ],
+  ],
+  'algorithm': [
+    [
+      'Stop memorizing {topic} patterns. Understand THIS instead 🔥',
+      'I coded ALL {topic} patterns in Python. Here\'s what clicked 🧠',
+      'The {topic} patterns that get you hired at FAANG 🎯',
+    ],
+    [
+      '{topic} clicked for me the moment I understood THIS 🤯',
+      '5 {topic} patterns, all coded, all explained ⚡',
+      'Advanced {topic} — the stuff that separates senior from junior 💡',
+    ],
+  ],
+  'system-design': [
+    [
+      'This {topic} mistake will crash your system at scale 🚨',
+      'I coded ALL {topic} algorithms from scratch in Python 🧠',
+      '{topic} — this is the question that separates senior from junior 🎯',
+    ],
+    [
+      'How Netflix actually uses {topic} (most tutorials get this wrong) 👀',
+      'The {topic} interview secret that gets you hired 🤫',
+      'Layer 4 vs Layer 7 {topic} — pick wrong and you\'re cooked 🍳',
+    ],
+  ],
+  'concept': [
+    [
+      '{topic} explained in a way nobody else does 🧠',
+      'I built {topic} from scratch. The code is simpler than you think 💡',
+      'The advanced {topic} guide that nobody made until now 🔥',
+    ],
+    [
+      'This is how {topic} actually works under the hood 🔥',
+      '{topic} patterns that separate the good from the great ⚡',
+      '{topic} master class — the complete picture 🎯',
+    ],
+  ],
+  'language': [
+    [
+      'Stop writing bad {language} code. Do THIS instead 🔥',
+      '5 {language} patterns that will transform your code 💡',
+      'Advanced {language} — the stuff senior engineers use daily 🧠',
+    ],
+    [
+      'The {language} trick that 10x\'s your productivity 🚀',
+      '{language} patterns you\'ve been using wrong this whole time 😬',
+      'The complete {language} guide — from basics to advanced 🎯',
+    ],
+  ],
+};
+
+const INSTAGRAM_HASHTAG_SETS: string[] = [
+  '#coding', '#developer', '#programmer', '#tech', '#softwareengineering',
+  '#interviewprep', '#programminglife', '#devlife', '#computerscience',
+  '#leetcode', '#dsa', '#webdevelopment', '#techinterview', '#softwareengineer',
+  '#motivation', '#education', '#careergoals',
 ];
 
-const INSTAGRAM_HASHTAG_SETS_BY_TYPE: Record<TopicType, string[]> = {
-  'data-structure': ['#codinginterview', '#datastructures', '#dsa', '#leetcode', '#programminglife'],
-  'algorithm': ['#codinginterview', '#algorithms', '#dsa', '#leetcode', '#softwareengineer'],
-  'system-design': ['#systemdesign', '#backend', '#softwareengineer', '#codinginterview', '#techinterview'],
-  'concept': ['#coding', '#programminglife', '#softwareengineer', '#codinginterview', '#developer'],
-  'language': ['#coding', '#cleancode', '#developer', '#programminglife', '#softwareengineer'],
+const INSTAGRAM_TYPE_HASHTAGS: Record<TopicType, string[]> = {
+  'data-structure': ['#datastructures', '#algorithms'],
+  'algorithm': ['#algorithms', '#problemsolving'],
+  'system-design': ['#systemdesign', '#backend', '#distributedsystems'],
+  'concept': ['#programming', '#computerscience'],
+  'language': ['#cleancode', '#codequality'],
 };
 
 export function generateInstagramCaption(topic: string, language: string, sessionNumber = 1): string {
   const type = classifyTopic(topic);
-  const hook = generateInstagramHook(topic, language, sessionNumber);
+  const hookSets = INSTAGRAM_HOOKS_BY_TYPE[type];
+  const setIdx = seededIndex(topic, sessionNumber, 67, hookSets.length);
+  const sessionIdx = Math.min(sessionNumber - 1, 2);
+  const hook = hookSets[setIdx][sessionIdx]
+    .replace(/{topic}/g, topic)
+    .replace(/{language}/g, language);
 
-  const valueIdx = seededIndex(topic, sessionNumber, 89, INSTAGRAM_VALUE_LINES.length);
-  const valueLine = INSTAGRAM_VALUE_LINES[valueIdx].replace(/{language}/g, language);
-
-  const typeHashtags = INSTAGRAM_HASHTAG_SETS_BY_TYPE[type];
-  const langHashtag = `#${language.toLowerCase()}`;
   const topicHashtag = `#${topic.replace(/\s+/g, '').toLowerCase()}`;
-  const hashtags = [langHashtag, topicHashtag, ...typeHashtags]
+  const langHashtag = `#${language.toLowerCase()}`;
+  const typeHashtags = INSTAGRAM_TYPE_HASHTAGS[type];
+
+  const allHashtags = [topicHashtag, langHashtag, '#codinginterview', '#faang',
+    ...typeHashtags, ...INSTAGRAM_HASHTAG_SETS]
     .filter((v, i, a) => a.indexOf(v) === i)
-    .slice(0, 8)
-    .join(' ');
+    .slice(0, 30);
 
   return `${hook}
 
-${valueLine}
+💾 Save this for your interview prep
+📤 Send to someone preparing for FAANG
 
-📤 Send this to a friend who's preparing for interviews
+🔗 Full course FREE at guru-sishya.in (link in bio)
 
-Link in bio for the full course 👆
+${allHashtags.join(' ')}`;
+}
 
-${hashtags} #interviewprep #coding`;
+function generateInstagramMetadata(topic: string, language: string, sessionNumber: number): InstagramMetadata {
+  const caption = generateInstagramCaption(topic, language, sessionNumber);
+  const type = classifyTopic(topic);
+  const topicHashtag = `#${topic.replace(/\s+/g, '').toLowerCase()}`;
+  const langHashtag = `#${language.toLowerCase()}`;
+  const typeHashtags = INSTAGRAM_TYPE_HASHTAGS[type];
+
+  const hashtags = [topicHashtag, langHashtag, '#codinginterview', '#faang',
+    ...typeHashtags, ...INSTAGRAM_HASHTAG_SETS]
+    .filter((v, i, a) => a.indexOf(v) === i)
+    .slice(0, 30);
+
+  const shortTopic = topic.length > 15 ? topic.split(' ')[0] : topic;
+  const coverTexts = [
+    [`${shortTopic}\nExplained`, `${shortTopic}\nWith Code`, `${shortTopic}\nAdvanced`],
+    [`${shortTopic}\nin ${Math.round(sessionNumber * 3)} Min`, `5 Algorithms\nCoded`, `The Senior\nAnswer`],
+  ];
+  const coverIdx = seededIndex(topic, sessionNumber, 101, coverTexts.length);
+  const sessionIdx = Math.min(sessionNumber - 1, 2);
+
+  return {
+    caption,
+    hashtags,
+    coverText: coverTexts[coverIdx][sessionIdx],
+  };
+}
+
+// ─── SEO Metadata ─────────────────────────────────────────────────────────────
+
+function generateSeoMetadata(topic: string, language: string, sessionNumber: number, durationSecs: number): SeoMetadata {
+  const type = classifyTopic(topic);
+  const mins = Math.round(durationSecs / 60);
+  const topicLower = topic.toLowerCase();
+
+  const baseKeywords = [
+    `${topicLower} explained`,
+    `${topicLower} ${language.toLowerCase()}`,
+    `${topicLower} interview`,
+    `${topicLower} system design`,
+    `${topicLower} tutorial`,
+  ];
+
+  const sessionKeywords: string[][] = [
+    [`${topicLower} fundamentals`, `${topicLower} for beginners`, `what is ${topicLower}`, `${topicLower} basics`],
+    [`${topicLower} algorithms`, `${topicLower} implementation`, `${topicLower} code`, `${topicLower} patterns`],
+    [`${topicLower} advanced`, `${topicLower} deep dive`, `${topicLower} architecture`, `${topicLower} trade-offs`],
+  ];
+
+  const typeKeywords: Record<TopicType, string[]> = {
+    'system-design': ['system design interview prep', 'FAANG system design', 'distributed systems'],
+    'data-structure': ['data structures interview', 'DSA prep', 'coding interview prep'],
+    'algorithm': ['algorithm interview', 'coding patterns', 'FAANG coding prep'],
+    'concept': ['programming concepts', 'computer science fundamentals', 'software engineering'],
+    'language': [`${language} best practices`, `${language} patterns`, `${language} interview`],
+  };
+
+  const sessionIdx = Math.min(sessionNumber - 1, 2);
+  const keywords = [...baseKeywords, ...sessionKeywords[sessionIdx], ...typeKeywords[type]]
+    .filter((v, i, a) => a.indexOf(v) === i)
+    .slice(0, 15);
+
+  const metaDescription = `Master ${topic} for system design interviews in ${mins} minutes. Session ${sessionNumber} covers ${
+    sessionNumber === 1 ? 'fundamentals, algorithms, and core concepts' :
+    sessionNumber === 2 ? 'implementation with code, algorithm comparison, and decision frameworks' :
+    'advanced patterns, trade-offs, and the senior engineer answer template'
+  } — essential FAANG interview prep.`;
+
+  return { keywords, metaDescription };
+}
+
+// ─── Shorts Metadata ──────────────────────────────────────────────────────────
+
+const SHORTS_TITLE_TEMPLATES: Record<TopicType, string[]> = {
+  'system-design': [
+    'Wait, THIS is how Netflix handles 200M users?! 🤯',
+    '90% of Devs Get {topic} Wrong 😳',
+    'The {topic} Secret That Gets You Hired 🤫',
+    '{topic} in 60 Seconds — Save This ⚡',
+    'Your server just DIED. Now what? 💀',
+    'Junior vs Senior: {topic} Answer ⚔️',
+  ],
+  'data-structure': [
+    'Stop Using {topic} Wrong! Here\'s Why 😤',
+    '{topic} in 60 Seconds — Interview Ready ⚡',
+    'Google Asked This {topic} Question 🎯',
+    'The {topic} Trick Nobody Teaches 🤫',
+    '90% of Devs Get {topic} Wrong 😳',
+    '{topic} = O(1)? Here\'s the Secret 🔥',
+  ],
+  'algorithm': [
+    'This {topic} Pattern = Instant Hire 🔥',
+    'Stop Memorizing {topic}! Do This Instead 🧠',
+    '{topic} in 60 Seconds — With Code ⚡',
+    'FAANG Loves This {topic} Trick 🎯',
+    'The {topic} Insight That Changes Everything 💡',
+    '90% Fail This {topic} Question 😬',
+  ],
+  'concept': [
+    '{topic} Explained in 60 Seconds 🧠',
+    'Most Devs Get {topic} Wrong 😳',
+    'The {topic} Concept That Trips Everyone 🎯',
+    '{topic} — What No Tutorial Teaches 🤫',
+    'Know {topic} or Fail Your Interview 💀',
+    '{topic} Made Simple — Save This ⚡',
+  ],
+  'language': [
+    'Stop Writing Bad {language} Code! 🔥',
+    '{language} Trick That 10x\'s Your Speed 🚀',
+    'Senior {language} Devs Do THIS 💡',
+    '{language} in 60 Seconds — Level Up ⚡',
+    'Most {language} Devs Miss This 😬',
+    'Clean {language} Code — The Secret 🤫',
+  ],
+};
+
+function generateShortsTitle(topic: string, language: string, sessionNumber: number, shortIndex: number): string {
+  const type = classifyTopic(topic);
+  const templates = SHORTS_TITLE_TEMPLATES[type];
+  const idx = seededIndex(topic, sessionNumber * 10 + shortIndex, 53, templates.length);
+  const title = templates[idx]
+    .replace(/{topic}/g, topic)
+    .replace(/{language}/g, language);
+  return `${title} #Shorts #SystemDesign`;
+}
+
+// ─── Playlist Name ────────────────────────────────────────────────────────────
+
+function generatePlaylist(topic: string): string {
+  const type = classifyTopic(topic);
+  const category = type === 'system-design' ? 'System Design' :
+    type === 'data-structure' ? 'Data Structures' :
+    type === 'algorithm' ? 'Algorithms' :
+    type === 'language' ? 'Programming' : 'Computer Science';
+  return `${category} - ${topic} (Complete Series)`;
 }
 
 // ─── Primary Exports ──────────────────────────────────────────────────────────
 
 export function generateYouTubeMetadata(storyboard: Storyboard, language: string): YouTubeMetadata {
   const { topic, sessionNumber } = storyboard;
+  const durationSecs = Math.round(storyboard.durationInFrames / storyboard.fps);
 
-  const title = generateTitle(topic, sessionNumber);
+  const title = generateTitle(topic, sessionNumber, durationSecs);
   const chapters = generateChapters(storyboard);
   const description = generateDescription(storyboard, language, chapters);
-  const tags = generateTags(topic, language);
+  const tags = generateTags(topic, language, sessionNumber);
+  const hashtags = generateHashtags(topic, sessionNumber);
 
   return {
     title,
     description,
     tags,
-    categoryId: '27', // Education
+    hashtags,
     chapters,
+    category: 27,
+    language: 'en',
+    playlist: generatePlaylist(topic),
+    thumbnailText: generateThumbnailText(topic, sessionNumber),
+    endScreen: generateEndScreen(topic, sessionNumber),
+    cardLink: generateCardLink(topic, sessionNumber),
   };
 }
 
@@ -457,10 +733,54 @@ export function generateYouTubeMetadata(storyboard: Storyboard, language: string
  */
 export function generateMetadata(storyboard: Storyboard, language: string): VideoMetadata {
   const { topic, sessionNumber } = storyboard;
+  const durationSecs = Math.round(storyboard.durationInFrames / storyboard.fps);
 
   return {
     youtube: generateYouTubeMetadata(storyboard, language),
-    instagramCaption: generateInstagramCaption(topic, language, sessionNumber),
-    thumbnailText: generateThumbnailText(topic, sessionNumber),
+    instagram: generateInstagramMetadata(topic, language, sessionNumber),
+    seo: generateSeoMetadata(topic, language, sessionNumber, durationSecs),
   };
+}
+
+/**
+ * Generate metadata for shorts derived from a long-form session.
+ * Creates 3 shorts per session with viral-optimized titles and captions.
+ */
+export function generateShortsMetadataFromStoryboard(
+  storyboard: Storyboard,
+  language: string,
+  shortSegments?: string[],
+): ShortsMetadata {
+  const { topic, sessionNumber } = storyboard;
+  const type = classifyTopic(topic);
+
+  // Default segments based on session content
+  const segments = shortSegments || [
+    'Key Concept',
+    'The Interview Secret',
+    'Code Implementation',
+  ];
+
+  const shorts: ShortMetadata[] = segments.map((segment, i) => {
+    const title = generateShortsTitle(topic, language, sessionNumber, i);
+    const topicHashtag = `#${topic.replace(/\s+/g, '')}`;
+    const langHashtag = `#${language}`;
+
+    return {
+      id: `s${sessionNumber}-short-${i + 1}`,
+      segment,
+      youtube: {
+        title,
+        description: `${segment} — ${topic} explained in 60 seconds.\n\nFull video on our channel!\n\n${topicHashtag} #SystemDesign #FAANG #CodingInterview #SoftwareEngineering #Shorts`,
+        tags: generateTags(topic, language, sessionNumber).slice(0, 15),
+      },
+      instagram: {
+        caption: generateInstagramCaption(topic, language, sessionNumber),
+        hashtags: generateInstagramMetadata(topic, language, sessionNumber).hashtags,
+        coverText: generateThumbnailText(topic, sessionNumber),
+      },
+    };
+  });
+
+  return { shorts };
 }

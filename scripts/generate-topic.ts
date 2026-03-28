@@ -48,10 +48,9 @@ const CLIP_TYPES = [
 type ClipType = (typeof CLIP_TYPES)[number];
 
 const BGM_FILES = [
-  'audio/bgm/lofi-study-1.mp3',
-  'audio/bgm/lofi-study-2.mp3',
-  'audio/bgm/lofi-chill-1.mp3',
-  'audio/bgm/lofi-ambient-1.mp3',
+  'audio/bgm/gentle-drone.mp3',
+  'audio/bgm/study-pad.mp3',
+  'audio/bgm/warm-ambient.mp3',
 ];
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -218,9 +217,13 @@ async function generateTopic(): Promise<void> {
       console.log('='.repeat(60));
 
       try {
-        // 1. Generate script
+        // 1. Generate script (session-aware: pass session number and total for series linking)
         console.log('  Generating script...');
-        const script = generateScript(session, { language });
+        const script = generateScript(session, {
+          language,
+          sessionNumber: session.sessionNumber,
+          totalSessions: sessions.length,
+        });
         console.log(`     ${script.length} scenes`);
 
         // 2. Generate TTS audio for all scenes

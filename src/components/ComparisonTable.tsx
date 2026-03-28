@@ -37,18 +37,32 @@ const ComparisonTable: React.FC<ComparisonTableProps> = ({
   const fps = 30;
   const sync = useSync(sceneIndex ?? 0, sceneStartFrame ?? startFrame);
 
+  // ─── Sanitise rows: drop any separator rows that slipped through ──────────
+  const cleanRows = rows.filter(
+    row => !row.every(cell => /^[-:]+$/.test(cell) || cell.trim() === ''),
+  );
+  // Pad short rows so every row has the same number of cells as the header
+  const colCount = headers.length;
+  const paddedRows = cleanRows.map(row => {
+    if (row.length >= colCount) return row;
+    return [...row, ...Array(colCount - row.length).fill('—')];
+  });
+
   // ─── Visibility / sync logic ────────────────────────────────────────────────
   const titleOpacity = fadeIn(frame, startFrame);
-  const headerOpacity = fadeIn(frame, startFrame + 10);
-  const footerOpacity = fadeIn(frame, startFrame + 20);
+  const headerOpacity = fadeIn(frame, startFrame + 8);
+  const footerOpacity = fadeIn(frame, startFrame + 16);
 
   const hasSyncData = sync.isNarrating || sync.wordsSpoken > 0;
 
   const getVisibleRows = (totalRows: number): number => {
     if (hasSyncData && animationCues && animationCues.length > 0) {
       const rowCues = animationCues.filter(c => c.action === 'revealRow');
-      const reached = rowCues.filter(c => sync.wordIndex >= c.wordIndex);
-      return Math.max(1, reached.length);
+      if (rowCues.length > 0) {
+        const reached = rowCues.filter(c => sync.wordIndex >= c.wordIndex);
+        return Math.max(1, reached.length);
+      }
+      // animationCues exist but no revealRow cues — fall through to time-based
     }
     if (hasSyncData && sync.phraseBoundaries.length > 0) {
       let visible = 1;
@@ -57,28 +71,30 @@ const ComparisonTable: React.FC<ComparisonTableProps> = ({
       }
       return Math.min(visible, totalRows);
     }
-    // Fallback: time-based stagger (18 frames per row)
-    return Math.min(totalRows, Math.floor(Math.max(0, frame - startFrame - 30) / 18) + 1);
+    // Time-based stagger: reveal ALL rows by 50% of scene duration (fast cadence)
+    const sceneDuration = (endFrame ?? (startFrame + totalRows * 30 + 60)) - startFrame;
+    const rowInterval = Math.max(3, Math.floor((sceneDuration * 0.45) / Math.max(1, totalRows)));
+    return Math.min(totalRows, Math.floor(Math.max(0, frame - startFrame - 10) / rowInterval) + 1);
   };
 
-  const visibleRowCount = getVisibleRows(rows.length);
+  const visibleRowCount = getVisibleRows(paddedRows.length);
   const isNearEnd = endFrame !== undefined && frame >= endFrame - 30;
 
   // ─── Winner/loser column detection ──────────────────────────────────────────
-  // For a table with headers [label, colA, colB, …], data columns start at index 1.
-  // winnerCol=1 means the first non-label column wins (index 1 in each row array).
-  // We only apply winner/loser styling when there are exactly 3 columns (label + 2 choices).
   const hasTwoChoices = headers.length === 3;
-  // In the row array: index 0 = label, index 1 = first choice, index 2 = second choice
-  const winnerCellIndex = hasTwoChoices ? winnerCol : -1; // 1 or 2
+  const winnerCellIndex = hasTwoChoices ? winnerCol : -1;
   const loserCellIndex = hasTwoChoices ? (winnerCol === 1 ? 2 : 1) : -1;
 
   // ─── Pulsing glow for highlighted (current) row near end ────────────────────
   const glowAlpha = pulseGlow(frame, 0.12, 0.5, 1.0);
 
-  // ─── Column width ratios ─────────────────────────────────────────────────────
-  // First column (label) gets slightly more space
-  const colFlex = (colIndex: number) => (colIndex === 0 ? 1.4 : 1);
+  // ─── Column width ratios — adapt to column count ──────────────────────────
+  const colFlex = (colIndex: number) => (colIndex === 0 ? 1.5 : 1);
+
+  // ─── Dynamic font sizing based on column count ────────────────────────────
+  const cellFontSize = colCount > 4 ? Math.max(16, 22 - (colCount - 4) * 2) : SIZES.bodySmall;
+  const headerFontSize = colCount > 4 ? Math.max(16, 20 - (colCount - 4) * 1) : 20;
+  const labelFontSize = colCount > 4 ? Math.max(18, SIZES.body - (colCount - 4) * 2) : SIZES.body;
 
   return (
     <AbsoluteFill
@@ -86,7 +102,7 @@ const ComparisonTable: React.FC<ComparisonTableProps> = ({
         backgroundColor: COLORS.dark,
         justifyContent: 'center',
         alignItems: 'center',
-        padding: '48px 80px',
+        padding: '48px 60px',
         fontFamily: FONTS.text,
       }}
     >
@@ -97,7 +113,7 @@ const ComparisonTable: React.FC<ComparisonTableProps> = ({
           fontSize: SIZES.heading2,
           fontWeight: 800,
           color: COLORS.white,
-          marginBottom: 36,
+          marginBottom: 32,
           textAlign: 'center',
           fontFamily: FONTS.heading,
           letterSpacing: '-0.5px',
@@ -119,12 +135,12 @@ const ComparisonTable: React.FC<ComparisonTableProps> = ({
           opacity: headerOpacity,
         }}
       >
-        {/* ── Gradient Header Row ─────────────────────────────────────────── */}
+        {/* ── Header Row — saffron text, dark bg ──────────────────────────── */}
         <div
           style={{
             display: 'flex',
-            background: `linear-gradient(135deg, ${COLORS.teal} 0%, #3B82F6 50%, ${COLORS.indigo} 100%)`,
-            borderBottom: `2px solid ${COLORS.indigo}88`,
+            background: `linear-gradient(135deg, #1A1625 0%, #0C0A15 100%)`,
+            borderBottom: `3px solid ${COLORS.saffron}`,
           }}
         >
           {headers.map((header, i) => (
@@ -132,56 +148,51 @@ const ComparisonTable: React.FC<ComparisonTableProps> = ({
               key={i}
               style={{
                 flex: colFlex(i),
-                padding: '20px 32px',
-                fontSize: 20,
+                padding: '18px 24px',
+                fontSize: headerFontSize,
                 fontWeight: 800,
-                color: '#FFFFFF',
-                textAlign: 'center',
+                color: COLORS.saffron,
+                textAlign: i === 0 ? 'left' : 'center',
                 textTransform: 'uppercase',
-                letterSpacing: '1.5px',
+                letterSpacing: '1.2px',
                 borderRight:
                   i < headers.length - 1
-                    ? `1.5px solid rgba(255,255,255,0.25)`
+                    ? `1.5px solid ${COLORS.indigo}33`
                     : 'none',
-                textShadow: '0 1px 4px rgba(0,0,0,0.4)',
+                textShadow: `0 0 12px ${COLORS.saffron}44`,
               }}
             >
-              {header}
+              {header || '—'}
             </div>
           ))}
         </div>
 
         {/* ── Data Rows ───────────────────────────────────────────────────── */}
-        {rows.map((row, rowIndex) => {
+        {paddedRows.map((row, rowIndex) => {
           const isVisible = rowIndex < visibleRowCount;
 
           // Spring slide-in from left, staggered per row
-          const rowDelay = startFrame + 30 + rowIndex * 6;
+          const rowDelay = startFrame + 15 + rowIndex * 4;
           const slideProgress = spring({
             frame: Math.max(0, frame - rowDelay),
             fps,
             config: { damping: 14, stiffness: 120, mass: 0.7 },
           });
-          const slideX = interpolate(slideProgress, [0, 1], [-160, 0]);
-          const rowOpacity = hasSyncData
-            ? isVisible
-              ? interpolate(slideProgress, [0, 0.3], [0, 1], {
-                  extrapolateLeft: 'clamp',
-                  extrapolateRight: 'clamp',
-                })
-              : 0
-            : interpolate(slideProgress, [0, 0.3], [0, 1], {
-                extrapolateLeft: 'clamp',
-                extrapolateRight: 'clamp',
-              });
+          const slideX = interpolate(slideProgress, [0, 1], [-120, 0]);
+
+          // Always compute opacity from spring progress; when sync is active,
+          // gate it on whether the row is logically visible yet.
+          const springOpacity = interpolate(slideProgress, [0, 0.3], [0, 1], {
+            extrapolateLeft: 'clamp',
+            extrapolateRight: 'clamp',
+          });
+          const rowOpacity = hasSyncData ? (isVisible ? springOpacity : 0) : springOpacity;
 
           // Glow on the last-visible row near scene end (winner row)
           const isHighlightedRow = isNearEnd && rowIndex === visibleRowCount - 1;
 
           const evenRow = rowIndex % 2 === 0;
-          const rowBg = evenRow
-            ? COLORS.darkAlt
-            : `${COLORS.dark}EE`;
+          const rowBg = evenRow ? COLORS.darkAlt : `${COLORS.dark}EE`;
 
           return (
             <div
@@ -190,9 +201,7 @@ const ComparisonTable: React.FC<ComparisonTableProps> = ({
                 opacity: rowOpacity,
                 transform: `translateX(${slideX}px)`,
                 display: 'flex',
-                backgroundColor: isHighlightedRow
-                  ? `${COLORS.gold}14`
-                  : rowBg,
+                backgroundColor: isHighlightedRow ? `${COLORS.gold}14` : rowBg,
                 borderTop: `1px solid ${COLORS.indigo}22`,
                 ...(isHighlightedRow
                   ? {
@@ -205,39 +214,33 @@ const ComparisonTable: React.FC<ComparisonTableProps> = ({
               {row.map((cell, cellIndex) => {
                 const isWinnerCell = hasTwoChoices && cellIndex === winnerCellIndex;
                 const isLoserCell = hasTwoChoices && cellIndex === loserCellIndex;
+                const isLabelCol = cellIndex === 0;
+                const cellText = (cell && cell.trim()) || '—';
 
                 return (
                   <div
                     key={cellIndex}
                     style={{
                       flex: colFlex(cellIndex),
-                      padding: '18px 32px',
-                      fontSize: SIZES.bodySmall,
+                      padding: '16px 24px',
+                      fontSize: isLabelCol ? labelFontSize : cellFontSize,
                       color: isHighlightedRow
                         ? COLORS.gold
-                        : isWinnerCell
-                        ? COLORS.teal
-                        : isLoserCell
-                        ? COLORS.gray
-                        : COLORS.white,
-                      opacity: isLoserCell ? 0.5 : 1,
-                      textAlign: 'center',
-                      fontWeight: isWinnerCell || isHighlightedRow ? 700 : 400,
+                        : isLabelCol
+                          ? COLORS.white
+                          : isWinnerCell
+                            ? COLORS.teal
+                            : isLoserCell
+                              ? '#C4C7CC'
+                              : COLORS.white,
+                      opacity: 1,
+                      textAlign: isLabelCol ? 'left' : 'center',
+                      fontWeight: isLabelCol || isWinnerCell || isHighlightedRow ? 700 : 400,
                       borderRight:
                         cellIndex < row.length - 1
                           ? `1.5px solid ${COLORS.indigo}22`
                           : 'none',
-                      // Label column: left-aligned, slightly bolder
-                      ...(cellIndex === 0
-                        ? {
-                            textAlign: 'left',
-                            fontWeight: 600,
-                            color: COLORS.white,
-                            opacity: 1,
-                            fontSize: SIZES.body,
-                          }
-                        : {}),
-                      // Winner cell gets gold checkmark via ::before (inline approach via prefix)
+                      lineHeight: 1.4,
                       position: 'relative',
                     }}
                   >
@@ -246,16 +249,16 @@ const ComparisonTable: React.FC<ComparisonTableProps> = ({
                       <span
                         style={{
                           display: 'inline-block',
-                          marginRight: 8,
+                          marginRight: 6,
                           color: COLORS.gold,
                           fontWeight: 900,
-                          fontSize: 20,
+                          fontSize: cellFontSize,
                         }}
                       >
                         ✓
                       </span>
                     )}
-                    {cell}
+                    {cellText}
                   </div>
                 );
               })}
@@ -268,14 +271,14 @@ const ComparisonTable: React.FC<ComparisonTableProps> = ({
       <div
         style={{
           opacity: footerOpacity,
-          marginTop: 28,
+          marginTop: 24,
           fontSize: SIZES.caption,
           color: `${COLORS.indigo}CC`,
           letterSpacing: '0.8px',
           fontWeight: 500,
           textAlign: 'center',
           borderTop: `1px solid ${COLORS.indigo}33`,
-          paddingTop: 16,
+          paddingTop: 14,
           width: '100%',
           maxWidth: 1760,
         }}

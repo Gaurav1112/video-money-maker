@@ -18,3 +18,6 @@ public/audio/scene_*.mp3
 
 # Superpowers brainstorm sessions
 .superpowers/
+
+# YouTube OAuth tokens (sensitive)
+.youtube-token.json

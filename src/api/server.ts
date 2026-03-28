@@ -79,7 +79,7 @@ app.post('/api/preview', (req, res) => {
     session = getDemoSession();
   }
 
-  const script = generateScript(session, { language });
+  const script = generateScript(session, { language, sessionNumber: session.sessionNumber });
   const totalDuration = script.reduce((sum, s) => sum + s.duration, 0);
 
   res.json({

@@ -1,5 +1,5 @@
 import React from 'react';
-import { useCurrentFrame, AbsoluteFill, interpolate } from 'remotion';
+import { useCurrentFrame, AbsoluteFill, interpolate, useVideoConfig } from 'remotion';
 import { COLORS, FONTS, SIZES } from '../lib/theme';
 import { fadeIn, slideUp } from '../lib/animations';
 import { useSync } from '../hooks/useSync';
@@ -235,8 +235,16 @@ const CodeReveal: React.FC<CodeRevealProps> = ({
   animationCues,
 }) => {
   const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
   const lines = (code || '').split('\n');
-  const framesPerLine = 12;
+  // FIRESHIP-speed reveal: code appears almost instantly.
+  // First 5 lines show within 15 frames (0.5s). Remaining lines at ~5-8 lines/sec.
+  // ALL lines visible by 60% of scene duration (not 100%).
+  // For 30 lines at 30fps: 5 instant + 25 remaining in ~5s = ~6 frames/line for remaining.
+  // For short code (<15 lines): 2 frames/line. For long code (>40): 2 frames/line.
+  const INSTANT_LINES = 5; // first N lines appear within 0.5s
+  const INSTANT_WINDOW = 15; // frames to reveal the first batch (0.5s at 30fps)
+  const framesPerLine = lines.length > 40 ? 2 : lines.length > 20 ? 3 : lines.length > 10 ? 4 : 5;
 
   // Sync hook — always called unconditionally (React Rules of Hooks)
   const sync = useSync(sceneIndex ?? 0, sceneStartFrame ?? startFrame);
@@ -254,8 +262,16 @@ const CodeReveal: React.FC<CodeRevealProps> = ({
       currentRevealLine = 0;
     }
   } else {
-    // Fallback: time-based reveal (backward compat)
-    currentRevealLine = Math.floor(Math.max(0, (frame - startFrame - 20)) / framesPerLine);
+    // Fallback: time-based reveal — Fireship-style instant start
+    // First INSTANT_LINES appear within INSTANT_WINDOW frames, then remaining at framesPerLine pace
+    const elapsed = Math.max(0, frame - startFrame);
+    if (elapsed <= INSTANT_WINDOW) {
+      // Reveal first batch proportionally within the instant window
+      currentRevealLine = Math.floor((elapsed / INSTANT_WINDOW) * INSTANT_LINES);
+    } else {
+      // After instant batch, continue at framesPerLine pace for remaining lines
+      currentRevealLine = INSTANT_LINES + Math.floor((elapsed - INSTANT_WINDOW) / framesPerLine);
+    }
   }
 
   // Total revealed lines
@@ -265,7 +281,7 @@ const CodeReveal: React.FC<CodeRevealProps> = ({
   const cursorVisible = Math.sin(frame * 0.4) > 0;
 
   // After all lines revealed, show output
-  const allLinesRevealedFrame = startFrame + 20 + lines.length * framesPerLine;
+  const allLinesRevealedFrame = startFrame + INSTANT_WINDOW + Math.max(0, lines.length - INSTANT_LINES) * framesPerLine;
   const showOutput = output && frame >= allLinesRevealedFrame;
   const outputOpacity = showOutput
     ? interpolate(
@@ -458,10 +474,22 @@ const CodeReveal: React.FC<CodeRevealProps> = ({
             }}
           >
             {lines.map((_, idx) => {
-              const lineStart = startFrame + 20 + idx * framesPerLine;
+              // Compute when this line becomes visible: instant batch or sequential
+              const lineStart = idx < INSTANT_LINES
+                ? startFrame + Math.floor((idx / INSTANT_LINES) * INSTANT_WINDOW)
+                : startFrame + INSTANT_WINDOW + (idx - INSTANT_LINES) * framesPerLine;
               const isVisible = frame >= lineStart;
               const isCurrentLine = idx === currentRevealLine && isVisible;
+              const isPastLine = idx < currentRevealLine && isVisible;
               const lineOpacity = isVisible ? fadeIn(frame, lineStart, 8) : 0;
+              // Pulse effect on current line number
+              const lineNumPulse = isCurrentLine
+                ? interpolate(Math.sin(frame * 0.12), [-1, 1], [0.7, 1.0])
+                : 1;
+              // Scale bump on current line number
+              const lineNumScale = isCurrentLine
+                ? interpolate(Math.sin(frame * 0.12), [-1, 1], [1.0, 1.15])
+                : 1;
 
               return (
                 <div
@@ -472,12 +500,14 @@ const CodeReveal: React.FC<CodeRevealProps> = ({
                     alignItems: 'center',
                     justifyContent: 'flex-end',
                     paddingRight: 12,
-                    opacity: lineOpacity,
+                    opacity: lineOpacity * (isPastLine ? 0.5 : 1) * lineNumPulse,
                     fontSize: SIZES.codeSmall,
                     fontFamily: FONTS.code,
-                    color: isCurrentLine ? COLORS.saffron : COLORS.gray + '44',
+                    color: isCurrentLine ? COLORS.saffron : isPastLine ? COLORS.gray + '33' : COLORS.gray + '44',
                     fontWeight: isCurrentLine ? 700 : 400,
                     backgroundColor: isCurrentLine ? `${COLORS.saffron}08` : 'transparent',
+                    transform: `scale(${lineNumScale})`,
+                    textShadow: isCurrentLine ? `0 0 8px ${COLORS.saffron}44` : 'none',
                   }}
                 >
                   {idx + 1}
@@ -507,23 +537,32 @@ const CodeReveal: React.FC<CodeRevealProps> = ({
             {/* Code lines with per-token coloring */}
             <div style={{ fontFamily: FONTS.code, fontSize: SIZES.code, lineHeight: 1.8, position: 'relative', zIndex: 1 }}>
               {lines.map((line, idx) => {
-                const lineStart = startFrame + 20 + idx * framesPerLine;
+                // Compute when this line becomes visible: instant batch or sequential
+                const lineStart = idx < INSTANT_LINES
+                  ? startFrame + Math.floor((idx / INSTANT_LINES) * INSTANT_WINDOW)
+                  : startFrame + INSTANT_WINDOW + (idx - INSTANT_LINES) * framesPerLine;
                 const isVisible = frame >= lineStart;
                 const isCurrentLine = idx === currentRevealLine && isVisible;
+                const isPastLine = idx < currentRevealLine && isVisible;
                 const isHighlighted = highlightLines.includes(idx + 1);
                 const lineOpacity = isVisible ? fadeIn(frame, lineStart, 8) : 0;
                 const lineSlide = isVisible ? slideUp(frame, lineStart, 15, 8) : 15;
 
-                // Character-by-character typing for current line
+                // Dim past lines slightly to focus attention on current
+                const dimFactor = isPastLine ? 0.55 : 1.0;
+
+                // Glowing border pulse on current line
+                const glowPulse = isCurrentLine
+                  ? interpolate(Math.sin(frame * 0.1), [-1, 1], [0.15, 0.35])
+                  : 0;
+                const borderGlow = isCurrentLine
+                  ? interpolate(Math.sin(frame * 0.1), [-1, 1], [0.6, 1.0])
+                  : 0;
+
+                // Fast character typing: reveal ~12 chars per frame for snappy feel
+                const charsPerFrame = Math.max(12, Math.ceil(line.length / Math.max(1, framesPerLine)));
                 const charsVisible = isCurrentLine
-                  ? Math.floor(
-                      interpolate(
-                        frame,
-                        [lineStart, lineStart + framesPerLine],
-                        [0, line.length],
-                        { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
-                      ),
-                    )
+                  ? Math.min(line.length, Math.floor((frame - lineStart) * charsPerFrame))
                   : isVisible
                   ? line.length
                   : 0;
@@ -538,20 +577,20 @@ const CodeReveal: React.FC<CodeRevealProps> = ({
                     key={idx}
                     style={{
                       display: 'flex',
-                      opacity: lineOpacity,
+                      opacity: lineOpacity * dimFactor,
                       transform: `translateY(${lineSlide}px)`,
                       backgroundColor: isHighlighted
                         ? COLORS.gold + '10'
                         : isCurrentLine
-                        ? 'rgba(232, 93, 38, 0.1)'
+                        ? `rgba(232, 93, 38, ${glowPulse})`
                         : 'transparent',
                       boxShadow: isCurrentLine
-                        ? '0 0 20px rgba(232, 93, 38, 0.15)'
+                        ? `0 0 ${20 + glowPulse * 20}px rgba(232, 93, 38, ${glowPulse}), inset 0 0 12px rgba(232, 93, 38, ${glowPulse * 0.3})`
                         : 'none',
                       borderLeft: isHighlighted
                         ? `3px solid ${COLORS.gold}`
                         : isCurrentLine
-                        ? `3px solid ${COLORS.saffron}`
+                        ? `3px solid rgba(232, 93, 38, ${borderGlow})`
                         : '3px solid transparent',
                       paddingLeft: 12,
                       marginLeft: -15,

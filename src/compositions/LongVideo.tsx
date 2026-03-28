@@ -106,10 +106,19 @@ function getSceneProps(scene: Scene, storyboard: Storyboard): Record<string, any
       };
     case 'table': {
       const lines = scene.content.split('\n').filter(l => l.includes('|'));
-      const parsed = lines.map(l => l.split('|').map(c => c.trim()).filter(Boolean));
+      const parsed = lines
+        .map(l => l.split('|').map(c => c.trim()).filter(Boolean))
+        // Filter out markdown separator rows (e.g. |---|---|---|)
+        .filter(cells => !cells.every(c => /^[-:]+$/.test(c)));
       const headers = parsed[0] || [];
       const rows = parsed.slice(1) || [];
-      return { headers, rows, title: scene.heading || '', startFrame: 0 };
+      return {
+        headers,
+        rows,
+        title: scene.heading || '',
+        startFrame: 0,
+        endFrame: scene.endFrame - scene.startFrame,
+      };
     }
     case 'interview':
       return {
@@ -120,8 +129,10 @@ function getSceneProps(scene: Scene, storyboard: Storyboard): Record<string, any
     case 'review':
       return {
         question: scene.content,
-        answer: scene.narration,
+        // Use heading field for clean visual answer; fall back to extracting from narration
+        answer: scene.heading || extractAnswerFromNarration(scene.narration, scene.content),
         startFrame: 0,
+        endFrame: scene.endFrame - scene.startFrame,
       };
     case 'summary':
       return {
@@ -136,12 +147,87 @@ function getSceneProps(scene: Scene, storyboard: Storyboard): Record<string, any
 }
 
 /**
- * Determine the active scene at a given frame for caption overlay.
+ * Extract a clean answer from narration text that was meant for TTS.
+ * Strips intro phrases like "Alright, let's test..." and "You can practice..."
+ * and returns only the question + a concise answer summary.
  */
-function getActiveScene(scenes: Scene[], frame: number): Scene | null {
-  for (const scene of scenes) {
-    if (frame >= scene.startFrame && frame < scene.endFrame) {
-      return scene;
+function extractAnswerFromNarration(narration: string, question: string): string {
+  // The narration format is: "[intro phrase] [question text] [CTA text]"
+  // We want to strip the intro and CTA, leaving just a clean answer.
+
+  // Known intro patterns to strip
+  const introPatterns = [
+    /^okay,?\s*pop\s*quiz\s*time\.?\s*/i,
+    /^alright,?\s*let'?s\s*test\s*if\s*you\s*were\s*really\s*paying\s*attention\.?\s*/i,
+    /^now\s*i\s*want\s*you\s*to\s*pause.*?seconds?\s*and\s*think\s*about\s*this\.?\s*seriously\.?\s*pausing\s*and\s*thinking\s*is\s*how\s*you\s*actually\s*learn\.?\s*/i,
+    /^here'?s\s*a\s*question\s*that\s*trips\s*up\s*even\s*experienced\s*developers\.?\s*see\s*if\s*you\s*can\s*get\s*it\s*right\.?\s*/i,
+    /^before\s*we\s*wrap\s*up,?\s*let\s*me\s*challenge\s*you\s*with\s*this\.?\s*if\s*you\s*can\s*answer\s*it.*?\.?\s*/i,
+    /^don'?t\s*scroll\s*ahead\.?\s*think\s*about\s*this.*?\.?\s*/i,
+    /^time\s*to\s*test\s*yourself\.?\s*/i,
+  ];
+
+  let cleaned = narration;
+  for (const pattern of introPatterns) {
+    cleaned = cleaned.replace(pattern, '');
+  }
+
+  // Strip CTA suffix patterns
+  const ctaPatterns = [
+    /\s*you\s*can\s*practice\s*more\s*questions?\s*like\s*this.*$/i,
+    /\s*head\s*over\s*to\s*guru-sishya\.in.*$/i,
+    /\s*practice\s*this\s*on\s*guru-sishya\.in.*$/i,
+  ];
+  for (const pattern of ctaPatterns) {
+    cleaned = cleaned.replace(pattern, '');
+  }
+
+  // If the cleaned text still contains the question, strip it out
+  if (question && cleaned.includes(question)) {
+    cleaned = cleaned.replace(question, '').trim();
+  }
+
+  // If we're left with very little, return a generic prompt
+  cleaned = cleaned.trim();
+  if (cleaned.length < 10) {
+    return 'Consider the core concepts, trade-offs, and real-world applications.';
+  }
+
+  return cleaned;
+}
+
+/**
+ * Determine the active scene for caption overlay based on AUDIO timing.
+ *
+ * CRITICAL FIX: We must NOT use scene.startFrame/endFrame here because those
+ * values are raw cumulative sums of TransitionSeries.Sequence durations.
+ * TransitionSeries overlaps adjacent scenes by TRANSITION_DURATION frames at
+ * each transition, so the actual visual start of scene[i] is:
+ *   sum(D0..D(i-1)) - i * TRANSITION_DURATION
+ * The raw startFrame drifts by +0.5s per scene (TRANSITION_DURATION/fps).
+ * By scene 29, captions were 14.5 seconds out of sync with audio.
+ *
+ * Instead, we find the scene whose audioOffsetSeconds range covers the current
+ * audio playback time. This is the ground truth — audioOffsetSeconds comes
+ * directly from the stitched master audio file and never drifts.
+ *
+ * @param scenes - Content scenes (no intro/outro)
+ * @param audioTimeSeconds - Current time in the master audio (seconds)
+ * @param sceneOffsets - Per-scene audio offsets from storyboard
+ */
+function getActiveSceneByAudioTime(
+  scenes: Scene[],
+  audioTimeSeconds: number,
+  sceneOffsets: number[],
+): Scene | null {
+  if (audioTimeSeconds < 0) return null;
+
+  // Find the scene whose audio offset range contains the current playback time.
+  // Scene i covers [sceneOffsets[i], sceneOffsets[i+1]) in the master audio.
+  for (let i = scenes.length - 1; i >= 0; i--) {
+    const offset = sceneOffsets[i] ?? scenes[i].audioOffsetSeconds ?? -1;
+    if (offset === -1) continue;
+    if (audioTimeSeconds >= offset) {
+      return scenes[i];
     }
   }
   return null;
@@ -181,9 +267,15 @@ export const LongVideo: React.FC<LongVideoProps> = ({ storyboard }) => {
   // globalTimeline to be null on frame 0 (BUG 5).
   setSyncTimeline(syncTimeline);
 
-  // Get active scene for captions — search CONTENT scenes only (skip intro/outro)
-  const contentFrame = frame - INTRO_DURATION;
-  const activeScene = getActiveScene(contentScenes, contentFrame);
+  // Get active scene for captions — use audio timing, not visual frame position.
+  // audioTimeSeconds = how far into the master audio we are right now.
+  // The master Audio element starts at absolute frame INTRO_DURATION, so:
+  const audioTimeSeconds = (frame - INTRO_DURATION) / fps;
+  const activeScene = getActiveSceneByAudioTime(
+    contentScenes,
+    audioTimeSeconds,
+    storyboard.sceneOffsets || [],
+  );
   const hasNarration = activeScene && activeScene.narration && activeScene.narration.trim() !== '';
   const currentSceneType = activeScene?.type || 'text';
 
@@ -225,72 +317,77 @@ export const LongVideo: React.FC<LongVideoProps> = ({ storyboard }) => {
               animationCues: scene.animationCues,
             };
 
-            // GOD LEVEL: Visualization is FULL SCREEN background, text is overlay on top
-            // The VISUAL teaches the concept, text is just a subtitle
-            const isVisualScene = scene.type === 'text' || scene.type === 'interview';
-            const renderedScene = isVisualScene ? (
-              <>
-                {/* FULL SCREEN visualization — the star of the show */}
-                <AbsoluteFill>
-                  <ConceptViz
-                    topic={storyboard.topic}
-                    sceneIndex={idx}
-                    sceneStartFrame={sceneStartFrame}
-                    keywords={scene.bullets || []}
-                    sceneDuration={duration}
-                  />
-                </AbsoluteFill>
-                {/* Text overlay — heading + current point, semi-transparent */}
+            // FULL-WIDTH scenes: table + diagram render their own component at 100% width.
+            // They contain structured data (table cells, SVG diagrams) that need all 1920px.
+            const isFullWidthScene = scene.type === 'table' || scene.type === 'diagram';
+
+            // SPLIT LAYOUT: Left 42% text panel + Right 58% full ConceptViz
+            // The visualization is the STAR — it fills the right side completely
+            const isSplitScene = scene.type === 'text' || scene.type === 'interview';
+            const renderedScene = isFullWidthScene ? (
+              <AbsoluteFill style={{ zIndex: 2 }}>
+                <Component {...props} {...syncProps} />
+              </AbsoluteFill>
+            ) : isSplitScene ? (
+              <div style={{
+                display: 'flex',
+                position: 'absolute',
+                inset: 0,
+                width: '100%',
+                height: '100%',
+                zIndex: 2,
+              }}>
+                {/* LEFT PANEL — 42% — heading + bullets */}
                 <div style={{
-                  position: 'absolute',
-                  top: 40,
-                  left: 40,
-                  right: '50%',
-                  zIndex: 10,
+                  flex: '0 0 42%',
+                  position: 'relative',
+                  overflow: 'hidden',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
+                  padding: '40px 32px 40px 40px',
+                  background: 'rgba(12, 10, 21, 0.85)',
+                  borderRight: '2px solid rgba(232, 93, 38, 0.25)',
                 }}>
-                  {/* Heading badge — LARGE */}
+                  {/* Heading badge */}
                   <div style={{
-                    background: 'rgba(12, 10, 21, 0.9)',
-                    borderRadius: 16,
-                    padding: '16px 28px',
                     borderLeft: '5px solid #E85D26',
-                    backdropFilter: 'blur(12px)',
-                    marginBottom: 16,
-                    boxShadow: '0 4px 20px rgba(0,0,0,0.5)',
+                    paddingLeft: 20,
+                    marginBottom: 24,
                   }}>
                     <div style={{
-                      fontSize: 36,
+                      fontSize: 34,
                       fontWeight: 800,
                       color: '#E85D26',
                       fontFamily: "'Inter', system-ui, sans-serif",
                       letterSpacing: '-0.02em',
+                      lineHeight: 1.2,
                     }}>
                       {scene.heading || ''}
                     </div>
                   </div>
-                  {/* Current narration points — LARGE readable bullets */}
+                  {/* Bullets / narration */}
                   <div style={{
-                    background: 'rgba(12, 10, 21, 0.8)',
-                    borderRadius: 14,
-                    padding: '16px 24px',
-                    backdropFilter: 'blur(10px)',
-                    boxShadow: '0 4px 16px rgba(0,0,0,0.4)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 12,
                   }}>
                     {(scene.bullets && scene.bullets.length > 0)
-                      ? scene.bullets.slice(0, 3).map((b, i) => (
+                      ? scene.bullets.slice(0, 4).map((b, i) => (
                           <div key={i} style={{
-                            fontSize: 24,
-                            color: i === 0 ? '#fff' : '#bbb',
+                            fontSize: 22,
+                            color: i === 0 ? '#fff' : i === 1 ? '#ddd' : '#aaa',
                             fontFamily: "'Inter', system-ui, sans-serif",
                             fontWeight: i === 0 ? 600 : 400,
-                            marginTop: i > 0 ? 8 : 0,
-                            lineHeight: 1.4,
+                            lineHeight: 1.45,
+                            paddingLeft: 16,
+                            borderLeft: i === 0 ? '3px solid #FDB813' : '3px solid transparent',
                           }}>
-                            • {b}
+                            {b}
                           </div>
                         ))
                       : <div style={{
-                          fontSize: 26,
+                          fontSize: 24,
                           color: '#fff',
                           fontFamily: "'Inter', system-ui, sans-serif",
                           fontWeight: 500,
@@ -301,7 +398,23 @@ export const LongVideo: React.FC<LongVideoProps> = ({ storyboard }) => {
                     }
                   </div>
                 </div>
-              </>
+                {/* RIGHT PANEL — 58% — FULL ConceptViz visualization */}
+                <div style={{
+                  flex: '0 0 58%',
+                  position: 'relative',
+                  overflow: 'hidden',
+                  height: '100%',
+                }}>
+                  <ConceptViz
+                    topic={storyboard.topic}
+                    sceneIndex={idx}
+                    sceneStartFrame={sceneStartFrame}
+                    keywords={scene.bullets || []}
+                    sceneDuration={duration}
+                    vizVariant={scene.vizVariant}
+                  />
+                </div>
+              </div>
             ) : (
               <Component {...props} {...syncProps} />
             );
@@ -356,14 +469,29 @@ export const LongVideo: React.FC<LongVideoProps> = ({ storyboard }) => {
         </>
       )}
 
-      {/* Caption overlay - shows narration text word by word.
-          startFrame must be the ABSOLUTE global frame where the scene begins so
-          the elapsed = frame - startFrame calculation inside CaptionOverlay is correct. */}
+      {/* Caption overlay — syncs subtitles to the master audio track.
+       *
+       * SYNC MATH (critical for audio-caption alignment):
+       * The master audio starts at absolute frame INTRO_DURATION. Each scene's
+       * narration begins at audioOffsetSeconds into the master track.
+       * Absolute frame where scene[i]'s audio starts:
+       *   INTRO_DURATION + audioOffsetSeconds * fps
+       *
+       * The active scene is found by getActiveSceneByAudioTime() which matches
+       * the current audio playback time against audioOffsetSeconds ranges.
+       * This avoids the progressive drift bug where scene.startFrame (raw sum
+       * of TransitionSeries durations) drifted +0.5s per scene due to
+       * unaccounted crossfade overlap (14.5s drift by scene 29).
+       */}
       {!isIntro && !isOutro && hasNarration && activeScene && (
         <CaptionOverlay
-          key={`caption-${activeScene.startFrame}`}
+          key={`caption-${activeScene.audioOffsetSeconds ?? activeScene.startFrame}`}
           text={activeScene.narration!}
-          startFrame={INTRO_DURATION + activeScene.startFrame}
+          startFrame={
+            activeScene.audioOffsetSeconds != null && activeScene.audioOffsetSeconds >= 0
+              ? INTRO_DURATION + Math.round(activeScene.audioOffsetSeconds * fps)
+              : INTRO_DURATION + activeScene.startFrame
+          }
           durationInFrames={activeScene.endFrame - activeScene.startFrame}
           wordTimestamps={activeScene.wordTimestamps}
         />
@@ -383,17 +511,20 @@ export const LongVideo: React.FC<LongVideoProps> = ({ storyboard }) => {
           <Audio
             src={staticFile(`audio/${storyboard.audioFile.split('/').pop()}`)}
             volume={(f) => {
-              // Gentle fade-in over the first 0.5 second
-              const fadeIn = interpolate(f, [0, 15], [0, 1], { extrapolateRight: 'clamp' });
-              // Gentle fade-out over the last 0.5 second
+              // Base narration volume — master audio is loudnorm'd to -14 LUFS,
+              // so 1.0 is the correct baseline (full volume, no attenuation).
+              const baseVolume = 1.0;
+              // Gentle fade-in over 0.3s (9 frames) — shorter so narration hits fast
+              const fadeIn = interpolate(f, [0, 9], [0, 1], { extrapolateRight: 'clamp' });
+              // Gentle fade-out over the last 0.3s
               const totalAudioFrames = storyboard.durationInFrames - INTRO_DURATION - OUTRO_DURATION;
               const fadeOut = interpolate(
                 f,
-                [totalAudioFrames - 15, totalAudioFrames],
+                [totalAudioFrames - 9, totalAudioFrames],
                 [1, 0],
                 { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
               );
-              return fadeIn * fadeOut;
+              return baseVolume * fadeIn * fadeOut;
             }}
           />
         </Sequence>

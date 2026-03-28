@@ -22,6 +22,15 @@ export function useSync(sceneIndex: number, sceneStartFrame: number): SyncState 
     };
   }
 
-  const relativeFrame = frame - sceneStartFrame;
+  // IMPORTANT: When called inside TransitionSeries.Sequence, useCurrentFrame()
+  // returns scene-RELATIVE frames (0 to sceneDuration), NOT absolute frames.
+  // If sceneStartFrame is absolute (e.g., INTRO_DURATION + offset), then
+  // relativeFrame = (small scene frame) - (large absolute frame) = negative.
+  //
+  // We detect this case: if the computed relative frame is negative, it means
+  // useCurrentFrame() is already scene-relative. In that case, use `frame`
+  // directly as the relative frame for sync lookup.
+  const computedRelative = frame - sceneStartFrame;
+  const relativeFrame = computedRelative >= 0 ? computedRelative : frame;
   return globalTimeline.getSyncState(sceneIndex, Math.max(0, relativeFrame));
 }

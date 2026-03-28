@@ -1,5 +1,5 @@
 import React from 'react';
-import { useCurrentFrame, AbsoluteFill, interpolate, Easing } from 'remotion';
+import { useCurrentFrame, AbsoluteFill, interpolate, spring, Easing } from 'remotion';
 import { COLORS, FONTS, SIZES } from '../lib/theme';
 import { fadeIn, slideUp, springIn, springScale, pulseGlow } from '../lib/animations';
 
@@ -8,10 +8,54 @@ interface ReviewQuestionProps {
   answer: string;
   /** Frame this scene starts at (absolute). Default: 0 */
   startFrame?: number;
-  /** Frame this scene ends at (absolute). Used to auto-derive answer reveal at 50% mark. */
+  /** Frame this scene ends at (absolute). Used to auto-derive answer reveal at 60% mark. */
   endFrame?: number;
   /** Override: explicit delay (in frames) before answer reveals. Ignored when endFrame is provided. */
   revealDelay?: number;
+}
+
+/**
+ * Parse a raw answer string into clean bullet points for visual display.
+ * Handles formats like:
+ *   "Key points:\n- Point one\n- Point two"
+ *   "Point one. Point two. Point three."
+ *   "1. First\n2. Second\n3. Third"
+ */
+function parseAnswerBullets(answer: string): { header: string; bullets: string[] } {
+  const lines = answer.split('\n').map(l => l.trim()).filter(Boolean);
+
+  // If the answer has a header line followed by bullet points
+  if (lines.length > 1) {
+    const firstLine = lines[0];
+    const isHeader = firstLine.endsWith(':') || (!firstLine.startsWith('-') && !firstLine.startsWith('1'));
+    if (isHeader) {
+      const header = firstLine.replace(/:$/, '');
+      const bullets = lines.slice(1)
+        .map(l => l.replace(/^[-*]\s*/, '').replace(/^\d+\.\s*/, '').trim())
+        .filter(b => b.length > 0);
+      if (bullets.length > 0) {
+        return { header, bullets };
+      }
+    }
+    // All lines are bullet-like
+    const bullets = lines
+      .map(l => l.replace(/^[-*]\s*/, '').replace(/^\d+\.\s*/, '').trim())
+      .filter(b => b.length > 0);
+    return { header: '', bullets };
+  }
+
+  // Single line: try splitting on sentence boundaries
+  const sentences = answer
+    .split(/[.!]\s+/)
+    .map(s => s.trim().replace(/[.]$/, ''))
+    .filter(s => s.length > 8);
+
+  if (sentences.length > 1) {
+    return { header: '', bullets: sentences.slice(0, 4) };
+  }
+
+  // Just one item
+  return { header: '', bullets: [answer.trim()] };
 }
 
 /**
@@ -20,25 +64,28 @@ interface ReviewQuestionProps {
  * Layout:
  *   1. "REVIEW QUESTION" badge slides in
  *   2. Question text appears LARGE (30px) with a subtle spotlight
- *   3. "Think about it…" italic prompt + animated saffron countdown ring (3 → 2 → 1)
- *   4. At 50% of scene duration → answer slides up with a teal checkmark "ding"
+ *   3. "Think about it..." italic prompt + animated saffron countdown ring (3 -> 2 -> 1)
+ *   4. At 60% of scene duration -> answer slides up with a teal checkmark "ding"
  *   5. "guru-sishya.in" CTA pinned to the bottom
  */
 const ReviewQuestion: React.FC<ReviewQuestionProps> = ({
   question = 'What is the time complexity of binary search?',
-  answer = 'O(log n) — each step halves the search space.',
+  answer = 'O(log n) -- each step halves the search space.',
   startFrame = 0,
   endFrame,
   revealDelay: revealDelayProp,
 }) => {
   const frame = useCurrentFrame();
 
-  // Derive reveal timing: prefer endFrame (50% of scene), else fall back to prop, else 90 frames
+  // Derive reveal timing: prefer endFrame (60% of scene), else fall back to prop, else 90 frames
   const sceneDuration = endFrame != null ? endFrame - startFrame : 180;
   const revealDelay =
     revealDelayProp != null
       ? revealDelayProp
-      : Math.round(sceneDuration * 0.5);
+      : Math.round(sceneDuration * 0.6);
+
+  // Parse the answer into clean bullets
+  const { header: answerHeader, bullets: answerBullets } = parseAnswerBullets(answer);
 
   // ─── QUESTION PHASE ────────────────────────────────────────────────────────
   const questionOpacity = fadeIn(frame, startFrame, 20);
@@ -58,15 +105,15 @@ const ReviewQuestion: React.FC<ReviewQuestionProps> = ({
     { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
   );
 
-  // ─── "THINK ABOUT IT…" ─────────────────────────────────────────────────────
+  // ─── "THINK ABOUT IT..." ─────────────────────────────────────────────────
   const thinkStart = startFrame + 25;
   const thinkOpacity = fadeIn(frame, thinkStart, 15);
 
   // Dots pulse: animate ellipsis dots while user is thinking
-  const dotCount = Math.floor(((frame - thinkStart) / 15) % 4); // cycles 0→1→2→3→0
+  const dotCount = Math.floor(((frame - thinkStart) / 15) % 4); // cycles 0->1->2->3->0
   const thinkDots = '.'.repeat(Math.max(0, dotCount));
 
-  // ─── COUNTDOWN: 3 → 2 → 1 ─────────────────────────────────────────────────
+  // ─── COUNTDOWN: 3 -> 2 -> 1 ─────────────────────────────────────────────
   const countdownStart = startFrame + 40;
   const countdownEnd = startFrame + revealDelay;
   const countdownDuration = Math.max(1, countdownEnd - countdownStart);
@@ -395,22 +442,62 @@ const ReviewQuestion: React.FC<ReviewQuestionProps> = ({
                 letterSpacing: 2.5,
               }}
             >
-              Answer
+              {answerHeader || 'Answer'}
             </span>
           </div>
 
-          {/* Answer text */}
+          {/* Answer bullets — each staggers in */}
           <div
             style={{
-              fontSize: SIZES.body,             // 28px — matches question weight
-              fontWeight: 500,
-              color: COLORS.teal,
-              lineHeight: 1.65,
               paddingLeft: 52,
               borderLeft: `3px solid ${COLORS.teal}44`,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 10,
             }}
           >
-            {answer}
+            {answerBullets.map((bullet, idx) => {
+              const bulletDelay = answerStart + 8 + idx * 8;
+              const bulletOpacity = fadeIn(frame, bulletDelay, 12);
+              const bulletSlide = slideUp(frame, bulletDelay, 18, 15);
+
+              return (
+                <div
+                  key={idx}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    gap: 12,
+                    opacity: bulletOpacity,
+                    transform: `translateY(${bulletSlide}px)`,
+                  }}
+                >
+                  {/* Bullet dot */}
+                  <div
+                    style={{
+                      width: 8,
+                      height: 8,
+                      borderRadius: '50%',
+                      backgroundColor: COLORS.teal,
+                      marginTop: 10,
+                      flexShrink: 0,
+                      opacity: 0.7,
+                      boxShadow: `0 0 6px ${COLORS.teal}44`,
+                    }}
+                  />
+                  <div
+                    style={{
+                      fontSize: SIZES.body,           // 28px
+                      fontWeight: 500,
+                      color: COLORS.teal,
+                      lineHeight: 1.55,
+                    }}
+                  >
+                    {bullet}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>

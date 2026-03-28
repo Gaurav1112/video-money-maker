@@ -1,7 +1,6 @@
 import React from 'react';
 import { useCurrentFrame, AbsoluteFill, spring, useVideoConfig, interpolate } from 'remotion';
 import { COLORS, FONTS } from '../lib/theme';
-import { fadeIn } from '../lib/animations';
 
 interface IntroSlideProps {
   durationInFrames?: number; // default 90 (3 seconds at 30fps)
@@ -9,54 +8,106 @@ interface IntroSlideProps {
 
 // Particle definition — each has a fixed horizontal position and a phase offset
 const PARTICLES = [
-  { x: 15, phase: 0,  size: 3 },
-  { x: 35, phase: 10, size: 2 },
-  { x: 55, phase: 5,  size: 4 },
-  { x: 72, phase: 18, size: 2 },
-  { x: 88, phase: 8,  size: 3 },
+  { x: 10, phase: 0,  size: 4 },
+  { x: 22, phase: 10, size: 3 },
+  { x: 38, phase: 5,  size: 5 },
+  { x: 50, phase: 18, size: 3 },
+  { x: 65, phase: 8,  size: 4 },
+  { x: 78, phase: 12, size: 3 },
+  { x: 90, phase: 3,  size: 4 },
 ];
 
 const IntroSlide: React.FC<IntroSlideProps> = ({ durationInFrames = 90 }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
-  // ── Logo spring entrance ──────────────────────────────────────────────────
-  const logoScale = spring({ frame, fps, config: { damping: 12, stiffness: 100 } });
+  // ── INSTANT zoom-in: logo starts at 2.5x scale and snaps down to 1x ──────
+  // Using a fast spring that settles quickly — visible from frame 0
+  const logoSpring = spring({
+    frame,
+    fps,
+    config: { damping: 14, stiffness: 180, mass: 0.8 },
+  });
+  // Zoom from 2.5x → 1x (inverse spring: big to normal)
+  const logoScale = interpolate(logoSpring, [0, 1], [2.5, 1]);
 
-  // ── Breathing / pulse on logo (subtle scale oscillation) ─────────────────
-  // Starts after logo has mostly settled (~frame 20) so it doesn't fight the spring
-  const breatheProgress = Math.max(0, frame - 20);
-  const breatheScale = 1 + interpolate(Math.sin(breatheProgress * 0.08), [-1, 1], [0, 0.02]);
+  // ── Logo opacity: START at 0.7 on frame 0, reach 1.0 by frame 5 ──────────
+  const logoOpacity = interpolate(frame, [0, 5], [0.7, 1], {
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
+  });
+
+  // ── Breathing / pulse on logo (subtle scale oscillation after settle) ─────
+  const breatheProgress = Math.max(0, frame - 15);
+  const breatheScale = 1 + interpolate(Math.sin(breatheProgress * 0.1), [-1, 1], [0, 0.015]);
   const combinedLogoScale = logoScale * breatheScale;
 
-  // ── Fade-in timings ───────────────────────────────────────────────────────
-  const logoOpacity    = fadeIn(frame, 10, 25);          // logo fades in
-  const urlOpacity     = fadeIn(frame, 35, 15);          // URL fades in 0.5s after logo (~frame 35)
-  const taglineOpacity = fadeIn(frame, 50, 20);          // tagline follows URL
+  // ── URL appears quickly ─────────────────────────────────────────────────
+  const urlOpacity = interpolate(frame, [12, 22], [0, 1], {
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
+  });
+  const urlSlideUp = interpolate(frame, [12, 22], [20, 0], {
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
+  });
+
+  // ── Tagline appears after URL ───────────────────────────────────────────
+  const taglineOpacity = interpolate(frame, [25, 40], [0, 1], {
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
+  });
+  const taglineSlideUp = interpolate(frame, [25, 40], [15, 0], {
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
+  });
 
   // ── Exit fade ─────────────────────────────────────────────────────────────
-  const exitOpacity = frame > durationInFrames - 15
-    ? 1 - fadeIn(frame, durationInFrames - 15, 15)
+  const exitOpacity = frame > durationInFrames - 12
+    ? interpolate(frame, [durationInFrames - 12, durationInFrames], [1, 0], {
+        extrapolateLeft: 'clamp',
+        extrapolateRight: 'clamp',
+      })
     : 1;
 
-  // ── Lens flare sweep ─────────────────────────────────────────────────────
-  // Sweeps from left (x = -300) to right (x = 1920) between frames 25–55
-  const flareX = interpolate(frame, [25, 55], [-300, 1920], {
+  // ── Saffron/gold radial burst — visible from frame 0 ─────────────────────
+  // Expands outward rapidly to create a "whoosh" feel
+  const burstScale = interpolate(frame, [0, 20], [0.3, 1.2], {
     extrapolateLeft: 'clamp',
     extrapolateRight: 'clamp',
   });
-  const flareOpacity = interpolate(frame, [25, 40, 55], [0, 0.85, 0], {
+  const burstOpacity = interpolate(frame, [0, 8, 30], [0.9, 0.7, 0.25], {
     extrapolateLeft: 'clamp',
     extrapolateRight: 'clamp',
   });
 
-  // ── Animated particles (float upward) ─────────────────────────────────────
-  // Each particle drifts upward over 90 frames, cycling from bottom to top
+  // ── Lens flare sweep (fast "whoosh" from left to right) ──────────────────
+  const flareX = interpolate(frame, [5, 30], [-300, 1920], {
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
+  });
+  const flareOpacity = interpolate(frame, [5, 15, 30], [0, 0.9, 0], {
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
+  });
+
+  // ── Horizontal accent lines that "whoosh" in from edges ──────────────────
+  const lineExtend = interpolate(frame, [3, 18], [0, 1], {
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
+  });
+
+  // ── Animated particles (float upward, more visible from start) ───────────
   const particleElements = PARTICLES.map((p, i) => {
     const cycleFrame = (frame + p.phase) % 90;
-    const yProgress = cycleFrame / 90;                // 0 → 1 over one cycle
-    const particleY = interpolate(yProgress, [0, 1], [90, -10]);    // % from top
-    const particleOpacity = interpolate(yProgress, [0, 0.15, 0.75, 1], [0, 0.8, 0.5, 0]);
+    const yProgress = cycleFrame / 90;
+    const particleY = interpolate(yProgress, [0, 1], [100, -10]);
+    const particleOpacity = interpolate(yProgress, [0, 0.1, 0.7, 1], [0, 0.9, 0.6, 0]);
+    // Particles visible from frame 0
+    const particleStartOpacity = interpolate(frame, [0, 3], [0.5, 1], {
+      extrapolateLeft: 'clamp',
+      extrapolateRight: 'clamp',
+    });
     return (
       <div
         key={i}
@@ -67,12 +118,18 @@ const IntroSlide: React.FC<IntroSlideProps> = ({ durationInFrames = 90 }) => {
           width: p.size,
           height: p.size,
           borderRadius: '50%',
-          backgroundColor: COLORS.gold,
-          opacity: particleOpacity,
-          boxShadow: `0 0 ${p.size * 3}px ${COLORS.gold}`,
+          backgroundColor: i % 2 === 0 ? COLORS.gold : COLORS.saffron,
+          opacity: particleOpacity * particleStartOpacity,
+          boxShadow: `0 0 ${p.size * 4}px ${i % 2 === 0 ? COLORS.gold : COLORS.saffron}`,
         }}
       />
     );
+  });
+
+  // ── Glow text shadow for the brand name ──────────────────────────────────
+  const glowIntensity = interpolate(frame, [0, 10, 20], [15, 25, 12], {
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
   });
 
   return (
@@ -86,93 +143,129 @@ const IntroSlide: React.FC<IntroSlideProps> = ({ durationInFrames = 90 }) => {
       opacity: exitOpacity,
     }}>
 
+      {/* ── Radial burst — saffron/gold explosion visible from frame 0 ── */}
+      <div style={{
+        position: 'absolute',
+        width: 900,
+        height: 900,
+        borderRadius: '50%',
+        background: `radial-gradient(circle, ${COLORS.saffron}60, ${COLORS.gold}30, transparent 70%)`,
+        transform: `scale(${burstScale})`,
+        opacity: burstOpacity,
+        filter: 'blur(40px)',
+      }} />
+
+      {/* ── Secondary tighter glow for depth ── */}
+      <div style={{
+        position: 'absolute',
+        width: 400,
+        height: 400,
+        borderRadius: '50%',
+        background: `radial-gradient(circle, ${COLORS.saffron}50, ${COLORS.gold}20, transparent 60%)`,
+        opacity: interpolate(frame, [0, 15], [0.6, 0.3], {
+          extrapolateLeft: 'clamp',
+          extrapolateRight: 'clamp',
+        }),
+        filter: 'blur(25px)',
+      }} />
+
       {/* ── Floating particles ── */}
       {particleElements}
 
-      {/* ── Ambient glow behind logo ── */}
+      {/* ── Horizontal accent lines (whoosh from edges) ── */}
       <div style={{
         position: 'absolute',
-        width: 500,
-        height: 500,
-        borderRadius: '50%',
-        background: `radial-gradient(circle, ${COLORS.saffron}30, ${COLORS.gold}12, transparent 70%)`,
-        filter: 'blur(70px)',
+        top: '42%',
+        left: `${50 - lineExtend * 40}%`,
+        width: `${lineExtend * 80}%`,
+        height: 2,
+        background: `linear-gradient(90deg, transparent, ${COLORS.saffron}AA, ${COLORS.gold}FF, ${COLORS.saffron}AA, transparent)`,
+        opacity: interpolate(frame, [3, 10, 50], [0, 0.8, 0.3], {
+          extrapolateLeft: 'clamp',
+          extrapolateRight: 'clamp',
+        }),
+      }} />
+      <div style={{
+        position: 'absolute',
+        top: '58%',
+        left: `${50 - lineExtend * 35}%`,
+        width: `${lineExtend * 70}%`,
+        height: 1,
+        background: `linear-gradient(90deg, transparent, ${COLORS.gold}88, transparent)`,
+        opacity: interpolate(frame, [5, 12, 50], [0, 0.6, 0.2], {
+          extrapolateLeft: 'clamp',
+          extrapolateRight: 'clamp',
+        }),
       }} />
 
-      {/* ── Lens flare streak ── */}
+      {/* ── Lens flare streak (fast whoosh) ── */}
       <div style={{
         position: 'absolute',
         top: '50%',
         left: 0,
         transform: `translateX(${flareX}px) translateY(-50%)`,
-        width: 300,
-        height: 4,
-        background: `linear-gradient(90deg, transparent, ${COLORS.white}CC, ${COLORS.gold}FF, ${COLORS.white}CC, transparent)`,
+        width: 400,
+        height: 6,
+        background: `linear-gradient(90deg, transparent, ${COLORS.white}DD, ${COLORS.gold}FF, ${COLORS.white}DD, transparent)`,
         filter: 'blur(3px)',
         opacity: flareOpacity,
         pointerEvents: 'none',
       }} />
-      {/* Secondary narrower streak for realism */}
-      <div style={{
-        position: 'absolute',
-        top: '50%',
-        left: 0,
-        transform: `translateX(${flareX + 20}px) translateY(-50%)`,
-        width: 180,
-        height: 2,
-        background: `linear-gradient(90deg, transparent, ${COLORS.gold}AA, transparent)`,
-        filter: 'blur(1px)',
-        opacity: flareOpacity * 0.6,
-        pointerEvents: 'none',
-      }} />
 
-      {/* ── Logo / Brand Name ── */}
+      {/* ── Logo / Brand Name — VISIBLE FROM FRAME 0 ── */}
       <div style={{
-        fontSize: 80,
+        fontSize: 90,
         fontFamily: FONTS.heading,
         fontWeight: 900,
         transform: `scale(${combinedLogoScale})`,
         letterSpacing: -2,
-        marginBottom: 8,
+        marginBottom: 12,
         opacity: logoOpacity,
+        textShadow: `0 0 ${glowIntensity}px ${COLORS.saffron}, 0 0 ${glowIntensity * 2}px ${COLORS.gold}60`,
       }}>
-        <span style={{ color: COLORS.saffron }}>Guru</span>
-        <span style={{ color: COLORS.gold }}> Sishya</span>
+        <span style={{ color: COLORS.saffron }}>GURU</span>
+        <span style={{ color: COLORS.gold }}>{' '}SISHYA</span>
       </div>
 
-      {/* ── Website URL ── */}
+      {/* ── Website URL — slides up into view ── */}
       <div style={{
-        fontSize: 20,
+        fontSize: 22,
         fontFamily: FONTS.code,
-        fontWeight: 400,
+        fontWeight: 500,
         color: COLORS.teal,
         opacity: urlOpacity,
-        letterSpacing: 1,
-        marginBottom: 18,
+        letterSpacing: 2,
+        marginBottom: 20,
+        transform: `translateY(${urlSlideUp}px)`,
       }}>
-        www.guru-sishya.in
+        guru-sishya.in
       </div>
 
-      {/* ── Tagline ── */}
+      {/* ── Tagline — slides up into view ── */}
       <div style={{
-        fontSize: 18,
+        fontSize: 20,
         fontFamily: FONTS.text,
-        fontWeight: 500,
+        fontWeight: 600,
         color: COLORS.gold,
         opacity: taglineOpacity,
-        letterSpacing: 3,
+        letterSpacing: 4,
         textTransform: 'uppercase',
+        transform: `translateY(${taglineSlideUp}px)`,
       }}>
         Master Your Interview. Land Your Dream Job.
       </div>
 
-      {/* ── Subtle animated underline ── */}
+      {/* ── Animated underline accent ── */}
       <div style={{
         position: 'absolute',
         bottom: '28%',
-        width: fadeIn(frame, 30, 40) * 320,
-        height: 1,
-        background: `linear-gradient(90deg, transparent, ${COLORS.saffron}88, transparent)`,
+        width: interpolate(frame, [8, 35], [0, 350], {
+          extrapolateLeft: 'clamp',
+          extrapolateRight: 'clamp',
+        }),
+        height: 2,
+        background: `linear-gradient(90deg, transparent, ${COLORS.saffron}AA, ${COLORS.gold}FF, ${COLORS.saffron}AA, transparent)`,
+        borderRadius: 1,
       }} />
     </AbsoluteFill>
   );

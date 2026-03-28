@@ -19,6 +19,7 @@ interface HashTableVizProps {
   sync: SyncState;
   frame: number;
   keywords: string[];
+  variant?: string;
 }
 
 // Clamp a value between min and max
@@ -229,9 +230,16 @@ const HashArrow: React.FC<{
   );
 };
 
-export const HashTableViz: React.FC<HashTableVizProps> = ({ sync, frame }) => {
+export const HashTableViz: React.FC<HashTableVizProps> = ({ sync, frame, keywords, variant }) => {
   const { fps } = useVideoConfig();
   const p = sync.sceneProgress; // 0 → 1
+
+  // ─── VARIANT ROUTING ──────────────────────────────────────────────────────
+  if (variant === 'collision') return <HashCollisionVariant sync={sync} frame={frame} keywords={keywords} />;
+  if (variant === 'resize') return <HashResizeVariant sync={sync} frame={frame} keywords={keywords} />;
+  if (variant === 'lookup') return <HashLookupVariant sync={sync} frame={frame} keywords={keywords} />;
+
+  // ─── DEFAULT variant: 'insert' — original behavior ────────────────────────
 
   // ─── 1. Bucket array reveal (progress 0 → 0.2) ───────────────────────────
   const bucketRevealP = progressInRange(p, 0, 0.2);
@@ -590,6 +598,284 @@ export const HashTableViz: React.FC<HashTableVizProps> = ({ sync, frame }) => {
               rehash threshold (0.75)
             </div>
           </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// =====================================================================
+// COLLISION VARIANT — Multiple keys hashing to same bucket, chain grows
+// =====================================================================
+const HashCollisionVariant: React.FC<Omit<HashTableVizProps, 'variant'>> = ({ sync, frame }) => {
+  const { fps } = useVideoConfig();
+  const p = sync.sceneProgress;
+
+  const bucketRevealP = progressInRange(p, 0, 0.15);
+  const bucketSlots = [0, 1, 2, 3, 4];
+
+  // 4 items all hash to bucket[2] — long chain
+  const items = ['ant', 'bat', 'cow', 'elk'];
+  const itemColors = [COLORS.teal, COLORS.gold, COLORS.saffron, COLORS.indigo];
+  const itemTriggers = [0.2, 0.35, 0.5, 0.65]; // when each appears
+
+  return (
+    <div style={{ width: '100%', height: '100%', position: 'relative', background: COLORS.dark, overflow: 'hidden', fontFamily: 'Inter, sans-serif' }}>
+      <div style={{ position: 'absolute', top: 16, left: 40, fontSize: 22, fontWeight: 700, color: COLORS.saffron, opacity: bucketRevealP, letterSpacing: 1 }}>
+        Hash Collision (Chaining)
+      </div>
+
+      <div style={{ position: 'absolute', top: 44, left: 40, fontSize: 14, color: COLORS.gray, opacity: bucketRevealP, fontFamily: 'JetBrains Mono, monospace', letterSpacing: 1 }}>
+        All keys hash to bucket[2]
+      </div>
+
+      {/* Bucket slots */}
+      {bucketSlots.map((i) => {
+        const slotP = progressInRange(p, i * 0.03, i * 0.03 + 0.1);
+        const isHighlighted = i === 2 && p > 0.2;
+        return (
+          <BucketSlot key={i} index={i} opacity={slotP} translateX={interpolate(slotP, [0, 1], [-30, 0], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' })} highlighted={isHighlighted} />
+        );
+      })}
+
+      {/* Bracket */}
+      <div style={{ position: 'absolute', top: 55, left: 36, width: 4, height: bucketSlots.length * 76 + 8, background: COLORS.indigo, borderRadius: 2, opacity: bucketRevealP }} />
+
+      {/* Chain of nodes at bucket[2] */}
+      {items.map((item, idx) => {
+        const itemP = progressInRange(p, itemTriggers[idx], itemTriggers[idx] + 0.12);
+        if (itemP <= 0) return null;
+        const nodeSpring = spring({ frame: Math.max(0, frame - Math.round(itemTriggers[idx] * fps * 10)), fps, config: { damping: 12, stiffness: 120, mass: 0.7 } });
+        return (
+          <HashNode key={item} label={`"${item}"`} x={160 + idx * 100} y={60 + 2 * 76 + 8} opacity={itemP} scale={nodeSpring} color={itemColors[idx]} isCollision={idx > 0} />
+        );
+      })}
+
+      {/* Collision counter */}
+      {p > 0.4 && (
+        <div style={{
+          position: 'absolute', bottom: 50, left: 40, right: 40,
+          display: 'flex', justifyContent: 'center', gap: 20,
+          opacity: interpolate(p, [0.4, 0.5], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }),
+        }}>
+          <div style={{ background: `${COLORS.saffron}22`, border: `1px solid ${COLORS.saffron}`, borderRadius: 8, padding: '8px 20px' }}>
+            <span style={{ fontSize: 14, color: COLORS.saffron, fontWeight: 700 }}>
+              Collisions: {Math.min(items.length - 1, Math.floor(progressInRange(p, 0.3, 0.7) * items.length))}
+            </span>
+          </div>
+          <div style={{ background: `${COLORS.indigo}22`, border: `1px solid ${COLORS.indigo}`, borderRadius: 8, padding: '8px 20px' }}>
+            <span style={{ fontSize: 14, color: COLORS.indigo, fontWeight: 700 }}>
+              Lookup: O({Math.min(items.length, Math.floor(progressInRange(p, 0.3, 0.7) * items.length) + 1)})
+            </span>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// =====================================================================
+// RESIZE VARIANT — Table doubles when load factor exceeds threshold
+// =====================================================================
+const HashResizeVariant: React.FC<Omit<HashTableVizProps, 'variant'>> = ({ sync, frame }) => {
+  const { fps } = useVideoConfig();
+  const p = sync.sceneProgress;
+
+  // Phase 1 (0-0.4): Fill 4/5 buckets (load factor rising to 0.8)
+  // Phase 2 (0.4-0.6): Threshold exceeded — "RESIZE!" alert
+  // Phase 3 (0.6-1.0): New array of 10 buckets, items rehash
+
+  const fillP = progressInRange(p, 0, 0.4);
+  const resizeP = progressInRange(p, 0.4, 0.6);
+  const rehashP = progressInRange(p, 0.6, 1.0);
+
+  const oldBuckets = 5;
+  const newBuckets = 10;
+  const filledCount = Math.floor(fillP * 4);
+  const loadFactor = filledCount / oldBuckets;
+
+  const showOld = rehashP < 0.5;
+  const showNew = resizeP > 0.5;
+
+  return (
+    <div style={{ width: '100%', height: '100%', position: 'relative', background: COLORS.dark, overflow: 'hidden', fontFamily: 'Inter, sans-serif' }}>
+      <div style={{ position: 'absolute', top: 16, left: 40, fontSize: 22, fontWeight: 700, color: COLORS.gold, letterSpacing: 1 }}>
+        Dynamic Resizing
+      </div>
+
+      {/* Load factor bar at top */}
+      <div style={{ position: 'absolute', top: 50, left: 40, right: 40 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: COLORS.gray, marginBottom: 4 }}>
+          <span>Load Factor: <span style={{ color: loadFactor > 0.75 ? COLORS.saffron : COLORS.gold, fontWeight: 700 }}>{loadFactor.toFixed(2)}</span></span>
+          <span style={{ color: COLORS.saffron }}>Threshold: 0.75</span>
+        </div>
+        <div style={{ width: '100%', height: 12, borderRadius: 6, background: COLORS.darkAlt, overflow: 'hidden' }}>
+          <div style={{ width: `${loadFactor * 100}%`, height: '100%', borderRadius: 6, background: loadFactor > 0.75 ? COLORS.saffron : COLORS.teal, transition: 'width 0.2s' }} />
+        </div>
+      </div>
+
+      {/* Old array (left side) */}
+      {showOld && (
+        <div style={{ position: 'absolute', left: 40, top: 100, opacity: showNew ? 0.3 : 1, transition: 'opacity 0.3s' }}>
+          <div style={{ fontSize: 12, color: COLORS.gray, fontFamily: 'JetBrains Mono, monospace', marginBottom: 6 }}>
+            buckets[{oldBuckets}]
+          </div>
+          {Array.from({ length: oldBuckets }).map((_, i) => (
+            <div key={i} style={{
+              width: 80, height: 36, marginBottom: 4, borderRadius: 6,
+              background: i < filledCount ? `${COLORS.teal}33` : COLORS.darkAlt,
+              border: `1.5px solid ${i < filledCount ? COLORS.teal : COLORS.border}`,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 14, color: i < filledCount ? COLORS.teal : COLORS.gray, fontFamily: 'JetBrains Mono, monospace',
+            }}>
+              {i < filledCount ? `k${i}` : '\u2014'}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Resize alert */}
+      {resizeP > 0 && resizeP < 1 && (
+        <div style={{
+          position: 'absolute', top: '45%', left: '50%', transform: 'translate(-50%, -50%)',
+          background: `${COLORS.saffron}22`, border: `2px solid ${COLORS.saffron}`, borderRadius: 12,
+          padding: '16px 32px', zIndex: 20,
+          opacity: interpolate(resizeP, [0, 0.3, 0.7, 1], [0, 1, 1, 0]),
+        }}>
+          <span style={{ fontSize: 22, fontWeight: 700, color: COLORS.saffron }}>
+            RESIZE! {oldBuckets} {'\u2192'} {newBuckets} buckets
+          </span>
+        </div>
+      )}
+
+      {/* New array (right side) */}
+      {showNew && (
+        <div style={{ position: 'absolute', right: 40, top: 100, opacity: rehashP }}>
+          <div style={{ fontSize: 12, color: COLORS.gold, fontFamily: 'JetBrains Mono, monospace', marginBottom: 6, fontWeight: 700 }}>
+            buckets[{newBuckets}] (new)
+          </div>
+          {Array.from({ length: newBuckets }).map((_, i) => {
+            const rehashed = i < filledCount && rehashP > (i + 1) / filledCount;
+            return (
+              <div key={i} style={{
+                width: 80, height: 28, marginBottom: 3, borderRadius: 5,
+                background: rehashed ? `${COLORS.gold}33` : COLORS.darkAlt,
+                border: `1.5px solid ${rehashed ? COLORS.gold : COLORS.border}`,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 12, color: rehashed ? COLORS.gold : COLORS.gray, fontFamily: 'JetBrains Mono, monospace',
+                transform: `scale(${rehashed ? 1 : 0.9})`, transition: 'all 0.2s',
+              }}>
+                {rehashed ? `k${i}` : '\u2014'}
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Rehash arrow */}
+      {showNew && showOld && (
+        <div style={{
+          position: 'absolute', top: '55%', left: '50%', transform: 'translate(-50%, -50%)',
+          fontSize: 36, color: COLORS.gold, opacity: rehashP * 0.8,
+        }}>
+          {'\u27A1'}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// =====================================================================
+// LOOKUP VARIANT — Searching for a key: hash, find bucket, traverse chain
+// =====================================================================
+const HashLookupVariant: React.FC<Omit<HashTableVizProps, 'variant'>> = ({ sync, frame }) => {
+  const { fps } = useVideoConfig();
+  const p = sync.sceneProgress;
+
+  const bucketRevealP = progressInRange(p, 0, 0.15);
+  const bucketSlots = [0, 1, 2, 3, 4];
+
+  // Pre-populated table with items
+  const prePopulated = [
+    { key: 'cat', bucket: 0, chainPos: 0, color: COLORS.teal },
+    { key: 'dog', bucket: 2, chainPos: 0, color: COLORS.gold },
+    { key: 'fox', bucket: 2, chainPos: 1, color: COLORS.saffron },
+    { key: 'pig', bucket: 4, chainPos: 0, color: COLORS.indigo },
+  ];
+
+  // Search phases: hash("fox") -> bucket[2] -> traverse chain -> found!
+  const hashPhaseP = progressInRange(p, 0.3, 0.45);   // compute hash
+  const bucketPhaseP = progressInRange(p, 0.45, 0.6);  // jump to bucket[2]
+  const traverseP = progressInRange(p, 0.6, 0.8);      // check dog, then fox
+  const foundP = progressInRange(p, 0.8, 0.95);        // highlight fox
+
+  // Highlight states
+  const searchTarget = 'fox';
+  const highlightBucket = bucketPhaseP > 0.5 ? 2 : -1;
+  const checkingNode = traverseP < 0.5 ? 0 : 1; // 0=dog, 1=fox
+  const isFound = foundP > 0.3;
+
+  return (
+    <div style={{ width: '100%', height: '100%', position: 'relative', background: COLORS.dark, overflow: 'hidden', fontFamily: 'Inter, sans-serif' }}>
+      <div style={{ position: 'absolute', top: 16, left: 40, fontSize: 22, fontWeight: 700, color: COLORS.indigo, opacity: bucketRevealP, letterSpacing: 1 }}>
+        Hash Lookup: get("{searchTarget}")
+      </div>
+
+      {/* Bucket slots */}
+      {bucketSlots.map((i) => {
+        const slotP = progressInRange(p, i * 0.03, i * 0.03 + 0.1);
+        return (
+          <BucketSlot key={i} index={i} opacity={slotP} translateX={interpolate(slotP, [0, 1], [-30, 0], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' })} highlighted={i === highlightBucket} />
+        );
+      })}
+
+      {/* Bracket */}
+      <div style={{ position: 'absolute', top: 55, left: 36, width: 4, height: bucketSlots.length * 76 + 8, background: COLORS.indigo, borderRadius: 2, opacity: bucketRevealP }} />
+
+      {/* Pre-populated nodes */}
+      {prePopulated.map((item) => {
+        const nodeP = progressInRange(p, 0.1, 0.25);
+        const bucketY = 60 + item.bucket * 76;
+        const isBeingChecked = item.bucket === 2 && traverseP > 0 && checkingNode === item.chainPos;
+        const isFoundNode = item.key === searchTarget && isFound;
+        const nodeColor = isFoundNode ? COLORS.teal : isBeingChecked ? COLORS.gold : item.color;
+        return (
+          <HashNode key={item.key} label={`"${item.key}"`} x={160 + item.chainPos * 100} y={bucketY + 8} opacity={nodeP} scale={nodeP} color={nodeColor} isCollision={item.chainPos > 0} />
+        );
+      })}
+
+      {/* Hash computation display */}
+      {hashPhaseP > 0 && (
+        <div style={{
+          position: 'absolute', top: 50, right: 40, background: `${COLORS.indigo}22`, border: `1px solid ${COLORS.indigo}`, borderRadius: 8, padding: '10px 16px',
+          opacity: hashPhaseP, fontFamily: 'JetBrains Mono, monospace',
+        }}>
+          <div style={{ fontSize: 13, color: COLORS.indigo }}>hash("{searchTarget}") = 2</div>
+          <div style={{ fontSize: 11, color: COLORS.gray, marginTop: 4 }}>{'\u2192'} go to bucket[2]</div>
+        </div>
+      )}
+
+      {/* Traversal indicator */}
+      {traverseP > 0 && !isFound && (
+        <div style={{
+          position: 'absolute', top: 60 + 2 * 76 - 28, left: 160 + checkingNode * 100,
+          fontSize: 11, fontWeight: 700, color: COLORS.gold, background: `${COLORS.gold}22`, border: `1px solid ${COLORS.gold}`,
+          borderRadius: 4, padding: '2px 8px', opacity: 0.5 + 0.5 * Math.sin(frame * 0.2),
+        }}>
+          {checkingNode === 0 ? '"dog" != "fox" \u2192 next' : 'checking...'}
+        </div>
+      )}
+
+      {/* Found! badge */}
+      {isFound && (
+        <div style={{
+          position: 'absolute', bottom: 60, left: '50%', transform: 'translateX(-50%)',
+          background: `${COLORS.teal}22`, border: `2px solid ${COLORS.teal}`, borderRadius: 10, padding: '12px 28px',
+          opacity: foundP,
+        }}>
+          <span style={{ fontSize: 18, fontWeight: 700, color: COLORS.teal }}>
+            FOUND "{searchTarget}" in O(2) steps
+          </span>
         </div>
       )}
     </div>

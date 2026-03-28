@@ -6,6 +6,7 @@ interface MetricDashboardProps {
   sync: SyncState;
   frame: number;
   keywords: string[];
+  variant?: string;
 }
 
 const THEME = {

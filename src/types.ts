@@ -16,6 +16,15 @@ export interface Scene {
   wordTimestamps?: WordTimestamp[];
   animationCues?: AnimationCue[];
   sfxTriggers?: SfxTrigger[];
+  /** Per-scene visualization variant — drives unique animation states per scene */
+  vizVariant?: string;
+  /**
+   * Offset (in seconds) where this scene's audio begins in the master audio track.
+   * Used by CaptionOverlay to sync subtitles to the actual audio position rather than
+   * the visual scene startFrame (which includes breathing room + transition padding).
+   * -1 means no audio for this scene.
+   */
+  audioOffsetSeconds?: number;
 }
 
 export interface Storyboard {

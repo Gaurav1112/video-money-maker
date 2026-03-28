@@ -1,5 +1,5 @@
 import React from 'react';
-import { useCurrentFrame, useVideoConfig, interpolate } from 'remotion';
+import { useCurrentFrame, useVideoConfig, interpolate, Easing } from 'remotion';
 
 interface AnimatedOverlayProps {
   sceneType?: string;
@@ -8,13 +8,14 @@ interface AnimatedOverlayProps {
 /**
  * Adds constant subtle motion to every frame:
  * 1. Floating particles (small dots drifting upward)
- * 2. Scanning line (horizontal sweep every 10 seconds)
+ * 2. Scanning line (horizontal sweep every ~4 seconds)
  * 3. Corner vignette (darkened corners for cinematic feel)
  * 4. Subtle grid lines (tech/coding feel)
+ * 5. Highlight sweep (diagonal light shine every 5 seconds)
  */
 export const AnimatedOverlay: React.FC<AnimatedOverlayProps> = ({ sceneType = 'text' }) => {
   const frame = useCurrentFrame();
-  const { fps, width, height } = useVideoConfig();
+  const { fps } = useVideoConfig();
 
   // 1. Floating particles — 8 small dots drifting upward
   const particles = Array.from({ length: 8 }, (_, i) => {
@@ -49,12 +50,27 @@ export const AnimatedOverlay: React.FC<AnimatedOverlayProps> = ({ sceneType = 't
   // 3. Corner vignette — cinematic darkened edges
   const vignetteOpacity = 0.4;
 
+  // 5. Highlight sweep — diagonal light shine every 5 seconds
+  const sweepCycleFrames = fps * 5;
+  const sweepProgress = (frame % sweepCycleFrames) / sweepCycleFrames;
+  // The sweep itself takes ~30% of the cycle, rest is idle
+  const sweepActive = sweepProgress < 0.3;
+  const sweepPosition = sweepActive
+    ? interpolate(sweepProgress, [0, 0.3], [-30, 130], {
+        easing: Easing.inOut(Easing.ease),
+      })
+    : -999; // off-screen when inactive
+  // Opacity peaks in the middle of the sweep
+  const sweepOpacity = sweepActive
+    ? interpolate(sweepProgress, [0, 0.15, 0.3], [0, 0.07, 0])
+    : 0;
+
   return (
     <div style={{
       position: 'absolute',
       inset: 0,
       pointerEvents: 'none',
-      zIndex: 50,
+      zIndex: 1,
       overflow: 'hidden',
     }}>
       {/* Floating particles */}
@@ -69,6 +85,19 @@ export const AnimatedOverlay: React.FC<AnimatedOverlayProps> = ({ sceneType = 't
         height: 1,
         background: 'linear-gradient(90deg, transparent 0%, rgba(232,93,38,0.08) 30%, rgba(232,93,38,0.12) 50%, rgba(232,93,38,0.08) 70%, transparent 100%)',
       }} />
+
+      {/* Highlight sweep — diagonal light shine */}
+      {sweepActive && (
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          bottom: 0,
+          left: `${sweepPosition}%`,
+          width: '15%',
+          background: `linear-gradient(105deg, transparent 0%, rgba(255,255,255,${sweepOpacity}) 40%, rgba(255,255,255,${sweepOpacity * 1.2}) 50%, rgba(255,255,255,${sweepOpacity}) 60%, transparent 100%)`,
+          transform: 'skewX(-15deg)',
+        }} />
+      )}
 
       {/* Corner vignette */}
       <div style={{
