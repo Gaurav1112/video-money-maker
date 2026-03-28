@@ -64,6 +64,17 @@ async function generatePilot() {
       sessionNumber: session.sessionNumber,
     });
 
+    // Add BGM selection (deterministic based on topic + session + language)
+    const BGM_FILES = [
+      'audio/bgm/lofi-study-1.mp3',
+      'audio/bgm/lofi-study-2.mp3',
+      'audio/bgm/lofi-chill-1.mp3',
+      'audio/bgm/lofi-ambient-1.mp3',
+    ];
+    const bgmSeed = (session.topic + session.sessionNumber + language)
+      .split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+    storyboard.bgmFile = BGM_FILES[bgmSeed % BGM_FILES.length];
+
     const duration = getStoryboardDuration(storyboard);
     console.log(`  Duration: ${duration.minutes} (${duration.frames} frames)`);
 
