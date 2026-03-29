@@ -115,41 +115,100 @@ export function selectSubtopicClips(
     return { group, score };
   });
 
-  // 4. Filter: 20-58 seconds only (YouTube Shorts must be under 60s)
-  const eligible = scored.filter(
-    ({ group }) => group.duration >= 20 && group.duration <= 58,
-  );
+  // 4. Build ONE best reel (~2:55 / 175 seconds) by merging top-scoring adjacent groups
+  //    Instagram Reels can be up to 3 minutes. We target 2:55 for safety.
+  const MAX_REEL_DURATION = 175; // 2 minutes 55 seconds
+  const MIN_REEL_DURATION = 60;  // at least 1 minute
 
-  // 5. Sort by score descending
-  eligible.sort((a, b) => b.score - a.score);
+  // Sort by score to find best starting group
+  scored.sort((a, b) => b.score - a.score);
 
-  // 6. Select top 5 non-overlapping clips
-  const selected: SubtopicClip[] = [];
+  // Strategy: start from the highest-scoring group, then expand by merging
+  // adjacent groups until we hit ~175 seconds
+  let bestClip: SubtopicClip | null = null;
 
-  for (const { group, score } of eligible) {
-    if (selected.length >= 5) break;
+  for (const { group: seedGroup, score: seedScore } of scored) {
+    if (seedGroup.duration < 15) continue; // skip tiny groups
 
-    // Check for overlap with already-selected clips
-    const overlaps = selected.some(
-      (c) => group.startScene <= c.endScene && group.endScene >= c.startScene,
-    );
-    if (overlaps) continue;
+    // Try to build a ~175s clip starting from this seed
+    let clipStart = seedGroup.startScene;
+    let clipEnd = seedGroup.endScene;
+    let clipDuration = seedGroup.duration;
+    let clipHeading = seedGroup.heading;
+    let clipArchetype = seedGroup.archetype;
 
-    selected.push({
-      startScene: group.startScene,
-      endScene: group.endScene,
-      heading: group.heading,
-      archetype: group.archetype,
-      duration: group.duration,
-      score,
-      hookText: generateHookText(group, topic),
-    });
+    // Expand forward: merge subsequent groups
+    for (const { group: nextGroup } of scored.filter(g => g.group.startScene > clipEnd)) {
+      // Only merge if adjacent (next group starts right after current ends)
+      if (nextGroup.startScene <= clipEnd + 2 && clipDuration + nextGroup.duration <= MAX_REEL_DURATION) {
+        clipEnd = nextGroup.endScene;
+        clipDuration += nextGroup.duration;
+      }
+    }
+
+    // Expand backward: merge preceding groups
+    for (const { group: prevGroup } of scored.filter(g => g.group.endScene < clipStart).reverse()) {
+      if (prevGroup.endScene >= clipStart - 2 && clipDuration + prevGroup.duration <= MAX_REEL_DURATION) {
+        clipStart = prevGroup.startScene;
+        clipDuration += prevGroup.duration;
+        clipHeading = prevGroup.heading; // use earlier heading
+      }
+    }
+
+    if (clipDuration >= MIN_REEL_DURATION && clipDuration <= MAX_REEL_DURATION) {
+      bestClip = {
+        startScene: clipStart,
+        endScene: clipEnd,
+        heading: clipHeading,
+        archetype: clipArchetype,
+        duration: clipDuration,
+        score: seedScore,
+        hookText: generateHookText(seedGroup, topic),
+      };
+      break; // Found a good clip
+    }
   }
 
-  // 7. Return in chronological order
-  selected.sort((a, b) => a.startScene - b.startScene);
+  // Fallback: if no merged clip worked, just take the longest single group under 175s
+  if (!bestClip) {
+    const fallback = scored.find(({ group }) => group.duration >= MIN_REEL_DURATION && group.duration <= MAX_REEL_DURATION);
+    if (fallback) {
+      bestClip = {
+        startScene: fallback.group.startScene,
+        endScene: fallback.group.endScene,
+        heading: fallback.group.heading,
+        archetype: fallback.group.archetype,
+        duration: fallback.group.duration,
+        score: fallback.score,
+        hookText: generateHookText(fallback.group, topic),
+      };
+    }
+  }
 
-  return selected;
+  // Last fallback: take first N scenes that fit in 175s
+  if (!bestClip && indexedScenes.length > 0) {
+    let dur = 0;
+    let endIdx = 0;
+    for (const { scene, originalIndex } of indexedScenes) {
+      const sceneDur = (scene.endFrame - scene.startFrame) / fps;
+      if (dur + sceneDur > MAX_REEL_DURATION) break;
+      dur += sceneDur;
+      endIdx = originalIndex;
+    }
+    if (dur >= 30) {
+      bestClip = {
+        startScene: indexedScenes[0].originalIndex,
+        endScene: endIdx,
+        heading: topic,
+        archetype: 'subtopic',
+        duration: Math.round(dur),
+        score: 50,
+        hookText: `${topic} — explained in under 3 minutes`,
+      };
+    }
+  }
+
+  return bestClip ? [bestClip] : [];
 }
 
 // ── buildMiniStoryboard ──────────────────────────────────────────────────────
