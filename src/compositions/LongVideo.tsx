@@ -33,9 +33,11 @@ import {
   IntroSlide,
   OutroSlide,
 } from '../components';
+import { SpeedReminder } from '../components/SpeedReminder';
 
 interface LongVideoProps {
   storyboard: Storyboard;
+  noOverlays?: boolean; // When true, skip CaptionOverlay, TopicHeader, BrandingLayer, ProgressBar, NarratorIndicator, SpeedReminder — for clean split-stack shorts conversion
 }
 
 const SCENE_COMPONENT_MAP: Record<string, React.FC<any>> = {
@@ -244,7 +246,7 @@ function getSceneMarkers(scenes: Scene[], totalFrames: number) {
   }));
 }
 
-export const LongVideo: React.FC<LongVideoProps> = ({ storyboard }) => {
+export const LongVideo: React.FC<LongVideoProps> = ({ storyboard, noOverlays = false }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const contentFrames = storyboard.durationInFrames;
@@ -296,7 +298,7 @@ export const LongVideo: React.FC<LongVideoProps> = ({ storyboard }) => {
 
       {/* Branded Intro */}
       <Sequence from={0} durationInFrames={INTRO_DURATION}>
-        <IntroSlide durationInFrames={INTRO_DURATION} />
+        <IntroSlide durationInFrames={INTRO_DURATION} topic={storyboard.topic} />
       </Sequence>
 
       {/* Render each scene with transitions, offset by intro duration */}
@@ -433,7 +435,7 @@ export const LongVideo: React.FC<LongVideoProps> = ({ storyboard }) => {
                     {renderedScene}
                     {/* Scene transition flash effect */}
                     {!isFirst && (
-                      <SceneTransitionFlash sceneType={scene.type} />
+                      <SceneTransitionFlash sceneType={scene.type} sceneNumber={idx + 1} totalScenes={contentScenes.length} />
                     )}
                   </AbsoluteFill>
                 </TransitionSeries.Sequence>
@@ -452,8 +454,8 @@ export const LongVideo: React.FC<LongVideoProps> = ({ storyboard }) => {
         />
       </Sequence>
 
-      {/* Persistent overlays (only during content) */}
-      {!isIntro && !isOutro && (
+      {/* Persistent overlays (only during content, skipped for noOverlays mode) */}
+      {!noOverlays && !isIntro && !isOutro && (
         <>
           <TopicHeader
             topic={storyboard.topic}
@@ -469,21 +471,8 @@ export const LongVideo: React.FC<LongVideoProps> = ({ storyboard }) => {
         </>
       )}
 
-      {/* Caption overlay — syncs subtitles to the master audio track.
-       *
-       * SYNC MATH (critical for audio-caption alignment):
-       * The master audio starts at absolute frame INTRO_DURATION. Each scene's
-       * narration begins at audioOffsetSeconds into the master track.
-       * Absolute frame where scene[i]'s audio starts:
-       *   INTRO_DURATION + audioOffsetSeconds * fps
-       *
-       * The active scene is found by getActiveSceneByAudioTime() which matches
-       * the current audio playback time against audioOffsetSeconds ranges.
-       * This avoids the progressive drift bug where scene.startFrame (raw sum
-       * of TransitionSeries durations) drifted +0.5s per scene due to
-       * unaccounted crossfade overlap (14.5s drift by scene 29).
-       */}
-      {!isIntro && !isOutro && hasNarration && activeScene && (
+      {/* Caption overlay (skipped for noOverlays — re-added after split-stack) */}
+      {!noOverlays && !isIntro && !isOutro && hasNarration && activeScene && (
         <CaptionOverlay
           key={`caption-${activeScene.audioOffsetSeconds ?? activeScene.startFrame}`}
           text={activeScene.narration!}
@@ -497,8 +486,8 @@ export const LongVideo: React.FC<LongVideoProps> = ({ storyboard }) => {
         />
       )}
 
-      {/* Narrator indicator */}
-      {!isIntro && !isOutro && (
+      {/* Narrator indicator (skipped for noOverlays) */}
+      {!noOverlays && !isIntro && !isOutro && (
         <NarratorIndicator
           isActive={hasNarration || false}
           label="Guru Sishya"
@@ -535,8 +524,17 @@ export const LongVideo: React.FC<LongVideoProps> = ({ storyboard }) => {
         <BgmLayer syncTimeline={syncTimeline} bgmFile={storyboard.bgmFile} />
       )}
 
-      {/* Guru-sishya.in branding — watermark + mid-video CTA + end card */}
-      <BrandingLayer durationInFrames={totalFrames} format="long" />
+      {/* 1.5x speed reminder overlay (skipped for noOverlays) */}
+      {!noOverlays && !isIntro && !isOutro && (
+        <SpeedReminder
+          totalFrames={totalFrames}
+          introFrames={INTRO_DURATION}
+          outroFrames={OUTRO_DURATION}
+        />
+      )}
+
+      {/* Guru-sishya.in branding (skipped for noOverlays) */}
+      {!noOverlays && <BrandingLayer durationInFrames={totalFrames} format="long" />}
 
       {/* SFX triggers synced to word timestamps */}
       {syncTimeline && storyboard.allSfxTriggers && storyboard.allSfxTriggers.length > 0 && (

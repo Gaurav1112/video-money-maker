@@ -441,8 +441,8 @@ export const TrafficFlow: React.FC<TrafficFlowProps> = ({ sync, frame, keywords,
   // Use reliable progress that always advances
   const p = useReliableProgress(frame, fps, sync);
 
-  // ── COMPRESSED stage reveals — everything visible by 30% of scene ──
-  const clientsRevealProgress = progressWindow(p, 0, 0.06);
+  // ── SPREAD stage reveals across full 0-1 scene progress ──
+  const clientsRevealProgress = progressWindow(p, 0, 0.15);
   const clientSprings = [0, 1, 2].map((i) =>
     spring({
       frame: Math.max(0, frame - i * 4),
@@ -453,7 +453,7 @@ export const TrafficFlow: React.FC<TrafficFlowProps> = ({ sync, frame, keywords,
     })
   );
 
-  const lbRevealProgress = progressWindow(p, 0.06, 0.12);
+  const lbRevealProgress = progressWindow(p, 0.15, 0.30);
   const lbSpring = spring({
     frame: frame,
     fps,
@@ -462,9 +462,9 @@ export const TrafficFlow: React.FC<TrafficFlowProps> = ({ sync, frame, keywords,
     to: lbRevealProgress > 0 ? 1 : 0,
   });
 
-  const arrowDrawProgress = progressWindow(p, 0.10, 0.20);
+  const arrowDrawProgress = progressWindow(p, 0.50, 0.70);
 
-  const serverRevealProgress = progressWindow(p, 0.15, 0.25);
+  const serverRevealProgress = progressWindow(p, 0.30, 0.50);
   const serverSprings = [0, 1, 2].map((i) =>
     spring({
       frame: Math.max(0, frame - i * 5),
@@ -476,7 +476,7 @@ export const TrafficFlow: React.FC<TrafficFlowProps> = ({ sync, frame, keywords,
   );
 
   // Health bars appear once servers are in
-  const healthFillProgress = progressWindow(p, 0.25, 0.4);
+  const healthFillProgress = progressWindow(p, 0.85, 1.0);
   const healthBarOpacity = interpolate(healthFillProgress, [0, 0.3], [0, 1], {
     extrapolateLeft: 'clamp',
     extrapolateRight: 'clamp',
@@ -487,7 +487,7 @@ export const TrafficFlow: React.FC<TrafficFlowProps> = ({ sync, frame, keywords,
   );
 
   // Flow starts as soon as servers appear — frame-driven, not progress-gated
-  const flowingActive = p > 0.2;
+  const flowingActive = p > 0.70;
 
   // --- FRAME-DRIVEN flowing dots (always animate when visible) ---
   const dotPeriod = fps * 1.5; // 1.5-second loop cycle
@@ -620,25 +620,25 @@ const OverloadVariant: React.FC<Omit<TrafficFlowProps, 'variant'>> = ({ sync, fr
   const svgW = width;
   const svgH = height;
 
-  // COMPRESSED reveals — all visible by 15%
-  const clientRevealP = progressWindow(p, 0, 0.06);
+  // SPREAD reveals across full scene progress
+  const clientRevealP = progressWindow(p, 0, 0.15);
   const clientSprings = clientPositions.map((_, i) =>
     spring({ frame: Math.max(0, frame - i * 3), fps, config: { damping: 14, stiffness: 120, mass: 0.7 }, from: 0, to: clientRevealP > 0 ? 1 : 0 })
   );
 
-  const serverRevealP = progressWindow(p, 0.06, 0.12);
+  const serverRevealP = progressWindow(p, 0.15, 0.30);
   const serverSpring = spring({ frame, fps, config: { damping: 13, stiffness: 110, mass: 0.8 }, from: 0, to: serverRevealP > 0 ? 1 : 0 });
 
-  const arrowDrawP = progressWindow(p, 0.08, 0.18);
+  const arrowDrawP = progressWindow(p, 0.30, 0.50);
 
-  // Overload builds up over most of the scene (starts at 15%)
-  const overloadP = progressWindow(p, 0.15, 0.85);
+  // Overload builds up over most of the scene (starts at 50%)
+  const overloadP = progressWindow(p, 0.50, 0.90);
   const healthFill = 0.15 + overloadP * 0.83;
   const serverStatus: 'healthy' | 'overloaded' | 'down' = healthFill > 0.88 ? 'down' : healthFill > 0.55 ? 'overloaded' : 'healthy';
 
   // Queue dots that pile up around server — frame-driven for smooth orbiting
   const queueCount = Math.min(12, Math.floor(overloadP * 14));
-  const flowActive = p > 0.12;
+  const flowActive = p > 0.50;
   const dotPeriod = fps * 1.2; // 1.2-second loop
 
   // Arrows: each client -> server directly
@@ -732,31 +732,31 @@ const HealthcheckVariant: React.FC<Omit<TrafficFlowProps, 'variant'>> = ({ sync,
   ];
   const serverColors = [C.teal, C.indigo, C.gold];
 
-  // Phase timing — COMPRESSED reveals, more time for the drama
-  const failureP = progressWindow(p, 0.30, 0.50);
-  const downP = progressWindow(p, 0.50, 0.65);
-  const rerouteP = progressWindow(p, 0.65, 1.0);
+  // Phase timing — SPREAD reveals, more time for the drama
+  const failureP = progressWindow(p, 0.55, 0.70);
+  const downP = progressWindow(p, 0.70, 0.80);
+  const rerouteP = progressWindow(p, 0.80, 1.0);
 
   const server2Status: 'healthy' | 'overloaded' | 'down' =
     downP > 0.5 ? 'down' : failureP > 0.5 ? 'overloaded' : 'healthy';
 
-  // COMPRESSED reveals — everything visible by 20%
-  const clientRevealP = progressWindow(p, 0, 0.05);
+  // SPREAD reveals across full scene progress (healthcheck variant)
+  const clientRevealP = progressWindow(p, 0, 0.15);
   const clientSprings = [0, 1, 2].map((i) =>
     spring({ frame: Math.max(0, frame - i * 4), fps, config: { damping: 14, stiffness: 120, mass: 0.7 }, from: 0, to: clientRevealP > 0 ? 1 : 0 })
   );
 
-  const lbRevealP = progressWindow(p, 0.05, 0.10);
+  const lbRevealP = progressWindow(p, 0.15, 0.30);
   const lbSpring = spring({ frame, fps, config: { damping: 12, stiffness: 100, mass: 0.9 }, from: 0, to: lbRevealP > 0 ? 1 : 0 });
 
-  const arrowDrawP = progressWindow(p, 0.08, 0.16);
+  const arrowDrawP = progressWindow(p, 0.30, 0.50);
 
-  const serverRevealP = progressWindow(p, 0.10, 0.20);
+  const serverRevealP = progressWindow(p, 0.35, 0.55);
   const serverSprings = [0, 1, 2].map((i) =>
     spring({ frame: Math.max(0, frame - i * 5), fps, config: { damping: 13, stiffness: 110, mass: 0.8 }, from: 0, to: serverRevealP > 0 ? 1 : 0 })
   );
 
-  const flowActive = p > 0.15;
+  const flowActive = p > 0.55;
   const dotPeriod = fps * 1.5;
 
   // Arrow coords
@@ -771,7 +771,7 @@ const HealthcheckVariant: React.FC<Omit<TrafficFlowProps, 'variant'>> = ({ sync,
   }));
 
   // Health check pulses — frame-driven heartbeat
-  const healthCheckActive = p > 0.15;
+  const healthCheckActive = p > 0.50;
   const healthCheckPulse = Math.sin(frame * 0.08) > 0;
 
   // Determine which servers receive traffic (server 1 is idx=1)
@@ -892,23 +892,23 @@ const StickyVariant: React.FC<Omit<TrafficFlowProps, 'variant'>> = ({ sync, fram
   // Each client has a dedicated color matching its assigned server
   const affinityColors = [C.teal, C.indigo, C.gold];
 
-  // COMPRESSED reveals
-  const clientRevealP = progressWindow(p, 0, 0.05);
+  // SPREAD reveals across full scene progress
+  const clientRevealP = progressWindow(p, 0, 0.15);
   const clientSprings = [0, 1, 2].map((i) =>
     spring({ frame: Math.max(0, frame - i * 4), fps, config: { damping: 14, stiffness: 120, mass: 0.7 }, from: 0, to: clientRevealP > 0 ? 1 : 0 })
   );
 
-  const lbRevealP = progressWindow(p, 0.05, 0.10);
+  const lbRevealP = progressWindow(p, 0.15, 0.30);
   const lbSpring = spring({ frame, fps, config: { damping: 12, stiffness: 100, mass: 0.9 }, from: 0, to: lbRevealP > 0 ? 1 : 0 });
 
-  const arrowDrawP = progressWindow(p, 0.08, 0.16);
+  const arrowDrawP = progressWindow(p, 0.30, 0.50);
 
-  const serverRevealP = progressWindow(p, 0.10, 0.18);
+  const serverRevealP = progressWindow(p, 0.40, 0.55);
   const serverSprings = [0, 1, 2].map((i) =>
     spring({ frame: Math.max(0, frame - i * 5), fps, config: { damping: 13, stiffness: 110, mass: 0.8 }, from: 0, to: serverRevealP > 0 ? 1 : 0 })
   );
 
-  const flowActive = p > 0.15;
+  const flowActive = p > 0.55;
   const dotPeriod = fps * 1.6; // 1.6-second loop
 
   // Each client has a FIXED affinity to its corresponding server
@@ -923,7 +923,7 @@ const StickyVariant: React.FC<Omit<TrafficFlowProps, 'variant'>> = ({ sync, fram
   }));
 
   // Affinity labels shown earlier
-  const affinityRevealP = progressWindow(p, 0.25, 0.35);
+  const affinityRevealP = progressWindow(p, 0.60, 0.75);
 
   return (
     <div style={{ width: '100%', height: '100%', position: 'relative', background: 'transparent', fontFamily: 'Inter, sans-serif' }}>
@@ -1034,29 +1034,29 @@ const ScaleVariant: React.FC<Omit<TrafficFlowProps, 'variant'>> = ({ sync, frame
   ];
   const serverColors = [C.teal, C.indigo, C.gold, C.saffron, C.green];
 
-  // How many servers are visible — EARLIER transitions
-  const visibleServerCount = p < 0.15 ? 2
-    : p < 0.35 ? 3
-    : p < 0.55 ? 4
+  // How many servers are visible — SPREAD transitions
+  const visibleServerCount = p < 0.35 ? 2
+    : p < 0.55 ? 3
+    : p < 0.75 ? 4
     : 5;
 
   const activeServerPositions = allServerPositions.slice(0, visibleServerCount);
 
-  // COMPRESSED reveals
-  const clientRevealP = progressWindow(p, 0, 0.04);
+  // SPREAD reveals across full scene progress (scale variant)
+  const clientRevealP = progressWindow(p, 0, 0.15);
   const clientSprings = [0, 1, 2].map((i) =>
     spring({ frame: Math.max(0, frame - i * 4), fps, config: { damping: 14, stiffness: 120, mass: 0.7 }, from: 0, to: clientRevealP > 0 ? 1 : 0 })
   );
 
-  const lbRevealP = progressWindow(p, 0.04, 0.08);
+  const lbRevealP = progressWindow(p, 0.15, 0.30);
   const lbSpring = spring({ frame, fps, config: { damping: 12, stiffness: 100, mass: 0.9 }, from: 0, to: lbRevealP > 0 ? 1 : 0 });
 
-  const arrowDrawP = progressWindow(p, 0.06, 0.14);
+  const arrowDrawP = progressWindow(p, 0.30, 0.45);
 
   const serverSprings = allServerPositions.map((_, i) => {
     // Each new server springs in at its reveal time
-    const revealStart = i < 2 ? 0.08 : i === 2 ? 0.15 : i === 3 ? 0.35 : 0.55;
-    const revealEnd = revealStart + 0.08;
+    const revealStart = i < 2 ? 0.28 : i === 2 ? 0.35 : i === 3 ? 0.55 : 0.75;
+    const revealEnd = revealStart + 0.10;
     const sRevealP = progressWindow(p, revealStart, revealEnd);
     return spring({
       frame: Math.max(0, frame - i * 4),
@@ -1067,7 +1067,7 @@ const ScaleVariant: React.FC<Omit<TrafficFlowProps, 'variant'>> = ({ sync, frame
     });
   });
 
-  const flowActive = p > 0.12;
+  const flowActive = p > 0.38;
   const dotPeriod = fps * 1.3; // 1.3-second loop
 
   const clientToLbArrows = clientPositions.map((c) => ({
@@ -1082,11 +1082,11 @@ const ScaleVariant: React.FC<Omit<TrafficFlowProps, 'variant'>> = ({ sync, frame
 
   const activeServerIdx = flowActive ? Math.floor(frame / 18) % visibleServerCount : -1;
 
-  // "Scale-up" alert flashes — EARLIER timing
+  // "Scale-up" alert flashes — SPREAD timing
   const scaleAlerts = [
-    { trigger: 0.15, text: '+1 Server (3 total)' },
-    { trigger: 0.35, text: '+1 Server (4 total)' },
-    { trigger: 0.55, text: '+1 Server (5 total)' },
+    { trigger: 0.35, text: '+1 Server (3 total)' },
+    { trigger: 0.55, text: '+1 Server (4 total)' },
+    { trigger: 0.75, text: '+1 Server (5 total)' },
   ];
 
   return (

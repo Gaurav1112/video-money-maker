@@ -12,8 +12,11 @@ export interface YouTubeMetadata {
   language: string;
   playlist: string;
   thumbnailText: string;
+  thumbnailPrompt: string;
   endScreen: string;
   cardLink: string;
+  pinnedComment: string;
+  communityPost: string;
   /** @deprecated Use `category` instead */
   categoryId?: string;
 }
@@ -94,7 +97,7 @@ function classifyTopic(topic: string): TopicType {
 }
 
 // ─── Title Templates ──────────────────────────────────────────────────────────
-// MrBeast + Fireship + NeetCode energy. Under 70 chars. Curiosity gaps + numbers.
+// SEO-optimized: keyword-first, under 60 chars, power words. Curiosity gaps + numbers.
 
 const TITLE_TEMPLATES_BY_TYPE: Record<TopicType, string[][]> = {
   'data-structure': [
@@ -142,9 +145,9 @@ function generateTitle(topic: string, sessionNumber: number, durationSecs: numbe
     .replace('{topic}', topic)
     .replace('{duration}', duration);
 
-  // Truncate to 70 chars max
-  if (raw.length > 70) {
-    raw = raw.slice(0, 69).trimEnd() + '…';
+  // Truncate to 60 chars max (SEO research: titles over 60 get cut off in search)
+  if (raw.length > 60) {
+    raw = raw.slice(0, 59).trimEnd() + '…';
   }
   return raw;
 }
@@ -197,6 +200,7 @@ function generateThumbnailText(topic: string, sessionNumber: number): string {
 // ─── YouTube Tags ─────────────────────────────────────────────────────────────
 
 const UNIVERSAL_TAGS = [
+  'guru sishya', 'guru-sishya', 'guru sishya interview prep', 'guru-sishya.in',
   'coding interview', 'interview prep', 'software engineer', 'leetcode',
   'faang interview', 'tech interview', 'software engineering',
   'programming tutorial', 'learn to code', 'coding tips',
@@ -247,27 +251,36 @@ const SESSION_SPECIFIC_TAGS: Record<TopicType, string[][]> = {
 
 function generateTags(topic: string, language: string, sessionNumber: number): string[] {
   const type = classifyTopic(topic);
-  const topicLower = language.toLowerCase() as keyof typeof LANGUAGE_TAGS;
+  const topicLower = topic.toLowerCase();
+  const langLower = language.toLowerCase() as keyof typeof LANGUAGE_TAGS;
   const sessionIdx = Math.min(sessionNumber - 1, 2);
 
-  const topicSpecific = [
-    topic.toLowerCase(),
-    `${topic.toLowerCase()} explained`,
-    `${topic.toLowerCase()} interview`,
-    `${topic.toLowerCase()} ${language.toLowerCase()}`,
-    `${topic.toLowerCase()} tutorial`,
-    `how ${topic.toLowerCase()} works`,
+  // Priority-ordered: exact match → long-tail → universal → language → brand
+  // 15-20 tags is optimal (SEO research: too many dilutes relevance)
+  const priorityTags = [
+    topicLower,                                      // exact match
+    `${topicLower} explained`,                       // topic variation
+    `${topicLower} interview questions`,             // long-tail
+    `${topicLower} tutorial`,                        // tutorial keyword
+    `coding interview ${topicLower}`,                // audience keyword
+    `${topicLower} system design`,                   // related
+    `FAANG interview ${topicLower}`,                 // FAANG
+    'guru sishya',                                   // brand
+    'coding interview prep',                         // universal
+    'system design interview',                       // universal
+    `${topicLower} ${langLower}`,                    // language: python
+    `${topicLower} java`,                            // language: java
+    `${topicLower} for beginners`,                   // level
+    `${topicLower} advanced`,                        // level
+    'DSA tutorial',                                  // universal
   ];
 
+  // Add session-specific tags
   const sessionTags = (SESSION_SPECIFIC_TAGS[type]?.[sessionIdx] || []).map(
-    t => `${topic.toLowerCase()} ${t}`
+    t => `${topicLower} ${t}`
   );
 
-  const langTags = LANGUAGE_TAGS[topicLower] || LANGUAGE_TAGS['python'];
-  const typeTags = TYPE_TAGS[type];
-
-  // Deduplicate and limit to 30 tags
-  const all = [...topicSpecific, ...sessionTags, ...langTags, ...typeTags, ...UNIVERSAL_TAGS];
+  const all = [...priorityTags, ...sessionTags];
   const seen = new Set<string>();
   const unique: string[] = [];
   for (const tag of all) {
@@ -276,26 +289,27 @@ function generateTags(topic: string, language: string, sessionNumber: number): s
       seen.add(t);
       unique.push(tag);
     }
-    if (unique.length >= 30) break;
+    if (unique.length >= 20) break;
   }
   return unique;
 }
 
 // ─── YouTube Hashtags ─────────────────────────────────────────────────────────
 
-const HASHTAG_SETS_BY_TYPE: Record<TopicType, string[]> = {
-  'data-structure': ['#DataStructures', '#DSA', '#CodingInterview', '#LeetCode', '#Programming'],
-  'algorithm': ['#Algorithms', '#DSA', '#CodingInterview', '#LeetCode', '#TechInterview'],
-  'system-design': ['#SystemDesign', '#Backend', '#SoftwareEngineering', '#TechInterview', '#CodingInterview'],
-  'concept': ['#Programming', '#SoftwareEngineering', '#CodingInterview', '#LearnToCode', '#TechInterview'],
-  'language': ['#Python', '#Java', '#Programming', '#CleanCode', '#SoftwareEngineering'],
+// Exactly 3 hashtags shown above title (SEO research: 3 is optimal, YouTube displays them above title)
+const TOPIC_HASHTAG_BY_TYPE: Record<TopicType, string> = {
+  'data-structure': '#DSA',
+  'algorithm': '#Algorithms',
+  'system-design': '#SystemDesign',
+  'concept': '#Programming',
+  'language': '#CodingTips',
 };
 
-function generateHashtags(topic: string, sessionNumber: number): string[] {
+function generateHashtags(topic: string, _sessionNumber: number): string[] {
   const type = classifyTopic(topic);
-  const topicHashtag = `#${topic.replace(/\s+/g, '')}`;
-  const base = HASHTAG_SETS_BY_TYPE[type];
-  return [topicHashtag, ...base].filter((v, i, a) => a.indexOf(v) === i).slice(0, 5);
+  const topicTag = TOPIC_HASHTAG_BY_TYPE[type];
+  // Exactly 3 hashtags: topic-specific, universal, brand
+  return [topicTag, '#CodingInterview', '#GuruSishya'];
 }
 
 // ─── YouTube Description ──────────────────────────────────────────────────────
@@ -438,13 +452,19 @@ function generateDescription(
   const sessionNav = generateSessionNav(sessionNumber, topic);
   const hashtags = generateHashtags(topic, sessionNumber);
 
-  return `${hook}
+  const topicSlug = topic.toLowerCase().replace(/\s+/g, '-');
+
+  // First 150 chars: unique per video, contains primary keyword, drives clicks from search
+  const sessionLabel = sessionNumber === 1 ? 'fundamentals' : sessionNumber === 2 ? 'implementation with code' : 'advanced patterns';
+  return `${topic} (${sessionLabel}) — master this for your FAANG interview. FREE practice with 1,988 questions at guru-sishya.in/${topicSlug}
+
+${hook}
 
 ⏱️ Chapters:
 ${chaptersText}
 
 ──────────────────────────────────────
-🔥 FREE Interview Prep: https://guru-sishya.in
+🔥 FREE Interview Prep: https://guru-sishya.in/${topicSlug}
 📺 Full Playlist: https://www.youtube.com/@GuruSishya-India
 📱 Instagram: https://instagram.com/guru_sishya.in
 ──────────────────────────────────────
@@ -452,7 +472,7 @@ ${chaptersText}
 📌 Series:
 ${sessionNav}
 
-${hashtags.join(' ')} #InterviewPrep #Coding #Developer`;
+${hashtags.join(' ')}`;
 }
 
 // ─── Instagram ────────────────────────────────────────────────────────────────
@@ -548,10 +568,11 @@ export function generateInstagramCaption(topic: string, language: string, sessio
   const langHashtag = `#${language.toLowerCase()}`;
   const typeHashtags = INSTAGRAM_TYPE_HASHTAGS[type];
 
+  // 8-10 hashtags max — research shows 30 hurts reach in 2026
   const allHashtags = [topicHashtag, langHashtag, '#codinginterview', '#faang',
-    ...typeHashtags, ...INSTAGRAM_HASHTAG_SETS]
+    ...typeHashtags, '#interviewprep', '#tech', '#developer', '#dsa', '#programming']
     .filter((v, i, a) => a.indexOf(v) === i)
-    .slice(0, 30);
+    .slice(0, 10);
 
   return `${hook}
 
@@ -570,10 +591,11 @@ function generateInstagramMetadata(topic: string, language: string, sessionNumbe
   const langHashtag = `#${language.toLowerCase()}`;
   const typeHashtags = INSTAGRAM_TYPE_HASHTAGS[type];
 
+  // 8-10 hashtags max — research shows 30 hurts reach in 2026
   const hashtags = [topicHashtag, langHashtag, '#codinginterview', '#faang',
-    ...typeHashtags, ...INSTAGRAM_HASHTAG_SETS]
+    ...typeHashtags, '#interviewprep', '#tech', '#developer', '#dsa', '#programming']
     .filter((v, i, a) => a.indexOf(v) === i)
-    .slice(0, 30);
+    .slice(0, 10);
 
   const shortTopic = topic.length > 15 ? topic.split(' ')[0] : topic;
   const coverTexts = [
@@ -678,14 +700,72 @@ const SHORTS_TITLE_TEMPLATES: Record<TopicType, string[]> = {
   ],
 };
 
+// ─── Viral Short Title Templates ───────────────────────────────────────────
+// Proven viral templates that rotate based on session + clip index.
+// {topic} and {language} are interpolated at generation time.
+
+const VIRAL_SHORT_TITLES = [
+  'This {topic} trick saved my interview 🤯',
+  '{topic} in 60 seconds ⚡',
+  'Stop writing code like this ❌',
+  'Google asked this in their interview 👀',
+  'Most developers don\'t know this {topic} trick',
+  '{topic}: What they don\'t teach you',
+  'I wish I knew this before my interview 😤',
+  '5 {topic} mistakes you\'re making right now',
+  'This is why your code is slow 💀',
+  'How Netflix handles 200M users with {topic}',
+  '{topic} explained like you\'re 5 🧒',
+  'The {topic} question that fails 90% of candidates',
+  'Senior devs do THIS differently 👨‍💻',
+  '{topic} -- the RIGHT way ✅',
+  'Why Amazon rejected me (and how I fixed it)',
+  '3 lines of code that changed everything',
+  '{topic} is NOT what you think',
+  'The only {topic} video you\'ll ever need',
+  'POV: You finally understand {topic} 🧠',
+  'If you don\'t know {topic}, you\'re cooked 🔥',
+];
+
+// ─── Type-Specific Hashtag for Shorts ──────────────────────────────────────
+// Dynamic lookup replaces the old hardcoded #SystemDesign on all shorts.
+
+const TYPE_HASHTAG: Record<string, string> = {
+  'system-design': '#SystemDesign',
+  'data-structure': '#DSA',
+  'algorithm': '#Algorithms',
+  'database': '#Database',
+  'network': '#Networking',
+  'language': '#CodingTips',
+  'concept': '#CS',
+  'default': '#Coding',
+};
+
 function generateShortsTitle(topic: string, language: string, sessionNumber: number, shortIndex: number): string {
   const type = classifyTopic(topic);
-  const templates = SHORTS_TITLE_TEMPLATES[type];
-  const idx = seededIndex(topic, sessionNumber * 10 + shortIndex, 53, templates.length);
-  const title = templates[idx]
-    .replace(/{topic}/g, topic)
-    .replace(/{language}/g, language);
-  return `${title} #Shorts #SystemDesign`;
+  const typeHashtag = TYPE_HASHTAG[type] || TYPE_HASHTAG['default'];
+
+  // Alternate between type-specific templates and viral templates so each
+  // short from the same video gets a different title.
+  const useViral = shortIndex % 2 === 1;
+  let title: string;
+
+  if (useViral) {
+    // Rotate through viral templates based on session + clip index
+    const viralIdx = seededIndex(topic, sessionNumber * 10 + shortIndex, 71, VIRAL_SHORT_TITLES.length);
+    title = VIRAL_SHORT_TITLES[viralIdx]
+      .replace(/{topic}/g, topic)
+      .replace(/{language}/g, language);
+  } else {
+    const templates = SHORTS_TITLE_TEMPLATES[type];
+    const idx = seededIndex(topic, sessionNumber * 10 + shortIndex, 53, templates.length);
+    title = templates[idx]
+      .replace(/{topic}/g, topic)
+      .replace(/{language}/g, language);
+  }
+
+  // YouTube Shorts: 3-5 hashtags (not 1-2)
+  return `${title} #Shorts #Coding ${typeHashtag} #InterviewPrep #FAANG`;
 }
 
 // ─── Playlist Name ────────────────────────────────────────────────────────────
@@ -699,11 +779,42 @@ function generatePlaylist(topic: string): string {
   return `${category} - ${topic} (Complete Series)`;
 }
 
+// ─── Pinned Comment & Community Post ──────────────────────────────────────────
+
+export function generatePinnedComment(topic: string, topicSlug: string): string {
+  return `Want to practice ${topic} with real interview questions? I built a FREE platform with 1,988 questions → guru-sishya.in/${topicSlug}\n\nWhich part of ${topic} do you find hardest? Drop it below — I'll cover it in the next video! 👇`;
+}
+
+export function generateCommunityPost(topic: string, title: string, objectives: string[], topicSlug: string): string {
+  // Poll format for maximum engagement (SEO research: polls get 2-3x more interaction)
+  const options = objectives.slice(0, 3);
+  const option1 = options[0] || `${topic} Advanced Patterns`;
+  const option2 = options[1] || `${topic} Interview Questions`;
+  const option3 = options[2] || `System Design with ${topic}`;
+  return `🔥 New video: ${title}\n\nWhat should I cover next?\n□ ${option1}\n□ ${option2}\n□ ${option3}\n□ Something else (comment below!)\n\nFull prep at guru-sishya.in/${topicSlug}`;
+}
+
+// ─── DALL-E Thumbnail Prompts (category-aware) ──────────────────────────────
+
+const THUMBNAIL_DALLE_PROMPTS: Record<string, string> = {
+  'system-design': 'Dark background #0C0A15, glowing server architecture diagram, neon teal (#1DD1A1) connection lines, futuristic minimal style, no text, 1280x720',
+  'data-structure': 'Dark navy background, glowing data structure visualization, saffron (#E85D26) nodes with gold edges, minimal clean style, no text, 1280x720',
+  'algorithm': 'Dark background #0C0A15, glowing flowchart with algorithm steps, neon teal (#1DD1A1) arrows, futuristic minimal, no text, 1280x720',
+  'concept': 'Dark background #0C0A15, abstract code visualization with neon accents, futuristic tech aesthetic, no text, 1280x720',
+  'language': 'Dark background #0C0A15, clean code editor with syntax highlighting, neon teal (#1DD1A1) cursor glow, minimal style, no text, 1280x720',
+};
+
+function generateThumbnailPrompt(topic: string): string {
+  const type = classifyTopic(topic);
+  return THUMBNAIL_DALLE_PROMPTS[type] || THUMBNAIL_DALLE_PROMPTS['concept'];
+}
+
 // ─── Primary Exports ──────────────────────────────────────────────────────────
 
 export function generateYouTubeMetadata(storyboard: Storyboard, language: string): YouTubeMetadata {
   const { topic, sessionNumber } = storyboard;
   const durationSecs = Math.round(storyboard.durationInFrames / storyboard.fps);
+  const topicSlug = topic.toLowerCase().replace(/\s+/g, '-');
 
   const title = generateTitle(topic, sessionNumber, durationSecs);
   const chapters = generateChapters(storyboard);
@@ -721,8 +832,11 @@ export function generateYouTubeMetadata(storyboard: Storyboard, language: string
     language: 'en',
     playlist: generatePlaylist(topic),
     thumbnailText: generateThumbnailText(topic, sessionNumber),
+    thumbnailPrompt: generateThumbnailPrompt(topic),
     endScreen: generateEndScreen(topic, sessionNumber),
     cardLink: generateCardLink(topic, sessionNumber),
+    pinnedComment: generatePinnedComment(topic, topicSlug),
+    communityPost: generateCommunityPost(topic, title, [], topicSlug),
   };
 }
 
@@ -761,6 +875,8 @@ export function generateShortsMetadataFromStoryboard(
     'Code Implementation',
   ];
 
+  const topicSlug = topic.toLowerCase().replace(/\s+/g, '-');
+
   const shorts: ShortMetadata[] = segments.map((segment, i) => {
     const title = generateShortsTitle(topic, language, sessionNumber, i);
     const topicHashtag = `#${topic.replace(/\s+/g, '')}`;
@@ -771,7 +887,7 @@ export function generateShortsMetadataFromStoryboard(
       segment,
       youtube: {
         title,
-        description: `${segment} — ${topic} explained in 60 seconds.\n\nFull video on our channel!\n\n${topicHashtag} #SystemDesign #FAANG #CodingInterview #SoftwareEngineering #Shorts`,
+        description: `${segment} — ${topic} explained in 60 seconds.\n\nFREE prep: https://guru-sishya.in/${topicSlug}\nFull video on our channel!\n\n#Shorts #Coding ${TYPE_HASHTAG[type] || TYPE_HASHTAG['default']} #InterviewPrep #FAANG ${topicHashtag}`,
         tags: generateTags(topic, language, sessionNumber).slice(0, 15),
       },
       instagram: {

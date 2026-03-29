@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Guru Sishya Video Studio</title>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone@7/babel.min.js"></script>
+  <style>
+    /* Full Tailwind-like utility styles inline */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', -apple-system, sans-serif; background: #0C0A15; color: #E8E8E8; }
+
+    .studio { display: flex; height: 100vh; }
+    .sidebar { width: 280px; background: #1A1625; border-right: 1px solid #2D2640; overflow-y: auto; padding: 16px; }
+    .main { flex: 1; display: flex; flex-direction: column; overflow-y: auto; }
+    .controls { padding: 20px 24px; border-bottom: 1px solid #2D2640; background: #13101E; }
+    .content { flex: 1; padding: 20px 24px; overflow-y: auto; }
+    .right-panel { width: 420px; border-left: 1px solid #2D2640; background: #1A1625; overflow-y: auto; }
+
+    .btn { padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; font-size: 14px; transition: all 0.2s; }
+    .btn-primary { background: linear-gradient(135deg, #E85D26, #FDB813); color: white; }
+    .btn-primary:hover { transform: scale(1.02); box-shadow: 0 4px 20px #E85D2644; }
+    .btn-secondary { background: #2D2640; color: #E8E8E8; }
+    .btn-secondary:hover { background: #3D3650; }
+    .btn-sm { padding: 6px 12px; font-size: 12px; }
+
+    .topic-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 8px; cursor: pointer; transition: background 0.15s; }
+    .topic-item:hover { background: #2D2640; }
+    .topic-item.selected { background: #E85D2622; border: 1px solid #E85D2644; }
+
+    .checkbox { width: 18px; height: 18px; accent-color: #E85D26; cursor: pointer; }
+
+    .session-chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+    .chip { padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 500; cursor: pointer; border: 1px solid #2D2640; background: #13101E; transition: all 0.15s; }
+    .chip.active { background: #E85D26; border-color: #E85D26; color: white; }
+    .chip:hover { border-color: #E85D26; }
+
+    .queue-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-radius: 8px; margin-bottom: 8px; background: #13101E; border: 1px solid #2D2640; }
+    .queue-item.rendering { border-color: #E85D2666; }
+    .queue-item.complete { border-color: #22C55E44; }
+    .queue-item.failed { border-color: #EF444444; }
+
+    .progress-bar { height: 4px; border-radius: 2px; background: #2D2640; overflow: hidden; }
+    .progress-fill { height: 100%; border-radius: 2px; background: linear-gradient(90deg, #E85D26, #FDB813); transition: width 0.3s; }
+
+    .tabs { display: flex; gap: 0; border-bottom: 1px solid #2D2640; }
+    .tab { padding: 12px 20px; font-size: 13px; font-weight: 600; cursor: pointer; border-bottom: 2px solid transparent; color: #888; transition: all 0.15s; }
+    .tab.active { color: #E85D26; border-bottom-color: #E85D26; }
+    .tab:hover { color: #E8E8E8; }
+
+    .metadata-card { background: #13101E; border: 1px solid #2D2640; border-radius: 10px; padding: 14px; margin-bottom: 12px; }
+    .metadata-label { font-size: 11px; font-weight: 600; color: #E85D26; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+    .metadata-value { font-size: 13px; color: #CCC; line-height: 1.5; white-space: pre-wrap; word-break: break-word; }
+    .copy-btn { font-size: 11px; padding: 4px 10px; border-radius: 6px; background: #2D2640; color: #AAA; border: none; cursor: pointer; float: right; }
+    .copy-btn:hover { background: #E85D26; color: white; }
+
+    .schedule-row { display: flex; gap: 12px; align-items: center; padding: 10px 14px; border-radius: 8px; margin-bottom: 6px; background: #13101E; border: 1px solid #2D2640; }
+    .schedule-date { font-size: 12px; font-weight: 700; color: #E85D26; width: 100px; }
+    .schedule-time { font-size: 12px; color: #888; width: 60px; }
+    .schedule-platform { font-size: 18px; width: 30px; }
+    .schedule-action { font-size: 13px; flex: 1; }
+
+    .checklist-item { display: flex; align-items: center; gap: 8px; padding: 6px 0; font-size: 13px; color: #AAA; }
+    .checklist-item input:checked + span { text-decoration: line-through; color: #666; }
+
+    .search-input { width: 100%; padding: 10px 14px; border-radius: 8px; border: 1px solid #2D2640; background: #13101E; color: #E8E8E8; font-size: 13px; outline: none; margin-bottom: 12px; }
+    .search-input:focus { border-color: #E85D26; }
+    .search-input::placeholder { color: #555; }
+
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .status-dot.complete { background: #22C55E; }
+    .status-dot.partial { background: #F59E0B; }
+    .status-dot.pending { background: #555; }
+
+    .header { padding: 14px 20px; background: linear-gradient(90deg, #1A1625, #13101E); border-bottom: 1px solid #2D2640; display: flex; align-items: center; justify-content: space-between; }
+    .logo { font-size: 18px; font-weight: 700; color: #E85D26; }
+    .logo span { color: #FDB813; }
+
+    .empty-state { text-align: center; padding: 60px 20px; color: #555; }
+    .empty-state h3 { font-size: 16px; margin-bottom: 8px; color: #888; }
+
+    .badge { font-size: 11px; padding: 2px 8px; border-radius: 10px; font-weight: 600; }
+    .badge-success { background: #22C55E22; color: #22C55E; }
+    .badge-warning { background: #F59E0B22; color: #F59E0B; }
+    .badge-info { background: #818CF822; color: #818CF8; }
+
+    .btn-shorts { background: linear-gradient(135deg, #818CF8, #6366F1); color: white; }
+    .btn-shorts:hover { transform: scale(1.02); box-shadow: 0 4px 20px #818CF844; }
+    .btn-shorts:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    .shorts-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; padding: 2px 8px; border-radius: 10px; font-weight: 600; }
+    .shorts-ready { background: #22C55E22; color: #22C55E; }
+    .shorts-pending { background: #818CF822; color: #818CF8; cursor: pointer; }
+    .shorts-pending:hover { background: #818CF833; }
+
+    .clip-card { background: #13101E; border: 1px solid #2D2640; border-radius: 10px; padding: 16px; margin-bottom: 14px; }
+    .clip-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .clip-number { font-size: 14px; font-weight: 700; color: #E85D26; }
+    .clip-duration { font-size: 12px; color: #888; }
+    .clip-source { font-size: 11px; color: #666; margin-bottom: 10px; padding: 4px 8px; background: #1A1625; border-radius: 4px; display: inline-block; }
+
+    .checklist-section { margin-top: 12px; padding-top: 10px; border-top: 1px solid #2D264066; }
+    .checklist-section-title { font-size: 11px; font-weight: 700; color: #E85D26; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+
+    .posting-section { background: #13101E; border: 1px solid #2D2640; border-radius: 10px; padding: 16px; margin-bottom: 16px; }
+    .posting-section-header { font-size: 15px; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+
+    .hashtag-group { display: inline-flex; flex-wrap: wrap; gap: 4px; margin-bottom: 6px; }
+    .hashtag-tag { font-size: 11px; padding: 2px 6px; background: #2D2640; border-radius: 4px; color: #AAA; }
+
+    .best-time { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: #FDB813; background: #FDB81311; padding: 4px 10px; border-radius: 6px; margin: 4px 2px; }
+
+    .converting-spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid #818CF844; border-top-color: #818CF8; border-radius: 50%; animation: spin 0.8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+    const { useState, useEffect, useCallback } = React;
+
+    const API = window.location.origin; // Works on any port
+
+    function App() {
+      const [topics, setTopics] = useState([]);
+      const [selected, setSelected] = useState(new Set());
+      const [sessions, setSessions] = useState({});
+      const [search, setSearch] = useState('');
+      const [quality, setQuality] = useState('full');
+      const [renderStatus, setRenderStatus] = useState({});
+      const [activeTab, setActiveTab] = useState('longform');
+      const [activeTopic, setActiveTopic] = useState(null);
+      const [metadata, setMetadata] = useState(null);
+      const [schedule, setSchedule] = useState([]);
+      const [copied, setCopied] = useState('');
+      const [shortsStatus, setShortsStatus] = useState({}); // { "topic/session": "ready" | "converting" | "error" }
+      const [convertingShorts, setConvertingShorts] = useState(false);
+
+      // Fetch topics
+      useEffect(() => {
+        fetch(`${API}/api/topics`).then(r => r.json()).then(d => setTopics(d.topics || [])).catch(() => {});
+      }, []);
+
+      // Poll render status
+      useEffect(() => {
+        const interval = setInterval(() => {
+          fetch(`${API}/api/render/status`).then(r => r.json()).then(setRenderStatus).catch(() => {});
+        }, 2000);
+        return () => clearInterval(interval);
+      }, []);
+
+      // Fetch schedule
+      useEffect(() => {
+        fetch(`${API}/api/schedule`).then(r => r.json()).then(d => setSchedule(d.schedule || [])).catch(() => {});
+      }, []);
+
+      const toggleTopic = (slug) => {
+        const next = new Set(selected);
+        if (next.has(slug)) { next.delete(slug); } else { next.add(slug); }
+        setSelected(next);
+        if (!sessions[slug]) {
+          const topic = topics.find(t => t.slug === slug);
+          if (topic) {
+            const allSessions = Array.from({length: topic.totalSessions}, (_, i) => i + 1);
+            setSessions(prev => ({...prev, [slug]: allSessions}));
+          }
+        }
+      };
+
+      const toggleSession = (slug, num) => {
+        const current = sessions[slug] || [];
+        const next = current.includes(num) ? current.filter(n => n !== num) : [...current, num].sort((a,b) => a-b);
+        setSessions(prev => ({...prev, [slug]: next}));
+      };
+
+      const toggleAllSessions = (slug, total) => {
+        const current = sessions[slug] || [];
+        const all = Array.from({length: total}, (_, i) => i + 1);
+        setSessions(prev => ({...prev, [slug]: current.length === total ? [] : all}));
+      };
+
+      const startRender = async () => {
+        const payload = Array.from(selected).map(slug => ({
+          slug,
+          sessions: sessions[slug] || [],
+        })).filter(t => t.sessions.length > 0);
+
+        if (!payload.length) return alert('Select topics and sessions first');
+
+        await fetch(`${API}/api/render`, {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ topics: payload, quality }),
+        });
+      };
+
+      const fetchMetadata = async (slug, session) => {
+        setActiveTopic({ slug, session });
+        try {
+          const data = await fetch(`${API}/api/metadata/${slug}/${session}`).then(r => r.json());
+          setMetadata(data);
+        } catch { setMetadata(null); }
+      };
+
+      const copyToClipboard = (text, label) => {
+        navigator.clipboard.writeText(text);
+        setCopied(label);
+        setTimeout(() => setCopied(''), 2000);
+      };
+
+      const convertToShorts = async (slug, session) => {
+        const key = `${slug}/${session}`;
+        setShortsStatus(prev => ({...prev, [key]: 'converting'}));
+        setConvertingShorts(true);
+        try {
+          const resp = await fetch(`${API}/api/convert-shorts`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ topic: slug, session }),
+          });
+          const data = await resp.json();
+          if (data.success) {
+            setShortsStatus(prev => ({...prev, [key]: 'ready'}));
+            // Re-fetch metadata to get shorts data
+            if (activeTopic?.slug === slug && activeTopic?.session === session) {
+              fetchMetadata(slug, session);
+            }
+          } else {
+            setShortsStatus(prev => ({...prev, [key]: 'error'}));
+            alert(`Shorts conversion failed: ${data.error || 'Unknown error'}`);
+          }
+        } catch (err) {
+          setShortsStatus(prev => ({...prev, [key]: 'error'}));
+          alert('Shorts conversion request failed');
+        }
+        setConvertingShorts(false);
+      };
+
+      // Update shortsStatus when metadata is fetched
+      useEffect(() => {
+        if (metadata && activeTopic) {
+          const key = `${activeTopic.slug}/${activeTopic.session}`;
+          if (metadata.shortsGenerated || metadata.shortsClipCount > 0) {
+            setShortsStatus(prev => ({...prev, [key]: 'ready'}));
+          }
+        }
+      }, [metadata, activeTopic]);
+
+      const formatTimestamp = (seconds) => {
+        const m = Math.floor(seconds / 60);
+        const s = Math.floor(seconds % 60);
+        return `${m}:${String(s).padStart(2, '0')}`;
+      };
+
+      const getShortsClips = () => {
+        if (!metadata?.shorts) return [];
+        if (metadata.shorts.clips) return metadata.shorts.clips;
+        if (Array.isArray(metadata.shorts)) return metadata.shorts;
+        return [];
+      };
+
+      const filteredTopics = topics.filter(t =>
+        t.name.toLowerCase().includes(search.toLowerCase()) ||
+        t.slug.includes(search.toLowerCase())
+      );
+
+      const totalSelected = Array.from(selected).reduce((sum, slug) => sum + (sessions[slug]?.length || 0), 0);
+
+      return (
+        <div>
+          <div className="header">
+            <div className="logo">GURU <span>SISHYA</span> Video Studio</div>
+            <div style={{display:'flex',gap:8,alignItems:'center'}}>
+              <a href="/studio/metadata-dashboard.html" style={{fontSize:13,color:'#FDB813',textDecoration:'none',padding:'6px 14px',background:'#2D2640',borderRadius:8,fontWeight:600}}>Metadata Dashboard</a>
+              <span className="badge badge-info">{topics.length} topics</span>
+              <span className="badge badge-success">{totalSelected} selected</span>
+            </div>
+          </div>
+          <div className="studio">
+            {/* LEFT: Topic Selector */}
+            <div className="sidebar">
+              <input className="search-input" placeholder="Search topics..." value={search} onChange={e => setSearch(e.target.value)} />
+              <div style={{display:'flex',gap:8,marginBottom:12}}>
+                <button className="btn btn-secondary btn-sm" onClick={() => { const all = new Set(topics.map(t=>t.slug)); setSelected(all); const s = {}; topics.forEach(t => { s[t.slug] = Array.from({length:t.totalSessions},(_,i)=>i+1); }); setSessions(s); }}>Select All</button>
+                <button className="btn btn-secondary btn-sm" onClick={() => { setSelected(new Set()); setSessions({}); }}>Clear</button>
+              </div>
+              {filteredTopics.map(t => (
+                <div key={t.slug} className={`topic-item ${selected.has(t.slug) ? 'selected' : ''}`} onClick={() => toggleTopic(t.slug)}>
+                  <input type="checkbox" className="checkbox" checked={selected.has(t.slug)} onChange={() => toggleTopic(t.slug)} />
+                  <div className={`status-dot ${t.status}`} />
+                  <div style={{flex:1}}>
+                    <div style={{fontSize:13,fontWeight:600}}>{t.name}</div>
+                    <div style={{fontSize:11,color:'#888'}}>{t.renderedSessions.length}/{t.totalSessions} sessions</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* CENTER: Controls + Queue */}
+            <div className="main">
+              <div className="controls">
+                {Array.from(selected).map(slug => {
+                  const topic = topics.find(t => t.slug === slug);
+                  if (!topic) return null;
+                  return (
+                    <div key={slug} style={{marginBottom:16}}>
+                      <div style={{fontSize:14,fontWeight:600,marginBottom:8,color:'#E85D26'}}>{topic.name}</div>
+                      <div className="session-chips">
+                        <div className={`chip ${(sessions[slug]?.length || 0) === topic.totalSessions ? 'active' : ''}`} onClick={() => toggleAllSessions(slug, topic.totalSessions)}>All</div>
+                        {Array.from({length: topic.totalSessions}, (_, i) => i + 1).map(n => (
+                          <div key={n} className={`chip ${sessions[slug]?.includes(n) ? 'active' : ''}`} onClick={() => toggleSession(slug, n)}>
+                            S{n} {topic.renderedSessions.includes(n) ? '\u2705' : ''}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+
+                {selected.size === 0 && <div className="empty-state"><h3>Select topics from the left panel</h3><p>Choose topics and sessions to render</p></div>}
+
+                {selected.size > 0 && (
+                  <div style={{display:'flex',gap:12,alignItems:'center',marginTop:12}}>
+                    <label style={{display:'flex',gap:6,alignItems:'center',fontSize:13}}>
+                      <input type="radio" name="quality" checked={quality==='full'} onChange={() => setQuality('full')} /> Full 1080p
+                    </label>
+                    <label style={{display:'flex',gap:6,alignItems:'center',fontSize:13}}>
+                      <input type="radio" name="quality" checked={quality==='fast'} onChange={() => setQuality('fast')} /> Fast 540p
+                    </label>
+                    <button className="btn btn-primary" onClick={startRender}>
+                      Render {totalSelected} Session{totalSelected !== 1 ? 's' : ''}
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              <div className="content">
+                <h3 style={{fontSize:14,fontWeight:600,marginBottom:12,color:'#888'}}>Render Queue</h3>
+                {Object.entries(renderStatus).map(([id, status]) => (
+                  <div key={id} className={`queue-item ${status.status}`}>
+                    <div>
+                      <div style={{fontSize:13,fontWeight:600}}>{id}</div>
+                      <div style={{fontSize:11,color:'#888',textTransform:'uppercase'}}>{status.status}</div>
+                    </div>
+                    {status.status === 'rendering' && (
+                      <div style={{width:120}}>
+                        <div className="progress-bar"><div className="progress-fill" style={{width:`${status.progress}%`}} /></div>
+                      </div>
+                    )}
+                    {status.status === 'complete' && <span style={{color:'#22C55E',fontSize:18}}>Done</span>}
+                    {status.status === 'failed' && <span style={{color:'#EF4444',fontSize:12}}>{status.error?.slice(0,50)}</span>}
+                  </div>
+                ))}
+                {Object.keys(renderStatus).length === 0 && <div style={{color:'#555',fontSize:13}}>No active renders. Select topics and click Render.</div>}
+
+                {/* Rendered Videos List */}
+                <h3 style={{fontSize:14,fontWeight:600,margin:'24px 0 12px',color:'#888'}}>Rendered Videos</h3>
+                {topics.filter(t => t.renderedSessions.length > 0).map(t => (
+                  <div key={t.slug} style={{marginBottom:16}}>
+                    <div style={{fontSize:13,fontWeight:600,marginBottom:6}}>{t.name}</div>
+                    <div style={{display:'flex',flexWrap:'wrap',gap:6,alignItems:'center'}}>
+                      {t.renderedSessions.map(s => {
+                        const key = `${t.slug}/${s}`;
+                        const sStatus = shortsStatus[key];
+                        return (
+                          <div key={s} style={{display:'flex',flexDirection:'column',alignItems:'center',gap:4}}>
+                            <button className="btn btn-secondary btn-sm" onClick={() => fetchMetadata(t.slug, s)} style={{background: activeTopic?.slug===t.slug && activeTopic?.session===s ? '#E85D2633' : undefined}}>
+                              S{s}
+                            </button>
+                            {sStatus === 'ready' && (
+                              <span className="shorts-badge shorts-ready" title="Shorts generated">Shorts</span>
+                            )}
+                            {sStatus === 'converting' && (
+                              <span className="shorts-badge" style={{background:'#818CF822',color:'#818CF8'}}><span className="converting-spinner" /> ...</span>
+                            )}
+                            {!sStatus && (
+                              <span className="shorts-badge shorts-pending" onClick={(e) => { e.stopPropagation(); convertToShorts(t.slug, s); }} title="Generate Shorts & Reels">
+                                Generate
+                              </span>
+                            )}
+                            {sStatus === 'error' && (
+                              <span className="shorts-badge" style={{background:'#EF444422',color:'#EF4444',cursor:'pointer'}} onClick={(e) => { e.stopPropagation(); convertToShorts(t.slug, s); }} title="Retry">
+                                Retry
+                              </span>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* RIGHT: Metadata + Strategy */}
+            <div className="right-panel">
+              <div className="tabs">
+                {['longform','shorts','reels','strategy'].map(tab => (
+                  <div key={tab} className={`tab ${activeTab===tab?'active':''}`} onClick={() => setActiveTab(tab)}>
+                    {tab === 'longform' ? 'Long' : tab === 'shorts' ? 'Shorts' : tab === 'reels' ? 'Reels' : 'Strategy'}
+                  </div>
+                ))}
+              </div>
+
+              <div style={{padding:16}}>
+                {/* ========== LONGFORM TAB ========== */}
+                {activeTab === 'longform' && metadata?.metadata?.youtube && (
+                  <>
+                    <MetadataCard label="YouTube Title" value={metadata.metadata.youtube.title} onCopy={copyToClipboard} copied={copied} />
+                    <MetadataCard label="YouTube Description" value={metadata.metadata.youtube.description} onCopy={copyToClipboard} copied={copied} />
+                    <MetadataCard label="YouTube Tags" value={metadata.metadata.youtube.tags?.join(', ')} onCopy={copyToClipboard} copied={copied} />
+                    {metadata.metadata.youtube.pinnedComment && <MetadataCard label="Pinned Comment" value={metadata.metadata.youtube.pinnedComment} onCopy={copyToClipboard} copied={copied} />}
+                    {metadata.metadata.youtube.communityPost && <MetadataCard label="Community Post" value={metadata.metadata.youtube.communityPost} onCopy={copyToClipboard} copied={copied} />}
+                    {metadata.video && (
+                      <div className="metadata-card">
+                        <div className="metadata-label">Video File</div>
+                        <div className="metadata-value">{metadata.video.filename} ({metadata.video.size})</div>
+                        <div className="metadata-value" style={{color:'#888',fontSize:11,marginTop:4}}>{metadata.duration} - {metadata.scenes} scenes</div>
+                      </div>
+                    )}
+                    {/* Convert to Shorts button */}
+                    {activeTopic && (() => {
+                      const key = `${activeTopic.slug}/${activeTopic.session}`;
+                      const sStatus = shortsStatus[key];
+                      if (sStatus === 'ready') {
+                        return <div style={{marginTop:12}}><span className="badge badge-success" style={{fontSize:13,padding:'6px 14px'}}>Shorts & Reels Ready ({metadata.shortsClipCount || getShortsClips().length} clips)</span></div>;
+                      }
+                      if (sStatus === 'converting') {
+                        return <div style={{marginTop:12,display:'flex',alignItems:'center',gap:8}}><span className="converting-spinner" /><span style={{fontSize:13,color:'#818CF8'}}>Converting to Shorts & Reels...</span></div>;
+                      }
+                      return (
+                        <button className="btn btn-shorts" style={{marginTop:12,width:'100%'}} onClick={() => convertToShorts(activeTopic.slug, activeTopic.session)} disabled={convertingShorts}>
+                          Generate Shorts & Reels
+                        </button>
+                      );
+                    })()}
+                  </>
+                )}
+
+                {activeTab === 'longform' && !metadata?.metadata?.youtube && (
+                  <div className="empty-state"><h3>Select a rendered video</h3><p>Click a session button to see its metadata</p></div>
+                )}
+
+                {/* ========== SHORTS TAB ========== */}
+                {activeTab === 'shorts' && (() => {
+                  const clips = getShortsClips();
+                  if (!activeTopic) return <div className="empty-state"><h3>Select a rendered video</h3><p>Click a session button first</p></div>;
+                  if (clips.length === 0) {
+                    const key = `${activeTopic.slug}/${activeTopic.session}`;
+                    const sStatus = shortsStatus[key];
+                    if (sStatus === 'converting') {
+                      return <div className="empty-state"><span className="converting-spinner" style={{width:24,height:24,marginBottom:12,display:'inline-block'}} /><h3>Converting...</h3><p>Generating shorts from the long video</p></div>;
+                    }
+                    return (
+                      <div className="empty-state">
+                        <h3>No Shorts Generated Yet</h3>
+                        <p style={{marginBottom:12}}>Generate shorts from the rendered video first</p>
+                        <button className="btn btn-shorts" onClick={() => convertToShorts(activeTopic.slug, activeTopic.session)} disabled={convertingShorts}>
+                          Generate Shorts & Reels
+                        </button>
+                      </div>
+                    );
+                  }
+                  return clips.map((clip, i) => (
+                    <div key={i} className="clip-card">
+                      <div className="clip-header">
+                        <span className="clip-number">Short #{i+1}</span>
+                        <span className="clip-duration">{clip.duration || clip.durationSeconds || '?'}s</span>
+                      </div>
+                      {clip.sourceTimestamp && (
+                        <div className="clip-source">
+                          From {formatTimestamp(clip.sourceTimestamp.start)} to {formatTimestamp(clip.sourceTimestamp.end)} in original
+                        </div>
+                      )}
+                      <MetadataCard label="YouTube Shorts Title" value={clip.youtube?.title || clip.title || `${metadata?.metadata?.youtube?.title || activeTopic.slug} - Part ${i+1} #shorts`} onCopy={copyToClipboard} copied={copied} />
+                      <MetadataCard label="YouTube Shorts Description" value={clip.youtube?.description || clip.description || `Part ${i+1} of ${metadata?.metadata?.youtube?.title || activeTopic.slug}\n\nFull video: https://youtube.com/@gurusishya\nLearn more: https://guru-sishya.in/${activeTopic.slug}\n\n#shorts #coding #interview #dsa #gurusishya`} onCopy={copyToClipboard} copied={copied} />
+                      <MetadataCard label="YouTube Shorts Tags" value={clip.youtube?.tags?.join(', ') || clip.tags?.join(', ') || `${activeTopic.slug}, shorts, coding, interview prep, dsa, guru sishya`} onCopy={copyToClipboard} copied={copied} />
+
+                      <div className="checklist-section">
+                        <div className="checklist-section-title">Upload Checklist</div>
+                        {[
+                          'Upload to YouTube Studio as Short',
+                          'Set title from above',
+                          'Set description from above',
+                          'Add end screen pointing to full video',
+                          'Schedule: best time 12:00 PM IST',
+                        ].map((step, j) => (
+                          <div key={j} className="checklist-item">
+                            <input type="checkbox" className="checkbox" style={{width:14,height:14}} />
+                            <span>{step}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ));
+                })()}
+
+                {/* ========== REELS TAB ========== */}
+                {activeTab === 'reels' && (() => {
+                  const clips = getShortsClips();
+                  if (!activeTopic) return <div className="empty-state"><h3>Select a rendered video</h3><p>Click a session button first</p></div>;
+                  if (clips.length === 0) {
+                    const key = `${activeTopic.slug}/${activeTopic.session}`;
+                    const sStatus = shortsStatus[key];
+                    if (sStatus === 'converting') {
+                      return <div className="empty-state"><span className="converting-spinner" style={{width:24,height:24,marginBottom:12,display:'inline-block'}} /><h3>Converting...</h3><p>Generating reels from the long video</p></div>;
+                    }
+                    return (
+                      <div className="empty-state">
+                        <h3>No Reels Generated Yet</h3>
+                        <p style={{marginBottom:12}}>Generate reels from the rendered video first</p>
+                        <button className="btn btn-shorts" onClick={() => convertToShorts(activeTopic.slug, activeTopic.session)} disabled={convertingShorts}>
+                          Generate Shorts & Reels
+                        </button>
+                      </div>
+                    );
+                  }
+
+                  const hashtagGroups = {
+                    'Tech': ['#coding', '#programming', '#developer', '#tech', '#software', '#computerscience'],
+                    'Interview': ['#interviewprep', '#faang', '#codinginterview', '#techinterview', '#placement'],
+                    'Learning': ['#learntocode', '#dsa', '#algorithms', '#datastructures', '#100daysofcode'],
+                    'India': ['#indiandeveloper', '#placement2026', '#iit', '#nit', '#campusplacement'],
+                    'Brand': ['#gurusishya', '#gurusishyain', '#interviewguru'],
+                  };
+
+                  return clips.map((clip, i) => (
+                    <div key={i} className="clip-card">
+                      <div className="clip-header">
+                        <span className="clip-number">Reel #{i+1}</span>
+                        <span className="clip-duration">{clip.duration || clip.durationSeconds || '?'}s</span>
+                      </div>
+                      {clip.sourceTimestamp && (
+                        <div className="clip-source">
+                          From {formatTimestamp(clip.sourceTimestamp.start)} to {formatTimestamp(clip.sourceTimestamp.end)} in original
+                        </div>
+                      )}
+
+                      <MetadataCard label="Instagram Caption" value={clip.instagram?.caption || `${clip.title || metadata?.metadata?.youtube?.title || activeTopic.slug} explained in ${clip.duration || 60}s!\n\nFull video on YouTube (link in bio)\nLearn more at guru-sishya.in/${activeTopic.slug}\n\n${Object.values(hashtagGroups).flat().join(' ')}`} onCopy={copyToClipboard} copied={copied} />
+
+                      <MetadataCard label="Cover Text Suggestion" value={clip.instagram?.coverText || clip.coverText || `${clip.title || activeTopic.slug.replace(/-/g, ' ').toUpperCase()}\nExplained in ${clip.duration || 60}s`} onCopy={copyToClipboard} copied={copied} />
+
+                      <div className="metadata-card">
+                        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+                          <div className="metadata-label">Hashtag Groups</div>
+                          <button className="copy-btn" onClick={() => copyToClipboard(Object.values(hashtagGroups).flat().join(' '), `reelHashtags${i}`)}>
+                            {copied === `reelHashtags${i}` ? 'Copied!' : 'Copy All'}
+                          </button>
+                        </div>
+                        {Object.entries(hashtagGroups).map(([group, tags]) => (
+                          <div key={group} style={{marginBottom:6}}>
+                            <div style={{fontSize:11,color:'#888',marginBottom:2}}>{group}</div>
+                            <div className="hashtag-group">
+                              {tags.map(tag => <span key={tag} className="hashtag-tag">{tag}</span>)}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="metadata-card">
+                        <div className="metadata-label">Best Posting Times</div>
+                        <div style={{display:'flex',flexWrap:'wrap',gap:4,marginTop:4}}>
+                          <span className="best-time">9:00 AM IST</span>
+                          <span className="best-time">12:00 PM IST</span>
+                          <span className="best-time">6:00 PM IST</span>
+                        </div>
+                      </div>
+
+                      <div className="checklist-section">
+                        <div className="checklist-section-title">Upload Checklist</div>
+                        {[
+                          'Upload reel via Instagram app or Creator Studio',
+                          'Copy caption from above',
+                          'Set cover image using cover text',
+                          'Add to "Interview Prep" highlight',
+                          `Update link in bio to guru-sishya.in/${activeTopic?.slug || ''}`,
+                          'Reply to first 5 comments within 1 hour',
+                        ].map((step, j) => (
+                          <div key={j} className="checklist-item">
+                            <input type="checkbox" className="checkbox" style={{width:14,height:14}} />
+                            <span>{step}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ));
+                })()}
+
+                {/* ========== STRATEGY TAB ========== */}
+                {activeTab === 'strategy' && (() => {
+                  if (!activeTopic || !metadata?.metadata?.youtube) {
+                    return <div className="empty-state"><h3>Select a rendered video</h3><p>View posting strategy for a specific video</p></div>;
+                  }
+                  const clips = getShortsClips();
+                  const topicName = metadata.metadata.youtube.title || activeTopic.slug;
+
+                  return (
+                    <>
+                      <div style={{fontSize:13,color:'#888',marginBottom:16}}>Complete posting checklist for <strong style={{color:'#E85D26'}}>{topicName}</strong></div>
+
+                      {/* YouTube Long-form */}
+                      <div className="posting-section">
+                        <div className="posting-section-header"><span style={{fontSize:18}}>YT</span> YouTube Long-form</div>
+                        {[
+                          'Upload video to YouTube Studio',
+                          'Set title (copy from Long-form tab)',
+                          'Set description (copy from Long-form tab)',
+                          'Add tags (copy from Long-form tab)',
+                          'Set custom thumbnail',
+                          'Add end screen (last 20 seconds)',
+                          'Add info cards at key moments',
+                          'Pin comment (copy from Long-form tab)',
+                          'Post community post (copy from Long-form tab)',
+                        ].map((step, j) => (
+                          <div key={j} className="checklist-item">
+                            <input type="checkbox" className="checkbox" style={{width:14,height:14}} />
+                            <span>{step}</span>
+                          </div>
+                        ))}
+                        <div style={{marginTop:8}}><span className="best-time">Best: Mon/Wed/Fri 9:00 AM IST</span></div>
+                      </div>
+
+                      {/* YouTube Shorts */}
+                      <div className="posting-section">
+                        <div className="posting-section-header"><span style={{fontSize:18}}>YT-S</span> YouTube Shorts</div>
+                        {clips.length > 0 ? clips.map((clip, i) => (
+                          <div key={i} style={{marginBottom:10,paddingBottom:10,borderBottom: i < clips.length - 1 ? '1px solid #2D264044' : 'none'}}>
+                            <div style={{fontSize:12,fontWeight:600,color:'#818CF8',marginBottom:4}}>Short #{i+1} ({clip.duration || '?'}s)</div>
+                            {[
+                              `Upload Short #${i+1} to YouTube Studio`,
+                              'Set title and description (copy from Shorts tab)',
+                              'Add #shorts tag',
+                            ].map((step, j) => (
+                              <div key={j} className="checklist-item">
+                                <input type="checkbox" className="checkbox" style={{width:14,height:14}} />
+                                <span>{step}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )) : (
+                          <div style={{fontSize:12,color:'#666',padding:'8px 0'}}>No shorts generated yet. Use the "Generate Shorts & Reels" button first.</div>
+                        )}
+                        <div style={{marginTop:8}}><span className="best-time">Best: Daily 12:00 PM IST</span></div>
+                      </div>
+
+                      {/* Instagram Reels */}
+                      <div className="posting-section">
+                        <div className="posting-section-header"><span style={{fontSize:18}}>IG</span> Instagram Reels</div>
+                        {clips.length > 0 ? clips.map((clip, i) => (
+                          <div key={i} style={{marginBottom:10,paddingBottom:10,borderBottom: i < clips.length - 1 ? '1px solid #2D264044' : 'none'}}>
+                            <div style={{fontSize:12,fontWeight:600,color:'#818CF8',marginBottom:4}}>Reel #{i+1} ({clip.duration || '?'}s)</div>
+                            {[
+                              `Upload Reel #${i+1} via Instagram`,
+                              'Copy caption with hashtags (from Reels tab)',
+                              'Set cover image',
+                              'Add to "Interview Prep" highlight',
+                              'Reply to first 5 comments within 1 hour',
+                            ].map((step, j) => (
+                              <div key={j} className="checklist-item">
+                                <input type="checkbox" className="checkbox" style={{width:14,height:14}} />
+                                <span>{step}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )) : (
+                          <div style={{fontSize:12,color:'#666',padding:'8px 0'}}>No reels generated yet. Use the "Generate Shorts & Reels" button first.</div>
+                        )}
+                        <div style={{marginTop:8}}><span className="best-time">Best: Daily 6:00 PM IST</span></div>
+                      </div>
+
+                      {/* Cross-Promotion */}
+                      <div className="posting-section">
+                        <div className="posting-section-header"><span style={{fontSize:18}}>+</span> Cross-Promotion</div>
+                        {[
+                          'Share YouTube link on LinkedIn with 3-line summary',
+                          'Share on Twitter/X with key insight from video',
+                          'Post in r/learnprogramming (Reddit)',
+                          'Post in r/cscareerquestions (Reddit)',
+                          'Share in WhatsApp study groups',
+                          `Share guru-sishya.in/${activeTopic.slug} link in all posts`,
+                        ].map((step, j) => (
+                          <div key={j} className="checklist-item">
+                            <input type="checkbox" className="checkbox" style={{width:14,height:14}} />
+                            <span>{step}</span>
+                          </div>
+                        ))}
+
+                        {/* Quick copy templates */}
+                        <div style={{marginTop:12}}>
+                          <MetadataCard label="LinkedIn Post Template" value={`Just published: ${topicName}\n\nKey takeaway: Understanding this concept is crucial for FAANG interviews.\n\nWatch the full breakdown: [YouTube link]\nPractice: guru-sishya.in/${activeTopic.slug}\n\n#interviewprep #coding #faang #dsa`} onCopy={copyToClipboard} copied={copied} />
+                          <MetadataCard label="Twitter/X Post Template" value={`New video: ${topicName}\n\nThis concept comes up in 40%+ of FAANG interviews.\n\nFull video: [YouTube link]\nPractice: guru-sishya.in/${activeTopic.slug}\n\n#coding #interview #dsa`} onCopy={copyToClipboard} copied={copied} />
+                          <MetadataCard label="Reddit Post Template" value={`[Resource] ${topicName} - Visual Explanation\n\nI made a visual breakdown of ${activeTopic.slug.replace(/-/g, ' ')} with code in Java + Python.\n\nVideo: [YouTube link]\nFree practice: guru-sishya.in/${activeTopic.slug}\n\nHope this helps someone preparing for interviews!`} onCopy={copyToClipboard} copied={copied} />
+                        </div>
+                      </div>
+                    </>
+                  );
+                })()}
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function MetadataCard({ label, value, onCopy, copied }) {
+      if (!value) return null;
+      return (
+        <div className="metadata-card">
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+            <div className="metadata-label">{label}</div>
+            <button className="copy-btn" onClick={() => onCopy(value, label)}>
+              {copied === label ? 'Copied!' : 'Copy'}
+            </button>
+          </div>
+          <div className="metadata-value">{value}</div>
+        </div>
+      );
+    }
+
+    ReactDOM.render(<App />, document.getElementById('root'));
+  </script>
+</body>
+</html>

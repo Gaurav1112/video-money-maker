@@ -10,10 +10,10 @@ interface SystemArchVizProps {
 }
 
 const LAYERS = [
-  { label: 'Client', color: '#818CF8', icon: '🖥️' },
-  { label: 'API Gateway', color: '#E85D26', icon: '🔀' },
-  { label: 'Service', color: '#FFD700', icon: '⚙️' },
-  { label: 'Database', color: '#20C997', icon: '🗄️' },
+  { label: 'Client', color: '#818CF8', icon: '\uD83D\uDDA5\uFE0F', latency: '~2ms', reqRate: '10K' },
+  { label: 'API Gateway', color: '#E85D26', icon: '\uD83D\uDD00', latency: '~5ms', reqRate: '8.2K' },
+  { label: 'Service', color: '#FFD700', icon: '\u2699\uFE0F', latency: '~50ms', reqRate: '6.1K' },
+  { label: 'Database', color: '#20C997', icon: '\uD83D\uDDC4\uFE0F', latency: '~200ms', reqRate: '1.2K' },
 ];
 
 const THEME = {
@@ -25,6 +25,7 @@ const THEME = {
   darkAlt: '#16132A',
   border: 'rgba(255,255,255,0.08)',
   gray: '#A9ACB3',
+  red: '#EF4444',
 };
 
 // Helper
@@ -35,12 +36,12 @@ export const SystemArchViz: React.FC<SystemArchVizProps> = ({ sync, frame, keywo
   const { fps } = useVideoConfig();
   const progress = sync.sceneProgress;
 
-  // ─── VARIANT ROUTING ──────────────────────────────────────────────────────
+  // --- VARIANT ROUTING ---
   if (variant === 'failure') return <ArchFailureVariant sync={sync} frame={frame} keywords={keywords} />;
   if (variant === 'scale-up') return <ArchScaleUpVariant sync={sync} frame={frame} keywords={keywords} />;
   if (variant === 'caching') return <ArchCachingVariant sync={sync} frame={frame} keywords={keywords} />;
 
-  // ─── DEFAULT variant: 'request-flow' — original behavior ──────────────────
+  // --- DEFAULT variant: 'request-flow' ---
 
   // Each layer springs in progressively
   const layerSprings = LAYERS.map((_, i) => {
@@ -71,6 +72,9 @@ export const SystemArchViz: React.FC<SystemArchVizProps> = ({ sync, frame, keywo
   const gapY = 36;
   const totalBlockSpan = LAYERS.length * blockH + (LAYERS.length - 1) * gapY;
   const startY = (containerH - totalBlockSpan) / 2;
+
+  // Determine which layer the narrator is currently discussing (based on progress)
+  const activeLayerIndex = Math.min(LAYERS.length - 1, Math.floor(progress * LAYERS.length));
 
   return (
     <div
@@ -105,13 +109,13 @@ export const SystemArchViz: React.FC<SystemArchVizProps> = ({ sync, frame, keywo
         SYSTEM ARCHITECTURE
       </div>
 
-      {/* SVG layer — arrows and dots */}
+      {/* SVG layer — arrows, dots, latency labels */}
       <svg
         style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none' }}
         viewBox={`0 0 600 ${containerH + 80}`}
         preserveAspectRatio="xMidYMid meet"
       >
-        {LAYERS.slice(0, -1).map((_, i) => {
+        {LAYERS.slice(0, -1).map((layer, i) => {
           const blockCenterX = 300;
           const topBlockBottom = startY + 60 + i * (blockH + gapY) + blockH;
           const bottomBlockTop = topBlockBottom + gapY;
@@ -125,6 +129,13 @@ export const SystemArchViz: React.FC<SystemArchVizProps> = ({ sync, frame, keywo
           // Request dot position along the arrow
           const dotY = interpolate(dotCycle, [0, 1], [topBlockBottom + 4, bottomBlockTop - 8]);
           const dotVisible = ap > 0.9 && progress > (i + 1) * 0.2 + 0.1;
+
+          // Latency for this connection (between layer i and i+1)
+          const nextLayer = LAYERS[i + 1];
+          const latencyLabel = nextLayer.latency;
+
+          // Bottleneck indicator: show warning if latency >= 200ms
+          const isBottleneck = nextLayer.latency.includes('200');
 
           return (
             <g key={`arrow-${i}`}>
@@ -148,10 +159,10 @@ export const SystemArchViz: React.FC<SystemArchVizProps> = ({ sync, frame, keywo
                       opacity={0.9}
                     />
                   )}
-                  {/* Label */}
+                  {/* Protocol label — left side */}
                   {ap > 0.8 && (
                     <text
-                      x={blockCenterX + 14}
+                      x={blockCenterX + 16}
                       y={arrowMid + 4}
                       fill={THEME.indigo}
                       fontSize={11}
@@ -160,6 +171,46 @@ export const SystemArchViz: React.FC<SystemArchVizProps> = ({ sync, frame, keywo
                     >
                       {i === 0 ? 'HTTP/REST' : i === 1 ? 'RPC/gRPC' : 'SQL/NoSQL'}
                     </text>
+                  )}
+                  {/* Latency label — right side */}
+                  {ap > 0.8 && (
+                    <g opacity={interpolate(ap, [0.8, 1], [0, 1])}>
+                      <rect
+                        x={blockCenterX - 100}
+                        y={arrowMid - 10}
+                        width={52}
+                        height={18}
+                        rx={4}
+                        fill={isBottleneck ? `${THEME.red}22` : `${THEME.gray}15`}
+                        stroke={isBottleneck ? THEME.red : `${THEME.gray}44`}
+                        strokeWidth={1}
+                      />
+                      <text
+                        x={blockCenterX - 74}
+                        y={arrowMid + 3}
+                        fill={isBottleneck ? THEME.red : THEME.gray}
+                        fontSize={10}
+                        fontWeight={600}
+                        fontFamily="'JetBrains Mono', 'SF Mono', monospace"
+                        textAnchor="middle"
+                      >
+                        {latencyLabel}
+                      </text>
+                      {/* Bottleneck warning icon */}
+                      {isBottleneck && (
+                        <text
+                          x={blockCenterX - 104}
+                          y={arrowMid + 4}
+                          fill={THEME.red}
+                          fontSize={12}
+                          fontFamily="Inter, system-ui, sans-serif"
+                          textAnchor="end"
+                          opacity={0.6 + 0.4 * Math.sin(frame * 0.15)}
+                        >
+                          {'\u26A0'}
+                        </text>
+                      )}
+                    </g>
                   )}
                 </>
               )}
@@ -171,6 +222,7 @@ export const SystemArchViz: React.FC<SystemArchVizProps> = ({ sync, frame, keywo
                   r={5}
                   fill={THEME.saffron}
                   opacity={0.9}
+                  style={{ filter: `drop-shadow(0 0 3px ${THEME.saffron})` }}
                 />
               )}
             </g>
@@ -193,8 +245,7 @@ export const SystemArchViz: React.FC<SystemArchVizProps> = ({ sync, frame, keywo
       >
         {LAYERS.map((layer, i) => {
           const s = layerSprings[i];
-          const isActive =
-            progress > i * 0.2 + 0.05 && progress < (i + 1) * 0.2 + 0.3;
+          const isActive = i === activeLayerIndex && progress > 0.05;
 
           return (
             <div
@@ -204,16 +255,16 @@ export const SystemArchViz: React.FC<SystemArchVizProps> = ({ sync, frame, keywo
                 height: blockH,
                 borderRadius: 12,
                 background: `linear-gradient(135deg, ${layer.color}22, ${layer.color}11)`,
-                border: `1.5px solid ${isActive ? layer.color : THEME.border}`,
+                border: `${isActive ? 2.5 : 1.5}px solid ${isActive ? layer.color : THEME.border}`,
                 display: 'flex',
                 alignItems: 'center',
                 gap: 16,
                 padding: '0 20px',
                 opacity: interpolate(s, [0, 1], [0, 1]),
                 transform: `translateX(${interpolate(s, [0, 1], [60, 0])}px) scale(${interpolate(s, [0, 1], [0.85, 1])})`,
-                boxShadow: isActive ? `0 0 20px ${layer.color}44` : 'none',
-                transition: 'box-shadow 0.3s',
+                boxShadow: isActive ? `0 0 24px ${layer.color}55, inset 0 0 12px ${layer.color}11` : 'none',
                 flexShrink: 0,
+                position: 'relative',
               }}
             >
               <span style={{ fontSize: 28 }}>{layer.icon}</span>
@@ -238,20 +289,48 @@ export const SystemArchViz: React.FC<SystemArchVizProps> = ({ sync, frame, keywo
                     : 'Persistent Storage'}
                 </div>
               </div>
-              {/* Right-side ping indicator */}
-              {isActive && (
-                <div
-                  style={{
-                    marginLeft: 'auto',
-                    width: 8,
-                    height: 8,
-                    borderRadius: '50%',
-                    background: layer.color,
-                    boxShadow: `0 0 8px ${layer.color}`,
-                    opacity: 0.5 + 0.5 * Math.sin(frame * 0.18),
-                  }}
-                />
-              )}
+
+              {/* Request rate badge — right side */}
+              <div style={{
+                marginLeft: 'auto',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+              }}>
+                <div style={{
+                  background: `${layer.color}15`,
+                  border: `1px solid ${layer.color}44`,
+                  borderRadius: 6,
+                  padding: '2px 8px',
+                  opacity: interpolate(s, [0, 1], [0, 0.9]),
+                }}>
+                  <span style={{
+                    fontSize: 11,
+                    fontWeight: 700,
+                    color: layer.color,
+                    fontFamily: "'JetBrains Mono', 'SF Mono', monospace",
+                  }}>
+                    {layer.reqRate}
+                  </span>
+                  <span style={{ fontSize: 8, color: 'rgba(255,255,255,0.4)', marginLeft: 2 }}>
+                    req/s
+                  </span>
+                </div>
+
+                {/* Active pulse indicator */}
+                {isActive && (
+                  <div
+                    style={{
+                      width: 10,
+                      height: 10,
+                      borderRadius: '50%',
+                      background: layer.color,
+                      boxShadow: `0 0 10px ${layer.color}`,
+                      opacity: 0.5 + 0.5 * Math.sin(frame * 0.18),
+                    }}
+                  />
+                )}
+              </div>
             </div>
           );
         })}
@@ -274,24 +353,19 @@ export const SystemArchViz: React.FC<SystemArchVizProps> = ({ sync, frame, keywo
 };
 
 // =====================================================================
-// FAILURE VARIANT — A service goes down, cascade/circuit breaker shown
+// FAILURE VARIANT
 // =====================================================================
 const FAILURE_LAYERS = [
-  { label: 'Client', color: '#818CF8', icon: '\uD83D\uDDA5\uFE0F', subtitle: 'Browser / Mobile App' },
-  { label: 'API Gateway', color: '#E85D26', icon: '\uD83D\uDD00', subtitle: 'Load Balancer + Rate Limit' },
-  { label: 'Service A', color: '#FFD700', icon: '\u2699\uFE0F', subtitle: 'Order Service' },
-  { label: 'Service B', color: '#20C997', icon: '\u2699\uFE0F', subtitle: 'Payment Service' },
-  { label: 'Database', color: '#818CF8', icon: '\uD83D\uDDC4\uFE0F', subtitle: 'Persistent Storage' },
+  { label: 'Client', color: '#818CF8', icon: '\uD83D\uDDA5\uFE0F', subtitle: 'Browser / Mobile App', reqRate: '10K' },
+  { label: 'API Gateway', color: '#E85D26', icon: '\uD83D\uDD00', subtitle: 'Load Balancer + Rate Limit', reqRate: '8.2K' },
+  { label: 'Service A', color: '#FFD700', icon: '\u2699\uFE0F', subtitle: 'Order Service', reqRate: '6.1K' },
+  { label: 'Service B', color: '#20C997', icon: '\u2699\uFE0F', subtitle: 'Payment Service', reqRate: '0' },
+  { label: 'Database', color: '#818CF8', icon: '\uD83D\uDDC4\uFE0F', subtitle: 'Persistent Storage', reqRate: '1.2K' },
 ];
 
 const ArchFailureVariant: React.FC<Omit<SystemArchVizProps, 'variant'>> = ({ sync, frame }) => {
   const { fps } = useVideoConfig();
   const progress = sync.sceneProgress;
-
-  // Phase 1 (0-0.35): Normal request flow
-  // Phase 2 (0.35-0.55): Service B fails (turns red)
-  // Phase 3 (0.55-0.75): Cascade — Service A affected
-  // Phase 4 (0.75-1.0): Circuit breaker activates, fallback response
 
   const normalP = pRange(progress, 0, 0.35);
   const failP = pRange(progress, 0.35, 0.55);
@@ -306,7 +380,6 @@ const ArchFailureVariant: React.FC<Omit<SystemArchVizProps, 'variant'>> = ({ syn
 
   const blockH = 62;
   const blockW = 300;
-  const gapY = 28;
 
   const getStatus = (i: number): 'normal' | 'failing' | 'down' | 'protected' => {
     if (i === 3 && failP > 0.5) return 'down';
@@ -321,7 +394,7 @@ const ArchFailureVariant: React.FC<Omit<SystemArchVizProps, 'variant'>> = ({ syn
         FAILURE CASCADE + CIRCUIT BREAKER
       </div>
 
-      <div style={{ position: 'relative', width: blockW, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: gapY, marginTop: 30 }}>
+      <div style={{ position: 'relative', width: blockW, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 28, marginTop: 30 }}>
         {FAILURE_LAYERS.map((layer, i) => {
           const s = layerSprings[i];
           const status = getStatus(i);
@@ -347,16 +420,35 @@ const ArchFailureVariant: React.FC<Omit<SystemArchVizProps, 'variant'>> = ({ syn
                 <div style={{ fontSize: 16, fontWeight: 700, color: borderColor, letterSpacing: 0.5 }}>{layer.label}</div>
                 <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)', marginTop: 2 }}>{layer.subtitle}</div>
               </div>
-              {status !== 'normal' && (
+              <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8 }}>
+                {/* Request rate */}
                 <div style={{
-                  marginLeft: 'auto', fontSize: 10, fontWeight: 700,
-                  color: status === 'down' ? '#EF4444' : status === 'protected' ? THEME.teal : THEME.saffron,
-                  background: status === 'down' ? 'rgba(239,68,68,0.2)' : status === 'protected' ? `${THEME.teal}22` : `${THEME.saffron}22`,
-                  padding: '2px 8px', borderRadius: 4,
+                  background: `${borderColor}15`,
+                  border: `1px solid ${borderColor}44`,
+                  borderRadius: 6,
+                  padding: '2px 8px',
                 }}>
-                  {status === 'down' ? 'DOWN' : status === 'protected' ? 'CIRCUIT OPEN' : 'DEGRADED'}
+                  <span style={{
+                    fontSize: 10,
+                    fontWeight: 700,
+                    color: status === 'down' ? THEME.red : borderColor,
+                    fontFamily: "'JetBrains Mono', monospace",
+                  }}>
+                    {status === 'down' ? '0' : layer.reqRate}
+                  </span>
+                  <span style={{ fontSize: 8, color: 'rgba(255,255,255,0.4)', marginLeft: 2 }}>req/s</span>
                 </div>
-              )}
+                {status !== 'normal' && (
+                  <div style={{
+                    fontSize: 10, fontWeight: 700,
+                    color: status === 'down' ? '#EF4444' : status === 'protected' ? THEME.teal : THEME.saffron,
+                    background: status === 'down' ? 'rgba(239,68,68,0.2)' : status === 'protected' ? `${THEME.teal}22` : `${THEME.saffron}22`,
+                    padding: '2px 8px', borderRadius: 4,
+                  }}>
+                    {status === 'down' ? '\u26A0 DOWN' : status === 'protected' ? 'CIRCUIT OPEN' : 'DEGRADED'}
+                  </div>
+                )}
+              </div>
             </div>
           );
         })}
@@ -379,24 +471,18 @@ const ArchFailureVariant: React.FC<Omit<SystemArchVizProps, 'variant'>> = ({ syn
 };
 
 // =====================================================================
-// SCALE-UP VARIANT — Services replicate horizontally
+// SCALE-UP VARIANT
 // =====================================================================
 const ArchScaleUpVariant: React.FC<Omit<SystemArchVizProps, 'variant'>> = ({ sync, frame }) => {
   const { fps } = useVideoConfig();
   const progress = sync.sceneProgress;
 
   const revealP = pRange(progress, 0, 0.2);
-  const scaleP = pRange(progress, 0.3, 0.7);   // services multiply
-  const metricsP = pRange(progress, 0.7, 1.0);  // show throughput
+  const scaleP = pRange(progress, 0.3, 0.7);
+  const metricsP = pRange(progress, 0.7, 1.0);
 
   const serviceCount = Math.min(4, 1 + Math.floor(scaleP * 3));
   const serviceColors = [THEME.gold, THEME.teal, THEME.saffron, THEME.indigo];
-
-  const layers = [
-    { label: 'API Gateway', color: THEME.saffron, y: 80 },
-    { label: `Service x${serviceCount}`, color: THEME.gold, y: 200 },
-    { label: 'Database', color: THEME.teal, y: 340 },
-  ];
 
   return (
     <div style={{ width: '100%', height: '100%', background: THEME.dark, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', fontFamily: 'Inter, system-ui, sans-serif', position: 'relative', overflow: 'hidden' }}>
@@ -414,6 +500,16 @@ const ArchScaleUpVariant: React.FC<Omit<SystemArchVizProps, 'variant'>> = ({ syn
       }}>
         <span style={{ fontSize: 28 }}>{'\uD83D\uDD00'}</span>
         <span style={{ fontSize: 15, fontWeight: 700, color: THEME.saffron }}>API Gateway</span>
+        <div style={{
+          marginLeft: 'auto', marginRight: 12,
+          background: `${THEME.saffron}15`, border: `1px solid ${THEME.saffron}44`,
+          borderRadius: 6, padding: '2px 8px',
+        }}>
+          <span style={{ fontSize: 10, fontWeight: 700, color: THEME.saffron, fontFamily: "'JetBrains Mono', monospace" }}>
+            {serviceCount * 1000}
+          </span>
+          <span style={{ fontSize: 8, color: 'rgba(255,255,255,0.4)', marginLeft: 2 }}>req/s</span>
+        </div>
       </div>
 
       {/* Service replicas */}
@@ -447,6 +543,16 @@ const ArchScaleUpVariant: React.FC<Omit<SystemArchVizProps, 'variant'>> = ({ syn
       }}>
         <span style={{ fontSize: 28 }}>{'\uD83D\uDDC4\uFE0F'}</span>
         <span style={{ fontSize: 15, fontWeight: 700, color: THEME.teal }}>Database</span>
+        <div style={{
+          marginLeft: 'auto', marginRight: 12,
+          background: `${THEME.teal}15`, border: `1px solid ${THEME.teal}44`,
+          borderRadius: 6, padding: '2px 8px',
+        }}>
+          <span style={{ fontSize: 10, fontWeight: 700, color: THEME.teal, fontFamily: "'JetBrains Mono', monospace" }}>
+            1.2K
+          </span>
+          <span style={{ fontSize: 8, color: 'rgba(255,255,255,0.4)', marginLeft: 2 }}>req/s</span>
+        </div>
       </div>
 
       {/* Throughput metric */}
@@ -470,16 +576,11 @@ const ArchScaleUpVariant: React.FC<Omit<SystemArchVizProps, 'variant'>> = ({ syn
 };
 
 // =====================================================================
-// CACHING VARIANT — Cache layer between service and database
+// CACHING VARIANT
 // =====================================================================
 const ArchCachingVariant: React.FC<Omit<SystemArchVizProps, 'variant'>> = ({ sync, frame }) => {
   const { fps } = useVideoConfig();
   const progress = sync.sceneProgress;
-
-  // Phase 1 (0-0.25): Show normal flow (Client -> Service -> DB)
-  // Phase 2 (0.25-0.45): Latency is high (show slow response)
-  // Phase 3 (0.45-0.65): Add cache layer
-  // Phase 4 (0.65-1.0): Cache HIT — fast response, DB not touched
 
   const normalP = pRange(progress, 0, 0.25);
   const slowP = pRange(progress, 0.25, 0.45);
@@ -489,15 +590,8 @@ const ArchCachingVariant: React.FC<Omit<SystemArchVizProps, 'variant'>> = ({ syn
   const showCache = cacheAddP > 0;
   const isCacheHit = cacheHitP > 0.3;
 
-  const layers = [
-    { label: 'Service', color: THEME.gold, y: 80 },
-    { label: 'Redis Cache', color: '#EF4444', y: 190, visible: showCache },
-    { label: 'Database', color: THEME.teal, y: 310 },
-  ];
-
   const cacheSpring = spring({ frame: frame - Math.round(0.5 * fps * 8), fps, config: { damping: 12, stiffness: 100, mass: 0.9 } });
 
-  // Latency display
   const latencyWithout = '200ms';
   const latencyWith = '3ms';
 
@@ -517,9 +611,19 @@ const ArchCachingVariant: React.FC<Omit<SystemArchVizProps, 'variant'>> = ({ syn
       }}>
         <span style={{ fontSize: 28 }}>{'\u2699\uFE0F'}</span>
         <span style={{ fontSize: 15, fontWeight: 700, color: THEME.gold }}>Service</span>
+        <div style={{
+          marginLeft: 'auto', marginRight: 12,
+          background: `${THEME.gold}15`, border: `1px solid ${THEME.gold}44`,
+          borderRadius: 6, padding: '2px 8px',
+        }}>
+          <span style={{ fontSize: 10, fontWeight: 700, color: THEME.gold, fontFamily: "'JetBrains Mono', monospace" }}>
+            6.1K
+          </span>
+          <span style={{ fontSize: 8, color: 'rgba(255,255,255,0.4)', marginLeft: 2 }}>req/s</span>
+        </div>
       </div>
 
-      {/* Cache (Redis) — appears in Phase 3 */}
+      {/* Cache (Redis) */}
       {showCache && (
         <div style={{
           position: 'absolute', top: 170, left: '50%', transform: `translateX(-50%) scale(${cacheSpring})`,
@@ -533,6 +637,21 @@ const ArchCachingVariant: React.FC<Omit<SystemArchVizProps, 'variant'>> = ({ syn
           {isCacheHit && (
             <span style={{ fontSize: 11, fontWeight: 700, color: '#22C55E', background: 'rgba(34,197,94,0.2)', padding: '2px 8px', borderRadius: 4 }}>HIT!</span>
           )}
+          {/* Latency label on cache */}
+          <div style={{
+            marginLeft: 'auto', marginRight: 12,
+            background: isCacheHit ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)',
+            border: `1px solid ${isCacheHit ? '#22C55E44' : '#EF444444'}`,
+            borderRadius: 6, padding: '2px 8px',
+          }}>
+            <span style={{
+              fontSize: 10, fontWeight: 700,
+              color: isCacheHit ? '#22C55E' : '#EF4444',
+              fontFamily: "'JetBrains Mono', monospace",
+            }}>
+              {isCacheHit ? '~3ms' : '~5ms'}
+            </span>
+          </div>
         </div>
       )}
 
@@ -547,6 +666,21 @@ const ArchCachingVariant: React.FC<Omit<SystemArchVizProps, 'variant'>> = ({ syn
         <span style={{ fontSize: 28 }}>{'\uD83D\uDDC4\uFE0F'}</span>
         <span style={{ fontSize: 15, fontWeight: 700, color: THEME.teal }}>Database</span>
         {isCacheHit && <span style={{ fontSize: 11, color: THEME.gray }}>(skipped)</span>}
+        {/* Latency label */}
+        <div style={{
+          marginLeft: 'auto', marginRight: 12,
+          background: `${THEME.red}22`,
+          border: `1px solid ${THEME.red}44`,
+          borderRadius: 6, padding: '2px 8px',
+        }}>
+          <span style={{
+            fontSize: 10, fontWeight: 700,
+            color: THEME.red,
+            fontFamily: "'JetBrains Mono', monospace",
+          }}>
+            ~200ms
+          </span>
+        </div>
       </div>
 
       {/* Latency comparison */}

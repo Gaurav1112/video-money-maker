@@ -43,6 +43,8 @@ function findTopic(slug: string): any | null {
 
   const files = fs.readdirSync(CONTENT_DIR).filter(f => f.endsWith('.json'));
 
+  let fallback: any = null;
+
   for (const file of files) {
     try {
       const data = JSON.parse(fs.readFileSync(path.join(CONTENT_DIR, file), 'utf-8'));
@@ -52,14 +54,23 @@ function findTopic(slug: string): any | null {
         const topicName = (topic.topic || topic.title || '').toLowerCase();
         const matches = searchTerms.every(term => topicName.includes(term));
         if (matches) {
-          return topic;
+          // Prefer topics that have plan.sessions (renderable)
+          if (Array.isArray(topic?.plan?.sessions)) {
+            return topic;
+          }
+          // Also accept topics with sessions as an object (e.g. {"1": "md", "2": "md"})
+          if (topic.sessions && typeof topic.sessions === 'object' && !Array.isArray(topic.sessions)) {
+            if (!fallback) fallback = topic;
+            continue;
+          }
+          if (!fallback) fallback = topic;
         }
       }
     } catch {
       // skip malformed files
     }
   }
-  return null;
+  return fallback;
 }
 
 /**
@@ -69,7 +80,17 @@ function findTopic(slug: string): any | null {
 function extractPlanSession(topic: any, sessionNumber: number): SessionInput | null {
   const planSessions = topic?.plan?.sessions;
   if (!Array.isArray(planSessions)) {
-    console.error('Topic does not have plan.sessions array.');
+    // Try object-style sessions (e.g. {"1": {...}, "2": {...}})
+    const objSessions = topic?.sessions;
+    if (objSessions && typeof objSessions === 'object' && !Array.isArray(objSessions)) {
+      const session = objSessions[String(sessionNumber)];
+      if (!session) {
+        console.error(`Session ${sessionNumber} not found in object-style sessions. Available: ${Object.keys(objSessions).join(', ')}`);
+        return null;
+      }
+      return buildSessionInput(topic, session, sessionNumber);
+    }
+    console.error('Topic does not have plan.sessions array or object-style sessions.');
     return null;
   }
 

@@ -5,6 +5,10 @@ import { COLORS, LOADED_FONTS, SIZES } from '../lib/theme';
 interface SceneTransitionFlashProps {
   /** Scene type for color theming and label */
   sceneType?: string;
+  /** Current scene number (1-indexed) */
+  sceneNumber?: number;
+  /** Total scenes in video */
+  totalScenes?: number;
 }
 
 // --- Scene metadata -----------------------------------------------------------
@@ -35,6 +39,8 @@ const TRANSITION_FRAMES = 15;
 
 const SceneTransitionFlash: React.FC<SceneTransitionFlashProps> = ({
   sceneType = 'text',
+  sceneNumber,
+  totalScenes,
 }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
@@ -106,6 +112,29 @@ const SceneTransitionFlash: React.FC<SceneTransitionFlashProps> = ({
   // Clamp badgeScale to 1 after frame 10 so it doesn't linger
   const clampedBadgeScale = frame > 10 ? 1 : badgeScale;
 
+  // ── Icon spin: 360 degrees during transition ──────────────────────────────
+  const iconRotation = interpolate(frame, [0, 12], [0, 360], {
+    extrapolateLeft: 'clamp', extrapolateRight: 'clamp',
+  });
+
+  // ── Scene number display (e.g. "03/12") ───────────────────────────────────
+  const sceneNumStr = sceneNumber !== undefined && totalScenes !== undefined
+    ? `${String(sceneNumber).padStart(2, '0')}/${String(totalScenes).padStart(2, '0')}`
+    : null;
+
+  const sceneNumOpacity = interpolate(frame, [2, 5, 10, 15], [0, 0.9, 0.9, 0], {
+    extrapolateLeft: 'clamp', extrapolateRight: 'clamp',
+  });
+
+  // ── Progress bar at bottom ────────────────────────────────────────────────
+  const progressPercent = sceneNumber !== undefined && totalScenes !== undefined
+    ? (sceneNumber / totalScenes) * 100
+    : 0;
+
+  const progressOpacity = interpolate(frame, [1, 4, 12, 15], [0, 0.8, 0.8, 0], {
+    extrapolateLeft: 'clamp', extrapolateRight: 'clamp',
+  });
+
   // Is it the code scene? The "</>" icon is text, not emoji — needs a mono font
   const isCodeScene = sceneType === 'code';
 
@@ -148,17 +177,30 @@ const SceneTransitionFlash: React.FC<SceneTransitionFlashProps> = ({
         />
       ))}
 
-      {/* Vertical wipe flash line */}
+      {/* Vertical wipe flash line — THICKER with glow trail */}
       <div
         style={{
           position: 'absolute',
           top: 0,
           bottom: 0,
           left: `${wipeX}%`,
-          width: 6,
-          background: `linear-gradient(180deg, transparent 0%, ${color} 20%, #fff 50%, ${color} 80%, transparent 100%)`,
+          width: 14,
+          background: `linear-gradient(180deg, transparent 0%, ${color} 15%, #fff 45%, #fff 55%, ${color} 85%, transparent 100%)`,
           opacity: wipeOpacity,
-          boxShadow: `0 0 40px 16px ${color}66`,
+          boxShadow: `0 0 60px 24px ${color}88, 0 0 120px 48px ${color}44`,
+        }}
+      />
+      {/* Trailing glow behind the wipe line */}
+      <div
+        style={{
+          position: 'absolute',
+          top: 0,
+          bottom: 0,
+          left: `${wipeX - 3}%`,
+          width: 40,
+          background: `linear-gradient(90deg, ${color}40, ${color}20, transparent)`,
+          opacity: wipeOpacity * 0.6,
+          filter: 'blur(8px)',
         }}
       />
 
@@ -184,7 +226,7 @@ const SceneTransitionFlash: React.FC<SceneTransitionFlashProps> = ({
           boxShadow: `0 0 32px 8px ${color}44, 0 4px 24px rgba(0,0,0,0.6)`,
         }}
       >
-        {/* Icon */}
+        {/* Icon — spins 360 degrees during transition */}
         <span
           style={{
             fontSize: 36,
@@ -195,6 +237,8 @@ const SceneTransitionFlash: React.FC<SceneTransitionFlashProps> = ({
             color: color,
             fontWeight: isCodeScene ? 700 : undefined,
             letterSpacing: isCodeScene ? -1 : undefined,
+            display: 'inline-block',
+            transform: `rotate(${iconRotation}deg)`,
           }}
         >
           {icon}
@@ -225,6 +269,53 @@ const SceneTransitionFlash: React.FC<SceneTransitionFlashProps> = ({
           {label}
         </span>
       </div>
+
+      {/* ── Scene number (e.g. "03/12") — top-right corner ── */}
+      {sceneNumStr && (
+        <div
+          style={{
+            position: 'absolute',
+            top: 24,
+            right: 32,
+            opacity: sceneNumOpacity,
+            fontSize: 28,
+            fontFamily: LOADED_FONTS.code,
+            fontWeight: 700,
+            color: COLORS.white,
+            letterSpacing: 2,
+            textShadow: `0 0 20px ${color}88, 0 2px 8px rgba(0,0,0,0.8)`,
+          }}
+        >
+          <span style={{ color: color }}>{String(sceneNumber).padStart(2, '0')}</span>
+          <span style={{ color: `${COLORS.gray}80` }}>/</span>
+          <span style={{ color: COLORS.gray }}>{String(totalScenes).padStart(2, '0')}</span>
+        </div>
+      )}
+
+      {/* ── Progress bar at bottom — overall video progress ── */}
+      {sceneNumber !== undefined && totalScenes !== undefined && (
+        <div
+          style={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: 4,
+            background: `${COLORS.dark}80`,
+            opacity: progressOpacity,
+          }}
+        >
+          <div
+            style={{
+              width: `${progressPercent}%`,
+              height: '100%',
+              background: `linear-gradient(90deg, ${color}, ${COLORS.white})`,
+              boxShadow: `0 0 12px ${color}80`,
+              borderRadius: '0 2px 2px 0',
+            }}
+          />
+        </div>
+      )}
     </AbsoluteFill>
   );
 };

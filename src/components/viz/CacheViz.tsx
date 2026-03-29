@@ -112,11 +112,11 @@ const LookupVariant: React.FC<Omit<CacheVizProps, 'variant'>> = ({ sync, frame }
   const dbPos = { fx: 0.82, fy: 0.45 };
 
   // Reveals
-  const revealP = progressWindow(p, 0, 0.12);
+  const revealP = progressWindow(p, 0, 0.20);
   const nodeSpring = spring({ frame, fps, config: { damping: 12, stiffness: 100, mass: 0.9 }, from: 0, to: revealP > 0 ? 1 : 0 });
 
-  const arrowDrawP = progressWindow(p, 0.08, 0.18);
-  const flowActive = p > 0.16;
+  const arrowDrawP = progressWindow(p, 0.20, 0.40);
+  const flowActive = p > 0.40;
 
   // Alternating hit/miss cycles (frame-driven)
   const cycleLen = fps * 3; // 3-second cycles

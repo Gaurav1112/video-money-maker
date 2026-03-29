@@ -217,15 +217,15 @@ const ReplicationVariant: React.FC<Omit<DatabaseVizProps, 'variant'>> = ({ sync,
   ];
   const clientPos = { fx: 0.05, fy: 0.20 };
 
-  // Reveals
-  const primaryRevealP = progressWindow(p, 0, 0.08);
+  // Reveals — SPREAD across full 0-1 scene progress
+  const primaryRevealP = progressWindow(p, 0, 0.20);
   const primarySpring = spring({
     frame, fps,
     config: { damping: 12, stiffness: 100, mass: 0.9 },
     from: 0, to: primaryRevealP > 0 ? 1 : 0,
   });
 
-  const replicaRevealP = progressWindow(p, 0.08, 0.18);
+  const replicaRevealP = progressWindow(p, 0.20, 0.40);
   const replicaSprings = replicas.map((_, i) =>
     spring({
       frame: Math.max(0, frame - i * 6), fps,
@@ -234,8 +234,8 @@ const ReplicationVariant: React.FC<Omit<DatabaseVizProps, 'variant'>> = ({ sync,
     })
   );
 
-  const arrowDrawP = progressWindow(p, 0.12, 0.22);
-  const flowActive = p > 0.20;
+  const arrowDrawP = progressWindow(p, 0.40, 0.60);
+  const flowActive = p > 0.60;
   const dotPeriod = fps * 1.8;
 
   // Write arrows: client -> primary
@@ -420,16 +420,16 @@ const ShardingVariant: React.FC<Omit<DatabaseVizProps, 'variant'>> = ({ sync, fr
     { fx: 0.80, fy: 0.65, label: 'SHARD C', range: 'Users Q-Z', color: C.teal },
   ];
 
-  const routerRevealP = progressWindow(p, 0, 0.08);
+  const routerRevealP = progressWindow(p, 0, 0.20);
   const routerSpring = spring({ frame, fps, config: { damping: 12, stiffness: 100, mass: 0.9 }, from: 0, to: routerRevealP > 0 ? 1 : 0 });
 
-  const shardRevealP = progressWindow(p, 0.08, 0.20);
+  const shardRevealP = progressWindow(p, 0.20, 0.40);
   const shardSprings = shards.map((_, i) =>
     spring({ frame: Math.max(0, frame - i * 6), fps, config: { damping: 13, stiffness: 110, mass: 0.8 }, from: 0, to: shardRevealP > 0 ? 1 : 0 })
   );
 
-  const arrowDrawP = progressWindow(p, 0.14, 0.24);
-  const flowActive = p > 0.22;
+  const arrowDrawP = progressWindow(p, 0.40, 0.60);
+  const flowActive = p > 0.60;
   const dotPeriod = fps * 1.5;
 
   const arrows = shards.map((s) => ({

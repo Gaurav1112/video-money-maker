@@ -563,6 +563,67 @@ export function preprocessForSpeech(text: string): string {
   // Ellipsis → pause marker
   result = result.replace(/\.\.\./g, ', ');
 
+  // === Python dunder methods (specific matches first) ===
+  result = result.replace(/__init__/g, 'init');
+  result = result.replace(/__str__/g, 'string method');
+  result = result.replace(/__repr__/g, 'repr method');
+  result = result.replace(/__len__/g, 'len method');
+  result = result.replace(/__getitem__/g, 'get item method');
+  result = result.replace(/__setitem__/g, 'set item method');
+  result = result.replace(/__delitem__/g, 'delete item method');
+  result = result.replace(/__iter__/g, 'iter method');
+  result = result.replace(/__next__/g, 'next method');
+  result = result.replace(/__enter__/g, 'enter method');
+  result = result.replace(/__exit__/g, 'exit method');
+  result = result.replace(/__eq__/g, 'equals method');
+  result = result.replace(/__lt__/g, 'less than method');
+  result = result.replace(/__gt__/g, 'greater than method');
+  result = result.replace(/__add__/g, 'add method');
+  result = result.replace(/__hash__/g, 'hash method');
+  result = result.replace(/__call__/g, 'call method');
+  result = result.replace(/__contains__/g, 'contains method');
+  result = result.replace(/__name__/g, 'name attribute');
+  result = result.replace(/__main__/g, 'main module');
+
+  // Generic dunder fallback: __something__ → "something"
+  result = result.replace(/__([a-zA-Z_]+)__/g, (_, name) => name.replace(/_/g, ' '));
+
+  // self.__x → "self dot x" (private attribute access)
+  result = result.replace(/self\.__([a-zA-Z_]+)/g, (_, attr) => `self dot ${attr}`);
+
+  // === Common method notation ===
+  result = result.replace(/self\./g, 'self dot ');
+  result = result.replace(/\.get\(\)/g, ' dot get');
+  result = result.replace(/\.put\(\)/g, ' dot put');
+  result = result.replace(/\.size\(\)/g, ' dot size');
+
+  // === Code operators (order: multi-char first to avoid partial matches) ===
+  result = result.replace(/->/g, 'returns');
+  result = result.replace(/=>/g, 'arrow function');
+  result = result.replace(/!=/g, 'not equal to');
+  result = result.replace(/==/g, 'equals');
+  result = result.replace(/<=/g, 'less than or equal to');
+  result = result.replace(/>=/g, 'greater than or equal to');
+  result = result.replace(/&&/g, 'and');
+  result = result.replace(/\|\|/g, 'or');
+  result = result.replace(/\+\+/g, 'increment');
+  result = result.replace(/--/g, 'decrement');
+
+  // === CamelCase/PascalCase splitting for well-known class names ===
+  result = result.replace(/\bHashMap\b/g, 'Hash Map');
+  result = result.replace(/\bArrayList\b/g, 'Array List');
+  result = result.replace(/\bLinkedList\b/g, 'Linked List');
+  result = result.replace(/\bTreeMap\b/g, 'Tree Map');
+  result = result.replace(/\bTreeSet\b/g, 'Tree Set');
+  result = result.replace(/\bHashSet\b/g, 'Hash Set');
+  result = result.replace(/\bLinkedHashMap\b/g, 'Linked Hash Map');
+  result = result.replace(/\bPriorityQueue\b/g, 'Priority Queue');
+  result = result.replace(/\bStringBuilder\b/g, 'String Builder');
+  result = result.replace(/\bInputStream\b/g, 'Input Stream');
+  result = result.replace(/\bOutputStream\b/g, 'Output Stream');
+  result = result.replace(/\bNullPointerException\b/g, 'Null Pointer Exception');
+  result = result.replace(/\bIndexOutOfBoundsException\b/g, 'Index Out Of Bounds Exception');
+
   return result;
 }
 

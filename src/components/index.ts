@@ -21,3 +21,8 @@ export { default as OutroSlide } from './OutroSlide';
 export { ZoomPulse } from './ZoomPulse';
 export { default as AnimatedCallout } from './AnimatedCallout';
 export { AnimatedOverlay } from './AnimatedOverlay';
+export { SpeedReminder } from './SpeedReminder';
+export { PlatformPreview } from './PlatformPreview';
+export { BeforeAfterSplit } from './BeforeAfterSplit';
+export { AlgorithmPanel } from './AlgorithmPanel';
+export { ChapterBadge } from './ChapterBadge';

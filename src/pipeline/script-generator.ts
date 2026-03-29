@@ -271,41 +271,423 @@ function generateInterviewReality(topic: string): string {
 }
 
 // ---------------------------------------------------------------------------
+// Teaching Technique: WHY Context — adds "why it matters" suffix to code descriptions
+// Makes narration educational, not just descriptive.
+// ---------------------------------------------------------------------------
+function addWhyContext(description: string, code: string, topic: string): string {
+  const trimmed = code.trim().toLowerCase();
+  const desc = description.toLowerCase();
+  const topicLower = topic.toLowerCase();
+
+  // Loop + server/node → distributing work
+  if ((trimmed.includes('for') || trimmed.includes('while') || desc.includes('loop')) &&
+      (trimmed.includes('server') || trimmed.includes('node') || trimmed.includes('worker') ||
+       topicLower.includes('load balancing') || topicLower.includes('distributed'))) {
+    return `${description} — to distribute the work evenly`;
+  }
+
+  // If-check + null/error handling
+  if ((desc.includes('check if') || desc.includes('if ')) &&
+      (trimmed.includes('null') || trimmed.includes('none') || trimmed.includes('error') ||
+       trimmed.includes('undefined') || trimmed.includes('empty') || trimmed.includes('nil'))) {
+    return `${description} — to handle the edge case that trips up most developers`;
+  }
+
+  // Return + result
+  if (desc.includes('return')) {
+    return `${description} — and that's our answer, clean and efficient`;
+  }
+
+  // Hash/map → O(1) lookups
+  if (trimmed.includes('hashmap') || trimmed.includes('hash_map') || trimmed.includes('dict(') ||
+      trimmed.includes('map(') || trimmed.includes('{}') || desc.includes('hash map') ||
+      desc.includes('dictionary') || desc.includes('map for')) {
+    return `${description} — for O(1) constant time lookups. This is why hash maps are interview gold`;
+  }
+
+  // Try/catch → production resilience
+  if (trimmed.startsWith('try') || trimmed.startsWith('catch') || trimmed.startsWith('except') ||
+      desc.includes('try block') || desc.includes('catch')) {
+    return `${description} — because in production, things WILL fail, and we need to handle it gracefully`;
+  }
+
+  // Class definition → encapsulation
+  if (desc.includes('class') && (desc.includes('define') || desc.includes('create'))) {
+    return `${description} — this encapsulates all the complexity in one clean interface`;
+  }
+
+  // Sort/compare → order matters
+  if (trimmed.includes('.sort') || trimmed.includes('sorted') || trimmed.includes('arrays.sort') ||
+      trimmed.includes('compare') || trimmed.includes('compareto') ||
+      desc.includes('sort') || desc.includes('order')) {
+    return `${description} — because the order matters for our algorithm to work correctly`;
+  }
+
+  // Default: no suffix, keep it clean
+  return description;
+}
+
+// ---------------------------------------------------------------------------
 // Teaching Technique: Line-by-Line Code Walkthrough (Fireship style)
 // ---------------------------------------------------------------------------
-function generateCodeWalkthrough(code: string, _language: string): string {
+function generateCodeWalkthrough(code: string, _language: string, topic: string = ''): string {
   const lines = code.split('\n').filter(l => l.trim());
   if (lines.length === 0) return '';
 
-  const parts: string[] = [];
-  if (lines[0]) {
-    parts.push(`We ${describeCodeLine(lines[0])}`);
-  }
-  if (lines.length > 2) {
-    const midIdx = Math.floor(lines.length / 2);
-    parts.push(`then ${describeCodeLine(lines[midIdx])}`);
-  }
-  if (lines.length > 1 && lines[lines.length - 1]) {
-    parts.push(`and ${describeCodeLine(lines[lines.length - 1])}`);
+  // Identify "important" lines — skip blank, comments-only, closing braces, pass
+  const important: { line: string; desc: string }[] = [];
+  for (const line of lines) {
+    const trimmed = line.trim();
+    // Skip uninteresting lines
+    if (
+      trimmed === '}' || trimmed === '};' || trimmed === ')' || trimmed === ');' ||
+      trimmed === 'pass' || trimmed === 'else:' || trimmed === 'else {' ||
+      trimmed === '{' || trimmed === '' ||
+      (trimmed.startsWith('#') && !trimmed.startsWith('#!')) ||
+      (trimmed.startsWith('//') && !trimmed.startsWith('///'))
+    ) continue;
+
+    const desc = describeCodeLine(line);
+    important.push({ line, desc });
   }
 
-  return parts.join(', ') + '.';
+  if (important.length === 0) return '';
+
+  // Pick up to 6 key lines spread across the code for a thorough walkthrough
+  const maxLines = Math.min(important.length, 6);
+  const selected: typeof important = [];
+
+  if (important.length <= 6) {
+    // If 6 or fewer important lines, use them all
+    selected.push(...important);
+  } else {
+    // Spread evenly: always include first and last, fill between
+    selected.push(important[0]);
+    const step = (important.length - 1) / (maxLines - 1);
+    for (let i = 1; i < maxLines - 1; i++) {
+      selected.push(important[Math.round(i * step)]);
+    }
+    selected.push(important[important.length - 1]);
+  }
+
+  // Build natural narration with varied connectors and WHY context
+  const connectors = ['First, we', 'Then we', 'Next, we', 'After that, we', 'Then we', 'Finally, we'];
+  const parts: string[] = [];
+  for (let i = 0; i < selected.length; i++) {
+    const connector = i === 0 ? connectors[0]
+      : i === selected.length - 1 ? connectors[connectors.length - 1]
+      : connectors[Math.min(i, connectors.length - 2)];
+    // Add WHY context to make narration educational, not just descriptive
+    const enrichedDesc = addWhyContext(selected[i].desc, selected[i].line, topic);
+    parts.push(`${connector} ${enrichedDesc}`);
+  }
+
+  return parts.join('. ') + '.';
 }
 
 function describeCodeLine(line: string): string {
   const trimmed = line.trim();
-  if (trimmed.startsWith('class ')) return `define our ${trimmed.split(' ')[1]} class`;
-  if (trimmed.startsWith('def ') || trimmed.startsWith('function ')) return 'create a function that handles the main logic';
-  if (trimmed.startsWith('return ')) return 'return our result';
-  if (trimmed.startsWith('for ') || trimmed.startsWith('while ')) return 'loop through each element';
-  if (trimmed.startsWith('if ')) return 'check our condition';
-  if (trimmed.startsWith('const ') || trimmed.startsWith('let ') || trimmed.startsWith('var ')) return 'declare our variables';
-  if (trimmed.startsWith('import ') || trimmed.startsWith('from ')) return 'import the dependencies we need';
-  if (trimmed.startsWith('print') || trimmed.startsWith('console.log')) return 'output the result to verify it works';
-  if (trimmed.includes('= new ')) return 'instantiate our object';
-  if (trimmed.includes('.append(') || trimmed.includes('.push(')) return 'add the element to our collection';
+
+  // --- Class / struct definitions ---
+  const classMatch = trimmed.match(/^(?:public\s+|private\s+|abstract\s+|static\s+)*class\s+(\w+)(?:\s+extends\s+(\w+))?(?:\s+implements\s+(\w+))?/);
+  if (classMatch) {
+    let desc = `define our ${classMatch[1]} class`;
+    if (classMatch[2]) desc += ` that extends ${classMatch[2]}`;
+    if (classMatch[3]) desc += ` implementing ${classMatch[3]}`;
+    return desc;
+  }
+
+  // --- Function / method definitions ---
+  const pyFuncMatch = trimmed.match(/^def\s+(\w+)\s*\(([^)]*)\)/);
+  if (pyFuncMatch) {
+    const name = pyFuncMatch[1];
+    const params = pyFuncMatch[2].replace(/self,?\s*/, '').trim();
+    if (params) return `define the ${name} function that takes ${describeParams(params)}`;
+    return `define the ${name} function`;
+  }
+  const jsFuncMatch = trimmed.match(/^(?:async\s+)?function\s+(\w+)\s*\(([^)]*)\)/);
+  if (jsFuncMatch) {
+    const name = jsFuncMatch[1];
+    const params = jsFuncMatch[2].trim();
+    const asyncPrefix = trimmed.startsWith('async') ? 'async ' : '';
+    if (params) return `define the ${asyncPrefix}${name} function that takes ${describeParams(params)}`;
+    return `define the ${asyncPrefix}${name} function`;
+  }
+  // Arrow functions: const name = (...) => or const name = async (...) =>
+  const arrowMatch = trimmed.match(/^(?:const|let|var)\s+(\w+)\s*=\s*(?:async\s+)?\(?([^)=]*)\)?\s*=>/);
+  if (arrowMatch) {
+    const name = arrowMatch[1];
+    const asyncPrefix = trimmed.includes('async') ? 'async ' : '';
+    return `define the ${asyncPrefix}${name} arrow function`;
+  }
+  // Java / TypeScript methods: public void methodName(...) or private int calculate(...)
+  const javaMethodMatch = trimmed.match(/^(?:public|private|protected)\s+(?:static\s+)?(?:async\s+)?(?:\w+(?:<[^>]+>)?)\s+(\w+)\s*\(([^)]*)\)/);
+  if (javaMethodMatch) {
+    const name = javaMethodMatch[1];
+    const params = javaMethodMatch[2].trim();
+    if (params) return `define the ${name} method that takes ${describeParams(params)}`;
+    return `define the ${name} method`;
+  }
+
+  // --- Constructor ---
+  if (trimmed.match(/^def\s+__init__\s*\(/)) {
+    return 'set up the constructor to initialize our object';
+  }
+
+  // --- Decorators ---
+  if (trimmed.startsWith('@')) {
+    const decoratorName = trimmed.slice(1).split('(')[0];
+    return `apply the @${decoratorName} decorator`;
+  }
+
+  // --- Import statements ---
+  const pyImportMatch = trimmed.match(/^from\s+([\w.]+)\s+import\s+(.+)/);
+  if (pyImportMatch) return `import ${pyImportMatch[2].trim()} from the ${pyImportMatch[1]} module`;
+  const importMatch = trimmed.match(/^import\s+(?:\{?\s*(.+?)\s*\}?\s+from\s+)?['"]([\w./@-]+)['"]/);
+  if (importMatch) {
+    if (importMatch[1]) return `import ${importMatch[1].trim()} from ${importMatch[2]}`;
+    return `import the ${importMatch[2]} module`;
+  }
+  if (trimmed.startsWith('import ')) {
+    const modName = trimmed.replace('import ', '').split(/[\s;]/)[0];
+    return `import the ${modName} module`;
+  }
+
+  // --- Return statements ---
+  const returnMatch = trimmed.match(/^return\s+(.+)/);
+  if (returnMatch) {
+    const val = returnMatch[1].replace(/;$/, '').trim();
+    if (val.length < 40) return `return ${val}`;
+    if (val.includes('?') && val.includes(':')) return 'return the result based on our condition';
+    if (val.startsWith('new ')) {
+      const typeName = val.match(/new\s+(\w+)/);
+      return `return a new ${typeName ? typeName[1] : 'instance'}`;
+    }
+    return 'return the computed result';
+  }
+
+  // --- Try/catch/except/finally ---
+  if (trimmed.startsWith('try')) return 'wrap this in a try block to handle errors gracefully';
+  if (trimmed.match(/^(?:except|catch)\s*\(?\s*(\w+)?/)) {
+    const errType = trimmed.match(/(?:except|catch)\s*\(?\s*(\w+)/);
+    if (errType) return `catch any ${errType[1]} errors`;
+    return 'catch any errors that might occur';
+  }
+  if (trimmed.startsWith('finally')) return 'run our cleanup in the finally block';
+
+  // --- Throw / raise ---
+  const throwMatch = trimmed.match(/^(?:throw|raise)\s+(?:new\s+)?(\w+)/);
+  if (throwMatch) return `throw a ${throwMatch[1]} if something goes wrong`;
+
+  // --- Async / await ---
+  if (trimmed.match(/^await\s+/)) {
+    const awaitCall = trimmed.match(/^await\s+(\w+(?:\.\w+)*)\s*\(/);
+    if (awaitCall) return `await the ${awaitCall[1]} call to get the result`;
+    return 'await the asynchronous operation';
+  }
+
+  // --- For loops (detailed) ---
+  const pyForMatch = trimmed.match(/^for\s+(\w+)\s+in\s+(?:range\((.+)\)|(\w+))/);
+  if (pyForMatch) {
+    if (pyForMatch[2]) return `loop ${pyForMatch[2]} times using ${pyForMatch[1]} as our counter`;
+    return `loop through each ${pyForMatch[1]} in ${pyForMatch[3]}`;
+  }
+  const jsForOfMatch = trimmed.match(/^for\s*\(\s*(?:const|let|var)\s+(\w+)\s+of\s+(\w+)/);
+  if (jsForOfMatch) return `loop through each ${jsForOfMatch[1]} in ${jsForOfMatch[2]}`;
+  const jsForMatch = trimmed.match(/^for\s*\(\s*(?:let|int|var)\s+(\w+)\s*=\s*(\d+)\s*;\s*\w+\s*[<>=!]+\s*(.+?)\s*;/);
+  if (jsForMatch) return `loop from ${jsForMatch[2]} up to ${jsForMatch[3].replace(/;$/, '')} using ${jsForMatch[1]}`;
+  if (trimmed.startsWith('for ') || trimmed.startsWith('for(')) return 'iterate through each element';
+
+  // --- While loops ---
+  const whileMatch = trimmed.match(/^while\s*\(?\s*(.+?)\s*\)?\s*[:{]?\s*$/);
+  if (whileMatch) {
+    const cond = whileMatch[1].replace(/[{:]$/, '').trim();
+    if (cond === 'True' || cond === 'true') return 'keep looping until we explicitly break out';
+    if (cond.length < 30) return `keep looping while ${cond}`;
+    return 'keep looping as long as our condition holds';
+  }
+
+  // --- If / elif / else if (detailed) ---
+  const ifMatch = trimmed.match(/^(?:if|elif|else\s+if)\s*\(?\s*(.+?)\s*\)?\s*[:{]?\s*$/);
+  if (ifMatch) {
+    const cond = ifMatch[1].replace(/[{:]$/, '').trim();
+    const prefix = trimmed.startsWith('elif') || trimmed.startsWith('else if') ? 'otherwise, check if' : 'check if';
+    if (cond.includes(' is None') || cond.includes(' == None') || cond.includes(' === null') || cond.includes(' == null'))
+      return `${prefix} the value is null`;
+    if (cond.includes(' not in ') || cond.includes('.includes(') || cond.includes(' in '))
+      return `${prefix} the element exists in our collection`;
+    if (cond.includes('.length') || cond.includes('len('))
+      return `${prefix} the size meets our requirement`;
+    if (cond.includes(' > ') || cond.includes(' < ') || cond.includes(' >= ') || cond.includes(' <= '))
+      return `${prefix} ${cond.length < 35 ? cond : 'our boundary condition'}`;
+    if (cond.includes(' == ') || cond.includes(' === ') || cond.includes(' != ') || cond.includes(' !== '))
+      return `${prefix} ${cond.length < 35 ? cond : 'the values match'}`;
+    if (cond.length < 30) return `${prefix} ${cond}`;
+    return `${prefix} our condition is met`;
+  }
+
+  // --- Switch / case ---
+  const switchMatch = trimmed.match(/^switch\s*\(\s*(\w+)\s*\)/);
+  if (switchMatch) return `switch on the value of ${switchMatch[1]}`;
+  const caseMatch = trimmed.match(/^case\s+(.+?):/);
+  if (caseMatch) return `handle the case where it equals ${caseMatch[1]}`;
+  if (trimmed.startsWith('default:')) return 'handle the default case';
+  if (trimmed === 'break;' || trimmed === 'break') return 'break out of the current block';
+
+  // --- Variable declarations with meaningful content ---
+  const constAssignMatch = trimmed.match(/^(?:const|let|var|final)\s+(\w+)(?:\s*:\s*\w+(?:<[^>]+>)?)?\s*=\s*(.+)/);
+  if (constAssignMatch) {
+    const varName = constAssignMatch[1];
+    const value = constAssignMatch[2].replace(/;$/, '').trim();
+    if (value.startsWith('new ')) {
+      const typeName = value.match(/new\s+(\w+)/);
+      return `create a new ${typeName ? typeName[1] : 'instance'} called ${varName}`;
+    }
+    if (value.includes('.map(') || value.includes('.filter(') || value.includes('.reduce('))
+      return `transform our data and store it in ${varName}`;
+    if (value.match(/^\[/) || value.startsWith('Array')) return `initialize the ${varName} array`;
+    if (value.match(/^\{/)) return `set up the ${varName} config object`;
+    if (value.match(/^['"`]/)) return `set ${varName} to ${value.length < 25 ? value : 'our string value'}`;
+    if (value.match(/^\d/)) return `set ${varName} to ${value}`;
+    if (value.includes('(')) {
+      const callName = value.match(/(\w+(?:\.\w+)*)\s*\(/);
+      if (callName) return `call ${callName[1]} and store the result in ${varName}`;
+    }
+    return `initialize ${varName} with our value`;
+  }
+
+  // --- self.x / this.x assignments ---
+  const selfAssign = trimmed.match(/^(?:self|this)\.(\w+)\s*=\s*(.+)/);
+  if (selfAssign) {
+    const prop = selfAssign[1];
+    const val = selfAssign[2].replace(/;$/, '').trim();
+    if (val.match(/^\[/) || val.includes('ArrayList') || val.includes('list(')) return `initialize the ${prop} collection on our instance`;
+    if (val.match(/^\{/) || val.includes('HashMap') || val.includes('dict(')) return `set up the ${prop} map on our instance`;
+    if (val.match(/^\d/)) return `set ${prop} to ${val}`;
+    return `store ${prop} on our instance`;
+  }
+
+  // --- Python variable assignment: name = value ---
+  const pyAssignMatch = trimmed.match(/^(\w+)\s*=\s*(.+)/);
+  if (pyAssignMatch && !trimmed.includes('==')) {
+    const varName = pyAssignMatch[1];
+    const value = pyAssignMatch[2].trim();
+    if (value.startsWith('[') || value.startsWith('list(')) return `initialize the ${varName} list`;
+    if (value.startsWith('{') || value.startsWith('dict(')) return `set up the ${varName} dictionary`;
+    if (value.match(/^\d/)) return `set ${varName} to ${value}`;
+    if (value.includes('(')) {
+      const callName = value.match(/(\w+(?:\.\w+)*)\s*\(/);
+      if (callName) return `call ${callName[1]} and store the result in ${varName}`;
+    }
+    return `assign ${value.length < 25 ? value : 'our value'} to ${varName}`;
+  }
+
+  // --- super() calls ---
+  if (trimmed.match(/^super\s*\(/)) return 'call the parent class constructor with super()';
+  if (trimmed.match(/^super\.\w+\(/)) {
+    const superMethod = trimmed.match(/^super\.(\w+)\(/);
+    return `call the parent's ${superMethod ? superMethod[1] : ''} method`;
+  }
+
+  // --- HashMap / ArrayList / data structure creation ---
+  if (trimmed.includes('HashMap') || trimmed.includes('TreeMap') || trimmed.includes('LinkedHashMap'))
+    return 'create a hash map for fast key-value lookups';
+  if (trimmed.includes('ArrayList') || trimmed.includes('LinkedList'))
+    return 'create a list to store our elements dynamically';
+  if (trimmed.includes('HashSet') || trimmed.includes('TreeSet'))
+    return 'create a set for fast uniqueness checks';
+  if (trimmed.includes('PriorityQueue') || trimmed.includes('heapq'))
+    return 'create a priority queue to always grab the best element first';
+  if (trimmed.includes('Stack') || trimmed.includes('Deque') || trimmed.includes('deque'))
+    return 'create a stack or deque for efficient push and pop';
+
+  // --- Collection operations ---
+  if (trimmed.includes('.append(') || trimmed.includes('.push(') || trimmed.includes('.add(')) {
+    const argMatch = trimmed.match(/\.(?:append|push|add)\((.+?)\)/);
+    if (argMatch && argMatch[1].length < 25) return `add ${argMatch[1]} to our collection`;
+    return 'add the element to our collection';
+  }
   if (trimmed.includes('.pop(')) return 'remove and grab the last element';
-  return 'set up the next step';
+  if (trimmed.includes('.remove(')) return 'remove the element from our collection';
+  if (trimmed.includes('.get(')) {
+    const keyMatch = trimmed.match(/\.get\((.+?)(?:,|\))/);
+    if (keyMatch && keyMatch[1].length < 20) return `look up ${keyMatch[1]} in our map`;
+    return 'look up the value in our map';
+  }
+  if (trimmed.includes('.put(') || trimmed.includes('.set(')) return 'insert the key-value pair into our map';
+  if (trimmed.includes('.sort(') || trimmed.includes('.sorted(') || trimmed.includes('Arrays.sort'))
+    return 'sort the collection so we can process elements in order';
+  if (trimmed.includes('.reverse(')) return 'reverse the order of our elements';
+
+  // --- Map/filter/reduce chains ---
+  if (trimmed.includes('.map(')) return 'transform each element using map';
+  if (trimmed.includes('.filter(')) return 'filter down to only the elements we need';
+  if (trimmed.includes('.reduce(')) return 'reduce our collection down to a single value';
+  if (trimmed.includes('.forEach(') || trimmed.includes('.each(')) return 'process each element one by one';
+
+  // --- Print / log statements ---
+  if (trimmed.startsWith('print(') || trimmed.startsWith('print ')) {
+    const argMatch = trimmed.match(/print\s*\(?\s*(.+?)\s*\)?\s*$/);
+    if (argMatch && argMatch[1].length < 30) return `print ${argMatch[1]} to verify our result`;
+    return 'print the output to verify it works';
+  }
+  if (trimmed.includes('console.log(') || trimmed.includes('System.out.print'))
+    return 'log the output to verify it works';
+
+  // --- List comprehensions / generator expressions ---
+  if (trimmed.includes(' for ') && trimmed.includes(' in ') && (trimmed.includes('[') || trimmed.includes('(')))
+    return 'build our result using a comprehension for clean, concise code';
+
+  // --- Type annotations / interface ---
+  if (trimmed.startsWith('interface ')) {
+    const name = trimmed.match(/interface\s+(\w+)/);
+    return `define the ${name ? name[1] : ''} interface`;
+  }
+  if (trimmed.startsWith('type ')) {
+    const name = trimmed.match(/type\s+(\w+)/);
+    return `define the ${name ? name[1] : ''} type`;
+  }
+  if (trimmed.startsWith('enum ')) {
+    const name = trimmed.match(/enum\s+(\w+)/);
+    return `define the ${name ? name[1] : ''} enum`;
+  }
+
+  // --- Yield ---
+  if (trimmed.startsWith('yield ')) return 'yield the next value from our generator';
+
+  // --- Assert ---
+  if (trimmed.startsWith('assert ')) return 'assert that our assumption holds true';
+
+  // --- Smart fallback: extract meaning from the line itself ---
+  // Method call: something.method(...)
+  const methodCallMatch = trimmed.match(/(?:(\w+)\.)?(\w+)\s*\(([^)]*)\)/);
+  if (methodCallMatch) {
+    const obj = methodCallMatch[1];
+    const method = methodCallMatch[2];
+    if (obj) return `call ${obj}.${method}() to process our data`;
+    return `call ${method}() to handle the operation`;
+  }
+
+  // Assignment with operator: x += y, x -= y, etc.
+  const compoundAssign = trimmed.match(/(\w+)\s*([+\-*/%])=\s*(.+)/);
+  if (compoundAssign) {
+    const ops: Record<string, string> = { '+': 'add', '-': 'subtract', '*': 'multiply', '/': 'divide', '%': 'take modulo of' };
+    const op = ops[compoundAssign[2]] || 'update';
+    return `${op} ${compoundAssign[3].replace(/;$/, '').trim()} ${compoundAssign[2] === '+' ? 'to' : 'from'} ${compoundAssign[1]}`;
+  }
+
+  // Last resort: if line is short enough, describe it literally
+  if (trimmed.length < 35) return `execute ${trimmed.replace(/;$/, '')}`;
+  return 'continue building our logic';
+}
+
+/** Turn a parameter string like "servers, count: int" into readable text */
+function describeParams(params: string): string {
+  const paramList = params.split(',').map(p => p.trim().split(/[:\s]/)[0]).filter(Boolean);
+  if (paramList.length === 0) return 'no parameters';
+  if (paramList.length === 1) return paramList[0];
+  if (paramList.length === 2) return `${paramList[0]} and ${paramList[1]}`;
+  return paramList.slice(0, -1).join(', ') + ', and ' + paramList[paramList.length - 1];
 }
 
 // ---------------------------------------------------------------------------
@@ -379,15 +761,15 @@ function generateRealAnswer(topic: string): string {
 // ---------------------------------------------------------------------------
 function generateInterviewSecret(topic: string): string {
   const secrets = [
-    `Here's the interview secret that most prep courses won't tell you. When they ask about ${topic}, they're not testing your memory. They want to see HOW you think. Start with the problem, walk through the trade-offs, and explain your reasoning out loud. That alone puts you in the top 10 percent. And you can practice this exact skill with interactive mock interviews on guru-sishya.in.`,
+    `Here's the interview secret that most prep courses won't tell you. When they ask about ${topic}, they're not testing your memory. They want to see HOW you think. Start with the problem, walk through the trade-offs, and explain your reasoning out loud. That alone puts you in the top 10 percent. And you can practice this exact skill with interactive mock interviews on guru-sishya.in slash ${topic.toLowerCase().replace(/\s+/g, '-')}.`,
 
-    `The number one thing interviewers look for in ${topic} questions is this: can you reason about failure modes? What happens when things go wrong? How do you detect it? How do you recover? If you can discuss the unhappy path fluently, you've already won. Practice this pattern on the ${topic} module at guru-sishya.in.`,
+    `The number one thing interviewers look for in ${topic} questions is this: can you reason about failure modes? What happens when things go wrong? How do you detect it? How do you recover? If you can discuss the unhappy path fluently, you've already won. Practice this pattern on the ${topic} module at guru-sishya.in slash ${topic.toLowerCase().replace(/\s+/g, '-')}.`,
 
-    `Want to know what ACTUALLY impresses interviewers? It's not reciting the textbook answer on ${topic}. It's asking clarifying questions first. "What's the expected scale? What are the consistency requirements? What's the latency budget?" These questions show senior-level thinking. You can drill this skill on guru-sishya.in.`,
+    `Want to know what ACTUALLY impresses interviewers? It's not reciting the textbook answer on ${topic}. It's asking clarifying questions first. "What's the expected scale? What are the consistency requirements? What's the latency budget?" These questions show senior-level thinking. You can drill this skill on guru-sishya.in slash ${topic.toLowerCase().replace(/\s+/g, '-')}.`,
 
-    `Here's the insider trick for ${topic} interviews. Always tie your answer to real numbers. Don't say "it's faster." Say "it reduces P99 latency from 200 milliseconds to 15 milliseconds." Quantifying your answers makes you unforgettable. The quiz system on guru-sishya.in trains you to think exactly this way.`,
+    `Here's the insider trick for ${topic} interviews. Always tie your answer to real numbers. Don't say "it's faster." Say "it reduces P99 latency from 200 milliseconds to 15 milliseconds." Quantifying your answers makes you unforgettable. The quiz system on guru-sishya.in slash ${topic.toLowerCase().replace(/\s+/g, '-')} trains you to think exactly this way.`,
 
-    `I'll let you in on a secret. The best answer to a ${topic} question starts with "it depends." Then you explain WHAT it depends on. This shows the interviewer you understand nuance, not just definitions. And that's the difference between an offer and a rejection.`,
+    `I'll let you in on a secret. The best answer to a ${topic} question starts with "it depends." Then you explain WHAT it depends on. This shows the interviewer you understand nuance, not just definitions. And that's the difference between an offer and a rejection. Practice weighing these trade-offs on guru-sishya.in slash ${topic.toLowerCase().replace(/\s+/g, '-')}.`,
   ];
 
   const seed = (topic.length * 11) % secrets.length;
@@ -407,7 +789,8 @@ function generatePracticeNarration(question: string, topic: string): string {
   ];
 
   const seed = question.length % intros.length;
-  return `${intros[seed]} ${question} You can practice more questions like this with detailed explanations on guru-sishya.in.`;
+  const topicSlug = topic.toLowerCase().replace(/\s+/g, '-');
+  return `${intros[seed]} ${question} You can practice more questions like this with detailed explanations on guru-sishya.in slash ${topicSlug}.`;
 }
 
 // ---------------------------------------------------------------------------
@@ -561,12 +944,14 @@ function generateSummaryNarration(topic: string, objectives: string[], nextTopic
     nextEpisodeTease = ` This was the final session in our ${topic} series. You now have a complete, interview-ready understanding. Go crush it.`;
   }
 
+  const topicSlug = topic.toLowerCase().replace(/\s+/g, '-');
+
   const summaries = [
-    `Alright, let's bring it all together. Today you learned ${topObjectives}. ${closingEncouragement} And here's the most important thing: don't just watch this and forget. Go practice. Build it in code. Explain it to someone else. That's how it sticks. If you want the complete ${topic} course with cheatsheets, interactive quizzes, and mock interview questions, head over to guru-sishya.in. It's all there waiting for you. Drop a like if this helped, and I'll see you in the next one. ${youLearnedClose}${nextEpisodeTease}`,
+    `Alright, let's bring it all together. Today you learned ${topObjectives}. ${closingEncouragement} And here's the most important thing: don't just watch this and forget. Go practice. Build it in code. Explain it to someone else. That's how it sticks. If you want the complete ${topic} course with cheatsheets, interactive quizzes, and mock interview questions, head over to guru-sishya.in slash ${topicSlug}. It's all there waiting for you. Drop a like if this helped, and I'll see you in the next one. ${youLearnedClose}${nextEpisodeTease}`,
 
-    `So here's the bottom line. ${topObjectives}. ${closingEncouragement} You now know more about ${topic} than 90 percent of developers who just skim blog posts. But knowledge without practice is worthless. Go build something with ${topic} today. And if you want a structured path with coding exercises and interview prep, check out guru-sishya.in. Hit subscribe so you don't miss the next topic. Let's go. ${youLearnedClose}${nextEpisodeTease}`,
+    `So here's the bottom line. ${topObjectives}. ${closingEncouragement} You now know more about ${topic} than 90 percent of developers who just skim blog posts. But knowledge without practice is worthless. Go build something with ${topic} today. And if you want a structured path with coding exercises and interview prep, check out guru-sishya.in slash ${topicSlug}. Hit subscribe so you don't miss the next topic. Let's go. ${youLearnedClose}${nextEpisodeTease}`,
 
-    `Let me leave you with this. ${topic} is one of those topics that comes up again and again throughout your career. What you learned today gives you a massive advantage in interviews and in production. ${closingEncouragement} Now go cement it. The complete ${topic} module with practice problems, a cheatsheet, and a mock interview is waiting for you at guru-sishya.in. See you in the next video. ${youLearnedClose}${nextEpisodeTease}`,
+    `Let me leave you with this. ${topic} is one of those topics that comes up again and again throughout your career. What you learned today gives you a massive advantage in interviews and in production. ${closingEncouragement} Now go cement it. The complete ${topic} module with practice problems, a cheatsheet, and a mock interview is waiting for you at guru-sishya.in slash ${topicSlug}. See you in the next video. ${youLearnedClose}${nextEpisodeTease}`,
   ];
 
   const seed = topic.length % summaries.length;
@@ -901,6 +1286,16 @@ export function generateScript(session: SessionInput, options: ScriptOptions = {
     bullets: session.objectives.slice(0, 4),
   });
 
+  // ── Speed reminder verbal mentions (at ~15% and ~55% of scenes) ──
+  const speedScene1 = Math.floor(scenes.length * 0.15);
+  const speedScene2 = Math.floor(scenes.length * 0.55);
+  if (scenes[speedScene1] && scenes[speedScene1].narration) {
+    scenes[speedScene1].narration = 'By the way, this video works great at 1.5x speed for better listening. ' + scenes[speedScene1].narration;
+  }
+  if (scenes[speedScene2] && scenes[speedScene2].narration) {
+    scenes[speedScene2].narration = 'Quick reminder, try 1.5x speed if you haven\'t already. ' + scenes[speedScene2].narration;
+  }
+
   // ── Personality injection — make narration viral and human ────────────
   const personalizedScenes = personalityInjector(scenes, sessionNum);
 
@@ -937,6 +1332,14 @@ const AUDIENCE_CALLOUTS = [
   "If you're switching from service-based to product-based, THIS is the stuff you need to know.",
   "For everyone who's been told 'you need a CS degree to crack FAANG'... watch me prove them wrong.",
   "My non-CS branch engineers, this one's especially for you. Background doesn't matter, preparation does.",
+  "Bhai, if you're grinding for placement season right now... this is your goldmine.",
+  "For everyone from tier-2 and tier-3 colleges — your DSA is your great equalizer.",
+  "Night owls watching at 2 AM — I see you. Let's make this study session count.",
+  "Quick poll: drop '1' in comments if you're preparing for on-campus, '2' for off-campus.",
+  "If your friends aren't watching this, they're going to ask YOU to explain it after placements.",
+  "Remember: TCS pays 3.3 LPA. Google pays 30+ LPA. The difference? Exactly what we're learning.",
+  "Yeh video dekh liya toh interview mein dhoom machao! Ab aage badhte hain.",
+  "Everyone asks 'how to crack FAANG'. Nobody asks 'how to UNDERSTAND systems'. Be different.",
 ];
 
 /** Emotional stakes — connect concepts to real career consequences */
@@ -948,6 +1351,12 @@ const EMOTIONAL_STAKES = [
   "This is the kind of knowledge that makes your team lead go 'wait, how do you know that?'",
   "Three months from now, when you're holding that offer letter, you'll remember this video.",
   "This separates the developers who GET callbacks from the ones who don't. Simple as that.",
+  "I watched a candidate explain this perfectly and get a 45 LPA offer at Google Bangalore. Same concept, same interview room, same question.",
+  "The last 5 people I mentored who understood this concept ALL cleared their system design rounds. All five.",
+  "This is the concept that made me go from 'maybe I'll crack it' to 'I KNOW I'll crack it.'",
+  "Your competition is watching this video too. The question is: will you actually practice it on guru-sishya.in? Link in the description.",
+  "Three months of focused prep beats three years of unfocused coding. This video is focused prep.",
+  "The interviewer has seen 500 candidates this month. 490 of them couldn't explain this. Be the other 10.",
 ];
 
 /** Conversational fillers — prepended to key sentences for natural speech flow */
@@ -1248,6 +1657,18 @@ const SESSION_1_HOOKS = [
   // ── Curiosity gap hooks (2) ──
   (topic: string) => `There's a reason ${topic} is asked in EVERY system design interview. And it's not the reason you think.`,
   (topic: string) => `What if I told you that ${topic} is actually about ONE simple idea? Just one. And once you see it, you can never unsee it.`,
+
+  // ── Dramatic / clickbait-worthy hooks (10) ──
+  (topic: string) => `DELETE this video if I can't explain ${topic} in under 5 minutes...`,
+  (topic: string) => `I asked a Google L5 engineer to explain ${topic}. His answer shocked me.`,
+  (topic: string) => `This one concept has appeared in EVERY FAANG interview this year.`,
+  (topic: string) => `Most YouTube tutorials get ${topic} COMPLETELY wrong. Here's the truth.`,
+  (topic: string) => `My friend failed his Amazon interview because of ${topic}. Don't make his mistake.`,
+  (topic: string) => `I spent 200 hours researching ${topic}. Here's everything in one video.`,
+  (topic: string) => `WARNING: Once you understand ${topic}, you can't unsee it in every system you use.`,
+  (topic: string) => `The REAL reason tech companies pay 50 LPA... they need people who understand THIS.`,
+  (topic: string) => `If I had to explain ${topic} to my younger self, this is exactly what I'd say.`,
+  (topic: string) => `Your interviewer is PRAYING you don't know this about ${topic}...`,
 ];
 
 /** Session 2 hooks — recap + preview, building on session 1 */
@@ -1510,7 +1931,7 @@ function sectionToScene(
   topic: string = '',
 ): Scene {
   const type = mapSectionType(section.type);
-  let narration = generateNarration(section);
+  let narration = generateNarration(section, topic);
 
   // No more stacking of aha phrases, encouragement, or repetition on every scene.
   // The narration from generateNarration() is already clean and complete.
@@ -1578,10 +1999,10 @@ function mapSectionType(type: string): SceneType {
   return map[type] || 'text';
 }
 
-function generateNarration(section: MarkdownSection): string {
+function generateNarration(section: MarkdownSection, topic: string = ''): string {
   switch (section.type) {
     case 'code':
-      return summarizeCode(section.content, section.language || 'typescript');
+      return summarizeCode(section.content, section.language || 'typescript', topic);
     case 'diagram':
       return generateDiagramNarration(section.heading);
     case 'table':
@@ -1623,7 +2044,7 @@ function getLanguageTransition(language: string, seed: number): string {
   return phrases[seed % phrases.length];
 }
 
-function summarizeCode(code: string, language: string): string {
+function summarizeCode(code: string, language: string, topic: string = ''): string {
   const lines = code.split('\n').filter(l => l.trim());
   const funcMatch = code.match(/(?:function|def|public\s+\w+)\s+(\w+)/);
   const classMatch = code.match(/class\s+(\w+)/);
@@ -1634,17 +2055,109 @@ function summarizeCode(code: string, language: string): string {
     ? getLanguageTransition(lang, (code.length + lines.length) % 4) + ' '
     : '';
 
-  // Brief, clear code description — no stacking of intro + walkthrough + CTA
+  // Extract what the code actually DOES by analyzing its content
+  const purposeHint = inferCodePurpose(code);
+  const walkthrough = generateCodeWalkthrough(code, language, topic);
+
   if (classMatch && funcMatch) {
-    return `${langTransition}Here's a ${classMatch[1]} class in ${language}. The ${funcMatch[1]} method handles the core logic. ${generateCodeWalkthrough(code, language)}`;
+    const purpose = purposeHint ? ` that ${purposeHint}` : '';
+    return `${langTransition}Here's a ${classMatch[1]} class in ${language}${purpose}. The ${funcMatch[1]} method is where the action happens. ${walkthrough}`;
   }
   if (classMatch) {
-    return `${langTransition}Here's the ${classMatch[1]} class in ${language}. ${generateCodeWalkthrough(code, language)}`;
+    const purpose = purposeHint ? ` that ${purposeHint}` : '';
+    return `${langTransition}Here's the ${classMatch[1]} class in ${language}${purpose}. ${walkthrough}`;
   }
   if (funcMatch) {
-    return `${langTransition}This ${funcMatch[1]} function in ${language} does the heavy lifting. ${generateCodeWalkthrough(code, language)}`;
+    const purpose = purposeHint ? ` — it ${purposeHint}` : '';
+    // Extract params for context
+    const paramMatch = code.match(new RegExp(`${funcMatch[1]}\\s*\\(([^)]*)\\)`));
+    const params = paramMatch ? paramMatch[1].replace(/self,?\s*/, '').trim() : '';
+    const paramDesc = params ? ` that takes ${describeParams(params)}` : '';
+    return `${langTransition}This ${funcMatch[1]} function in ${language}${paramDesc}${purpose}. ${walkthrough}`;
   }
-  return `${langTransition}Here's the ${language} implementation in ${lines.length} lines. ${generateCodeWalkthrough(code, language)}`;
+  const purpose = purposeHint ? ` This code ${purposeHint}.` : '';
+  return `${langTransition}Here's the ${language} implementation in ${lines.length} lines.${purpose} ${walkthrough}`;
+}
+
+/** Analyze code content to infer what it does — returns a verb phrase like "distributes traffic across servers" */
+function inferCodePurpose(code: string): string {
+  const lower = code.toLowerCase();
+
+  // Check for common algorithm/data structure patterns
+  if (lower.includes('sort') && (lower.includes('pivot') || lower.includes('partition')))
+    return 'sorts elements using a partitioning strategy';
+  if (lower.includes('binary') && lower.includes('search') || (lower.includes('mid') && lower.includes('low') && lower.includes('high')))
+    return 'performs a binary search to find elements efficiently';
+  if (lower.includes('bfs') || (lower.includes('queue') && lower.includes('visited')))
+    return 'traverses the graph level by level using BFS';
+  if (lower.includes('dfs') || (lower.includes('stack') && lower.includes('visited')) || (lower.includes('def dfs') || lower.includes('function dfs')))
+    return 'explores the graph depth-first using DFS';
+  if (lower.includes('dijkstra') || (lower.includes('priority') && lower.includes('distance')))
+    return 'finds the shortest path using a priority queue';
+  if (lower.includes('cache') && (lower.includes('get') && lower.includes('put')))
+    return 'implements a cache with get and put operations';
+  if (lower.includes('lru') || lower.includes('least recently'))
+    return 'implements an LRU cache that evicts the least recently used entries';
+
+  // Check for system design patterns
+  if (lower.includes('round_robin') || lower.includes('roundrobin') || lower.includes('round robin'))
+    return 'distributes requests across servers using round robin';
+  if (lower.includes('load_balanc') || lower.includes('loadbalanc') || lower.includes('load balanc'))
+    return 'balances load across multiple servers';
+  if (lower.includes('hash_ring') || lower.includes('consistent_hash') || lower.includes('consistent hash'))
+    return 'distributes data using consistent hashing';
+  if (lower.includes('rate_limit') || lower.includes('ratelimit') || lower.includes('token_bucket') || lower.includes('tokenbucket'))
+    return 'implements rate limiting to control request flow';
+  if (lower.includes('circuit_breaker') || lower.includes('circuitbreaker'))
+    return 'implements a circuit breaker to prevent cascading failures';
+  if (lower.includes('retry') && (lower.includes('backoff') || lower.includes('attempt')))
+    return 'retries failed operations with backoff';
+  if (lower.includes('health_check') || lower.includes('healthcheck') || lower.includes('heartbeat'))
+    return 'monitors server health with periodic checks';
+
+  // Check for data structure operations
+  if (lower.includes('enqueue') && lower.includes('dequeue'))
+    return 'implements a queue with enqueue and dequeue operations';
+  if ((lower.includes('.push') || lower.includes('.pop')) && lower.includes('stack'))
+    return 'implements stack-based operations';
+  if (lower.includes('insert') && lower.includes('node') && (lower.includes('left') || lower.includes('right')))
+    return 'builds and manipulates a tree structure';
+  if (lower.includes('linked') && lower.includes('node') && lower.includes('next'))
+    return 'works with a linked list structure';
+  if (lower.includes('hashmap') || lower.includes('hash_map') || lower.includes('dictionary'))
+    return 'uses a hash map for efficient lookups';
+
+  // Check for common operations by keywords
+  if (lower.includes('distribute') && lower.includes('server'))
+    return 'distributes work across multiple servers';
+  if (lower.includes('connect') && (lower.includes('socket') || lower.includes('http') || lower.includes('tcp')))
+    return 'establishes network connections';
+  if (lower.includes('encrypt') || lower.includes('decrypt') || lower.includes('cipher'))
+    return 'handles encryption and decryption';
+  if (lower.includes('validate') || lower.includes('sanitize'))
+    return 'validates and sanitizes the input data';
+  if (lower.includes('serialize') || lower.includes('deserialize') || lower.includes('json'))
+    return 'handles data serialization';
+  if (lower.includes('thread') && (lower.includes('lock') || lower.includes('mutex') || lower.includes('synchronized')))
+    return 'manages concurrent access with thread safety';
+
+  // Check for return patterns to infer purpose
+  const returnMatch = code.match(/return\s+(\w+)/g);
+  if (returnMatch && returnMatch.length === 1) {
+    const retVal = returnMatch[0].replace('return ', '');
+    if (retVal === 'result' || retVal === 'output' || retVal === 'res') return 'computes and returns the result';
+    if (retVal === 'count' || retVal === 'total' || retVal === 'sum') return 'calculates and returns a running total';
+    if (retVal.includes('max') || retVal.includes('min')) return `finds the ${retVal} value`;
+    if (retVal === 'True' || retVal === 'true' || retVal === 'False' || retVal === 'false') return 'checks a condition and returns a boolean';
+  }
+
+  // Fallback: check for loops + data structures to describe the pattern
+  if ((lower.includes('for ') || lower.includes('while ')) && lower.includes('append'))
+    return 'builds up a result by iterating and collecting elements';
+  if ((lower.includes('for ') || lower.includes('while ')) && (lower.includes('max') || lower.includes('min')))
+    return 'iterates to find the optimal value';
+
+  return '';
 }
 
 // Add teaching pauses — only at major transition points, not after every sentence
@@ -1659,56 +2172,278 @@ function addTeachingPauses(text: string): string {
 // visualization variant so every scene shows a UNIQUE animation state.
 // ---------------------------------------------------------------------------
 
-/** Keyword → variant mappings per visualization type (topic family) */
+/**
+ * Keyword → variant mappings per visualization type (topic family).
+ *
+ * IMPORTANT: These keywords are matched against each scene's narration + heading
+ * + bullets, NOT the topic name.  The variant must reflect what the narrator is
+ * CURRENTLY SAYING so the right-side visualization matches the spoken content.
+ *
+ * Keywords are case-insensitive (the search blob is lowercased).
+ * Phrase keywords (e.g. "single server") match as substrings, so they work in
+ * natural sentences like "imagine a single server handling millions of requests".
+ */
 const VIZ_VARIANT_RULES: Record<string, Array<{ keywords: string[]; variant: string }>> = {
-  // TrafficFlow variants (load-balanc, cdn, api-gateway topics)
+  // ── TrafficFlow variants ─────────────────────────────────────────────
   'traffic': [
-    { keywords: ['overload', 'overwhelm', 'crash', 'single server', 'one server', 'no load balancer', 'bottleneck', 'too many', 'million users', 'spike'], variant: 'overload' },
-    { keywords: ['round robin', 'distribute', 'even', 'equally', 'rotation', 'algorithm', 'weighted'], variant: 'distribute' },
-    { keywords: ['health check', 'heartbeat', 'failover', 'detect', 'reroute', 'monitor', 'down', 'failure', 'recovery', 'backup'], variant: 'healthcheck' },
-    { keywords: ['sticky', 'session', 'affinity', 'cookie', 'same server', 'stateful', 'persistence'], variant: 'sticky' },
-    { keywords: ['scale', 'horizontal', 'add server', 'auto-scale', 'elastic', 'grow', 'replica', 'new instance', 'capacity'], variant: 'scale' },
+    {
+      keywords: [
+        'overload', 'overwhelm', 'crash', 'single server', 'one server',
+        'no load balancer', 'bottleneck', 'too many', 'million users', 'spike',
+        'without load', 'without a load', 'imagine a server', 'gets overwhelmed',
+        'goes down', 'too much traffic', 'one machine', 'single point',
+        'can\'t handle', 'piling up', 'slow down', 'response time',
+      ],
+      variant: 'overload',
+    },
+    {
+      keywords: [
+        'round robin', 'distribute', 'even', 'equally', 'rotation', 'algorithm',
+        'weighted', 'split traffic', 'multiple server', 'spread', 'balance',
+        'across servers', 'among servers', 'each server gets',
+        'evenly', 'fairly', 'least connection', 'ip hash',
+      ],
+      variant: 'distribute',
+    },
+    {
+      keywords: [
+        'health check', 'heartbeat', 'failover', 'detect', 'reroute', 'monitor',
+        'server down', 'failure', 'recovery', 'backup', 'dead server',
+        'unhealthy', 'remove from pool', 'mark as down', 'stop sending',
+        'periodic check', 'ping', 'health endpoint', 'liveness',
+      ],
+      variant: 'healthcheck',
+    },
+    {
+      keywords: [
+        'sticky', 'session', 'affinity', 'cookie', 'same server', 'stateful',
+        'persistence', 'session id', 'always go to', 'remember which',
+        'client stays', 'bound to', 'pinned',
+      ],
+      variant: 'sticky',
+    },
+    {
+      keywords: [
+        'scale', 'horizontal', 'add server', 'auto-scale', 'elastic', 'grow',
+        'new instance', 'capacity', 'spin up', 'launch more',
+        'dynamically add', 'scale out', 'scale up', 'more servers',
+        'cloud auto', 'demand increases', 'handle more',
+      ],
+      variant: 'scale',
+    },
   ],
-  // HashTableViz variants (hash-map, hash-table, caching topics)
+
+  // ── HashTableViz variants ────────────────────────────────────────────
   'hashtable': [
     { keywords: ['insert', 'add', 'put', 'store', 'create', 'new entry', 'first'], variant: 'insert' },
-    { keywords: ['collision', 'chain', 'same bucket', 'linked list', 'open addressing', 'probe', 'conflict'], variant: 'collision' },
-    { keywords: ['resize', 'rehash', 'load factor', 'grow', 'double', 'capacity', 'threshold', 'expand'], variant: 'resize' },
-    { keywords: ['lookup', 'search', 'find', 'get', 'retrieve', 'access', 'query', 'O(1)'], variant: 'lookup' },
+    { keywords: ['collision', 'chain', 'same bucket', 'linked list', 'open addressing', 'probe', 'conflict', 'same index', 'same slot'], variant: 'collision' },
+    { keywords: ['resize', 'rehash', 'load factor', 'grow', 'double', 'capacity', 'threshold', 'expand', 'too full'], variant: 'resize' },
+    { keywords: ['lookup', 'search', 'find', 'get', 'retrieve', 'access', 'query', 'O(1)', 'constant time', 'fetch'], variant: 'lookup' },
   ],
-  // TreeViz variants (binary-tree, bst, heap topics)
+
+  // ── TreeViz variants ─────────────────────────────────────────────────
   'tree': [
     { keywords: ['insert', 'add', 'new node', 'place', 'create'], variant: 'insert' },
     { keywords: ['search', 'find', 'lookup', 'traverse', 'locate', 'path'], variant: 'search' },
     { keywords: ['delete', 'remove', 'predecessor', 'successor', 'restructure', 'reorganize'], variant: 'delete' },
     { keywords: ['balance', 'AVL', 'rotation', 'red-black', 'skew', 'height', 'rebalance', 'unbalanced'], variant: 'balance' },
   ],
-  // SystemArchViz variants (system-design, microservice topics)
+
+  // ── SystemArchViz variants ───────────────────────────────────────────
   'sysarch': [
-    { keywords: ['request', 'flow', 'architecture', 'layer', 'component', 'overview', 'structure', 'basic'], variant: 'request-flow' },
-    { keywords: ['failure', 'circuit breaker', 'cascade', 'fallback', 'resilience', 'fault', 'outage', 'retry', 'timeout'], variant: 'failure' },
-    { keywords: ['scale', 'horizontal', 'replica', 'throughput', 'capacity', 'instances', 'auto-scale', 'grow'], variant: 'scale-up' },
+    { keywords: ['request', 'flow', 'architecture', 'layer', 'component', 'overview', 'structure', 'basic', 'how it works'], variant: 'request-flow' },
+    { keywords: ['failure', 'circuit breaker', 'cascade', 'fallback', 'resilience', 'fault', 'outage', 'retry', 'timeout', 'graceful degradation'], variant: 'failure' },
+    { keywords: ['scale', 'horizontal', 'replica', 'throughput', 'capacity', 'instances', 'auto-scale', 'grow', 'handle more'], variant: 'scale-up' },
     { keywords: ['cache', 'redis', 'memcached', 'latency', 'hit rate', 'miss', 'invalidation', 'TTL', 'warm', 'cold'], variant: 'caching' },
+  ],
+
+  // ── DatabaseViz variants ─────────────────────────────────────────────
+  // CRITICAL: variant names must match the component switch in DatabaseViz.tsx
+  // Available variants: (default/replication), 'sharding', 'failover'
+  'database': [
+    {
+      keywords: [
+        'replication', 'replica', 'read replica', 'master', 'slave', 'primary',
+        'secondary', 'sync', 'lag', 'master-slave', 'primary-secondary',
+        'read/write split', 'replicate', 'copy data', 'standby copy',
+        'data sync', 'read traffic', 'write to primary',
+      ],
+      variant: 'replication',
+    },
+    {
+      keywords: [
+        'shard', 'partition', 'horizontal scaling', 'shard key', 'range',
+        'hash partition', 'consistent hash', 'distribute data', 'split data',
+        'data across', 'multiple databases', 'break up', 'subset of data',
+        'user a through', 'user id mod', 'hash function',
+      ],
+      variant: 'sharding',
+    },
+    {
+      keywords: [
+        'failover', 'backup', 'disaster', 'standby', 'recovery', 'promote',
+        'switchover', 'database down', 'database fails', 'high availability',
+        'automatic failover', 'hot standby', 'warm standby',
+        'database crash', 'promote standby', 'take over',
+      ],
+      variant: 'failover',
+    },
+    {
+      // Default variant (replication viz) for general DB concepts — this is the
+      // broadest bucket so it's listed LAST (scored after more-specific rules)
+      keywords: [
+        'database', 'table', 'schema', 'query', 'sql', 'normalize',
+        'index', 'join', 'select', 'insert', 'transaction', 'acid',
+        'single database', 'overwhelm', 'bottleneck', 'slow queries',
+        'one database', 'relational', 'data model', 'store data',
+        'b-tree', 'query optimization', 'indexing',
+      ],
+      variant: 'replication',  // default variant shows basic DB concepts
+    },
+  ],
+
+  // ── CacheViz variants ────────────────────────────────────────────────
+  'cache': [
+    {
+      keywords: [
+        'hit', 'miss', 'cache hit', 'cache miss', 'lookup', 'check cache',
+        'fast', 'read', 'get', 'fetch', 'retrieve', 'key-value',
+        'in memory', 'hot data', 'frequently accessed', 'speed up',
+      ],
+      variant: 'lookup',
+    },
+    {
+      keywords: [
+        'evict', 'eviction', 'lru', 'lfu', 'ttl', 'expire', 'remove',
+        'policy', 'capacity', 'full', 'overflow', 'replacement',
+        'least recently', 'least frequently', 'time to live', 'stale',
+      ],
+      variant: 'eviction',
+    },
+    {
+      keywords: [
+        'layer', 'l1', 'l2', 'multi-level', 'distributed', 'local', 'global',
+        'tier', 'hierarchy', 'cdn', 'edge', 'multi-layer', 'app cache',
+        'browser cache', 'server cache', 'levels of cache',
+      ],
+      variant: 'layers',
+    },
+  ],
+
+  // ── QueueViz variants ────────────────────────────────────────────────
+  'queue': [
+    {
+      keywords: [
+        'fifo', 'enqueue', 'dequeue', 'push', 'pop', 'order', 'first in',
+        'sequential', 'simple queue', 'basic queue', 'message queue',
+        'producer', 'consumer', 'send message', 'receive message',
+        'process in order', 'one by one',
+      ],
+      variant: 'fifo',
+    },
+    {
+      keywords: [
+        'publish', 'subscribe', 'pub/sub', 'pub-sub', 'fan-out', 'broadcast',
+        'consumer group', 'topic', 'event', 'multiple consumers',
+        'all subscribers', 'notification', 'event-driven',
+        'one-to-many', 'decouple',
+      ],
+      variant: 'pubsub',
+    },
+    {
+      keywords: [
+        'dead letter', 'dlq', 'retry', 'failed', 'poison', 'error queue',
+        'backoff', 'failed message', 'reprocess', 'undeliverable',
+        'max retries', 'error handling', 'poison pill',
+      ],
+      variant: 'deadletter',
+    },
+  ],
+
+  // ── GraphViz variants ────────────────────────────────────────────────
+  'graph': [
+    { keywords: ['bfs', 'breadth', 'level order', 'queue-based', 'shortest', 'unweighted', 'layer by layer', 'level by level'], variant: 'bfs' },
+    { keywords: ['dfs', 'depth', 'stack', 'backtrack', 'cycle', 'topological', 'recursive', 'explore deep'], variant: 'dfs' },
+    { keywords: ['dijkstra', 'weight', 'shortest path', 'distance', 'bellman', 'priority', 'priority queue', 'greedy'], variant: 'dijkstra' },
+  ],
+
+  // ── SortingViz variants ──────────────────────────────────────────────
+  'sorting': [
+    { keywords: ['merge', 'divide', 'conquer', 'split', 'combine', 'merge sort'], variant: 'merge' },
+    { keywords: ['quick', 'pivot', 'partition', 'quick sort', 'lomuto', 'hoare'], variant: 'quick' },
+    { keywords: ['bubble', 'swap', 'adjacent', 'selection', 'insertion'], variant: 'bubble' },
+    { keywords: ['binary search', 'search', 'find', 'mid', 'target', 'sorted'], variant: 'search' },
   ],
 };
 
-/** Determine which viz family a topic belongs to */
+/** Determine which viz family a topic belongs to for variant assignment */
 function getVizFamily(topic: string): string | null {
   const t = topic.toLowerCase().replace(/[^a-z0-9]/g, '-');
-  if (t.includes('load-balanc') || t.includes('cdn') || t.includes('api-gateway')) return 'traffic';
-  if (t.includes('hash') || t.includes('caching')) return 'hashtable';
-  if (t.includes('tree') || t.includes('bst') || t.includes('heap')) return 'tree';
-  if (t.includes('system-design') || t.includes('microservice')) return 'sysarch';
+
+  // Traffic/Network
+  if (t.includes('load-balanc') || t.includes('cdn') || t.includes('api-gateway') ||
+      t.includes('rate-limit') || t.includes('network') || t.includes('proxy') ||
+      t.includes('dns') || t.includes('http') || t.includes('grpc') ||
+      t.includes('websocket')) return 'traffic';
+
+  // Hash Table
+  if (t.includes('hash-table') || t.includes('hash-map') || t.includes('hashing') ||
+      t.includes('consistent-hash')) return 'hashtable';
+
+  // Tree
+  if (t.includes('tree') || t.includes('bst') || t.includes('heap') ||
+      t.includes('trie') || t.includes('avl') || t.includes('red-black') ||
+      t.includes('priority-queue')) return 'tree';
+
+  // Database
+  if (t.includes('database') || t.includes('rdbms') || t.includes('sql') ||
+      t.includes('nosql') || t.includes('mongo') || t.includes('postgres') ||
+      t.includes('mysql') || t.includes('dynamo') || t.includes('cassandra') ||
+      t.includes('sharding') || t.includes('replicat') ||
+      t.includes('acid') || t.includes('cap-theorem')) return 'database';
+
+  // Cache
+  if (t.includes('cach') || t.includes('redis') || t.includes('memcache') ||
+      t.includes('content-delivery')) return 'cache';
+
+  // Queue/Messaging
+  if (t.includes('queue') || t.includes('kafka') || t.includes('rabbitmq') ||
+      t.includes('message') || t.includes('pub-sub') || t.includes('event-driven') ||
+      t.includes('notification') || t.includes('scheduler') ||
+      t.includes('sqs') || t.includes('sns')) return 'queue';
+
+  // Graph
+  if (t.includes('graph') || t.includes('distributed-system') ||
+      t.includes('consensus') || t.includes('raft') || t.includes('paxos')) return 'graph';
+
+  // Sorting/Arrays
+  if (t.includes('sort') || t.includes('array') || t.includes('string') ||
+      t.includes('two-pointer') || t.includes('sliding-window') ||
+      t.includes('binary-search')) return 'sorting';
+
+  // System Architecture (broadest — must be after more specific checks)
+  if (t.includes('system-design') || t.includes('microservice') ||
+      t.includes('design-') || t.includes('scalab') || t.includes('architect') ||
+      t.includes('auth') || t.includes('security') || t.includes('ci-cd') ||
+      t.includes('devops') || t.includes('monitor') || t.includes('observ')) return 'sysarch';
+
   return null;
 }
 
 /**
  * Assign a vizVariant to a scene based on its textual content.
- * Analyzes heading, narration, and bullets for keyword matches.
+ *
+ * Deeply analyzes the scene's narration, heading, and bullet points to pick
+ * the variant whose keywords best match what the narrator is CURRENTLY SAYING.
+ * This ensures the right-side visualization reflects the spoken content, not
+ * just a generic topic-level animation.
+ *
+ * Scoring: each keyword match adds 1 point; multi-word phrase matches add a
+ * bonus (+1) because they're more specific/confident signals.
  */
 function assignVizVariant(scene: Scene, topic: string, sceneIndex: number): string | undefined {
-  // Only visual scenes (text, interview) get variants — code/diagram/table render differently
-  if (scene.type !== 'text' && scene.type !== 'interview') return undefined;
+  // Only visual scenes (text, interview, code) get variants — diagram/table render differently
+  if (scene.type !== 'text' && scene.type !== 'interview' && scene.type !== 'code') return undefined;
 
   const family = getVizFamily(topic);
   if (!family) return undefined;
@@ -1716,59 +2451,82 @@ function assignVizVariant(scene: Scene, topic: string, sceneIndex: number): stri
   const rules = VIZ_VARIANT_RULES[family];
   if (!rules) return undefined;
 
-  // Build a searchable text blob from all scene content
+  // Build a searchable text blob from ALL scene content (heading has highest
+  // signal so include it twice for implicit weighting)
+  const headingText = (scene.heading || '').toLowerCase();
   const searchBlob = [
-    scene.heading || '',
-    scene.narration || '',
-    scene.content || '',
-    ...(scene.bullets || []),
-  ].join(' ').toLowerCase();
+    headingText,
+    headingText, // double-weight heading
+    (scene.narration || '').toLowerCase(),
+    (scene.content || '').toLowerCase(),
+    ...(scene.bullets || []).map(b => b.toLowerCase()),
+  ].join(' ');
 
-  // Score each variant by how many keywords match
-  let bestVariant: string | undefined;
-  let bestScore = 0;
+  // Score each variant by keyword match count
+  // Multi-word phrase matches get a bonus because they are higher-confidence
+  const variantScores: Array<{ variant: string; score: number; matches: string[] }> = [];
 
   for (const rule of rules) {
-    const score = rule.keywords.reduce((acc, kw) => acc + (searchBlob.includes(kw) ? 1 : 0), 0);
-    if (score > bestScore) {
-      bestScore = score;
-      bestVariant = rule.variant;
+    let score = 0;
+    const matches: string[] = [];
+
+    for (const kw of rule.keywords) {
+      const kwLower = kw.toLowerCase();
+      if (searchBlob.includes(kwLower)) {
+        score += 1;
+        // Bonus for multi-word phrase matches (more specific = more confident)
+        if (kwLower.includes(' ')) score += 1;
+        matches.push(kw);
+      }
     }
+
+    variantScores.push({ variant: rule.variant, score, matches });
   }
 
-  // If no strong match, cycle through variants based on scene index to ensure variety
-  if (bestScore === 0) {
-    bestVariant = rules[sceneIndex % rules.length].variant;
+  // Sort by score descending
+  variantScores.sort((a, b) => b.score - a.score);
+
+  const best = variantScores[0];
+
+  // Log for debugging (visible when running render scripts)
+  if (best && best.score > 0) {
+    console.log(
+      `  [VizVariant] Scene "${scene.heading}" → ${best.variant} (score=${best.score}, matches=[${best.matches.join(', ')}])`
+    );
   }
 
-  return bestVariant;
+  // Only assign if we have a genuine match (score > 0)
+  // Do NOT fall back to cycling — showing a mismatched variant is worse than
+  // showing the default variant for the family
+  if (best && best.score > 0) {
+    return best.variant;
+  }
+
+  // No keyword matches — return undefined so the viz component uses its
+  // built-in default variant (which is usually the most generic/overview one)
+  console.log(
+    `  [VizVariant] Scene "${scene.heading}" → (default) — no keyword matches for family "${family}"`
+  );
+  return undefined;
 }
 
 /**
  * Post-process all scenes to assign vizVariant fields.
  * Call this after generateScript() to enrich scenes with per-scene variants.
+ *
+ * PRIORITY: narration-matching always wins over diversity.  If two scenes both
+ * talk about "sharding", they should BOTH get the sharding variant — showing a
+ * mismatched variant just for variety is the exact bug we're fixing.
  */
 export function assignVizVariants(scenes: Scene[], topic: string): Scene[] {
-  // Track used variants to encourage diversity
-  const usedVariants = new Set<string>();
   let vizSceneIdx = 0;
 
+  console.log(`\n[VizVariant] Assigning variants for topic="${topic}" (${scenes.length} scenes)`);
+
   return scenes.map((scene) => {
-    if (scene.type !== 'text' && scene.type !== 'interview') return scene;
+    if (scene.type !== 'text' && scene.type !== 'interview' && scene.type !== 'code') return scene;
 
-    let variant = assignVizVariant(scene, topic, vizSceneIdx);
-
-    // If this variant was already used and we have alternatives, try next best
-    if (variant && usedVariants.has(variant)) {
-      const family = getVizFamily(topic);
-      if (family) {
-        const rules = VIZ_VARIANT_RULES[family];
-        const unused = rules.find(r => !usedVariants.has(r.variant));
-        if (unused) variant = unused.variant;
-      }
-    }
-
-    if (variant) usedVariants.add(variant);
+    const variant = assignVizVariant(scene, topic, vizSceneIdx);
     vizSceneIdx++;
 
     return { ...scene, vizVariant: variant };

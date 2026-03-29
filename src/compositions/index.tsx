@@ -4,6 +4,7 @@ import React from 'react';
 import { LongVideo } from './LongVideo';
 import { ShortVideo } from './ShortVideo';
 import { MultiShort } from './MultiShort';
+import { ViralShort } from './ViralShort';
 import { ThumbnailComposition } from './Thumbnail';
 import type { Storyboard } from '../types';
 import type { ClipType } from './MultiShort';
@@ -42,6 +43,21 @@ export const RemotionRoot: React.FC = () => {
         height={1080}
         defaultProps={{ storyboard: defaultStoryboard }}
       />
+      {/* Clean version — no overlays, for split-stack shorts conversion */}
+      <Composition
+        id="LongVideoClean"
+        component={asCompositionComponent(LongVideo)}
+        calculateMetadata={({ props }: { props: Record<string, unknown> }) => ({
+          durationInFrames: ((props.storyboard as Storyboard)?.durationInFrames || 9000) + 240,
+          fps: 30,
+          width: 1920,
+          height: 1080,
+        })}
+        fps={30}
+        width={1920}
+        height={1080}
+        defaultProps={{ storyboard: defaultStoryboard, noOverlays: true }}
+      />
       {/* 4K variant — same component, double resolution */}
       <Composition
         id="LongVideo4K"
@@ -62,6 +78,20 @@ export const RemotionRoot: React.FC = () => {
         component={asCompositionComponent(ShortVideo)}
         calculateMetadata={({ props }: { props: Record<string, unknown> }) => ({
           durationInFrames: ((props.storyboard as Storyboard)?.durationInFrames || 2700) + 135, // +135 for short intro(45) + outro(90)
+          fps: 30,
+          width: 1080,
+          height: 1920,
+        })}
+        fps={30}
+        width={1080}
+        height={1920}
+        defaultProps={{ storyboard: defaultStoryboard }}
+      />
+      <Composition
+        id="ViralShort"
+        component={asCompositionComponent(ViralShort)}
+        calculateMetadata={({ props }: { props: Record<string, unknown> }) => ({
+          durationInFrames: ((props.storyboard as Storyboard)?.durationInFrames || 1800) + 150,
           fps: 30,
           width: 1080,
           height: 1920,

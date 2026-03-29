@@ -17,12 +17,15 @@ interface BrandingLayerProps {
   showMidCta?: boolean;
   /** Format: 'long' for 16:9, 'short' for 9:16 */
   format?: 'long' | 'short';
+  /** Topic slug for deep-linked URLs (e.g. "load-balancing") */
+  topicSlug?: string;
 }
 
 export const BrandingLayer: React.FC<BrandingLayerProps> = ({
   durationInFrames,
   showMidCta = true,
   format = 'long',
+  topicSlug,
 }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
@@ -41,8 +44,17 @@ export const BrandingLayer: React.FC<BrandingLayerProps> = ({
   const endCtaStart = watermarkEnd - 300; // 10s before outro
   const endCtaDuration = 300;
 
+  // Lower-third CTA banner at ~10% of video duration (shows for 3 seconds = 90 frames)
+  const lowerThirdStart = Math.round(durationInFrames * 0.1);
+  const lowerThirdDuration = Math.round(fps * 3);
+
   return (
     <>
+      {/* Lower-third CTA banner — slides up from bottom at 10% mark */}
+      <Sequence from={lowerThirdStart} durationInFrames={lowerThirdDuration}>
+        <LowerThirdCta topicSlug={topicSlug} format={format} />
+      </Sequence>
+
       {/* Bottom-right subtle watermark — small, unobtrusive */}
       {frame >= watermarkStart && frame < watermarkEnd && (
         <div
@@ -86,6 +98,68 @@ export const BrandingLayer: React.FC<BrandingLayerProps> = ({
         <EndCta format={format} />
       </Sequence>
     </>
+  );
+};
+
+/** Lower-third CTA banner — dark pill with saffron border, slides up from bottom */
+const LowerThirdCta: React.FC<{ topicSlug?: string; format: 'long' | 'short' }> = ({ topicSlug, format }) => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+  const isShort = format === 'short';
+
+  // Slide up over 10 frames, hold, slide down in last 10 frames
+  const slideUp = spring({ frame, fps, config: { damping: 15, stiffness: 120 } });
+  const totalFrames = Math.round(fps * 3);
+  const slideDown = frame > totalFrames - 10
+    ? interpolate(frame, [totalFrames - 10, totalFrames], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' })
+    : 0;
+
+  const translateY = interpolate(slideUp, [0, 1], [80, 0]) + slideDown * 80;
+  const opacity = slideUp * (1 - slideDown);
+
+  const url = topicSlug ? `guru-sishya.in/${topicSlug}` : 'guru-sishya.in';
+
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        bottom: isShort ? 140 : 30,
+        left: isShort ? 16 : 30,
+        transform: `translateY(${translateY}px)`,
+        opacity,
+        zIndex: 200,
+      }}
+    >
+      <div
+        style={{
+          background: 'rgba(12, 10, 21, 0.85)',
+          border: '2px solid #E85D26',
+          borderRadius: 24,
+          padding: isShort ? '8px 16px' : '10px 20px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 8,
+          backdropFilter: 'blur(10px)',
+        }}
+      >
+        <span style={{
+          fontSize: isShort ? 14 : 17,
+          fontFamily: "'Inter', system-ui, sans-serif",
+          fontWeight: 600,
+          color: '#fff',
+        }}>
+          Full notes & practice →
+        </span>
+        <span style={{
+          fontSize: isShort ? 14 : 17,
+          fontFamily: "'Inter', system-ui, sans-serif",
+          fontWeight: 800,
+          color: '#E85D26',
+        }}>
+          {url}
+        </span>
+      </div>
+    </div>
   );
 };
 
@@ -146,7 +220,7 @@ const MidVideoCta: React.FC<{ format: 'long' | 'short' }> = ({ format }) => {
             lineHeight: 1.4,
           }}
         >
-          1933 questions + code playground + mock interviews
+          1,988 questions + code playground + mock interviews
         </div>
         <div
           style={{
@@ -245,7 +319,7 @@ const EndCta: React.FC<{ format: 'long' | 'short' }> = ({ format }) => {
           opacity: interpolate(frame, [15, 30], [0, 1], { extrapolateRight: 'clamp' }),
         }}
       >
-        {['138 Topics', '1933 Questions', 'Code Playground', 'FREE'].map((feature, i) => (
+        {['141 Topics', '1,988 Questions', 'Code Playground', 'FREE'].map((feature, i) => (
           <div
             key={feature}
             style={{

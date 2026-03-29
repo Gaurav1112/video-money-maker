@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Guru Sishya — Content Metadata Dashboard</title>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone@7/babel.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', -apple-system, sans-serif; background: #0C0A15; color: #E8E8E8; }
+
+    .dashboard { display: flex; height: 100vh; flex-direction: column; }
+    .header { padding: 14px 20px; background: linear-gradient(90deg, #1A1625, #13101E); border-bottom: 1px solid #2D2640; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+    .logo { font-size: 18px; font-weight: 700; color: #E85D26; }
+    .logo span { color: #FDB813; }
+    .header-right { display: flex; gap: 10px; align-items: center; }
+
+    .body { display: flex; flex: 1; overflow: hidden; }
+    .sidebar { width: 300px; background: #1A1625; border-right: 1px solid #2D2640; overflow-y: auto; padding: 16px; flex-shrink: 0; }
+    .main-content { flex: 1; overflow-y: auto; padding: 24px; }
+
+    .search-input { width: 100%; padding: 10px 14px; border-radius: 8px; border: 1px solid #2D2640; background: #13101E; color: #E8E8E8; font-size: 13px; outline: none; margin-bottom: 12px; }
+    .search-input:focus { border-color: #E85D26; }
+    .search-input::placeholder { color: #555; }
+
+    .stats-bar { display: flex; gap: 16px; margin-bottom: 20px; flex-wrap: wrap; }
+    .stat-card { background: #1A1625; border: 1px solid #2D2640; border-radius: 10px; padding: 14px 20px; min-width: 160px; }
+    .stat-value { font-size: 28px; font-weight: 700; color: #E85D26; }
+    .stat-label { font-size: 12px; color: #888; margin-top: 2px; }
+
+    .category-group { margin-bottom: 8px; }
+    .category-header { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 700; color: #FDB813; text-transform: uppercase; letter-spacing: 0.5px; user-select: none; }
+    .category-header:hover { background: #2D264044; }
+    .category-arrow { font-size: 10px; color: #888; transition: transform 0.15s; width: 14px; text-align: center; }
+    .category-arrow.open { transform: rotate(90deg); }
+    .category-count { font-size: 11px; font-weight: 400; color: #666; margin-left: auto; }
+
+    .topic-item { display: flex; align-items: center; gap: 8px; padding: 7px 10px 7px 28px; border-radius: 6px; cursor: pointer; font-size: 13px; transition: background 0.15s; }
+    .topic-item:hover { background: #2D2640; }
+    .topic-item.selected { background: #E85D2622; border: 1px solid #E85D2644; }
+    .topic-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .topic-sessions { font-size: 11px; color: #666; flex-shrink: 0; }
+
+    .status-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+    .status-dot.complete { background: #22C55E; }
+    .status-dot.partial { background: #F59E0B; }
+    .status-dot.pending { background: #555; }
+
+    .section-title { font-size: 16px; font-weight: 700; margin-bottom: 16px; color: #E8E8E8; }
+    .section-subtitle { font-size: 12px; color: #888; margin-bottom: 20px; }
+
+    .playlist-card { background: #1A1625; border: 1px solid #2D2640; border-radius: 12px; padding: 20px; margin-bottom: 24px; }
+    .playlist-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+    .playlist-label { font-size: 11px; font-weight: 700; color: #FDB813; text-transform: uppercase; letter-spacing: 1px; }
+
+    .session-card { background: #13101E; border: 1px solid #2D2640; border-radius: 10px; padding: 16px; margin-bottom: 12px; }
+    .session-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; cursor: pointer; user-select: none; }
+    .session-number { font-size: 14px; font-weight: 700; color: #E85D26; }
+    .session-title { font-size: 13px; color: #CCC; flex: 1; margin-left: 10px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .session-toggle { font-size: 10px; color: #888; transition: transform 0.15s; }
+    .session-toggle.open { transform: rotate(90deg); }
+
+    .metadata-field { margin-bottom: 10px; }
+    .metadata-label { font-size: 11px; font-weight: 600; color: #E85D26; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; display: flex; align-items: center; justify-content: space-between; }
+    .metadata-value { font-size: 13px; color: #CCC; line-height: 1.6; white-space: pre-wrap; word-break: break-word; background: #0C0A15; border: 1px solid #2D264066; border-radius: 6px; padding: 10px 12px; max-height: 200px; overflow-y: auto; }
+
+    .copy-btn { font-size: 11px; padding: 3px 10px; border-radius: 6px; background: #2D2640; color: #AAA; border: none; cursor: pointer; transition: all 0.15s; flex-shrink: 0; }
+    .copy-btn:hover { background: #E85D26; color: white; }
+    .copy-btn.copied { background: #22C55E; color: white; }
+
+    .btn { padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; font-size: 14px; transition: all 0.2s; }
+    .btn-primary { background: linear-gradient(135deg, #E85D26, #FDB813); color: white; }
+    .btn-primary:hover { transform: scale(1.02); box-shadow: 0 4px 20px #E85D2644; }
+    .btn-secondary { background: #2D2640; color: #E8E8E8; }
+    .btn-secondary:hover { background: #3D3650; }
+    .btn-sm { padding: 6px 12px; font-size: 12px; }
+    .btn-xs { padding: 4px 10px; font-size: 11px; }
+
+    .copy-all-bar { display: flex; gap: 8px; margin-bottom: 14px; padding: 10px 14px; background: #1A1625; border: 1px solid #2D2640; border-radius: 8px; align-items: center; }
+    .copy-all-bar span { font-size: 12px; color: #888; }
+
+    .badge { font-size: 11px; padding: 2px 8px; border-radius: 10px; font-weight: 600; }
+    .badge-success { background: #22C55E22; color: #22C55E; }
+    .badge-warning { background: #F59E0B22; color: #F59E0B; }
+    .badge-info { background: #818CF822; color: #818CF8; }
+
+    .empty-state { text-align: center; padding: 80px 20px; color: #555; }
+    .empty-state h3 { font-size: 18px; margin-bottom: 8px; color: #888; }
+    .empty-state p { font-size: 13px; line-height: 1.6; }
+
+    .back-link { font-size: 13px; color: #E85D26; text-decoration: none; display: flex; align-items: center; gap: 6px; }
+    .back-link:hover { text-decoration: underline; }
+
+    .field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    @media (max-width: 1200px) { .field-grid { grid-template-columns: 1fr; } }
+
+    .toast { position: fixed; bottom: 24px; right: 24px; background: #22C55E; color: white; padding: 10px 20px; border-radius: 8px; font-size: 13px; font-weight: 600; z-index: 999; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
+    .toast.visible { opacity: 1; }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #2D2640; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #3D3650; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+    const { useState, useEffect, useCallback, useMemo, useRef } = React;
+
+    const API = window.location.origin;
+
+    // ─── Category display names ───
+    const CATEGORY_LABELS = {
+      'system-design': 'System Design',
+      'system-design-cases': 'System Design Cases',
+      'dsa': 'DSA',
+      'languages': 'Languages',
+      'frameworks': 'Frameworks',
+      'frontend': 'Frontend',
+      'infrastructure': 'Infrastructure',
+      'databases': 'Databases',
+      'fundamentals': 'Fundamentals',
+    };
+
+    // ─── Category fallback mapping from topic-queue.json ───
+    const TOPIC_CATEGORIES = {
+      'load-balancing': 'system-design', 'caching': 'system-design', 'database-scaling': 'system-design',
+      'distributed-systems-fundamentals': 'system-design', 'microservices-architecture': 'system-design',
+      'api-gateway': 'system-design', 'message-queues': 'system-design', 'rate-limiting-throttling': 'system-design',
+      'scalability-patterns': 'system-design', 'database-design': 'system-design',
+      'authentication-authorization': 'system-design', 'content-delivery-networks-cdn': 'system-design',
+      'data-storage-processing': 'system-design', 'monitoring-observability': 'system-design',
+      'networking-fundamentals': 'system-design', 'system-design-interview-framework': 'system-design',
+      'back-of-envelope-estimation': 'system-design',
+      'design-url-shortener-tinyurl': 'system-design-cases', 'design-rate-limiter': 'system-design-cases',
+      'design-chat-system-whatsapp-slack': 'system-design-cases', 'design-news-feed-facebook-twitter': 'system-design-cases',
+      'design-notification-system': 'system-design-cases', 'design-distributed-key-value-store-redis-dynamodb': 'system-design-cases',
+      'design-distributed-task-scheduler-cron-at-scale': 'system-design-cases', 'design-e-commerce-system-amazon': 'system-design-cases',
+      'design-file-storage-system-google-drive-dropbox': 'system-design-cases', 'design-payment-system-stripe-paypal': 'system-design-cases',
+      'design-ride-sharing-service-uber-lyft': 'system-design-cases', 'design-search-autocomplete-google': 'system-design-cases',
+      'design-social-media-platform-instagram': 'system-design-cases', 'design-video-streaming-platform-youtube-netflix': 'system-design-cases',
+      'design-web-crawler': 'system-design-cases', 'design-airbnb-detailed': 'system-design-cases',
+      'design-instagram-detailed': 'system-design-cases', 'design-spotify-detailed': 'system-design-cases',
+      'design-stripe-detailed': 'system-design-cases', 'design-twitter-x-detailed': 'system-design-cases',
+      'design-uber-detailed': 'system-design-cases', 'design-whatsapp-detailed': 'system-design-cases',
+      'design-youtube-detailed': 'system-design-cases',
+      'arrays-strings': 'dsa', 'linked-lists': 'dsa', 'stacks-queues': 'dsa', 'trees-bst': 'dsa',
+      'graphs': 'dsa', 'hash-tables': 'dsa', 'dynamic-programming': 'dsa', 'sorting-searching': 'dsa',
+      'heaps-priority-queues': 'dsa', 'recursion-backtracking': 'dsa', 'dsa-coding-patterns': 'dsa',
+      'bit-manipulation': 'dsa', 'trie-prefix-tree': 'dsa', 'union-find-disjoint-set': 'dsa',
+      'java-core': 'languages', 'javascript-typescript': 'languages',
+      'spring-boot': 'frameworks', 'react-next-js': 'frameworks', 'node-js': 'frameworks',
+      'html-css': 'frontend',
+      'apache-kafka': 'infrastructure', 'kubernetes-docker': 'infrastructure', 'aws-cloud-services': 'infrastructure',
+      'rdbms-sql': 'databases', 'nosql-databases': 'databases',
+      'software-design-patterns': 'fundamentals',
+    };
+
+    // ─── SEO-Optimized Metadata Generators ───
+
+    // Topic hashtag lookup (exactly 3 shown above title)
+    const TOPIC_HASHTAG_MAP = {
+      'load': '#SystemDesign', 'caching': '#SystemDesign', 'microservice': '#SystemDesign',
+      'database': '#Database', 'api': '#SystemDesign', 'docker': '#DevOps',
+      'kubernetes': '#DevOps', 'kafka': '#SystemDesign', 'redis': '#Database',
+      'hash': '#DSA', 'tree': '#DSA', 'graph': '#DSA', 'array': '#DSA',
+      'linked': '#DSA', 'stack': '#DSA', 'queue': '#DSA', 'sort': '#DSA',
+      'search': '#DSA', 'dynamic': '#DSA', 'recursion': '#DSA',
+      'java': '#Java', 'python': '#Python', 'javascript': '#JavaScript',
+      'design pattern': '#CleanCode',
+    };
+
+    function getTopicHashtag(topicName) {
+      const lower = topicName.toLowerCase();
+      for (const [key, tag] of Object.entries(TOPIC_HASHTAG_MAP)) {
+        if (lower.includes(key)) return tag;
+      }
+      return '#CodingInterview';
+    }
+
+    // DALL-E thumbnail prompts by category
+    const THUMBNAIL_PROMPTS = {
+      'system-design': 'Dark background #0C0A15, glowing server architecture diagram, neon teal (#1DD1A1) connection lines, futuristic minimal style, no text, 1280x720',
+      'dsa': 'Dark navy background, glowing data structure visualization, saffron (#E85D26) nodes with gold edges, minimal clean style, no text, 1280x720',
+      'behavioral': 'Dark background, professional interview setting silhouette, gold (#FDB813) accent glow, clean minimal, no text, 1280x720',
+      'language': 'Dark background #0C0A15, clean code editor with syntax highlighting, neon teal (#1DD1A1) cursor glow, minimal style, no text, 1280x720',
+      'default': 'Dark background #0C0A15, abstract code visualization with neon accents, futuristic tech aesthetic, no text, 1280x720',
+    };
+
+    function getThumbnailCategory(topicName) {
+      const lower = topicName.toLowerCase();
+      if (['system design','load','caching','microservice','database','api','kafka'].some(k => lower.includes(k))) return 'system-design';
+      if (['dsa','tree','graph','sort','hash','array','stack','queue','linked'].some(k => lower.includes(k))) return 'dsa';
+      if (['behavioral','star'].some(k => lower.includes(k))) return 'behavioral';
+      if (['java','python','javascript','typescript'].some(k => lower.includes(k))) return 'language';
+      return 'default';
+    }
+
+    // Rotating title formulas (keyword-first, under 60 chars, power words)
+    const TITLE_FORMULAS = [
+      (kw, hook) => `${kw} Explained \u2014 ${hook} | Guru Sishya`,
+      (kw, _h, topic, n) => `Why ${kw} Matters \u2014 ${topic} #${n}`,
+      (kw, _h, topic) => `${kw} in Minutes | ${topic} Tutorial`,
+      (kw) => `5 ${kw} Mistakes That KILL Your Interview`,
+      (kw) => `${kw} \u2014 What Interviewers ACTUALLY Ask`,
+    ];
+
+    function extractKeyword(title) { return title.split(/\s+/).slice(0, 3).join(' '); }
+    function generateHook(topicName) {
+      const lower = topicName.toLowerCase();
+      if (['system design','load','caching'].some(k => lower.includes(k))) return 'ace system design';
+      if (['dsa','sort','tree','graph'].some(k => lower.includes(k))) return 'crack DSA rounds';
+      return 'nail your interview';
+    }
+
+    function generatePlaylistMeta(topicName, topicSlug) {
+      const thumbCat = getThumbnailCategory(topicName);
+      return {
+        title: `${topicName} \u2014 Complete Interview Prep Series | Guru Sishya`,
+        description: `Master ${topicName} for your FAANG interview. This playlist covers everything from basics to advanced concepts with code examples in Python & Java.\n\n\uD83D\uDD25 FREE practice: https://guru-sishya.in/${topicSlug}\n\uD83D\uDCFA Subscribe for daily lessons\n\uD83D\uDCF1 Instagram: @guru_sishya.in`,
+        tags: `${topicName}, ${topicName} explained, ${topicName} interview questions, ${topicName} tutorial, coding interview ${topicName}, guru sishya, coding interview prep, system design interview, DSA tutorial`,
+        thumbnailPrompt: THUMBNAIL_PROMPTS[thumbCat] || THUMBNAIL_PROMPTS['default'],
+      };
+    }
+
+    function generateSessionMeta(topicName, topicSlug, sessionNum, sessionTitle) {
+      const topicTag = getTopicHashtag(topicName);
+      const thumbCat = getThumbnailCategory(topicName);
+
+      // Title: keyword-first, under 60 chars, rotating formulas
+      const keyword = extractKeyword(sessionTitle);
+      const hook = generateHook(topicName);
+      const formulaIdx = (sessionNum - 1) % TITLE_FORMULAS.length;
+      let ytTitle = TITLE_FORMULAS[formulaIdx](keyword, hook, topicName, sessionNum);
+      if (ytTitle.length > 60) ytTitle = ytTitle.slice(0, 59).trimEnd() + '\u2026';
+
+      // Description: first 150 chars unique + primary keyword
+      const ytDescription = `${sessionTitle} \u2014 master this for your FAANG interview. FREE practice with 1,988 questions at guru-sishya.in/${topicSlug}\n\nPart ${sessionNum} of the ${topicName} series. Java + Python code, visual diagrams, and real interview questions.\n\n\u23F1 Timestamps:\n0:00 Introduction\n0:30 Core Concepts\n// [Add timestamps after rendering]\n\n\uD83D\uDD17 Links:\n\uD83D\uDD25 FREE Interview Prep: https://guru-sishya.in/${topicSlug}\n\uD83D\uDCFA Full Playlist: [playlist link]\n\uD83D\uDCF1 Instagram: https://instagram.com/guru_sishya.in\n\n${topicTag} #CodingInterview #GuruSishya`;
+
+      // Tags: 15-20, priority ordered
+      const ytTags = [sessionTitle, `${topicName} explained`, `${topicName} interview questions`,
+        `${topicName} tutorial`, `coding interview ${topicName}`, `${topicName} system design`,
+        `FAANG interview ${topicName}`, 'guru sishya', 'coding interview prep',
+        'system design interview', `${topicName} python`, `${topicName} java`,
+        `${topicName} for beginners`, `${topicName} advanced`, 'DSA tutorial'].join(', ');
+
+      // Hashtags: exactly 3
+      const ytHashtags = `${topicTag} #CodingInterview #GuruSishya`;
+
+      // Pinned comment: engagement-driving question
+      const pinnedComment = `Want to practice ${topicName} with real interview questions? I built a FREE platform with 1,988 questions \u2192 guru-sishya.in/${topicSlug}\n\nWhich part of ${topicName} do you find hardest? Drop it below \u2014 I'll cover it in the next video! \uD83D\uDC47`;
+
+      // Community post: poll format
+      const communityPost = `\uD83D\uDD25 New video: ${ytTitle}\n\nWhat should I cover next?\n\u25A1 ${topicName} Advanced Patterns\n\u25A1 ${topicName} Interview Questions\n\u25A1 System Design with ${topicName}\n\u25A1 Something else (comment below!)\n\nFree practice: https://guru-sishya.in/${topicSlug}`;
+
+      const cleanSlug = topicSlug.replace(/-/g, '');
+
+      return {
+        ytTitle,
+        ytDescription,
+        ytTags,
+        ytHashtags,
+        pinnedComment,
+        communityPost,
+        igCaption: `${sessionTitle} \uD83D\uDD25\n\nMaster ${topicName} for your next interview!\n\nFull course FREE at guru-sishya.in/${topicSlug}\n\n#coding #programming #${cleanSlug} #interviewprep #faang #dsa #tech #developer #codinginterview #systemdesign`,
+        igHashtags: `#coding #programming #${cleanSlug} #interviewprep #faang #dsa #tech #developer #codinginterview #systemdesign #gurusishya #learntocode`,
+        thumbnailPrompt: THUMBNAIL_PROMPTS[thumbCat] || THUMBNAIL_PROMPTS['default'],
+      };
+    }
+
+    function generateSessionTitle(topicName, sessionNum) {
+      return `${topicName} \u2014 Session ${sessionNum}`;
+    }
+
+    // ─── Components ───
+    function CopyButton({ text, label, onToast }) {
+      const [copied, setCopied] = useState(false);
+      const copy = () => {
+        navigator.clipboard.writeText(text);
+        setCopied(true);
+        if (onToast) onToast(label || 'Copied');
+        setTimeout(() => setCopied(false), 1500);
+      };
+      return (
+        <button className={`copy-btn ${copied ? 'copied' : ''}`} onClick={copy}>
+          {copied ? 'Copied!' : '\uD83D\uDCCB Copy'}
+        </button>
+      );
+    }
+
+    function MetadataField({ label, value, onToast }) {
+      if (!value) return null;
+      return (
+        <div className="metadata-field">
+          <div className="metadata-label">
+            <span>{label}</span>
+            <CopyButton text={value} label={label} onToast={onToast} />
+          </div>
+          <div className="metadata-value">{value}</div>
+        </div>
+      );
+    }
+
+    function SessionCard({ topicName, topicSlug, sessionNum, onToast }) {
+      const [open, setOpen] = useState(false);
+      const title = generateSessionTitle(topicName, sessionNum);
+      const meta = generateSessionMeta(topicName, topicSlug, sessionNum, title);
+
+      const copyAll = () => {
+        const all = [
+          `=== Session ${sessionNum}: ${title} ===`,
+          `\nYT Title:\n${meta.ytTitle}`,
+          `\nYT Description:\n${meta.ytDescription}`,
+          `\nYT Tags:\n${meta.ytTags}`,
+          `\nYT Hashtags:\n${meta.ytHashtags}`,
+          `\nPinned Comment:\n${meta.pinnedComment}`,
+          `\nCommunity Post:\n${meta.communityPost}`,
+          `\nIG Caption:\n${meta.igCaption}`,
+          `\nIG Hashtags:\n${meta.igHashtags}`,
+          `\nThumbnail Prompt:\n${meta.thumbnailPrompt}`,
+        ].join('\n');
+        navigator.clipboard.writeText(all);
+        if (onToast) onToast(`Session ${sessionNum} \u2014 All fields copied`);
+      };
+
+      return (
+        <div className="session-card">
+          <div className="session-header" onClick={() => setOpen(!open)}>
+            <span className="session-number">S{sessionNum}</span>
+            <span className="session-title">{title}</span>
+            <button className="btn btn-secondary btn-xs" onClick={e => { e.stopPropagation(); copyAll(); }} style={{marginRight: 8}}>Copy All</button>
+            <span className={`session-toggle ${open ? 'open' : ''}`}>{'\u25B6'}</span>
+          </div>
+          {open && (
+            <div style={{marginTop: 12}}>
+              <MetadataField label="YT Title" value={meta.ytTitle} onToast={onToast} />
+              <MetadataField label="YT Description" value={meta.ytDescription} onToast={onToast} />
+              <div className="field-grid">
+                <MetadataField label="YT Tags" value={meta.ytTags} onToast={onToast} />
+                <MetadataField label="YT Hashtags" value={meta.ytHashtags} onToast={onToast} />
+              </div>
+              <MetadataField label="Pinned Comment" value={meta.pinnedComment} onToast={onToast} />
+              <MetadataField label="Community Post" value={meta.communityPost} onToast={onToast} />
+              <MetadataField label="IG Caption" value={meta.igCaption} onToast={onToast} />
+              <MetadataField label="IG Hashtags" value={meta.igHashtags} onToast={onToast} />
+              <MetadataField label="Thumbnail Prompt" value={meta.thumbnailPrompt} onToast={onToast} />
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    function App() {
+      const [topics, setTopics] = useState([]);
+      const [selectedSlug, setSelectedSlug] = useState(null);
+      const [search, setSearch] = useState('');
+      const [collapsedCats, setCollapsedCats] = useState({});
+      const [toast, setToast] = useState('');
+      const toastTimer = useRef(null);
+
+      const showToast = useCallback((msg) => {
+        setToast(msg);
+        if (toastTimer.current) clearTimeout(toastTimer.current);
+        toastTimer.current = setTimeout(() => setToast(''), 2000);
+      }, []);
+
+      // Fetch topics from API
+      useEffect(() => {
+        fetch(`${API}/api/topics`)
+          .then(r => r.json())
+          .then(d => setTopics(d.topics || []))
+          .catch(() => {});
+      }, []);
+
+      // Group topics by category
+      const grouped = useMemo(() => {
+        const groups = {};
+        const filtered = topics.filter(t =>
+          t.name.toLowerCase().includes(search.toLowerCase()) ||
+          t.slug.includes(search.toLowerCase())
+        );
+        for (const t of filtered) {
+          const cat = TOPIC_CATEGORIES[t.slug] || 'other';
+          if (!groups[cat]) groups[cat] = [];
+          groups[cat].push(t);
+        }
+        // Sort categories by defined order
+        const order = Object.keys(CATEGORY_LABELS);
+        const sorted = {};
+        for (const key of order) {
+          if (groups[key]) sorted[key] = groups[key];
+        }
+        // Add any remaining
+        for (const key of Object.keys(groups)) {
+          if (!sorted[key]) sorted[key] = groups[key];
+        }
+        return sorted;
+      }, [topics, search]);
+
+      const selectedTopic = topics.find(t => t.slug === selectedSlug);
+
+      // Stats
+      const totalTopics = topics.length;
+      const totalSessions = topics.reduce((sum, t) => sum + (t.totalSessions || 0), 0);
+      const totalRendered = topics.reduce((sum, t) => sum + (t.renderedSessions?.length || 0), 0);
+
+      const toggleCategory = (cat) => {
+        setCollapsedCats(prev => ({...prev, [cat]: !prev[cat]}));
+      };
+
+      // Export all metadata as JSON
+      const exportJSON = () => {
+        const data = {};
+        for (const t of topics) {
+          const playlist = generatePlaylistMeta(t.name, t.slug);
+          const sessions = [];
+          for (let i = 1; i <= t.totalSessions; i++) {
+            const title = generateSessionTitle(t.name, i);
+            const sessionMeta = generateSessionMeta(t.name, t.slug, i, title);
+            sessions.push({
+              session: i,
+              title,
+              ...sessionMeta,
+            });
+          }
+          data[t.slug] = {
+            topic: t.name,
+            slug: t.slug,
+            category: TOPIC_CATEGORIES[t.slug] || 'other',
+            totalSessions: t.totalSessions,
+            playlist,
+            sessions,
+          };
+        }
+        const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `guru-sishya-metadata-${new Date().toISOString().slice(0,10)}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+        showToast('Exported all metadata as JSON');
+      };
+
+      return (
+        <div className="dashboard">
+          {/* Header */}
+          <div className="header">
+            <div style={{display:'flex',alignItems:'center',gap:16}}>
+              <div className="logo">GURU <span>SISHYA</span></div>
+              <span style={{color:'#888',fontSize:13}}>Content Metadata Dashboard</span>
+            </div>
+            <div className="header-right">
+              <a href="/studio" className="back-link">{'\u2190'} Video Studio</a>
+              <button className="btn btn-primary btn-sm" onClick={exportJSON}>Export JSON</button>
+            </div>
+          </div>
+
+          <div className="body">
+            {/* Sidebar */}
+            <div className="sidebar">
+              <input
+                className="search-input"
+                placeholder="Search topics..."
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+              />
+
+              {/* Stats */}
+              <div style={{display:'flex',gap:8,marginBottom:16,flexWrap:'wrap'}}>
+                <div style={{flex:1,minWidth:80,background:'#13101E',border:'1px solid #2D2640',borderRadius:8,padding:'8px 12px',textAlign:'center'}}>
+                  <div style={{fontSize:20,fontWeight:700,color:'#E85D26'}}>{totalTopics}</div>
+                  <div style={{fontSize:10,color:'#888'}}>Topics</div>
+                </div>
+                <div style={{flex:1,minWidth:80,background:'#13101E',border:'1px solid #2D2640',borderRadius:8,padding:'8px 12px',textAlign:'center'}}>
+                  <div style={{fontSize:20,fontWeight:700,color:'#FDB813'}}>{totalSessions}</div>
+                  <div style={{fontSize:10,color:'#888'}}>Sessions</div>
+                </div>
+                <div style={{flex:1,minWidth:80,background:'#13101E',border:'1px solid #2D2640',borderRadius:8,padding:'8px 12px',textAlign:'center'}}>
+                  <div style={{fontSize:20,fontWeight:700,color:'#22C55E'}}>{totalRendered}</div>
+                  <div style={{fontSize:10,color:'#888'}}>Rendered</div>
+                </div>
+              </div>
+
+              {/* Tree view */}
+              {Object.entries(grouped).map(([cat, catTopics]) => (
+                <div key={cat} className="category-group">
+                  <div className="category-header" onClick={() => toggleCategory(cat)}>
+                    <span className={`category-arrow ${!collapsedCats[cat] ? 'open' : ''}`}>{'\u25B6'}</span>
+                    {CATEGORY_LABELS[cat] || cat}
+                    <span className="category-count">{catTopics.length}</span>
+                  </div>
+                  {!collapsedCats[cat] && catTopics.map(t => (
+                    <div
+                      key={t.slug}
+                      className={`topic-item ${selectedSlug === t.slug ? 'selected' : ''}`}
+                      onClick={() => setSelectedSlug(t.slug)}
+                    >
+                      <div className={`status-dot ${t.status}`} />
+                      <span className="topic-name">{t.name}</span>
+                      <span className="topic-sessions">{t.totalSessions}s</span>
+                    </div>
+                  ))}
+                </div>
+              ))}
+
+              {Object.keys(grouped).length === 0 && (
+                <div style={{color:'#555',fontSize:13,textAlign:'center',padding:20}}>
+                  {topics.length === 0 ? 'Loading topics...' : 'No topics match your search'}
+                </div>
+              )}
+            </div>
+
+            {/* Main content */}
+            <div className="main-content">
+              {!selectedTopic && (
+                <div className="empty-state">
+                  <h3>Select a topic from the sidebar</h3>
+                  <p>Click on any topic to view its complete YouTube and Instagram metadata.<br/>Use the copy buttons to grab metadata for publishing.</p>
+                </div>
+              )}
+
+              {selectedTopic && (() => {
+                const playlist = generatePlaylistMeta(selectedTopic.name, selectedTopic.slug);
+                return (
+                  <>
+                    {/* Playlist metadata */}
+                    <div className="playlist-card">
+                      <div className="playlist-header">
+                        <div>
+                          <div className="playlist-label">Playlist Metadata</div>
+                          <div style={{fontSize:18,fontWeight:700,marginTop:6}}>{selectedTopic.name}</div>
+                          <div style={{fontSize:12,color:'#888',marginTop:2}}>
+                            {selectedTopic.totalSessions} sessions
+                            {' \u00B7 '}
+                            <span className={`badge badge-${selectedTopic.status === 'complete' ? 'success' : selectedTopic.status === 'partial' ? 'warning' : 'info'}`}>
+                              {selectedTopic.status}
+                            </span>
+                          </div>
+                        </div>
+                        <button className="btn btn-secondary btn-sm" onClick={() => {
+                          const all = [
+                            `=== Playlist: ${selectedTopic.name} ===`,
+                            `\nTitle:\n${playlist.title}`,
+                            `\nDescription:\n${playlist.description}`,
+                            `\nTags:\n${playlist.tags}`,
+                            `\nThumbnail Prompt:\n${playlist.thumbnailPrompt}`,
+                          ].join('\n');
+                          navigator.clipboard.writeText(all);
+                          showToast('Playlist metadata copied');
+                        }}>Copy All Playlist</button>
+                      </div>
+                      <MetadataField label="Playlist Title" value={playlist.title} onToast={showToast} />
+                      <MetadataField label="Playlist Description" value={playlist.description} onToast={showToast} />
+                      <div className="field-grid">
+                        <MetadataField label="Playlist Tags" value={playlist.tags} onToast={showToast} />
+                        <MetadataField label="Thumbnail Prompt" value={playlist.thumbnailPrompt} onToast={showToast} />
+                      </div>
+                    </div>
+
+                    {/* Sessions */}
+                    <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:16}}>
+                      <div className="section-title" style={{margin:0}}>Sessions ({selectedTopic.totalSessions})</div>
+                      <button className="btn btn-secondary btn-sm" onClick={() => {
+                        let all = `=== ${selectedTopic.name} \u2014 All Session Metadata ===\n`;
+                        for (let i = 1; i <= selectedTopic.totalSessions; i++) {
+                          const title = generateSessionTitle(selectedTopic.name, i);
+                          const meta = generateSessionMeta(selectedTopic.name, selectedTopic.slug, i, title);
+                          all += `\n${'='.repeat(50)}\nSession ${i}: ${title}\n${'='.repeat(50)}\n`;
+                          all += `YT Title: ${meta.ytTitle}\n\nYT Description:\n${meta.ytDescription}\n\nYT Tags: ${meta.ytTags}\n\nYT Hashtags: ${meta.ytHashtags}\n\nPinned Comment:\n${meta.pinnedComment}\n\nCommunity Post:\n${meta.communityPost}\n\nIG Caption:\n${meta.igCaption}\n\nIG Hashtags: ${meta.igHashtags}\n\nThumbnail Prompt:\n${meta.thumbnailPrompt}\n`;
+                        }
+                        navigator.clipboard.writeText(all);
+                        showToast(`All ${selectedTopic.totalSessions} sessions copied`);
+                      }}>Copy All Sessions</button>
+                    </div>
+
+                    {Array.from({length: selectedTopic.totalSessions}, (_, i) => i + 1).map(num => (
+                      <SessionCard
+                        key={num}
+                        topicName={selectedTopic.name}
+                        topicSlug={selectedTopic.slug}
+                        sessionNum={num}
+                        onToast={showToast}
+                      />
+                    ))}
+                  </>
+                );
+              })()}
+            </div>
+          </div>
+
+          {/* Toast */}
+          <div className={`toast ${toast ? 'visible' : ''}`}>{toast}</div>
+        </div>
+      );
+    }
+
+    ReactDOM.render(<App />, document.getElementById('root'));
+  </script>
+</body>
+</html>

@@ -40,6 +40,13 @@ function useReliableProgress(frame: number, fps: number, sync: SyncState): numbe
   return Math.min(1, frame / assumedDuration);
 }
 
+// ---- Realistic message labels ----
+const MSG_LABELS = [
+  'order_123', 'payment_456', 'email_789', 'notify_012',
+  'audit_345', 'ship_678', 'refund_901', 'stock_234',
+  'auth_567', 'log_890',
+];
+
 // ---- Message item colors ----
 const MSG_COLORS = [C.saffron, C.gold, C.teal, C.indigo, C.green, C.purple, C.cyan];
 
@@ -65,11 +72,45 @@ const MessageBox: React.FC<MessageBoxProps> = ({
         />
       )}
       <text x={x + width / 2} y={y + height / 2 + 1} fill={color}
-        fontSize={9} fontWeight={600} fontFamily="Inter, sans-serif"
+        fontSize={8} fontWeight={600} fontFamily="'JetBrains Mono', 'SF Mono', monospace"
         textAnchor="middle" dominantBaseline="middle">
         {label}
       </text>
     </g>
+  );
+};
+
+// =====================================================================
+// Throughput counter component
+// =====================================================================
+const ThroughputCounter: React.FC<{ produced: number; consumed: number; frame: number; fps: number }> = ({
+  produced, consumed, frame, fps,
+}) => {
+  // Calculate messages per second based on consumed count and elapsed time
+  const elapsedSec = Math.max(1, frame / fps);
+  const msgsPerSec = Math.round((consumed / elapsedSec) * 100) / 100;
+  // Animated display with slight jitter for realism
+  const jitter = Math.sin(frame * 0.3) * 12;
+  const displayRate = Math.max(0, Math.round(msgsPerSec * 1000 + jitter));
+
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'center', gap: 6,
+    }}>
+      <div style={{
+        width: 6, height: 6, borderRadius: '50%',
+        background: C.green,
+        boxShadow: `0 0 6px ${C.green}`,
+        opacity: 0.6 + 0.4 * Math.sin(frame * 0.12),
+      }} />
+      <div style={{ textAlign: 'center' }}>
+        <div style={{ fontSize: 9, color: C.gray }}>Throughput</div>
+        <div style={{ fontSize: 18, fontWeight: 800, color: C.teal, fontFamily: "'JetBrains Mono', monospace" }}>
+          {displayRate.toLocaleString()}
+        </div>
+        <div style={{ fontSize: 8, color: C.gray }}>msg/sec</div>
+      </div>
+    </div>
   );
 };
 
@@ -94,7 +135,7 @@ const FifoVariant: React.FC<Omit<QueueVizProps, 'variant'>> = ({ sync, frame }) 
 
   // Queue state: items enter and leave
   const queueMaxDisplay = 6;
-  const msgW = 52;
+  const msgW = 62;
   const msgH = 28;
   const msgGap = 6;
   const queueWidth = queueMaxDisplay * (msgW + msgGap) + 20;
@@ -103,21 +144,18 @@ const FifoVariant: React.FC<Omit<QueueVizProps, 'variant'>> = ({ sync, frame }) 
   const queueY = queuePos.fy * svgH - queueHeight / 2;
 
   // Frame-driven queue fill/drain simulation
-  const produceCycle = Math.floor(fps * 0.8); // New item every 0.8s
-  const consumeCycle = Math.floor(fps * 1.2); // Consume every 1.2s
+  const produceCycle = Math.floor(fps * 0.8);
+  const consumeCycle = Math.floor(fps * 1.2);
   const produced = flowActive ? Math.floor(frame / produceCycle) : 0;
   const consumed = flowActive ? Math.floor(frame / consumeCycle) : 0;
   const queueDepth = clamp(produced - consumed, 0, queueMaxDisplay);
 
-  // Items currently in queue
+  // Items currently in queue with realistic labels
   const items = Array.from({ length: queueDepth }).map((_, i) => ({
     idx: (consumed + i) % MSG_COLORS.length,
-    label: `MSG-${(consumed + i) % 100}`,
+    label: MSG_LABELS[(consumed + i) % MSG_LABELS.length],
     color: MSG_COLORS[(consumed + i) % MSG_COLORS.length],
   }));
-
-  // Flowing dots
-  const dotPeriod = fps * 1.5;
 
   // Producer -> Queue arrow
   const prodArrow = {
@@ -143,7 +181,6 @@ const FifoVariant: React.FC<Omit<QueueVizProps, 'variant'>> = ({ sync, frame }) 
             stroke={C.saffron} strokeWidth={2.5} strokeLinecap="round"
             opacity={0.5 + 0.3 * Math.sin(frame * 0.06)}
           />
-          {/* Arrowhead */}
           <polygon points={`${prodArrow.x2},${prodArrow.y2} ${prodArrow.x2 - 8},${prodArrow.y2 - 5} ${prodArrow.x2 - 8},${prodArrow.y2 + 5}`}
             fill={C.saffron} opacity={0.8}
           />
@@ -260,7 +297,7 @@ const FifoVariant: React.FC<Omit<QueueVizProps, 'variant'>> = ({ sync, frame }) 
         <span style={{ fontSize: 9, color: C.gray }}>Service B</span>
       </div>
 
-      {/* Queue depth counter */}
+      {/* Queue depth counter + throughput */}
       {flowActive && (
         <div style={{
           position: 'absolute', bottom: '8%', left: '50%', transform: 'translateX(-50%)',
@@ -271,6 +308,8 @@ const FifoVariant: React.FC<Omit<QueueVizProps, 'variant'>> = ({ sync, frame }) 
             <div style={{ fontSize: 9, color: C.gray }}>Queue Depth</div>
             <div style={{ fontSize: 20, fontWeight: 800, color: queueDepth > 4 ? C.saffron : C.teal }}>{queueDepth}</div>
           </div>
+          <div style={{ width: 1, height: 28, background: `${C.gray}44` }} />
+          <ThroughputCounter produced={produced} consumed={consumed} frame={frame} fps={fps} />
           <div style={{ width: 1, height: 28, background: `${C.gray}44` }} />
           <div style={{ textAlign: 'center' }}>
             <div style={{ fontSize: 9, color: C.gray }}>Produced</div>
@@ -288,7 +327,7 @@ const FifoVariant: React.FC<Omit<QueueVizProps, 'variant'>> = ({ sync, frame }) 
 };
 
 // =====================================================================
-// PUB-SUB VARIANT - Fan-out to multiple consumers
+// PUB-SUB VARIANT - Fan-out to multiple consumers with animated trails
 // =====================================================================
 const PubSubVariant: React.FC<Omit<QueueVizProps, 'variant'>> = ({ sync, frame }) => {
   const { fps, width, height } = useVideoConfig();
@@ -328,10 +367,25 @@ const PubSubVariant: React.FC<Omit<QueueVizProps, 'variant'>> = ({ sync, frame }
     x2: s.fx * svgW - 50, y2: s.fy * svgH,
   }));
 
+  // Throughput counter for pub-sub
+  const pubCycle = Math.floor(fps * 1.2);
+  const pubCount = flowActive ? Math.floor(frame / pubCycle) : 0;
+
   return (
     <div style={{ width: '100%', height: '100%', position: 'relative', background: 'transparent', fontFamily: 'Inter, sans-serif' }}>
       <svg style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', overflow: 'visible' }}
         viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none">
+
+        {/* SVG defs for fan-out trail gradient */}
+        <defs>
+          {subscribers.map((sub, i) => (
+            <linearGradient key={`trail-grad-${i}`} id={`trail-grad-${i}`}
+              x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor={sub.color} stopOpacity={0.6} />
+              <stop offset="100%" stopColor={sub.color} stopOpacity={0} />
+            </linearGradient>
+          ))}
+        </defs>
 
         {/* Publisher -> Topic arrow */}
         <g opacity={arrowDrawP * (0.5 + 0.3 * Math.sin(frame * 0.06))}>
@@ -345,7 +399,7 @@ const PubSubVariant: React.FC<Omit<QueueVizProps, 'variant'>> = ({ sync, frame }
           </text>
         </g>
 
-        {/* Fan-out arrows */}
+        {/* Fan-out arrows with animated trail lines */}
         {subArrows.map((a, i) => {
           const dx = a.x2 - a.x1;
           const dy = a.y2 - a.y1;
@@ -357,8 +411,16 @@ const PubSubVariant: React.FC<Omit<QueueVizProps, 'variant'>> = ({ sync, frame }
 
           return (
             <g key={`sa-${i}`} opacity={arrowDrawP * (0.5 + 0.3 * Math.sin(frame * 0.06 + i))}>
+              {/* Main connection line */}
               <line x1={a.x1} y1={a.y1} x2={ex} y2={ey}
                 stroke={subscribers[i].color} strokeWidth={2} strokeLinecap="round" />
+              {/* Animated trail effect — wider fading line that pulses */}
+              {flowActive && (
+                <line x1={a.x1} y1={a.y1} x2={ex} y2={ey}
+                  stroke={subscribers[i].color} strokeWidth={6} strokeLinecap="round"
+                  opacity={0.08 + 0.06 * Math.sin(frame * 0.1 + i * 1.5)}
+                />
+              )}
               {arrowDrawP > 0.85 && (
                 <polygon
                   points={`${ex},${ey} ${ex - 8 * Math.cos(angle - Math.PI / 6)},${ey - 8 * Math.sin(angle - Math.PI / 6)} ${ex - 8 * Math.cos(angle + Math.PI / 6)},${ey - 8 * Math.sin(angle + Math.PI / 6)}`}
@@ -369,23 +431,36 @@ const PubSubVariant: React.FC<Omit<QueueVizProps, 'variant'>> = ({ sync, frame }
           );
         })}
 
-        {/* Fan-out flowing dots */}
+        {/* Fan-out flowing dots with trail particles */}
         {subArrows.map((a, i) => {
           const dots = [];
-          for (let d = 0; d < 2; d++) {
-            const offset = i * Math.floor(dotPeriod / 4) + d * Math.floor(dotPeriod / 2);
+          for (let d = 0; d < 3; d++) {
+            const offset = i * Math.floor(dotPeriod / 4) + d * Math.floor(dotPeriod / 3);
             const rawT = ((frame - offset) % dotPeriod) / dotPeriod;
             const t = rawT < 0 ? rawT + 1 : rawT;
             const eased = t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
             const cx = a.x1 + (a.x2 - a.x1) * eased;
             const cy = a.y1 + (a.y2 - a.y1) * eased;
             const alpha = t < 0.1 ? t / 0.1 : t > 0.9 ? (1 - t) / 0.1 : 1;
+
+            // Main dot
             dots.push(
               <circle key={`fd-${i}-${d}`} cx={cx} cy={cy} r={5}
                 fill={subscribers[i].color} opacity={flowActive ? alpha * 0.8 : 0}
                 style={{ filter: `drop-shadow(0 0 4px ${subscribers[i].color})` }}
               />
             );
+            // Trail particle behind the dot
+            if (flowActive && t > 0.05) {
+              const trailT = Math.max(0, eased - 0.06);
+              const tx = a.x1 + (a.x2 - a.x1) * trailT;
+              const ty = a.y1 + (a.y2 - a.y1) * trailT;
+              dots.push(
+                <circle key={`ft-${i}-${d}`} cx={tx} cy={ty} r={3}
+                  fill={subscribers[i].color} opacity={flowActive ? alpha * 0.3 : 0}
+                />
+              );
+            }
           }
           return dots;
         })}
@@ -421,7 +496,7 @@ const PubSubVariant: React.FC<Omit<QueueVizProps, 'variant'>> = ({ sync, frame }
             TOPIC
           </text>
           <text x={topicPos.fx * svgW} y={topicPos.fy * svgH + 30} fill={C.gray}
-            fontSize={9} fontFamily="Inter, sans-serif" textAnchor="middle">
+            fontSize={9} fontFamily="'JetBrains Mono', monospace" textAnchor="middle">
             order.created
           </text>
         </g>
@@ -454,15 +529,19 @@ const PubSubVariant: React.FC<Omit<QueueVizProps, 'variant'>> = ({ sync, frame }
         </div>
       ))}
 
-      {/* Fan-out label */}
+      {/* Fan-out label + throughput */}
       {flowActive && (
         <div style={{
           position: 'absolute', bottom: '6%', left: '50%', transform: 'translateX(-50%)',
           background: `${C.gold}18`, border: `1.5px solid ${C.gold}55`, borderRadius: 8,
-          padding: '6px 18px',
+          padding: '6px 18px', display: 'flex', alignItems: 'center', gap: 16,
         }}>
           <span style={{ fontSize: 12, fontWeight: 600, color: C.gold }}>
             1 Event {'->'} {subscribers.length} Subscribers (Fan-Out)
+          </span>
+          <div style={{ width: 1, height: 20, background: `${C.gray}44` }} />
+          <span style={{ fontSize: 11, fontWeight: 700, color: C.teal, fontFamily: "'JetBrains Mono', monospace" }}>
+            {pubCount * subscribers.length} delivered
           </span>
         </div>
       )}
@@ -495,7 +574,7 @@ const DeadLetterVariant: React.FC<Omit<QueueVizProps, 'variant'>> = ({ sync, fra
   const flowActive = p > 0.15;
 
   // Normal flow
-  const queueW = 180;
+  const queueW = 200;
   const queueH = 45;
   const queueX = queuePos.fx * svgW - queueW / 2;
   const queueY = queuePos.fy * svgH - queueH / 2;
@@ -507,8 +586,12 @@ const DeadLetterVariant: React.FC<Omit<QueueVizProps, 'variant'>> = ({ sync, fra
   const failCount = Math.floor(msgCount / 3);
 
   // DLQ items
-  const dlqW = 160;
+  const dlqW = 180;
   const dlqH = 40;
+
+  // Shake animation for failing consumer
+  const shakeX = isFailing ? Math.sin(frame * 0.8) * 5 : 0;
+  const shakeY = isFailing ? Math.cos(frame * 1.1) * 2 : 0;
 
   return (
     <div style={{ width: '100%', height: '100%', position: 'relative', background: 'transparent', fontFamily: 'Inter, sans-serif' }}>
@@ -550,12 +633,23 @@ const DeadLetterVariant: React.FC<Omit<QueueVizProps, 'variant'>> = ({ sync, fra
             fontSize={12} fontWeight={700} fontFamily="Inter, sans-serif" textAnchor="middle">
             MAIN QUEUE
           </text>
-          {/* Messages in queue */}
-          {Array.from({ length: 3 }).map((_, i) => (
-            <rect key={`mq-${i}`} x={queueX + 10 + i * 56} y={queueY + 10} width={48} height={24} rx={4}
-              fill={`${MSG_COLORS[i]}33`} stroke={MSG_COLORS[i]} strokeWidth={1.5}
-            />
-          ))}
+          {/* Messages in queue with realistic labels */}
+          {Array.from({ length: 3 }).map((_, i) => {
+            const mx = queueX + 10 + i * 62;
+            const lbl = MSG_LABELS[(msgCount + i) % MSG_LABELS.length];
+            return (
+              <g key={`mq-${i}`}>
+                <rect x={mx} y={queueY + 10} width={56} height={24} rx={4}
+                  fill={`${MSG_COLORS[i]}33`} stroke={MSG_COLORS[i]} strokeWidth={1.5}
+                />
+                <text x={mx + 28} y={queueY + 24} fill={MSG_COLORS[i]}
+                  fontSize={7} fontWeight={600} fontFamily="'JetBrains Mono', monospace"
+                  textAnchor="middle" dominantBaseline="middle">
+                  {lbl}
+                </text>
+              </g>
+            );
+          })}
         </g>
 
         {/* DLQ */}
@@ -568,28 +662,38 @@ const DeadLetterVariant: React.FC<Omit<QueueVizProps, 'variant'>> = ({ sync, fra
             fontSize={12} fontWeight={700} fontFamily="Inter, sans-serif" textAnchor="middle">
             DEAD LETTER QUEUE
           </text>
-          {/* Failed messages */}
+          {/* Failed messages with skull icon */}
           {Array.from({ length: Math.min(3, failCount) }).map((_, i) => (
             <g key={`dlq-${i}`}>
-              <rect x={dlqPos.fx * svgW - dlqW / 2 + 10 + i * 50}
-                y={dlqPos.fy * svgH - 10} width={42} height={20} rx={3}
+              <rect x={dlqPos.fx * svgW - dlqW / 2 + 10 + i * 56}
+                y={dlqPos.fy * svgH - 10} width={50} height={20} rx={3}
                 fill={`${C.red}33`} stroke={C.red} strokeWidth={1}
               />
-              <text x={dlqPos.fx * svgW - dlqW / 2 + 31 + i * 50}
-                y={dlqPos.fy * svgH + 4} fill={C.red} fontSize={8}
-                fontWeight={600} fontFamily="Inter, sans-serif" textAnchor="middle">
+              {/* Skull icon */}
+              <text x={dlqPos.fx * svgW - dlqW / 2 + 22 + i * 56}
+                y={dlqPos.fy * svgH + 4} fill={C.red} fontSize={10}
+                fontFamily="Inter, sans-serif" textAnchor="middle" dominantBaseline="middle">
+                {'\u2620'}
+              </text>
+              <text x={dlqPos.fx * svgW - dlqW / 2 + 42 + i * 56}
+                y={dlqPos.fy * svgH + 4} fill={C.red} fontSize={7}
+                fontWeight={600} fontFamily="'JetBrains Mono', monospace" textAnchor="middle" dominantBaseline="middle">
                 FAIL
               </text>
             </g>
           ))}
         </g>
 
-        {/* Failure animation on consumer */}
+        {/* Failure animation on consumer — pulsing red rings */}
         {flowActive && isFailing && (
           <g>
-            <circle cx={consumerPos.fx * svgW} cy={consumerPos.fy * svgH}
+            <circle cx={consumerPos.fx * svgW + shakeX} cy={consumerPos.fy * svgH + shakeY}
               r={40 + 10 * Math.sin(frame * 0.15)} fill="none"
               stroke={C.red} strokeWidth={2} opacity={0.3 + 0.3 * Math.sin(frame * 0.15)}
+            />
+            <circle cx={consumerPos.fx * svgW + shakeX} cy={consumerPos.fy * svgH + shakeY}
+              r={50 + 8 * Math.sin(frame * 0.12)} fill="none"
+              stroke={C.red} strokeWidth={1} opacity={0.15 + 0.15 * Math.sin(frame * 0.12)}
             />
           </g>
         )}
@@ -631,10 +735,10 @@ const DeadLetterVariant: React.FC<Omit<QueueVizProps, 'variant'>> = ({ sync, fra
         <span style={{ fontSize: 12, fontWeight: 700, color: C.saffron }}>PRODUCER</span>
       </div>
 
-      {/* Consumer */}
+      {/* Consumer — shakes on failure */}
       <div style={{
         position: 'absolute', left: `${consumerPos.fx * 100}%`, top: `${consumerPos.fy * 100}%`,
-        transform: `translate(-50%, -50%) scale(${nodeSpring})`, opacity: nodeSpring,
+        transform: `translate(calc(-50% + ${shakeX}px), calc(-50% + ${shakeY}px)) scale(${nodeSpring})`, opacity: nodeSpring,
         width: 80, height: 55, borderRadius: 10,
         background: isFailing ? `${C.red}18` : `${C.teal}18`,
         border: `2px solid ${isFailing ? C.red : C.teal}`,
@@ -674,12 +778,20 @@ const DeadLetterVariant: React.FC<Omit<QueueVizProps, 'variant'>> = ({ sync, fra
           </div>
           <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
             <span style={{ fontSize: 9, color: C.gray, width: 60 }}>Failed</span>
-            <span style={{ fontSize: 14, fontWeight: 700, color: C.red }}>{failCount}</span>
+            <span style={{ fontSize: 14, fontWeight: 700, color: C.red }}>
+              {'\u2620'} {failCount}
+            </span>
           </div>
           <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
             <span style={{ fontSize: 9, color: C.gray, width: 60 }}>Error Rate</span>
             <span style={{ fontSize: 14, fontWeight: 700, color: failCount > 3 ? C.red : C.gold }}>
               {msgCount > 0 ? ((failCount / msgCount) * 100).toFixed(0) : 0}%
+            </span>
+          </div>
+          <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+            <span style={{ fontSize: 9, color: C.gray, width: 60 }}>Throughput</span>
+            <span style={{ fontSize: 14, fontWeight: 700, color: C.teal, fontFamily: "'JetBrains Mono', monospace" }}>
+              {Math.round((msgCount - failCount) / Math.max(1, frame / fps) * 100) / 100}/s
             </span>
           </div>
         </div>

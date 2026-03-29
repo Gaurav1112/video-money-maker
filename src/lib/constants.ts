@@ -28,6 +28,20 @@ export const SCENE_DEFAULTS = {
   reviewQuestionDuration: 10,
 } as const;
 
-export const INTRO_DURATION = 90;  // frames (3 seconds)
+// Shorts/Reels: 50-60% of long-form durations for faster pacing
+export const SHORT_SCENE_DEFAULTS = {
+  titleDuration: 3,        // was 5
+  textDuration: 5,         // was 8-10
+  codeDuration: 6,         // was 10
+  tableDuration: 4,        // was 6
+  interviewDuration: 5,    // was 8
+  reviewQuestionDuration: 5, // was 10
+  summaryDuration: 4,      // was 8
+} as const;
+
+export const MAX_SHORT_DURATION_FRAMES = 1800; // 60 seconds at 30fps
+export const MAX_REEL_DURATION_FRAMES = 2700;  // 90 seconds at 30fps
+
+export const INTRO_DURATION = 150; // frames (5 seconds — countdown + logo + typewriter)
 export const OUTRO_DURATION = 150; // frames (5 seconds)
 export const TRANSITION_DURATION = 15; // frames (0.5 seconds)

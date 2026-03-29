@@ -7,6 +7,206 @@ interface BackgroundLayerProps {
   sceneType?: string;
 }
 
+// ============= SHARED: Animated dot grid (tech/engineering feel) =============
+const AnimatedDotGrid: React.FC<{ frame: number; spacing?: number; dotOpacity?: number }> = ({
+  frame,
+  spacing = 40,
+  dotOpacity = 0.03,
+}) => {
+  // Slow drift — the grid subtly scrolls over time
+  const driftX = frame * 0.08;
+  const driftY = frame * 0.05;
+
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        inset: -spacing, // overflow to avoid gaps during drift
+        backgroundImage: `radial-gradient(circle, rgba(255,255,255,${dotOpacity}) 1px, transparent 1px)`,
+        backgroundSize: `${spacing}px ${spacing}px`,
+        backgroundPosition: `${driftX % spacing}px ${driftY % spacing}px`,
+        pointerEvents: 'none',
+      }}
+    />
+  );
+};
+
+// ============= SHARED: Floating code keywords (ultra-subtle atmosphere) =============
+const CODE_KEYWORDS = [
+  'async', 'await', 'function', 'class', 'return', 'import', 'const',
+  'O(n)', '\u2192', '{ }', '[ ]', '< >', 'export', 'interface', 'void',
+  'yield', 'Promise', 'new',
+];
+
+const FloatingCodeKeywords: React.FC<{
+  frame: number;
+  count?: number;
+  color?: string;
+  baseOpacity?: number;
+}> = ({ frame, count = 18, color = COLORS.white, baseOpacity = 0.04 }) => {
+  return (
+    <>
+      {Array.from({ length: count }).map((_, i) => {
+        const seed = i * 197.327;
+        const word = CODE_KEYWORDS[i % CODE_KEYWORDS.length];
+        // Stagger horizontal positions across the frame
+        const baseX = (seed * 4.91) % 92 + 3;
+        const baseY = (seed * 3.17) % 85 + 5;
+        // Each word drifts horizontally at a different speed
+        const speed = 0.015 + (i % 5) * 0.008;
+        const driftX = ((frame * speed + seed) % 120) - 10; // wraps across screen
+        // Slight vertical sine wave
+        const driftY = Math.sin(frame * 0.008 + i * 1.6) * 8;
+        const opacity = interpolate(
+          Math.sin(frame * 0.012 + i * 2.3),
+          [-1, 1],
+          [baseOpacity * 0.3, baseOpacity],
+        );
+
+        return (
+          <div
+            key={`kw-${i}`}
+            style={{
+              position: 'absolute',
+              left: `${(baseX + driftX) % 100}%`,
+              top: `${baseY + driftY}%`,
+              fontSize: 14,
+              fontFamily: 'JetBrains Mono, monospace',
+              color,
+              opacity,
+              whiteSpace: 'nowrap',
+              pointerEvents: 'none',
+              userSelect: 'none',
+              letterSpacing: 1,
+            }}
+          >
+            {word}
+          </div>
+        );
+      })}
+    </>
+  );
+};
+
+// ============= SHARED: Ambient glow orbs (atmospheric depth) =============
+interface GlowOrbConfig {
+  color: string;
+  opacity: number;
+  size: number;
+  blur: number;
+  baseX: number;
+  baseY: number;
+  speedX: number;
+  speedY: number;
+  phaseOffset: number;
+}
+
+const DEFAULT_GLOW_ORBS: GlowOrbConfig[] = [
+  { color: COLORS.saffron, opacity: 0.05, size: 350, blur: 100, baseX: 20, baseY: 30, speedX: 0.002, speedY: 0.0015, phaseOffset: 0 },
+  { color: COLORS.teal, opacity: 0.04, size: 300, blur: 100, baseX: 75, baseY: 60, speedX: 0.0018, speedY: 0.002, phaseOffset: 1.5 },
+  { color: COLORS.indigo, opacity: 0.04, size: 280, blur: 100, baseX: 55, baseY: 20, speedX: 0.0022, speedY: 0.0012, phaseOffset: 3.0 },
+  { color: '#FFD700', opacity: 0.03, size: 250, blur: 100, baseX: 40, baseY: 80, speedX: 0.0015, speedY: 0.0025, phaseOffset: 4.5 },
+];
+
+const AmbientGlowOrbs: React.FC<{
+  frame: number;
+  orbs?: GlowOrbConfig[];
+  intensityMultiplier?: number;
+}> = ({ frame, orbs = DEFAULT_GLOW_ORBS, intensityMultiplier = 1.0 }) => {
+  return (
+    <>
+      {orbs.map((orb, i) => {
+        const x = orb.baseX + Math.sin(frame * orb.speedX + orb.phaseOffset) * 12;
+        const y = orb.baseY + Math.cos(frame * orb.speedY + orb.phaseOffset) * 10;
+        // Slow pulse
+        const pulse = interpolate(
+          Math.sin(frame * 0.015 + orb.phaseOffset),
+          [-1, 1],
+          [orb.opacity * 0.5 * intensityMultiplier, orb.opacity * intensityMultiplier],
+        );
+
+        return (
+          <div
+            key={`orb-${i}`}
+            style={{
+              position: 'absolute',
+              left: `${x}%`,
+              top: `${y}%`,
+              width: orb.size,
+              height: orb.size,
+              borderRadius: '50%',
+              background: `radial-gradient(circle, ${orb.color}, transparent 70%)`,
+              opacity: pulse,
+              filter: `blur(${orb.blur}px)`,
+              transform: 'translate(-50%, -50%)',
+              pointerEvents: 'none',
+            }}
+          />
+        );
+      })}
+    </>
+  );
+};
+
+// ============= SHARED: Scene-aware color shift overlay =============
+const SCENE_COLOR_SHIFTS: Record<string, { color: string; opacity: number }> = {
+  title:      { color: COLORS.saffron, opacity: 0.03 },
+  hook:       { color: COLORS.saffron, opacity: 0.03 },
+  code:       { color: COLORS.indigo,  opacity: 0.04 },
+  text:       { color: COLORS.indigo,  opacity: 0.02 },
+  concept:    { color: COLORS.indigo,  opacity: 0.02 },
+  table:      { color: COLORS.gold,    opacity: 0.02 },
+  comparison: { color: COLORS.gold,    opacity: 0.02 },
+  interview:  { color: '#FFD700',      opacity: 0.035 },
+  diagram:    { color: COLORS.indigo,  opacity: 0.03 },
+  review:     { color: COLORS.teal,    opacity: 0.03 },
+  quiz:       { color: COLORS.teal,    opacity: 0.03 },
+  summary:    { color: COLORS.teal,    opacity: 0.02 },
+  problem:    { color: COLORS.red,     opacity: 0.03 },
+  solution:   { color: COLORS.teal,    opacity: 0.035 },
+};
+
+const SceneColorShift: React.FC<{ frame: number; sceneType: string }> = ({ frame, sceneType }) => {
+  const shift = SCENE_COLOR_SHIFTS[sceneType] || { color: COLORS.indigo, opacity: 0.02 };
+  // Subtle breathing pulse on the color shift
+  const breathe = interpolate(
+    Math.sin(frame * 0.01),
+    [-1, 1],
+    [shift.opacity * 0.5, shift.opacity],
+  );
+
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        inset: 0,
+        background: `radial-gradient(ellipse at 50% 45%, ${shift.color}, transparent 75%)`,
+        opacity: breathe,
+        pointerEvents: 'none',
+      }}
+    />
+  );
+};
+
+// ============= SHARED: Cinematic vignette =============
+const CinematicVignette: React.FC<{
+  color?: string;
+  intensity?: number;
+  innerStop?: number;
+}> = ({ color = 'rgba(0,0,0,0.4)', intensity = 1.0, innerStop = 50 }) => {
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        inset: 0,
+        background: `radial-gradient(ellipse at center, transparent ${innerStop}%, ${color} 100%)`,
+        opacity: intensity,
+        pointerEvents: 'none',
+      }}
+    />
+  );
+};
+
 // ============= SHARED: Floating ambient particles =============
 const AmbientParticles: React.FC<{ frame: number; color: string; count?: number }> = ({
   frame,
@@ -182,6 +382,51 @@ const AccentGlow: React.FC<{
   );
 };
 
+// ============= SHARED: Cinematic atmosphere layer (combines all new effects) =============
+/** Renders the dot grid, floating keywords, glow orbs, scene color shift, and vignette.
+ *  Layered BEHIND all existing scene-specific elements. */
+const CinematicAtmosphere: React.FC<{
+  frame: number;
+  sceneType: string;
+  /** Override vignette darkness per scene */
+  vignetteColor?: string;
+  vignetteInnerStop?: number;
+  /** Dim orbs/keywords for scenes that already have heavy decoration */
+  subtlety?: number;
+}> = ({
+  frame,
+  sceneType,
+  vignetteColor = 'rgba(0,0,0,0.4)',
+  vignetteInnerStop = 50,
+  subtlety = 1.0,
+}) => {
+  return (
+    <>
+      {/* 1. Animated dot grid */}
+      <AnimatedDotGrid frame={frame} spacing={40} dotOpacity={0.03} />
+
+      {/* 2. Floating code keywords */}
+      <FloatingCodeKeywords
+        frame={frame}
+        count={18}
+        baseOpacity={0.04 * subtlety}
+      />
+
+      {/* 3. Ambient glow orbs */}
+      <AmbientGlowOrbs frame={frame} intensityMultiplier={subtlety} />
+
+      {/* 4. Scene-aware color shift */}
+      <SceneColorShift frame={frame} sceneType={sceneType} />
+
+      {/* 5. Cinematic vignette (rendered last so it sits on top) */}
+      <CinematicVignette
+        color={vignetteColor}
+        innerStop={vignetteInnerStop}
+      />
+    </>
+  );
+};
+
 const BackgroundLayer: React.FC<BackgroundLayerProps> = ({ sceneType = 'text' }) => {
   const frame = useCurrentFrame();
 
@@ -202,24 +447,24 @@ const BackgroundLayer: React.FC<BackgroundLayerProps> = ({ sceneType = 'text' })
   switch (sceneType) {
     case 'title':
     case 'hook':
-      return <TitleBackground frame={frame} rotation={rotation} />;
+      return <TitleBackground frame={frame} rotation={rotation} sceneType={sceneType} />;
     case 'code':
-      return <CodeBackground frame={frame} />;
+      return <CodeBackground frame={frame} sceneType={sceneType} />;
     case 'text':
     case 'concept':
-      return <TextBackground frame={frame} rotation={rotation} />;
+      return <TextBackground frame={frame} rotation={rotation} sceneType={sceneType} />;
     case 'table':
     case 'comparison':
-      return <TableBackground frame={frame} />;
+      return <TableBackground frame={frame} sceneType={sceneType} />;
     case 'interview':
-      return <InterviewBackground frame={frame} />;
+      return <InterviewBackground frame={frame} sceneType={sceneType} />;
     case 'diagram':
-      return <DiagramBackground frame={frame} rotation={rotation} />;
+      return <DiagramBackground frame={frame} rotation={rotation} sceneType={sceneType} />;
     case 'review':
     case 'quiz':
-      return <ReviewBackground frame={frame} />;
+      return <ReviewBackground frame={frame} sceneType={sceneType} />;
     case 'summary':
-      return <SummaryBackground frame={frame} />;
+      return <SummaryBackground frame={frame} sceneType={sceneType} />;
     default:
       break;
   }
@@ -266,21 +511,16 @@ const BackgroundLayer: React.FC<BackgroundLayerProps> = ({ sceneType = 'text' })
           backgroundSize: '80px 80px',
         }}
       />
-      <div
-        style={{
-          position: 'absolute',
-          inset: 0,
-          background: `radial-gradient(ellipse at center, transparent 50%, ${COLORS.dark}88 100%)`,
-        }}
-      />
       {/* Floating code symbols */}
       <FloatingCodeSymbols frame={frame} sceneType={sceneType} />
+      {/* Cinematic atmosphere */}
+      <CinematicAtmosphere frame={frame} sceneType={sceneType} />
     </AbsoluteFill>
   );
 };
 
 // ============= HOOK / TITLE: Saffron (#E85D26) warm glow — exciting energy =============
-const TitleBackground: React.FC<{ frame: number; rotation: number }> = ({ frame, rotation }) => {
+const TitleBackground: React.FC<{ frame: number; rotation: number; sceneType: string }> = ({ frame, rotation, sceneType }) => {
   const STAR_COUNT = 40;
 
   return (
@@ -369,22 +609,23 @@ const TitleBackground: React.FC<{ frame: number; rotation: number }> = ({ frame,
         }}
       />
 
-      {/* Deep vignette */}
-      <div
-        style={{
-          position: 'absolute',
-          inset: 0,
-          background: `radial-gradient(ellipse at center, transparent 30%, #0E0804CC 100%)`,
-        }}
-      />
       {/* Floating code symbols */}
       <FloatingCodeSymbols frame={frame} sceneType="title" count={8} />
+
+      {/* Cinematic atmosphere — slightly reduced subtlety for title's existing richness */}
+      <CinematicAtmosphere
+        frame={frame}
+        sceneType={sceneType}
+        vignetteColor="#0E0804CC"
+        vignetteInnerStop={30}
+        subtlety={0.7}
+      />
     </AbsoluteFill>
   );
 };
 
 // ============= TEXT / CONCEPT: Indigo (#818CF8) cool — learning mode =============
-const TextBackground: React.FC<{ frame: number; rotation: number }> = ({ frame, rotation }) => {
+const TextBackground: React.FC<{ frame: number; rotation: number; sceneType: string }> = ({ frame, rotation, sceneType }) => {
   const CODE_SNIPPETS = [
     'const data = await fetch(url);',
     'function optimize(arr) {',
@@ -490,22 +731,23 @@ const TextBackground: React.FC<{ frame: number; rotation: number }> = ({ frame, 
         }}
       />
 
-      {/* Soft vignette */}
-      <div
-        style={{
-          position: 'absolute',
-          inset: 0,
-          background: `radial-gradient(ellipse at center, transparent 50%, #080A1C88 100%)`,
-        }}
-      />
       {/* Floating code symbols */}
       <FloatingCodeSymbols frame={frame} sceneType="text" count={10} />
+
+      {/* Cinematic atmosphere */}
+      <CinematicAtmosphere
+        frame={frame}
+        sceneType={sceneType}
+        vignetteColor="#080A1C88"
+        vignetteInnerStop={50}
+        subtlety={0.9}
+      />
     </AbsoluteFill>
   );
 };
 
 // ============= CODE: Teal (#20C997) tech / terminal feel =============
-const CodeBackground: React.FC<{ frame: number }> = ({ frame }) => {
+const CodeBackground: React.FC<{ frame: number; sceneType: string }> = ({ frame, sceneType }) => {
   const scanlineY = interpolate(frame, [0, 300], [0, 100], { extrapolateRight: 'extend' });
 
   return (
@@ -583,22 +825,23 @@ const CodeBackground: React.FC<{ frame: number }> = ({ frame }) => {
         }}
       />
 
-      {/* Dark vignette */}
-      <div
-        style={{
-          position: 'absolute',
-          inset: 0,
-          background: `radial-gradient(ellipse at center, transparent 40%, #050F0CAA 100%)`,
-        }}
-      />
       {/* Floating code symbols — higher density for code scenes */}
       <FloatingCodeSymbols frame={frame} sceneType="code" count={14} />
+
+      {/* Cinematic atmosphere — blue/indigo shifted for code */}
+      <CinematicAtmosphere
+        frame={frame}
+        sceneType={sceneType}
+        vignetteColor="#050F0CAA"
+        vignetteInnerStop={40}
+        subtlety={0.8}
+      />
     </AbsoluteFill>
   );
 };
 
 // ============= TABLE / COMPARISON: Gold (#FFD700) — analysis mode =============
-const TableBackground: React.FC<{ frame: number }> = ({ frame }) => {
+const TableBackground: React.FC<{ frame: number; sceneType: string }> = ({ frame, sceneType }) => {
   // Slowly pulsing column highlights
   const columnPulse = interpolate(Math.sin(frame * 0.02), [-1, 1], [0.04, 0.09]);
 
@@ -673,22 +916,23 @@ const TableBackground: React.FC<{ frame: number }> = ({ frame }) => {
       {/* Ambient particles — gold */}
       <AmbientParticles frame={frame} color={COLORS.gold} count={12} />
 
-      {/* Corner vignette */}
-      <div
-        style={{
-          position: 'absolute',
-          inset: 0,
-          background: `radial-gradient(ellipse at center, transparent 50%, #0A0C08AA 100%)`,
-        }}
-      />
       {/* Floating code symbols */}
       <FloatingCodeSymbols frame={frame} sceneType="table" count={8} />
+
+      {/* Cinematic atmosphere */}
+      <CinematicAtmosphere
+        frame={frame}
+        sceneType={sceneType}
+        vignetteColor="#0A0C08AA"
+        vignetteInnerStop={50}
+        subtlety={0.85}
+      />
     </AbsoluteFill>
   );
 };
 
 // ============= INTERVIEW: Saffron (#E85D26) — interview intensity =============
-const InterviewBackground: React.FC<{ frame: number }> = ({ frame }) => {
+const InterviewBackground: React.FC<{ frame: number; sceneType: string }> = ({ frame, sceneType }) => {
   const glowPulse = interpolate(Math.sin(frame * 0.03), [-1, 1], [0.45, 0.85]);
 
   return (
@@ -774,22 +1018,23 @@ const InterviewBackground: React.FC<{ frame: number }> = ({ frame }) => {
       {/* Ambient particles — saffron */}
       <AmbientParticles frame={frame} color={COLORS.saffron} count={10} />
 
-      {/* Vignette */}
-      <div
-        style={{
-          position: 'absolute',
-          inset: 0,
-          background: `radial-gradient(ellipse at center, transparent 40%, #0F0804AA 100%)`,
-        }}
-      />
       {/* Floating code symbols */}
       <FloatingCodeSymbols frame={frame} sceneType="interview" count={10} />
+
+      {/* Cinematic atmosphere — gold-shifted for interview */}
+      <CinematicAtmosphere
+        frame={frame}
+        sceneType={sceneType}
+        vignetteColor="#0F0804AA"
+        vignetteInnerStop={40}
+        subtlety={0.75}
+      />
     </AbsoluteFill>
   );
 };
 
 // ============= DIAGRAM: Indigo (#818CF8) — blueprint feel =============
-const DiagramBackground: React.FC<{ frame: number; rotation: number }> = ({ frame, rotation }) => {
+const DiagramBackground: React.FC<{ frame: number; rotation: number; sceneType: string }> = ({ frame, rotation, sceneType }) => {
   // Blueprint grid drift
   const gridOffset = interpolate(frame, [0, 600], [0, 20], { extrapolateRight: 'extend' });
 
@@ -864,22 +1109,23 @@ const DiagramBackground: React.FC<{ frame: number; rotation: number }> = ({ fram
       {/* Ambient particles — indigo */}
       <AmbientParticles frame={frame} color={COLORS.indigo} count={14} />
 
-      {/* Soft vignette */}
-      <div
-        style={{
-          position: 'absolute',
-          inset: 0,
-          background: `radial-gradient(ellipse at center, transparent 40%, #060810AA 100%)`,
-        }}
-      />
       {/* Floating code symbols */}
       <FloatingCodeSymbols frame={frame} sceneType="diagram" count={10} />
+
+      {/* Cinematic atmosphere */}
+      <CinematicAtmosphere
+        frame={frame}
+        sceneType={sceneType}
+        vignetteColor="#060810AA"
+        vignetteInnerStop={40}
+        subtlety={0.85}
+      />
     </AbsoluteFill>
   );
 };
 
 // ============= REVIEW / QUIZ: Teal (#20C997) — challenge mode =============
-const ReviewBackground: React.FC<{ frame: number }> = ({ frame }) => {
+const ReviewBackground: React.FC<{ frame: number; sceneType: string }> = ({ frame, sceneType }) => {
   const spotlightSize = interpolate(Math.sin(frame * 0.02), [-1, 1], [300, 420]);
   // Teal intensity pulse for challenge feel
   const challengePulse = interpolate(Math.sin(frame * 0.035), [-1, 1], [0.35, 0.75]);
@@ -943,22 +1189,23 @@ const ReviewBackground: React.FC<{ frame: number }> = ({ frame }) => {
       {/* Ambient particles — teal */}
       <AmbientParticles frame={frame} color={COLORS.teal} count={16} />
 
-      {/* Dark dramatic vignette */}
-      <div
-        style={{
-          position: 'absolute',
-          inset: 0,
-          background: `radial-gradient(ellipse at 50% 40%, transparent 25%, #050E0CCC 100%)`,
-        }}
-      />
       {/* Floating code symbols */}
       <FloatingCodeSymbols frame={frame} sceneType="review" count={12} />
+
+      {/* Cinematic atmosphere — green/teal shifted */}
+      <CinematicAtmosphere
+        frame={frame}
+        sceneType={sceneType}
+        vignetteColor="#050E0CCC"
+        vignetteInnerStop={25}
+        subtlety={0.8}
+      />
     </AbsoluteFill>
   );
 };
 
 // ============= SUMMARY: Gold (#FFD700) — celebration / achievement feel =============
-const SummaryBackground: React.FC<{ frame: number }> = ({ frame }) => {
+const SummaryBackground: React.FC<{ frame: number; sceneType: string }> = ({ frame, sceneType }) => {
   const celebrationGlow = interpolate(Math.sin(frame * 0.04), [-1, 1], [0.35, 0.8]);
   // Expanding ring pulse
   const ringScale = interpolate(Math.sin(frame * 0.02), [-1, 1], [0.95, 1.05]);
@@ -1047,16 +1294,17 @@ const SummaryBackground: React.FC<{ frame: number }> = ({ frame }) => {
         }}
       />
 
-      {/* Vignette */}
-      <div
-        style={{
-          position: 'absolute',
-          inset: 0,
-          background: `radial-gradient(ellipse at center, transparent 40%, #0A0C08AA 100%)`,
-        }}
-      />
       {/* Floating code symbols — low density for celebration */}
       <FloatingCodeSymbols frame={frame} sceneType="summary" count={6} />
+
+      {/* Cinematic atmosphere */}
+      <CinematicAtmosphere
+        frame={frame}
+        sceneType={sceneType}
+        vignetteColor="#0A0C08AA"
+        vignetteInnerStop={40}
+        subtlety={0.7}
+      />
     </AbsoluteFill>
   );
 };
