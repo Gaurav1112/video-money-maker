@@ -259,6 +259,30 @@
 
       const cleanSlug = topicSlug.replace(/-/g, '');
 
+      // Generate metadata for top 3 shorts per session
+      const SHORTS_HOOKS = [
+        `90% of devs get ${topicName} WRONG`,
+        `This ${topicName} trick saved my interview`,
+        `What Google ACTUALLY asks about ${topicName}`,
+      ];
+      const SHORTS_TITLE_TEMPLATES = [
+        (t, n) => `${t} in 60 Seconds \u26A1 | #Shorts`,
+        (t, n) => `Stop Getting ${t} Wrong \u274C | #Shorts`,
+        (t, n) => `${t} Interview Secret \uD83E\uDD2B | #Shorts`,
+      ];
+      const shorts = [0, 1, 2].map(i => {
+        const shortTitle = SHORTS_TITLE_TEMPLATES[i](topicName, sessionNum);
+        return {
+          number: i + 1,
+          ytTitle: shortTitle.length > 60 ? shortTitle.slice(0, 59) + '\u2026' : shortTitle,
+          ytDescription: `${SHORTS_HOOKS[i]}\n\n${topicName} Session ${sessionNum} \u2014 key concepts explained visually.\n\nFull video: youtube.com/@GuruSishya-India\nFREE practice: https://guru-sishya.in/${topicSlug}\n\n${topicTag} #CodingInterview #Shorts #FAANG #GuruSishya`,
+          ytHashtags: `#Shorts ${topicTag} #CodingInterview`,
+          igCaption: `${SHORTS_HOOKS[i]} \uD83D\uDD25\n\n${topicName} explained in 60 seconds!\n\nSave this for your interview prep \uD83D\uDCCC\n\nFull course FREE at guru-sishya.in/${topicSlug}\n\n#coding #programming #${cleanSlug} #interviewprep #faang #shorts #tech #developer #codinginterview`,
+          igCoverText: SHORTS_HOOKS[i].toUpperCase(),
+          thumbnailPrompt: `YouTube Shorts thumbnail (1080x1920), dark background #0C0A15, bold white text "${SHORTS_HOOKS[i]}" center, saffron (#E85D26) glow accent, "Session ${sessionNum}" small badge, vertical format, high contrast, no faces.`,
+        };
+      });
+
       return {
         ytTitle,
         ytDescription,
@@ -269,6 +293,7 @@
         igCaption: `${sessionTitle} \uD83D\uDD25\n\nMaster ${topicName} for your next interview!\n\nFull course FREE at guru-sishya.in/${topicSlug}\n\n#coding #programming #${cleanSlug} #interviewprep #faang #dsa #tech #developer #codinginterview #systemdesign`,
         igHashtags: `#coding #programming #${cleanSlug} #interviewprep #faang #dsa #tech #developer #codinginterview #systemdesign #gurusishya #learntocode`,
         thumbnailPrompt: THUMBNAIL_PROMPTS[thumbCat] || THUMBNAIL_PROMPTS['default'],
+        shorts,
       };
     }
 
@@ -311,8 +336,12 @@
       const meta = generateSessionMeta(topicName, topicSlug, sessionNum, title);
 
       const copyAll = () => {
+        const shortsText = meta.shorts ? meta.shorts.map(s =>
+          `\n--- Short #${s.number} ---\nYT Title: ${s.ytTitle}\nYT Description: ${s.ytDescription}\nYT Hashtags: ${s.ytHashtags}\nIG Caption: ${s.igCaption}\nIG Cover: ${s.igCoverText}\nThumbnail: ${s.thumbnailPrompt}`
+        ).join('\n') : '';
         const all = [
           `=== Session ${sessionNum}: ${title} ===`,
+          `\n📺 LONG-FORM VIDEO`,
           `\nYT Title:\n${meta.ytTitle}`,
           `\nYT Description:\n${meta.ytDescription}`,
           `\nYT Tags:\n${meta.ytTags}`,
@@ -322,9 +351,11 @@
           `\nIG Caption:\n${meta.igCaption}`,
           `\nIG Hashtags:\n${meta.igHashtags}`,
           `\nThumbnail Prompt:\n${meta.thumbnailPrompt}`,
+          `\n\n📱 SHORTS & REELS`,
+          shortsText,
         ].join('\n');
         navigator.clipboard.writeText(all);
-        if (onToast) onToast(`Session ${sessionNum} \u2014 All fields copied`);
+        if (onToast) onToast(`Session ${sessionNum} \u2014 All fields + 3 shorts copied`);
       };
 
       return (
@@ -348,6 +379,31 @@
               <MetadataField label="IG Caption" value={meta.igCaption} onToast={onToast} />
               <MetadataField label="IG Hashtags" value={meta.igHashtags} onToast={onToast} />
               <MetadataField label="Thumbnail Prompt" value={meta.thumbnailPrompt} onToast={onToast} />
+
+              {/* ── SHORTS METADATA (3 per session) ── */}
+              <div style={{marginTop: 20, borderTop: '1px solid #2D2640', paddingTop: 16}}>
+                <div style={{fontSize: 14, fontWeight: 700, color: '#E85D26', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8}}>
+                  <span>{'\uD83D\uDCF1'}</span> Shorts & Reels Metadata (3 clips)
+                </div>
+                {meta.shorts && meta.shorts.map((s, si) => (
+                  <div key={si} style={{background: '#1A1625', border: '1px solid #2D264088', borderRadius: 8, padding: 12, marginBottom: 10}}>
+                    <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8}}>
+                      <span style={{fontSize: 13, fontWeight: 700, color: '#FDB813'}}>Short #{s.number}</span>
+                      <button className="btn btn-secondary btn-xs" onClick={() => {
+                        const all = `Short #${s.number}\nYT Title: ${s.ytTitle}\nYT Description: ${s.ytDescription}\nYT Hashtags: ${s.ytHashtags}\nIG Caption: ${s.igCaption}\nIG Cover: ${s.igCoverText}\nThumbnail Prompt: ${s.thumbnailPrompt}`;
+                        navigator.clipboard.writeText(all);
+                        onToast(`Short #${s.number} — All copied`);
+                      }}>Copy All</button>
+                    </div>
+                    <MetadataField label="YT Short Title" value={s.ytTitle} onToast={onToast} />
+                    <MetadataField label="YT Short Description" value={s.ytDescription} onToast={onToast} />
+                    <MetadataField label="YT Short Hashtags" value={s.ytHashtags} onToast={onToast} />
+                    <MetadataField label="IG Reel Caption" value={s.igCaption} onToast={onToast} />
+                    <MetadataField label="IG Cover Text" value={s.igCoverText} onToast={onToast} />
+                    <MetadataField label="Short Thumbnail Prompt" value={s.thumbnailPrompt} onToast={onToast} />
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </div>
