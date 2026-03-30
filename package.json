@@ -19,6 +19,7 @@
     "render:topic": "tsx scripts/render-topic.ts",
     "render:session": "tsx scripts/render-session.ts",
     "render:shorts": "tsx scripts/render-viral-shorts.ts",
+    "make:reels": "tsx scripts/make-reels.ts",
     "dev": "concurrently \"npm start\" \"npm run api\""
   },
   "keywords": [],
