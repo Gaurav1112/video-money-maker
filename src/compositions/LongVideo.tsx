@@ -35,7 +35,7 @@ import {
   OutroSlide,
 } from '../components';
 import { SpeedReminder } from '../components/SpeedReminder';
-import { ZoomPunchLayer } from '../components/ZoomPunchLayer';
+import { PatternInterruptLayer } from '../components/PatternInterruptLayer';
 import { getStyleForFormat, getTransitionDuration } from '../lib/video-styles';
 
 interface LongVideoProps {
@@ -305,7 +305,6 @@ export const LongVideo: React.FC<LongVideoProps> = ({ storyboard, noOverlays = f
 
       {/* Render each scene with transitions, offset by intro duration */}
       <Sequence from={INTRO_DURATION} durationInFrames={contentFrames}>
-        <ZoomPunchLayer intervalRange={style.zoomInterval} scale={style.zoomScale} fps={fps}>
         <TransitionSeries>
           {contentScenes.map((scene, idx) => {
             const Component = SCENE_COMPONENT_MAP[scene.type];
@@ -442,6 +441,14 @@ export const LongVideo: React.FC<LongVideoProps> = ({ storyboard, noOverlays = f
                 <TransitionSeries.Sequence durationInFrames={duration}>
                   <AbsoluteFill>
                     {renderedScene}
+                    <PatternInterruptLayer
+                      wordTimestamps={scene.wordTimestamps || []}
+                      sceneType={scene.type}
+                      narration={scene.narration || ''}
+                      style={style}
+                      fps={fps}
+                      sceneDurationFrames={duration}
+                    />
                     {/* Scene transition flash effect */}
                     {!isFirst && (
                       <SceneTransitionFlash sceneType={scene.type} sceneNumber={idx + 1} totalScenes={contentScenes.length} />
@@ -452,7 +459,6 @@ export const LongVideo: React.FC<LongVideoProps> = ({ storyboard, noOverlays = f
             );
           })}
         </TransitionSeries>
-        </ZoomPunchLayer>
       </Sequence>
 
       {/* Branded Outro */}

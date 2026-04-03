@@ -26,3 +26,4 @@ export { BeforeAfterSplit } from './BeforeAfterSplit';
 export { AlgorithmPanel } from './AlgorithmPanel';
 export { ZoomPunchLayer } from './ZoomPunchLayer';
 export { ChapterBadge } from './ChapterBadge';
+export { PatternInterruptLayer } from './PatternInterruptLayer';
