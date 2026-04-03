@@ -31,9 +31,9 @@ import {
   CaptionOverlay,
   NarratorIndicator,
   SceneTransitionFlash,
-  IntroSlide,
   OutroSlide,
 } from '../components';
+import { CinematicOpener } from '../components/CinematicOpener';
 import { SpeedReminder } from '../components/SpeedReminder';
 import { PatternInterruptLayer } from '../components/PatternInterruptLayer';
 import { getStyleForFormat, getTransitionDuration } from '../lib/video-styles';
@@ -305,12 +305,14 @@ export const LongVideo: React.FC<LongVideoProps> = ({ storyboard, noOverlays = f
       {/* Animated overlay — particles, scan line, vignette, tech grid on every content frame */}
       {!isIntro && !isOutro && <AnimatedOverlay sceneType={currentSceneType} />}
 
-      {/* Branded Intro */}
+      {/* Cinematic Opening — 6 movie-trailer styles, unique per topic */}
       <Sequence from={0} durationInFrames={INTRO_DURATION}>
-        <IntroSlide
-          durationInFrames={INTRO_DURATION}
+        <CinematicOpener
           topic={storyboard.topic}
-          textHook={storyboard.scenes[1]?.heading || storyboard.scenes[0]?.heading}
+          sessionNumber={storyboard.sessionNumber}
+          hookText={storyboard.scenes[1]?.heading || storyboard.topic}
+          hookNarration={storyboard.scenes[1]?.narration || ''}
+          durationInFrames={INTRO_DURATION}
         />
       </Sequence>
 

@@ -27,3 +27,4 @@ export { AlgorithmPanel } from './AlgorithmPanel';
 export { ZoomPunchLayer } from './ZoomPunchLayer';
 export { ChapterBadge } from './ChapterBadge';
 export { PatternInterruptLayer } from './PatternInterruptLayer';
+export { CinematicOpener } from './CinematicOpener';
