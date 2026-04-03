@@ -35,6 +35,8 @@ export interface RendererProps {
   content?: string;
   /** Auto-generated config for ConceptDiagram fallback */
   generatedConfig?: GeneratedConceptConfig;
+  /** Config object passed to specialized renderers (architecture, flow, concept, etc.) */
+  config?: any;
 }
 
 // ---------------------------------------------------------------------------
@@ -506,8 +508,59 @@ export const TemplateFactory: React.FC<TemplateFactoryProps> = (props) => {
     return <FallbackRenderer {...rendererProps} />;
   }
 
-  // 5. Render with the specialised renderer
-  return <Renderer {...rendererProps} />;
+  // 5. Load config for the specialised renderer and pass it
+  // Each renderer type has its own config format. We load the config
+  // from the appropriate configs file and pass it as a prop.
+  try {
+    if (layout === 'architecture') {
+      const { ARCHITECTURE_CONFIGS } = require('./architecture-configs');
+      const configMap = ARCHITECTURE_CONFIGS[templateId];
+      const config = configMap?.[variant] ?? configMap?.overview ?? Object.values(configMap || {})[0];
+      if (config) {
+        return <Renderer {...rendererProps} config={config} />;
+      }
+    } else if (layout === 'flow') {
+      const { FLOW_CONFIGS } = require('./flow-configs');
+      const configMap = FLOW_CONFIGS[templateId];
+      const config = configMap?.[variant] ?? configMap?.overview ?? Object.values(configMap || {})[0];
+      if (config) {
+        return <Renderer {...rendererProps} config={config} />;
+      }
+    } else if (layout === 'concept' || layout === 'data-structure') {
+      const { CONCEPT_CONFIGS } = require('./concept-configs');
+      const configMap = CONCEPT_CONFIGS[templateId];
+      const config = configMap?.[variant] ?? configMap?.overview ?? Object.values(configMap || {})[0];
+      if (config) {
+        return <Renderer {...rendererProps} config={config} />;
+      }
+    } else if (layout === 'comparison') {
+      const { COMPARISON_CONFIGS } = require('./comparison-configs');
+      const configMap = COMPARISON_CONFIGS[templateId];
+      const config = configMap?.[variant] ?? configMap?.overview ?? Object.values(configMap || {})[0];
+      if (config) {
+        return <Renderer {...rendererProps} config={config} />;
+      }
+    } else if (layout === 'monitoring' || layout === 'security') {
+      const { MONITORING_CONFIGS } = require('./monitoring-configs');
+      const configMap = MONITORING_CONFIGS[templateId];
+      const config = configMap?.[variant] ?? configMap?.overview ?? Object.values(configMap || {})[0];
+      if (config) {
+        return <Renderer {...rendererProps} config={config} />;
+      }
+    }
+  } catch {
+    // Config not found — fall through to fallback
+  }
+
+  // If config not found, use fallback renderer
+  const effectiveBullets =
+    bullets && bullets.length > 0
+      ? bullets
+      : sceneHeading
+        ? [sceneHeading]
+        : [];
+  rendererProps.generatedConfig = generateConceptConfig(effectiveBullets);
+  return <FallbackRenderer {...rendererProps} />;
 };
 
 export default TemplateFactory;
