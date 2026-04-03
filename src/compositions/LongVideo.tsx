@@ -467,6 +467,9 @@ export const LongVideo: React.FC<LongVideoProps> = ({ storyboard, noOverlays = f
             progress={progress}
             sceneMarkers={sceneMarkers}
             currentSceneType={currentSceneType}
+            sceneName={activeScene?.heading}
+            sceneStartFrame={activeScene ? INTRO_DURATION + activeScene.startFrame : undefined}
+            totalFrames={totalFrames}
           />
         </>
       )}
@@ -483,6 +486,7 @@ export const LongVideo: React.FC<LongVideoProps> = ({ storyboard, noOverlays = f
           }
           durationInFrames={activeScene.endFrame - activeScene.startFrame}
           wordTimestamps={activeScene.wordTimestamps}
+          captionMode={style.captionMode}
         />
       )}
 
@@ -521,7 +525,7 @@ export const LongVideo: React.FC<LongVideoProps> = ({ storyboard, noOverlays = f
 
       {/* Background music with sidechain ducking during narration */}
       {storyboard.bgmFile && syncTimeline && (
-        <BgmLayer syncTimeline={syncTimeline} bgmFile={storyboard.bgmFile} />
+        <BgmLayer syncTimeline={syncTimeline} bgmFile={storyboard.bgmFile} baseVolume={style.bgmVolume} trackChangeInterval={style.bgmChangeInterval} />
       )}
 
       {/* 1.5x speed reminder overlay (skipped for noOverlays) */}
