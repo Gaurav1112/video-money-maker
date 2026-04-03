@@ -18,6 +18,14 @@ export interface Scene {
   sfxTriggers?: SfxTrigger[];
   /** Per-scene visualization variant — drives unique animation states per scene */
   vizVariant?: string;
+  /** Visual beats computed from narration — each beat = one sentence = one visual element */
+  visualBeats?: VisualBeat[];
+  /** Quiz options for review scenes (correct answer + 3 distractors) */
+  quizOptions?: string[];
+  /** Visual template ID selected by VisualMapper */
+  templateId?: string;
+  /** Template variant selected by content keywords */
+  templateVariant?: string;
   /**
    * Offset (in seconds) where this scene's audio begins in the master audio track.
    * Used by CaptionOverlay to sync subtitles to the actual audio position rather than
@@ -95,4 +103,13 @@ export interface RenderJob {
   progress: number;
   outputPath?: string;
   error?: string;
+}
+
+export interface VisualBeat {
+  startTime: number;
+  endTime: number;
+  text: string;
+  beatIndex: number;
+  totalBeats: number;
+  keywords: string[];
 }
