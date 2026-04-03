@@ -19,6 +19,8 @@ interface CaptionOverlayProps {
   wordsPerMinute?: number;
   /** Real word-level timestamps from TTS (overrides WPM estimate when provided) */
   wordTimestamps?: Array<{ word: string; start: number; end: number }>;
+  /** Caption style: 'fireship' (clean monospace) or 'hormozi' (bounce box) */
+  captionMode?: 'fireship' | 'hormozi';
 }
 
 // ── Detection Helpers ────────────────────────────────────────────────────────
@@ -47,9 +49,10 @@ const isBreakPoint = (word: string): boolean => {
  */
 const buildSentenceGroups = (
   words: string[],
+  maxWords: number = 14,
 ): Array<{ start: number; end: number }> => {
-  const MAX_WORDS = 14;
-  const MIN_WORDS = 4;
+  const MAX_WORDS = maxWords;
+  const MIN_WORDS = Math.min(4, maxWords);
   const groups: Array<{ start: number; end: number }> = [];
   let cursor = 0;
 
@@ -131,6 +134,7 @@ const CaptionOverlay: React.FC<CaptionOverlayProps> = ({
   durationInFrames,
   wordsPerMinute = 160,
   wordTimestamps,
+  captionMode = 'fireship',
 }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
@@ -161,7 +165,7 @@ const CaptionOverlay: React.FC<CaptionOverlayProps> = ({
   currentWordIndex = Math.min(currentWordIndex, totalWords - 1);
 
   // ── Active sentence group ──
-  const groups = buildSentenceGroups(words);
+  const groups = buildSentenceGroups(words, captionMode === 'hormozi' ? 3 : 14);
   let activeGroupIdx = 0;
   for (let i = 0; i < groups.length; i++) {
     if (currentWordIndex < groups[i].end) {
@@ -222,6 +226,90 @@ const CaptionOverlay: React.FC<CaptionOverlayProps> = ({
   };
 
   // ── Render ──
+  if (captionMode === 'hormozi') {
+    // Hormozi mode: bold centered words, slam-in animation, full-width color bar
+    const hormoziGroup = activeWords;
+
+    const slamSpring = spring({
+      frame: elapsed - getWordStartFrame(currentWordIndex),
+      fps,
+      config: { damping: 10, stiffness: 280, mass: 0.5 },
+    });
+    const slamY = interpolate(slamSpring, [0, 1], [-20, 0]);
+    const slamScale = interpolate(slamSpring, [0, 1], [0.8, 1.0]);
+
+    return (
+      <AbsoluteFill>
+        <div
+          style={{
+            position: 'absolute',
+            bottom: 80,
+            left: 0,
+            right: 0,
+            display: 'flex',
+            justifyContent: 'center',
+            opacity: containerOpacity,
+            zIndex: 100,
+          }}
+        >
+          <div
+            style={{
+              background: `linear-gradient(135deg, ${COLORS.saffron}EE, ${COLORS.saffron}CC)`,
+              borderRadius: 8,
+              padding: '20px 48px',
+              display: 'flex',
+              gap: 14,
+              alignItems: 'center',
+              justifyContent: 'center',
+              transform: `translateY(${slamY}px) scale(${slamScale})`,
+              boxShadow: `0 8px 32px ${COLORS.saffron}44`,
+            }}
+          >
+            {hormoziGroup.map((word, wIdx) => {
+              const localIdx = wIdx;
+              const isCurrent = localIdx === localWordIndex;
+              const isFuture = localIdx > localWordIndex;
+
+              if (isFuture) return null;
+
+              const emphasis = isEmphasis(word);
+              const wordSpring = isCurrent
+                ? spring({
+                    frame: elapsed - getWordStartFrame(activeGroup.start + localIdx),
+                    fps,
+                    config: { damping: 8, stiffness: 250, mass: 0.4 },
+                  })
+                : 0;
+              const wordScale = isCurrent
+                ? interpolate(wordSpring, [0, 1], [1.0, 1.3])
+                : 1.0;
+
+              return (
+                <span
+                  key={`hormozi-${activeGroupIdx}-${localIdx}`}
+                  style={{
+                    display: 'inline-block',
+                    fontFamily: FONTS.text,
+                    fontSize: isCurrent ? 44 : 38,
+                    fontWeight: 800,
+                    color: isCurrent ? COLORS.white : (emphasis ? COLORS.gold : `${COLORS.white}DD`),
+                    textTransform: 'uppercase',
+                    transform: `scale(${wordScale})`,
+                    transformOrigin: 'center bottom',
+                    textShadow: '0 2px 8px rgba(0,0,0,0.5)',
+                    letterSpacing: 1,
+                  }}
+                >
+                  {word}
+                </span>
+              );
+            })}
+          </div>
+        </div>
+      </AbsoluteFill>
+    );
+  }
+
   return (
     <AbsoluteFill>
       <div
