@@ -35,6 +35,8 @@ import {
   OutroSlide,
 } from '../components';
 import { SpeedReminder } from '../components/SpeedReminder';
+import { ZoomPunchLayer } from '../components/ZoomPunchLayer';
+import { getStyleForFormat } from '../lib/video-styles';
 
 interface LongVideoProps {
   storyboard: Storyboard;
@@ -247,6 +249,7 @@ export const LongVideo: React.FC<LongVideoProps> = ({ storyboard, noOverlays = f
   const contentFrames = storyboard.durationInFrames;
   const totalFrames = INTRO_DURATION + contentFrames + OUTRO_DURATION;
   const progress = frame / totalFrames;
+  const style = getStyleForFormat('long');
 
   // Build SyncTimeline for audio/word sync across content scenes only.
   // scenes[0] = intro, scenes[last] = outro — sceneOffsets covers only content scenes.
@@ -298,6 +301,7 @@ export const LongVideo: React.FC<LongVideoProps> = ({ storyboard, noOverlays = f
 
       {/* Render each scene with transitions, offset by intro duration */}
       <Sequence from={INTRO_DURATION} durationInFrames={contentFrames}>
+        <ZoomPunchLayer intervalRange={style.zoomInterval} scale={style.zoomScale} fps={fps}>
         <TransitionSeries>
           {contentScenes.map((scene, idx) => {
             const Component = SCENE_COMPONENT_MAP[scene.type];
@@ -438,6 +442,7 @@ export const LongVideo: React.FC<LongVideoProps> = ({ storyboard, noOverlays = f
             );
           })}
         </TransitionSeries>
+        </ZoomPunchLayer>
       </Sequence>
 
       {/* Branded Outro */}

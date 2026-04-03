@@ -25,4 +25,5 @@ export { SpeedReminder } from './SpeedReminder';
 export { PlatformPreview } from './PlatformPreview';
 export { BeforeAfterSplit } from './BeforeAfterSplit';
 export { AlgorithmPanel } from './AlgorithmPanel';
+export { ZoomPunchLayer } from './ZoomPunchLayer';
 export { ChapterBadge } from './ChapterBadge';
