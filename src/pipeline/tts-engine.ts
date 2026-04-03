@@ -244,6 +244,7 @@ async function edgeTTS(
     '-m', 'edge_tts',
     '--voice', voice,
     `--rate=${rate}`,       // Per-scene pacing from VideoStyle
+    '--pitch=+2Hz',         // Slightly warmer, more energetic pitch
     '--text', cleanText,
     '--write-media', audioPath,
     '--write-subtitles', vttPath,  // Real VTT timestamps!
@@ -494,6 +495,13 @@ export async function generateSceneAudios(
  */
 export function preprocessForSpeech(text: string): string {
   let result = text;
+
+  // Add natural pauses before contradiction words (Edge TTS respects commas)
+  result = result.replace(/\b(but|however|actually|in fact|surprisingly)\b/gi, ', $1');
+  // Clean up double commas that may result
+  result = result.replace(/,\s*,/g, ',');
+  // Add micro-pause before reveal words (dash creates a beat)
+  result = result.replace(/\b(the answer is|the key is|the secret is|here is why)\b/gi, '— $1');
 
   // Convert large numbers to spoken English
   // Must handle: 100000, 1,000,000, 10M, 200 million, 99.99%, 50x, 14ms
