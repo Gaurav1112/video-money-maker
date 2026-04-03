@@ -5,6 +5,9 @@ import type { AnimationCue, SfxTrigger } from '../types';
 import { NARRATION_SPEEDS, SCENE_DEFAULTS, TIMING } from '../lib/constants';
 import { renderMermaidToSvg } from './mermaid-renderer';
 import { SyncTimeline } from '../lib/sync-engine';
+import { computeVisualBeats } from '../lib/visual-beats';
+import { getVisualTemplate } from '../lib/visual-templates';
+import { generateQuizOptions } from '../lib/quiz-options';
 
 interface ScriptOptions {
   language?: string; // 'python' | 'java' -- fallback language for non-fenced code; both Python & Java are always included
@@ -1310,6 +1313,25 @@ export function generateScript(session: SessionInput, options: ScriptOptions = {
   }
   if (scenes[speedScene2] && scenes[speedScene2].narration) {
     scenes[speedScene2].narration = 'Quick reminder, try 1.5x speed if you haven\'t already. ' + scenes[speedScene2].narration;
+  }
+
+  // ── Compute visual beats + template selection per scene ──────────────
+  for (let i = 0; i < scenes.length; i++) {
+    const scene = scenes[i];
+    // Visual beats from narration
+    if (scene.narration && scene.wordTimestamps && scene.wordTimestamps.length > 0) {
+      scene.visualBeats = computeVisualBeats(scene.narration, scene.wordTimestamps);
+    }
+    // Template selection
+    if (scene.type !== 'title') {
+      const tmpl = getVisualTemplate(session.topic, sessionNum, scene.heading || '', scene.type, scene.vizVariant);
+      scene.templateId = tmpl.templateId;
+      scene.templateVariant = tmpl.variant;
+    }
+    // Quiz options for review scenes
+    if (scene.type === 'review' && scene.heading) {
+      scene.quizOptions = generateQuizOptions(scene.heading, session.topic, sessionNum, i);
+    }
   }
 
   // ── Personality injection — make narration viral and human ────────────

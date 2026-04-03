@@ -38,6 +38,8 @@ import { SpeedReminder } from '../components/SpeedReminder';
 import { PatternInterruptLayer } from '../components/PatternInterruptLayer';
 import { getStyleForFormat, getTransitionDuration } from '../lib/video-styles';
 
+const ACCENT_COLORS = ['#E85D26', '#1DD1A1', '#FDB813', '#818CF8'];
+
 interface LongVideoProps {
   storyboard: Storyboard;
   noOverlays?: boolean; // When true, skip CaptionOverlay, TopicHeader, BrandingLayer, ProgressBar, NarratorIndicator, SpeedReminder — for clean split-stack shorts conversion
@@ -87,6 +89,7 @@ function getSceneProps(scene: Scene, storyboard: Storyboard): Record<string, any
         title: scene.heading,
         highlightLines: scene.highlightLines,
         startFrame: 0,
+        sceneDurationFrames: scene.endFrame - scene.startFrame,
       };
     case 'text':
       return {
@@ -96,6 +99,11 @@ function getSceneProps(scene: Scene, storyboard: Storyboard): Record<string, any
         narration: scene.narration || '',
         startFrame: 0,
         endFrame: scene.endFrame - scene.startFrame,
+        visualBeats: scene.visualBeats,
+        templateId: scene.templateId,
+        templateVariant: scene.templateVariant,
+        accentColor: ACCENT_COLORS[storyboard.sessionNumber % 4],
+        topic: storyboard.topic,
       };
     case 'diagram':
       return {
@@ -132,6 +140,7 @@ function getSceneProps(scene: Scene, storyboard: Storyboard): Record<string, any
         answer: scene.heading || extractAnswerFromNarration(scene.narration, scene.content),
         startFrame: 0,
         endFrame: scene.endFrame - scene.startFrame,
+        quizOptions: scene.quizOptions,
       };
     case 'summary':
       return {
@@ -139,6 +148,8 @@ function getSceneProps(scene: Scene, storyboard: Storyboard): Record<string, any
         topic: storyboard.topic,
         sessionNumber: storyboard.sessionNumber,
         startFrame: 0,
+        templateId: scene.templateId,
+        visualBeats: scene.visualBeats,
       };
     default:
       return {};
