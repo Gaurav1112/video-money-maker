@@ -60,52 +60,184 @@ const IntroSlide: React.FC<IntroSlideProps> = ({ topic = '', durationInFrames = 
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
-  // ── HOOK MODE: Bold text + SFX at frame 0, no countdown ──────────────────
+  // ── HOOK MODE: Rich visual hook — logos, animations, dramatic reveal ──────
   if (textHook) {
-    const hookSpring = spring({
-      frame, fps,
-      config: { damping: 10, stiffness: 200, mass: 0.5 },
-    });
-    const hookScale = interpolate(hookSpring, [0, 1], [0.7, 1.0]);
-    const hookOpacity = interpolate(frame, [0, 5, durationInFrames - 10, durationInFrames], [0, 1, 1, 0], {
+    // Extract company name from hook text for logo display
+    const hookLower = textHook.toLowerCase();
+    const companies: Array<{name: string; slug: string; color: string}> = [
+      { name: 'Google', slug: 'google', color: '#4285F4' },
+      { name: 'Amazon', slug: 'amazon', color: '#FF9900' },
+      { name: 'Microsoft', slug: 'microsoft', color: '#00A4EF' },
+      { name: 'Meta', slug: 'meta', color: '#0668E1' },
+      { name: 'Netflix', slug: 'netflix', color: '#E50914' },
+      { name: 'Apple', slug: 'apple', color: '#A2AAAD' },
+      { name: 'Uber', slug: 'uber', color: '#000000' },
+      { name: 'Flipkart', slug: 'flipkart', color: '#2874F0' },
+      { name: 'Swiggy', slug: 'swiggy', color: '#FC8019' },
+    ];
+    const matchedCompany = companies.find(c => hookLower.includes(c.name.toLowerCase()));
+
+    // Animation phases
+    const phase1End = 20; // 0-20 frames: dramatic flash + company logo
+    const phase2End = 50; // 20-50 frames: hook text slams in
+    const phase3End = durationInFrames - 10; // 50+: topic name + breathing
+
+    // Phase 1: Dramatic flash
+    const flashOpacity = interpolate(frame, [0, 3, 8], [1, 0.8, 0], {
       extrapolateLeft: 'clamp', extrapolateRight: 'clamp',
     });
-    // Topic name fades in after hook
-    const topicOpacity = interpolate(frame, [20, 35], [0, 0.7], {
+
+    // Company logo entrance
+    const logoSpring = spring({ frame: Math.max(0, frame - 2), fps, config: { damping: 12, stiffness: 180, mass: 0.6 } });
+    const logoScale = interpolate(logoSpring, [0, 1], [3.0, 1.0]);
+    const logoOpacity = interpolate(frame, [2, 8, phase2End, phase2End + 10], [0, 1, 1, 0.3], {
+      extrapolateLeft: 'clamp', extrapolateRight: 'clamp',
+    });
+
+    // Hook text slam-in
+    const textSpring = spring({ frame: Math.max(0, frame - phase1End), fps, config: { damping: 10, stiffness: 200, mass: 0.5 } });
+    const textScale = interpolate(textSpring, [0, 1], [0.5, 1.0]);
+    const textY = interpolate(textSpring, [0, 1], [40, 0]);
+    const textOpacity = interpolate(frame, [phase1End, phase1End + 5, phase3End, durationInFrames], [0, 1, 1, 0], {
+      extrapolateLeft: 'clamp', extrapolateRight: 'clamp',
+    });
+
+    // Radial glow pulse behind text
+    const glowPulse = interpolate(Math.sin(frame * 0.08), [-1, 1], [0.3, 0.6]);
+
+    // Topic name fade
+    const topicOpacity = interpolate(frame, [phase2End, phase2End + 15], [0, 0.8], {
+      extrapolateLeft: 'clamp', extrapolateRight: 'clamp',
+    });
+
+    // Animated particles (energy burst)
+    const particleElements = Array.from({ length: 16 }, (_, i) => {
+      const angle = (i / 16) * Math.PI * 2;
+      const speed = 4 + (i % 4) * 2;
+      const distance = Math.max(0, frame - 3) * speed;
+      const pOpacity = interpolate(frame, [3, 8, 25, 35], [0, 0.8, 0.3, 0], {
+        extrapolateLeft: 'clamp', extrapolateRight: 'clamp',
+      });
+      return (
+        <div key={`p-${i}`} style={{
+          position: 'absolute', top: '42%', left: '50%',
+          width: 4 + (i % 3), height: 4 + (i % 3), borderRadius: '50%',
+          backgroundColor: i % 3 === 0 ? COLORS.saffron : i % 3 === 1 ? COLORS.gold : COLORS.teal,
+          transform: `translate(${Math.cos(angle) * distance}px, ${Math.sin(angle) * distance}px)`,
+          opacity: pOpacity,
+          boxShadow: `0 0 ${8 + (i % 3) * 4}px ${i % 2 === 0 ? COLORS.saffron : COLORS.gold}`,
+        }} />
+      );
+    });
+
+    // Scanning line effect
+    const scanLineY = interpolate(frame, [0, 20], [-5, 105], {
       extrapolateLeft: 'clamp', extrapolateRight: 'clamp',
     });
 
     return (
       <AbsoluteFill style={{ backgroundColor: COLORS.dark, overflow: 'hidden' }}>
-        {/* SFX impact at frame 0 */}
+        {/* SFX impact */}
         <Audio src={staticFile('audio/sfx/impact.wav')} volume={0.6} />
 
-        {/* Bold hook text — center screen */}
+        {/* Phase 1: White flash on entry */}
         <div style={{
-          position: 'absolute', top: '38%', left: 0, right: 0,
-          display: 'flex', justifyContent: 'center', alignItems: 'center',
-          transform: `scale(${hookScale})`, opacity: hookOpacity,
+          position: 'absolute', inset: 0,
+          backgroundColor: matchedCompany ? matchedCompany.color : COLORS.saffron,
+          opacity: flashOpacity,
+        }} />
+
+        {/* Scanning line */}
+        <div style={{
+          position: 'absolute', left: 0, right: 0, top: `${scanLineY}%`,
+          height: 3, background: `linear-gradient(90deg, transparent, ${COLORS.saffron}AA, ${COLORS.gold}FF, ${COLORS.saffron}AA, transparent)`,
+          opacity: interpolate(frame, [0, 5, 15, 20], [0, 0.8, 0.6, 0], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }),
+          boxShadow: `0 0 20px ${COLORS.saffron}60`,
+        }} />
+
+        {/* Radial glow behind content */}
+        <div style={{
+          position: 'absolute', top: '30%', left: '50%', transform: 'translate(-50%, -50%)',
+          width: 800, height: 800, borderRadius: '50%',
+          background: `radial-gradient(circle, ${matchedCompany ? matchedCompany.color + '30' : COLORS.saffron + '25'}, transparent 60%)`,
+          opacity: glowPulse, filter: 'blur(40px)',
+        }} />
+
+        {/* Energy burst particles */}
+        {particleElements}
+
+        {/* Company logo (if detected in hook text) */}
+        {matchedCompany && (
+          <div style={{
+            position: 'absolute', top: '18%', left: '50%',
+            transform: `translateX(-50%) scale(${logoScale})`,
+            opacity: logoOpacity,
+          }}>
+            <img
+              src={`https://cdn.simpleicons.org/${matchedCompany.slug}/${matchedCompany.color.replace('#', '')}`}
+              style={{ width: 80, height: 80, filter: `drop-shadow(0 0 20px ${matchedCompany.color}66)` }}
+            />
+          </div>
+        )}
+
+        {/* "INTERVIEW QUESTION" badge */}
+        <div style={{
+          position: 'absolute', top: matchedCompany ? '32%' : '25%', left: '50%',
+          transform: 'translateX(-50%)',
+          opacity: interpolate(frame, [5, 12], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }),
         }}>
           <div style={{
-            fontSize: 52, fontFamily: FONTS.heading, fontWeight: 900,
-            color: COLORS.saffron, textAlign: 'center',
-            maxWidth: '80%', lineHeight: 1.3, letterSpacing: -1,
-            textShadow: `0 0 30px ${COLORS.saffron}60, 0 4px 12px rgba(0,0,0,0.8)`,
+            background: `linear-gradient(135deg, ${COLORS.saffron}EE, ${COLORS.gold}CC)`,
+            borderRadius: 999, padding: '6px 24px',
+            boxShadow: `0 4px 20px ${COLORS.saffron}44`,
+          }}>
+            <span style={{
+              fontSize: 14, fontFamily: FONTS.text, fontWeight: 800,
+              color: COLORS.dark, letterSpacing: 3, textTransform: 'uppercase',
+            }}>
+              {matchedCompany ? `${matchedCompany.name.toUpperCase()} INTERVIEW` : 'INTERVIEW QUESTION'}
+            </span>
+          </div>
+        </div>
+
+        {/* Hook text — main message */}
+        <div style={{
+          position: 'absolute', top: '42%', left: 0, right: 0,
+          display: 'flex', justifyContent: 'center', alignItems: 'center',
+          transform: `scale(${textScale}) translateY(${textY}px)`,
+          opacity: textOpacity,
+        }}>
+          <div style={{
+            fontSize: 56, fontFamily: FONTS.heading, fontWeight: 900,
+            color: COLORS.white, textAlign: 'center',
+            maxWidth: '75%', lineHeight: 1.25, letterSpacing: -1.5,
+            textShadow: `0 0 40px ${COLORS.saffron}50, 0 4px 16px rgba(0,0,0,0.9)`,
           }}>
             {textHook}
           </div>
         </div>
 
-        {/* Topic name — subtle, below hook */}
+        {/* Topic name + "Guru Sishya" branding */}
         <div style={{
-          position: 'absolute', bottom: '25%', left: 0, right: 0,
+          position: 'absolute', bottom: '18%', left: 0, right: 0,
           textAlign: 'center', opacity: topicOpacity,
+          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12,
         }}>
           <span style={{
-            fontSize: 24, fontFamily: FONTS.text, fontWeight: 600,
-            color: COLORS.gold, letterSpacing: 2, textTransform: 'uppercase',
+            fontSize: 28, fontFamily: FONTS.heading, fontWeight: 700,
+            color: COLORS.gold, letterSpacing: 3, textTransform: 'uppercase',
           }}>
             {topic}
+          </span>
+          <div style={{
+            width: 60, height: 2,
+            background: `linear-gradient(90deg, transparent, ${COLORS.saffron}, transparent)`,
+          }} />
+          <span style={{
+            fontSize: 16, fontFamily: FONTS.text, fontWeight: 500,
+            color: `${COLORS.teal}AA`, letterSpacing: 2,
+          }}>
+            GURU SISHYA
           </span>
         </div>
       </AbsoluteFill>
