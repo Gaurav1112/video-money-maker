@@ -2,6 +2,8 @@ import { Scene, Storyboard, TTSResult } from '../types';
 import { TIMING, INTRO_DURATION, OUTRO_DURATION, TRANSITION_DURATION } from '../lib/constants';
 import { stitchAudio } from './audio-stitcher';
 import { assignVizVariants } from './script-generator';
+import { generateSfxTriggers } from '../lib/sfx-triggers';
+import type { SfxDensity } from '../lib/video-styles';
 
 interface StoryboardOptions {
   topic: string;
@@ -9,6 +11,7 @@ interface StoryboardOptions {
   fps?: number;
   width?: number;
   height?: number;
+  sfxDensity?: SfxDensity;
 }
 
 // Type-based fallback durations (seconds) used when a scene has no audio offset.
@@ -37,6 +40,10 @@ export function generateStoryboard(
     0.8, // 0.8s silence gap between scenes
     `master-${topic.replace(/[^a-z0-9]/gi, '-')}-s${sessionNumber}.mp3`
   ) as ReturnType<typeof stitchAudio> & { allSfxTriggers?: Storyboard['allSfxTriggers'] };
+
+  // Auto-generate SFX triggers from scene content
+  const autoSfxTriggers = generateSfxTriggers(scenes, options.sfxDensity);
+  const mergedSfxTriggers = [...(allSfxTriggers || []), ...autoSfxTriggers];
 
   // Prepend branded intro scene
   const introScene: Scene = {
@@ -148,7 +155,7 @@ export function generateStoryboard(
     topic,
     sessionNumber,
     sceneOffsets,
-    ...(allSfxTriggers ? { allSfxTriggers } : {}),
+    ...(mergedSfxTriggers.length > 0 ? { allSfxTriggers: mergedSfxTriggers } : {}),
   };
 }
 

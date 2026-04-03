@@ -15,6 +15,11 @@ export const SFX_DURATIONS: Record<string, number> = {
   'level-up': 45,       // 1.5s
   'subtle-pulse': 12,   // 0.4s
   'tension-build': 30,  // 1.0s
+  'impact': 18,          // 0.6s — bass thud
+  'error': 15,           // 0.5s — error buzz
+  'typing': 30,          // 1.0s — keyboard typing loop
+  'riser': 45,           // 1.5s — rising tension
+  'whoosh': 12,          // 0.4s — generic whoosh
 };
 
 export function sfxDuration(effect: string): number {
