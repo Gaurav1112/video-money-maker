@@ -208,6 +208,22 @@ const ReviewQuestion: React.FC<ReviewQuestionProps> = ({
         padding: '50px 80px 80px',
       }}
     >
+      {/* Animated background — never plain black */}
+      <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
+        <div style={{
+          position: 'absolute', inset: 0,
+          backgroundImage: `
+            linear-gradient(rgba(232,93,38,0.02) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(232,93,38,0.02) 1px, transparent 1px)
+          `,
+          backgroundSize: '80px 80px',
+        }} />
+        <div style={{
+          position: 'absolute', inset: 0,
+          background: `radial-gradient(ellipse at 50% 50%, rgba(232,93,38,0.05) 0%, transparent 50%)`,
+        }} />
+      </div>
+
       {/* ── Phase 1: POP QUIZ! ── */}
       {frame < startFrame + phase2End + 10 && (
         <div

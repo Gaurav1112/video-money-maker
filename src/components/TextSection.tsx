@@ -143,6 +143,22 @@ const TextSection: React.FC<TextSectionProps> = ({
         overflow: 'hidden',
       }}
     >
+      {/* Animated background — never plain black */}
+      <div style={{ position: 'absolute', inset: 0 }}>
+        <div style={{
+          position: 'absolute', inset: 0,
+          backgroundImage: `
+            linear-gradient(rgba(29,209,161,0.02) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(29,209,161,0.02) 1px, transparent 1px)
+          `,
+          backgroundSize: '80px 80px',
+        }} />
+        <div style={{
+          position: 'absolute', inset: 0,
+          background: `radial-gradient(ellipse at 60% 50%, rgba(29,209,161,0.04) 0%, transparent 50%)`,
+        }} />
+      </div>
+
       {/* ===== BACKGROUND IMAGE — 8% opacity ===== */}
       {bgImagePath && (
         <Img

@@ -180,6 +180,22 @@ const InterviewInsight: React.FC<InterviewInsightProps> = ({
         padding: '40px 56px',
       }}
     >
+      {/* Animated background — never plain black */}
+      <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
+        <div style={{
+          position: 'absolute', inset: 0,
+          backgroundImage: `
+            linear-gradient(rgba(232,93,38,0.02) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(232,93,38,0.02) 1px, transparent 1px)
+          `,
+          backgroundSize: '80px 80px',
+        }} />
+        <div style={{
+          position: 'absolute', inset: 0,
+          background: `radial-gradient(ellipse at 40% 30%, rgba(253,184,19,0.04) 0%, transparent 50%)`,
+        }} />
+      </div>
+
       {/* ── Top 30%: Interviewer Chat Bubble ───────────────────────────────── */}
       <div
         style={{

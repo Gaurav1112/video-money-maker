@@ -100,6 +100,22 @@ const SummarySlide: React.FC<SummarySlideProps> = ({
         overflow: 'hidden',
       }}
     >
+      {/* Animated background — never plain black */}
+      <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 0 }}>
+        <div style={{
+          position: 'absolute', inset: 0,
+          backgroundImage: `
+            linear-gradient(rgba(253,184,19,0.02) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(253,184,19,0.02) 1px, transparent 1px)
+          `,
+          backgroundSize: '80px 80px',
+        }} />
+        <div style={{
+          position: 'absolute', inset: 0,
+          background: `radial-gradient(ellipse at 50% 30%, rgba(253,184,19,0.04) 0%, transparent 50%)`,
+        }} />
+      </div>
+
       {/* Background glow orb */}
       <div
         style={{

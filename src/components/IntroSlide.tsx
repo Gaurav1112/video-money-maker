@@ -155,6 +155,39 @@ const IntroSlide: React.FC<IntroSlideProps> = ({ topic = '', durationInFrames = 
 
     return (
       <AbsoluteFill style={{ backgroundColor: COLORS.dark, overflow: 'hidden' }}>
+        {/* Animated tech grid background — never plain black */}
+        <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
+          {/* Subtle grid pattern */}
+          <div style={{
+            position: 'absolute', inset: 0,
+            backgroundImage: `
+              linear-gradient(rgba(232,93,38,0.03) 1px, transparent 1px),
+              linear-gradient(90deg, rgba(232,93,38,0.03) 1px, transparent 1px)
+            `,
+            backgroundSize: '60px 60px',
+          }} />
+          {/* Radial gradient overlay for depth */}
+          <div style={{
+            position: 'absolute', inset: 0,
+            background: `radial-gradient(ellipse at 50% 40%, rgba(232,93,38,0.06) 0%, transparent 50%)`,
+          }} />
+          {/* Floating code keywords (subtle, background) */}
+          {Array.from({ length: 12 }, (_, i) => {
+            const keywords = ['async', 'await', 'class', 'function', 'return', 'import', 'const', 'interface', 'deploy', 'scale', 'cache', 'query'];
+            const x = (i * 8.3 + 2) % 100;
+            const cycleFrame = (frame + i * 15) % 150;
+            const y = (cycleFrame / 150) * 120 - 10;
+            return (
+              <div key={`kw-${i}`} style={{
+                position: 'absolute', left: `${x}%`, top: `${y}%`,
+                fontSize: 13, fontFamily: 'JetBrains Mono, monospace',
+                color: COLORS.teal, opacity: 0.06 + (i % 3) * 0.02,
+                whiteSpace: 'nowrap',
+              }}>{keywords[i]}</div>
+            );
+          })}
+        </div>
+
         {/* SFX impact */}
         <Audio src={staticFile('audio/sfx/impact.wav')} volume={0.6} />
 

@@ -322,6 +322,22 @@ const CodeReveal: React.FC<CodeRevealProps> = ({
         flexDirection: 'column',
       }}
     >
+      {/* Animated tech grid background — never plain black */}
+      <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
+        <div style={{
+          position: 'absolute', inset: 0,
+          backgroundImage: `
+            linear-gradient(rgba(29,209,161,0.02) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(29,209,161,0.02) 1px, transparent 1px)
+          `,
+          backgroundSize: '60px 60px',
+        }} />
+        <div style={{
+          position: 'absolute', inset: 0,
+          background: `radial-gradient(ellipse at 30% 50%, rgba(29,209,161,0.04) 0%, transparent 50%)`,
+        }} />
+      </div>
+
       {/* Ambient glow */}
       <div
         style={{
