@@ -20,6 +20,10 @@ interface ProgressBarProps {
   sceneName?: string;
   /** Frame when current scene started (for slide-in animation) */
   sceneStartFrame?: number;
+  /** Progress thresholds for milestone celebrations */
+  milestoneAt?: number[];
+  /** Total frames in the video — used for precise milestone timing */
+  totalFrames?: number;
 }
 
 const SCENE_ICONS: Record<string, string> = {
@@ -41,6 +45,8 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
   currentWordIndex = 0,
   sceneName,
   sceneStartFrame,
+  milestoneAt = [0.25, 0.5, 0.75],
+  totalFrames: totalFramesProp,
 }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
@@ -69,6 +75,28 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
   });
   const nameSlideX = interpolate(nameSlideSpr, [0, 1], [60, 0]);
   const nameOpacity = interpolate(nameSlideSpr, [0, 1], [0, 1]);
+
+  // Milestone celebration
+  const MILESTONE_DURATION_FRAMES = 45; // 1.5s at 30fps
+  // Use explicit totalFrames prop (reliable) or fall back to estimate
+  const totalFrames = totalFramesProp ?? (clampedProgress > 0.01 ? frame / clampedProgress : 10000);
+
+  const activeMilestone = (milestoneAt || []).find((threshold) => {
+    const crossFrame = Math.round(threshold * totalFrames);
+    return frame >= crossFrame && frame < crossFrame + MILESTONE_DURATION_FRAMES;
+  });
+
+  const milestoneLabels: Record<number, string> = {
+    0.25: '25% Done!',
+    0.5: 'Halfway!',
+    0.75: 'Almost There!',
+  };
+
+  const milestoneEmoji: Record<number, string> = {
+    0.25: '\u{1F389}',  // party popper
+    0.5: '\u{1F525}',   // fire
+    0.75: '\u{1F680}',  // rocket
+  };
 
   // Generate word boundary tick marks (show up to 30 ticks for readability)
   const tickCount = totalWords > 0 ? Math.min(totalWords, 30) : 0;
@@ -262,6 +290,55 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
           </span>
         </div>
       )}
+
+      {/* Milestone celebration */}
+      {activeMilestone !== undefined && (() => {
+        const crossFrame = Math.round(activeMilestone * totalFrames);
+        const milestoneAge = frame - crossFrame;
+        const mScale = spring({
+          frame: milestoneAge,
+          fps,
+          config: { damping: 10, stiffness: 200, mass: 0.5 },
+        });
+        const mOpacity = interpolate(milestoneAge, [0, 10, 35, 45], [0, 1, 1, 0], {
+          extrapolateLeft: 'clamp',
+          extrapolateRight: 'clamp',
+        });
+
+        return (
+          <div
+            style={{
+              position: 'absolute',
+              bottom: 40,
+              left: '50%',
+              transform: `translateX(-50%) scale(${interpolate(mScale, [0, 1], [0.5, 1])})`,
+              opacity: mOpacity,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 10,
+              backgroundColor: `${COLORS.dark}EE`,
+              padding: '10px 24px',
+              borderRadius: 12,
+              border: `2px solid ${COLORS.gold}`,
+              boxShadow: `0 0 20px ${COLORS.gold}44`,
+              zIndex: 200,
+            }}
+          >
+            <span style={{ fontSize: 28 }}>{milestoneEmoji[activeMilestone] || '\u{1F389}'}</span>
+            <span
+              style={{
+                fontSize: 20,
+                fontFamily: FONTS.heading,
+                fontWeight: 800,
+                color: COLORS.gold,
+                letterSpacing: 1,
+              }}
+            >
+              {milestoneLabels[activeMilestone] || `${Math.round(activeMilestone * 100)}%`}
+            </span>
+          </div>
+        );
+      })()}
     </AbsoluteFill>
   );
 };
