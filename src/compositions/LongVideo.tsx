@@ -296,7 +296,11 @@ export const LongVideo: React.FC<LongVideoProps> = ({ storyboard, noOverlays = f
 
       {/* Branded Intro */}
       <Sequence from={0} durationInFrames={INTRO_DURATION}>
-        <IntroSlide durationInFrames={INTRO_DURATION} topic={storyboard.topic} />
+        <IntroSlide
+          durationInFrames={INTRO_DURATION}
+          topic={storyboard.topic}
+          textHook={storyboard.scenes[0]?.heading}
+        />
       </Sequence>
 
       {/* Render each scene with transitions, offset by intro duration */}

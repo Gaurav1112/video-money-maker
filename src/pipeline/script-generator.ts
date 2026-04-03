@@ -1,4 +1,5 @@
 import { SessionInput, Scene, SceneType } from '../types';
+import { generateDualHook } from '../lib/hook-generator';
 import type { AnimationCue, SfxTrigger } from '../types';
 import { NARRATION_SPEEDS, SCENE_DEFAULTS, TIMING } from '../lib/constants';
 import { renderMermaidToSvg } from './mermaid-renderer';
@@ -1058,14 +1059,28 @@ export function generateScript(session: SessionInput, options: ScriptOptions = {
   // Session number: prefer explicit option, fall back to session.sessionNumber
   const sessionNum = optSessionNumber ?? session.sessionNumber;
 
-  // ── 1. HOOK — Session-aware dramatic opening ────────────────────────────
-  let hookNarration = generateHook(session.topic, session.title, sessionNum, totalSessions);
+  // ── 1. DUAL HOOK — bold text + spoken narration at frame 0 ──────────────
+  // Note: We pass the existing scenes array to generateDualHook. At this point
+  // in the function, 'scenes' is empty (title scene hasn't been pushed yet).
+  // The hook generator gracefully handles empty arrays by using fallback text.
+  // For fully content-aware hooks, we'd need to restructure generateScript to
+  // generate content scenes first, but this would require significant refactoring.
+  // The current approach is a pragmatic first iteration — hooks are still varied
+  // via 7 formulas + deterministic seeding by topic + sessionNumber.
+  const dualHook = generateDualHook(session.topic, sessionNum, scenes);
+  let hookNarration = dualHook.spokenHook;
 
   // Inject analogy from the SESSION-SPECIFIC analogy set (different metaphor each session)
   const analogy = getAnalogy(session.topic, sessionNum);
   if (analogy) {
     hookNarration += ` ${analogy}`;
   }
+
+  // Series context
+  const seriesInfo = totalSessions
+    ? ` This is session ${sessionNum} of ${totalSessions} in our complete ${session.topic} series.`
+    : ` This is session ${sessionNum} of our ${session.topic} series.`;
+  hookNarration += `${seriesInfo} Today's topic: ${session.title}.`;
 
   const titleDuration = SCENE_DEFAULTS.titleDuration;
   scenes.push({
@@ -1076,7 +1091,7 @@ export function generateScript(session: SessionInput, options: ScriptOptions = {
     startFrame: currentFrame,
     endFrame: (currentFrame += TIMING.secondsToFrames(titleDuration)),
     bullets: session.objectives,
-    heading: session.topic,
+    heading: dualHook.textHook, // Text hook for HookSlide display
   });
 
   // ── 1b. RECAP SCENE — "Previously on..." for session 2+ ───────────────

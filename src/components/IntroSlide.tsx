@@ -1,10 +1,12 @@
 import React from 'react';
-import { useCurrentFrame, AbsoluteFill, spring, useVideoConfig, interpolate } from 'remotion';
+import { useCurrentFrame, AbsoluteFill, spring, useVideoConfig, interpolate, Audio, staticFile } from 'remotion';
 import { COLORS, FONTS } from '../lib/theme';
 
 interface IntroSlideProps {
   topic?: string;
-  durationInFrames?: number; // default 150 (5 seconds at 30fps) — extended for countdown
+  durationInFrames?: number;
+  /** When provided, renders hook mode: bold text + SFX at frame 0, no countdown */
+  textHook?: string;
 }
 
 // Particle definition — each has a fixed horizontal position and a phase offset
@@ -54,9 +56,61 @@ const EXPLOSION_PARTICLES = Array.from({ length: 24 }, (_, i) => {
   };
 });
 
-const IntroSlide: React.FC<IntroSlideProps> = ({ topic = '', durationInFrames = 150 }) => {
+const IntroSlide: React.FC<IntroSlideProps> = ({ topic = '', durationInFrames = 90, textHook }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
+
+  // ── HOOK MODE: Bold text + SFX at frame 0, no countdown ──────────────────
+  if (textHook) {
+    const hookSpring = spring({
+      frame, fps,
+      config: { damping: 10, stiffness: 200, mass: 0.5 },
+    });
+    const hookScale = interpolate(hookSpring, [0, 1], [0.7, 1.0]);
+    const hookOpacity = interpolate(frame, [0, 5, durationInFrames - 10, durationInFrames], [0, 1, 1, 0], {
+      extrapolateLeft: 'clamp', extrapolateRight: 'clamp',
+    });
+    // Topic name fades in after hook
+    const topicOpacity = interpolate(frame, [20, 35], [0, 0.7], {
+      extrapolateLeft: 'clamp', extrapolateRight: 'clamp',
+    });
+
+    return (
+      <AbsoluteFill style={{ backgroundColor: COLORS.dark, overflow: 'hidden' }}>
+        {/* SFX impact at frame 0 */}
+        <Audio src={staticFile('audio/sfx/impact.wav')} volume={0.6} />
+
+        {/* Bold hook text — center screen */}
+        <div style={{
+          position: 'absolute', top: '38%', left: 0, right: 0,
+          display: 'flex', justifyContent: 'center', alignItems: 'center',
+          transform: `scale(${hookScale})`, opacity: hookOpacity,
+        }}>
+          <div style={{
+            fontSize: 52, fontFamily: FONTS.heading, fontWeight: 900,
+            color: COLORS.saffron, textAlign: 'center',
+            maxWidth: '80%', lineHeight: 1.3, letterSpacing: -1,
+            textShadow: `0 0 30px ${COLORS.saffron}60, 0 4px 12px rgba(0,0,0,0.8)`,
+          }}>
+            {textHook}
+          </div>
+        </div>
+
+        {/* Topic name — subtle, below hook */}
+        <div style={{
+          position: 'absolute', bottom: '25%', left: 0, right: 0,
+          textAlign: 'center', opacity: topicOpacity,
+        }}>
+          <span style={{
+            fontSize: 24, fontFamily: FONTS.text, fontWeight: 600,
+            color: COLORS.gold, letterSpacing: 2, textTransform: 'uppercase',
+          }}>
+            {topic}
+          </span>
+        </div>
+      </AbsoluteFill>
+    );
+  }
 
   // ── PHASE TIMING ──────────────────────────────────────────────────────────
   // Frames 0–60:  Countdown "3... 2... 1..."  (each number gets 20 frames)
