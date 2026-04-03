@@ -1,5 +1,5 @@
 import React from 'react';
-import { Audio, interpolate, useCurrentFrame, useVideoConfig, staticFile } from 'remotion';
+import { Audio, Sequence, interpolate, useCurrentFrame, useVideoConfig, staticFile } from 'remotion';
 import { SyncTimeline } from '../lib/sync-engine';
 
 /**
@@ -33,15 +33,20 @@ interface BgmLayerProps {
   duckVolume?: number;
   /** Volume when no narration (default 0.10 — subtle ambient fill) */
   baseVolume?: number;
+  /** Array of BGM track paths for rotation (relative to public/) */
+  tracks?: string[];
+  /** Seconds between track changes (default 120) */
+  trackChangeInterval?: number;
 }
 
-export const BgmLayer: React.FC<BgmLayerProps> = ({
-  syncTimeline,
-  bgmFile,
-  mood,
-  duckVolume = 0.04,
-  baseVolume = 0.10,
-}) => {
+export const BgmLayer: React.FC<BgmLayerProps> = (props) => {
+  const {
+    syncTimeline,
+    bgmFile,
+    mood,
+    duckVolume = 0.04,
+    baseVolume = 0.10,
+  } = props;
   const frame = useCurrentFrame();
   const { durationInFrames, fps } = useVideoConfig();
 
@@ -55,6 +60,31 @@ export const BgmLayer: React.FC<BgmLayerProps> = ({
     // Default to warm ambient
     return BGM_TRACKS[0].file;
   }, [bgmFile, mood]);
+
+  const trackChangeInterval = props.trackChangeInterval ?? 120;
+  const trackList = props.tracks ?? [resolvedFile];
+
+  // Pre-compute which track plays at which frame range
+  const segments = React.useMemo(() => {
+    if (trackList.length <= 1) return null; // single track — use existing loop behavior
+
+    const intervalFrames = trackChangeInterval * fps;
+    const crossfadeFrames = 3 * fps; // 3s crossfade
+    const segs: Array<{ trackFile: string; startFrame: number; endFrame: number }> = [];
+    let f = 0;
+    let trackIdx = 0;
+
+    while (f < durationInFrames) {
+      segs.push({
+        trackFile: trackList[trackIdx % trackList.length],
+        startFrame: f,
+        endFrame: Math.min(f + intervalFrames + crossfadeFrames, durationInFrames),
+      });
+      f += intervalFrames;
+      trackIdx++;
+    }
+    return segs;
+  }, [trackList, trackChangeInterval, fps, durationInFrames]);
 
   // Pre-compute narration state for smooth ducking transitions
   const duckingVolumes = React.useMemo(() => {
@@ -108,6 +138,39 @@ export const BgmLayer: React.FC<BgmLayerProps> = ({
     [durationInFrames, fadeInFrames, fadeOutFrames, duckingVolumes, duckVolume],
   );
 
+  // Multi-track crossfade rendering
+  if (segments && segments.length > 1) {
+    const crossfadeFrames = 3 * fps;
+    return (
+      <>
+        {segments.map((seg, i) => (
+          <Sequence key={`bgm-${i}`} from={seg.startFrame} durationInFrames={seg.endFrame - seg.startFrame}>
+            <Audio
+              src={staticFile(seg.trackFile)}
+              volume={(f) => {
+                const localFrame = f;
+                const segDuration = seg.endFrame - seg.startFrame;
+                // Fade in over crossfade period
+                const fadeIn = interpolate(localFrame, [0, crossfadeFrames], [0, 1], {
+                  extrapolateLeft: 'clamp', extrapolateRight: 'clamp',
+                });
+                // Fade out over crossfade period at end
+                const fadeOut = interpolate(localFrame, [segDuration - crossfadeFrames, segDuration], [1, 0], {
+                  extrapolateLeft: 'clamp', extrapolateRight: 'clamp',
+                });
+                // Ducking from pre-computed array
+                const absFrame = seg.startFrame + localFrame;
+                const ducked = absFrame < duckingVolumes.length ? duckingVolumes[absFrame] : duckVolume;
+                return fadeIn * fadeOut * ducked;
+              }}
+            />
+          </Sequence>
+        ))}
+      </>
+    );
+  }
+
+  // Single-track fallback (loop)
   return (
     <Audio
       src={staticFile(resolvedFile)}
