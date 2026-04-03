@@ -52,14 +52,15 @@ export async function generateAudio(
   text: string,
   voice: string = DEFAULT_VOICE,
   outputName?: string,
-  voiceLanguage: string = DEFAULT_VOICE_LANGUAGE
+  voiceLanguage: string = DEFAULT_VOICE_LANGUAGE,
+  rate: string = '-5%'
 ): Promise<TTSResult> {
   // Resolve voices from language maps
   const kokoroVoice = KOKORO_VOICE_MAP[voiceLanguage] || voice;
   const edgeVoice = process.env.EDGE_TTS_VOICE || VOICE_MAP[voiceLanguage] || 'en-IN-PrabhatNeural';
   console.log(`  [TTS] generateAudio edge=${edgeVoice} kokoro=${kokoroVoice} (lang=${voiceLanguage})`);
 
-  const cacheKey = crypto.createHash('sha256').update(text + edgeVoice + voiceLanguage).digest('hex');
+  const cacheKey = crypto.createHash('sha256').update(text + edgeVoice + voiceLanguage + rate).digest('hex');
 
   // Check cache
   const cached = cache.get<TTSResult>(cacheKey);
@@ -68,7 +69,7 @@ export async function generateAudio(
   // Priority 1: Edge TTS (free, unlimited, PrabhatNeural Indian male teacher)
   // Gets real sentence-level timestamps from VTT — no Whisper needed!
   try {
-    return await edgeTTS(text, cacheKey, outputName, voiceLanguage);
+    return await edgeTTS(text, cacheKey, outputName, voiceLanguage, rate);
   } catch (edgeErr) {
     console.warn('Edge TTS failed:', (edgeErr as Error).message, '— trying Kokoro...');
   }
@@ -224,7 +225,8 @@ async function edgeTTS(
   text: string,
   cacheKey: string,
   outputName?: string,
-  voiceLanguage: string = 'indian-english'
+  voiceLanguage: string = 'indian-english',
+  rate: string = '-5%'
 ): Promise<TTSResult> {
   const { execFileSync } = await import('child_process');
 
@@ -241,7 +243,7 @@ async function edgeTTS(
   execFileSync('python3', [
     '-m', 'edge_tts',
     '--voice', voice,
-    '--rate=-5%',           // Slightly slower for teacher clarity
+    `--rate=${rate}`,       // Per-scene pacing from VideoStyle
     '--text', cleanText,
     '--write-media', audioPath,
     '--write-subtitles', vttPath,  // Real VTT timestamps!
@@ -458,7 +460,8 @@ function parseVttTime(time: string): number {
 export async function generateSceneAudios(
   scenes: Array<{ narration: string; type: string }>,
   voice: string = DEFAULT_VOICE,
-  voiceLanguage: string = DEFAULT_VOICE_LANGUAGE
+  voiceLanguage: string = DEFAULT_VOICE_LANGUAGE,
+  rateMap?: Record<string, string>
 ): Promise<TTSResult[]> {
   // Edge TTS is primary — resolve voice from Edge voice map
   const resolvedVoice = VOICE_MAP[voiceLanguage] || voice;
@@ -473,7 +476,8 @@ export async function generateSceneAudios(
     }
     console.log(`  Generating audio for scene ${i + 1}/${scenes.length} [${scene.type}]...`);
     const spokenText = preprocessForSpeech(scene.narration);
-    const result = await generateAudio(spokenText, resolvedVoice, `scene_${i}.mp3`, voiceLanguage);
+    const sceneRate = rateMap?.[scene.type] ?? '-5%';
+    const result = await generateAudio(spokenText, resolvedVoice, `scene_${i}.mp3`, voiceLanguage, sceneRate);
     results.push(result);
   }
   return results;
