@@ -1,5 +1,6 @@
 import { SessionInput, Scene, SceneType } from '../types';
 import { generateDualHook } from '../lib/hook-generator';
+import { injectOpenLoops } from '../lib/open-loops';
 import type { AnimationCue, SfxTrigger } from '../types';
 import { NARRATION_SPEEDS, SCENE_DEFAULTS, TIMING } from '../lib/constants';
 import { renderMermaidToSvg } from './mermaid-renderer';
@@ -1314,7 +1315,10 @@ export function generateScript(session: SessionInput, options: ScriptOptions = {
   // ── Personality injection — make narration viral and human ────────────
   const personalizedScenes = personalityInjector(scenes, sessionNum);
 
-  return addStoryTransitions(personalizedScenes);
+  // ── Inject contradiction-based open loops ──────────────────────────────
+  const withLoops = injectOpenLoops(personalizedScenes, session.topic, sessionNum);
+
+  return addStoryTransitions(withLoops);
 }
 
 // ---------------------------------------------------------------------------
