@@ -18,7 +18,7 @@ Research (10 agents, 200+ sources) identified 5 killers:
 
 ## Scope
 
-4 components that transform viewer retention. This is Sub-project 1 — subsequent sub-projects cover captions, audio, and metadata.
+5 components that transform viewer retention. This is Sub-project 1 — subsequent sub-projects cover captions, audio, and metadata.
 
 ---
 
@@ -67,15 +67,24 @@ function generateHook(
 - Template slots (`{concept}`, `{company}`, `{salary}`) are filled from scene content, never hardcoded
 - Template bank: 20+ variations per formula, rotated by seed
 
+### SFX at Frame 0
+The HookSlide renders an `<Audio>` element directly (not via SfxLayer) at frame 0 for the impact sound:
+```tsx
+<Audio src={staticFile('audio/sfx/impact.wav')} volume={0.6} />
+```
+This is a simple fire-and-forget audio — no SyncTimeline integration needed since it plays at the composition start.
+
 ### Integration
 - `script-generator.ts`: Call `generateHook()` after generating scenes. Prepend `spokenHook` to scene 1's narration.
-- `IntroSlide.tsx`: Refactor to `HookSlide.tsx` — receives `textHook` as prop, renders bold text with spring animation + SFX trigger.
+- `IntroSlide.tsx`: **Keep the file** but refactor its content to become the HookSlide. Rename the component internally but keep the filename as `IntroSlide.tsx` to avoid breaking `ViralShort.tsx` and other compositions that import it. Add a `textHook` prop — when provided, renders hook mode (bold text + SFX); when absent, falls back to the existing countdown behavior for backward compatibility.
+- `components/index.ts`: Note that `HookSlide` is already exported as a dangling reference (line 1) — the file `HookSlide.tsx` does NOT exist on disk. Remove this dangling export. The component stays as `IntroSlide` with hook mode.
 - `constants.ts`: `INTRO_DURATION = 90` (was 150).
 - `storyboard.ts`: Intro scene duration updated to match new constant.
 
 ### Files
 - Create: `src/lib/hook-generator.ts`
-- Modify: `src/components/IntroSlide.tsx` → becomes `HookSlide.tsx`
+- Modify: `src/components/IntroSlide.tsx` (add hook mode with `textHook` prop, keep backward compat)
+- Modify: `src/components/index.ts` (remove dangling `HookSlide` export)
 - Modify: `src/pipeline/script-generator.ts` (prepend spoken hook)
 - Modify: `src/lib/constants.ts` (`INTRO_DURATION = 90`)
 
@@ -119,10 +128,36 @@ interface PatternInterruptLayerProps {
 - `educational`: interrupt every 6-8 seconds, 3 types max per scene
 - `viral`: interrupt every 4-6 seconds, all 5 types active
 
+### Placement in LongVideo.tsx JSX Tree
+Renders as an absolutely-positioned sibling AFTER `renderedScene` and BEFORE `SceneTransitionFlash`, inside the `<AbsoluteFill>` within each `TransitionSeries.Sequence`:
+```tsx
+<TransitionSeries.Sequence durationInFrames={duration}>
+  <AbsoluteFill>
+    {renderedScene}
+    <PatternInterruptLayer
+      wordTimestamps={scene.wordTimestamps || []}
+      sceneType={scene.type}
+      narration={scene.narration}
+      style={style}
+      fps={fps}
+    />
+    {!isFirst && <SceneTransitionFlash ... />}
+  </AbsoluteFill>
+</TransitionSeries.Sequence>
+```
+
+### SFX Hit Audio Rendering
+The `sfxHit` interrupt type renders a `<Sequence><Audio>` element directly within the PatternInterruptLayer at the computed trigger frame (simpler than integrating with SfxLayer):
+```tsx
+<Sequence from={triggerFrame} durationInFrames={sfxDuration(effect)}>
+  <Audio src={staticFile(`audio/sfx/${effect}.wav`)} volume={0.4} />
+</Sequence>
+```
+
 ### What Gets Replaced
 - `ZoomPunchLayer.tsx` is **deprecated** — its zoom functionality is absorbed into the `zoom` interrupt type
-- The `ZoomPunchLayer` wrapping in `LongVideo.tsx` is removed
-- `PatternInterruptLayer` renders inside each `TransitionSeries.Sequence` as an overlay
+- The `<ZoomPunchLayer>` wrapping in `LongVideo.tsx` is removed
+- `zoomInterval` and `zoomScale` fields in `VideoStyle` become unused — mark as deprecated with a comment, don't remove yet
 
 ### Files
 - Create: `src/components/PatternInterruptLayer.tsx`
@@ -156,7 +191,7 @@ function generateOpenLoops(
 ```
 
 **Algorithm:**
-1. Scan scenes for high-value targets: `code`, `interview`, `review`, `summary` types
+1. Scan scenes for high-value targets: `code`, `interview`, `review`, `summary` types (these have "reveal" moments — code shows implementation, interview has insider tips, review has quiz answers, summary has takeaways. Excluded: `title` is intro-only, `text` is explanation without reveal, `diagram`/`table` are visual aids without narrative payoff)
 2. For each target at index N, select a plant scene at index N-3 to N-5 (1-2 minutes before)
 3. Maximum 3 open loops per video (more = confusing)
 4. Generate contradiction + resolution pair from template bank
@@ -229,21 +264,33 @@ function getTransitionDuration(
 Returns `dramaticTransitionDuration` for dramatic pairs, `transitionDuration` otherwise.
 
 ### Storyboard Math Impact
-The timing math in `storyboard.ts` (line 97) currently uses a global `TRANSITION_DURATION`:
-```typescript
-durationFrames = TIMING.secondsToFrames(nextOffset - offset) + TRANSITION_DURATION;
-```
+The timing math in `storyboard.ts` uses `TRANSITION_DURATION` in **3 places** (lines 97, 100, 105 approximately). All 3 must use per-transition duration:
 
-This must now use per-transition duration:
+**Case 1 — next offset exists (line ~97):**
 ```typescript
-const transDuration = getTransitionDuration(prevSceneType, scene.type, style);
+const prevType = i > 0 ? scenes[i - 1].type : 'title';
+const transDuration = getTransitionDuration(prevType, scene.type, style);
 durationFrames = TIMING.secondsToFrames(nextOffset - offset) + transDuration;
 ```
 
-The `getTransitionDuration` helper is imported from `video-styles.ts` and used in both `storyboard.ts` (timing math) and `LongVideo.tsx` (transition rendering).
+**Case 2 — last scene with audio (line ~100):**
+```typescript
+// No next scene → use default transitionDuration (not dramatic)
+durationFrames = TIMING.secondsToFrames(audio.duration + 1.0) + style.transitionDuration;
+```
+
+**Case 3 — no audio fallback (line ~105):**
+```typescript
+// No audio → use default transitionDuration
+durationFrames = TIMING.secondsToFrames(durationSeconds) + style.transitionDuration;
+```
+
+Cases 2 and 3 use the style's default `transitionDuration` (not dramatic) because there's no "next scene type" to form a dramatic pair.
+
+The `getTransitionDuration` helper is imported from `video-styles.ts` and used in both `storyboard.ts` (timing math) and `LongVideo.tsx` (transition rendering). The `storyboard.ts` `generateStoryboard` function needs a `style` parameter added to its `StoryboardOptions` interface.
 
 ### LongVideo.tsx Changes
-The `linearTiming({ durationInFrames: TRANSITION_DURATION })` call in the TransitionSeries (line 430) must use the per-pair duration:
+The `linearTiming({ durationInFrames: TRANSITION_DURATION })` call in the TransitionSeries (around line 429) must use the per-pair duration:
 
 ```typescript
 const transDuration = getTransitionDuration(
@@ -306,7 +353,18 @@ Update the `EDUCATIONAL` style `ttsRate` in `video-styles.ts`:
 | summary | +20% | ~180 |
 
 ### Edge TTS Pitch Warmth
-Add `--pitch=+2Hz` to the `edgeTTS()` call in `tts-engine.ts` for slightly warmer tone. Small change, measurable warmth improvement.
+Add `--pitch=+2Hz` to the `edgeTTS()` CLI args array in `tts-engine.ts`, right after the `--rate` flag (around line 244). This does NOT affect VTT subtitle generation — pitch changes only modify the audio output, not timing. Example:
+```typescript
+execFileSync('python3', [
+  '-m', 'edge_tts',
+  '--voice', voice,
+  `--rate=${rate}`,
+  '--pitch=+2Hz',        // Warmer tone
+  '--text', cleanText,
+  '--write-media', audioPath,
+  '--write-subtitles', vttPath,
+], { timeout: 120000 });
+```
 
 ### Punctuation-Driven Micro-Pauses
 Edge TTS doesn't support SSML `<break>` tags, but it respects punctuation. Update `preprocessForSpeech()` in `tts-engine.ts`:
@@ -335,14 +393,14 @@ Edge TTS doesn't support SSML `<break>` tags, but it respects punctuation. Updat
 ### Modified Files (8)
 | File | Changes |
 |------|---------|
-| `src/components/IntroSlide.tsx` | Refactor to HookSlide — bold text + SFX at frame 0 |
+| `src/components/IntroSlide.tsx` | Add hook mode (textHook prop), keep backward compat |
 | `src/pipeline/script-generator.ts` | Prepend spoken hook, inject open loops after scene generation |
 | `src/lib/constants.ts` | `INTRO_DURATION = 90`, `TRANSITION_DURATION` becomes fallback |
 | `src/lib/video-styles.ts` | Add transition fields, update ttsRate to aggressive pacing, helper |
 | `src/compositions/LongVideo.tsx` | Remove ZoomPunchLayer, add PatternInterruptLayer, per-transition duration |
 | `src/pipeline/storyboard.ts` | Per-transition duration in timing math |
 | `src/pipeline/tts-engine.ts` | Add `--pitch=+2Hz`, update `preprocessForSpeech` punctuation tricks |
-| `src/components/index.ts` | Export PatternInterruptLayer, update HookSlide export |
+| `src/components/index.ts` | Export PatternInterruptLayer, remove dangling HookSlide export |
 
 ### Deprecated Files (1)
 | File | Reason |
