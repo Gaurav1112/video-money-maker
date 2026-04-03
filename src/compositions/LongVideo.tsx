@@ -4,6 +4,7 @@ import { TransitionSeries, linearTiming, TransitionPresentation } from '@remotio
 import { fade } from '@remotion/transitions/fade';
 import { slide } from '@remotion/transitions/slide';
 import { wipe } from '@remotion/transitions/wipe';
+import { clockWipe, iris, flip } from '../components/transitions';
 import { Storyboard, Scene } from '../types';
 import { COLORS } from '../lib/theme';
 import { SyncTimeline } from '../lib/sync-engine';
@@ -51,27 +52,21 @@ const SCENE_COMPONENT_MAP: Record<string, React.FC<any>> = {
   summary: SummarySlide,
 };
 
-function getTransitionForScene(sceneType: string): TransitionPresentation<Record<string, unknown>> {
-  switch (sceneType) {
-    case 'title':
-      return fade() as TransitionPresentation<Record<string, unknown>>;
-    case 'code':
-      return slide({ direction: 'from-right' }) as TransitionPresentation<Record<string, unknown>>;
-    case 'text':
-      return fade() as TransitionPresentation<Record<string, unknown>>;
-    case 'interview':
-      return wipe({ direction: 'from-left' }) as TransitionPresentation<Record<string, unknown>>;
-    case 'summary':
-      return fade() as TransitionPresentation<Record<string, unknown>>;
-    case 'diagram':
-      return slide({ direction: 'from-bottom' }) as TransitionPresentation<Record<string, unknown>>;
-    case 'table':
-      return slide({ direction: 'from-left' }) as TransitionPresentation<Record<string, unknown>>;
-    case 'review':
-      return wipe({ direction: 'from-right' }) as TransitionPresentation<Record<string, unknown>>;
-    default:
-      return fade() as TransitionPresentation<Record<string, unknown>>;
-  }
+type TransitionFactory = () => TransitionPresentation<Record<string, unknown>>;
+
+const TRANSITION_POOL: TransitionFactory[] = [
+  () => fade() as TransitionPresentation<Record<string, unknown>>,
+  () => slide({ direction: 'from-right' }) as TransitionPresentation<Record<string, unknown>>,
+  () => wipe({ direction: 'from-left' }) as TransitionPresentation<Record<string, unknown>>,
+  () => slide({ direction: 'from-bottom' }) as TransitionPresentation<Record<string, unknown>>,
+  () => iris() as TransitionPresentation<Record<string, unknown>>,
+  () => slide({ direction: 'from-left' }) as TransitionPresentation<Record<string, unknown>>,
+  () => wipe({ direction: 'from-right' }) as TransitionPresentation<Record<string, unknown>>,
+  () => flip() as TransitionPresentation<Record<string, unknown>>,
+];
+
+function getTransitionForScene(_sceneType: string, sceneIndex: number): TransitionPresentation<Record<string, unknown>> {
+  return TRANSITION_POOL[sceneIndex % TRANSITION_POOL.length]();
 }
 
 function getSceneProps(scene: Scene, storyboard: Storyboard): Record<string, any> {
@@ -426,7 +421,7 @@ export const LongVideo: React.FC<LongVideoProps> = ({ storyboard, noOverlays = f
                 {/* Add transition before each scene (except the first) */}
                 {!isFirst && (
                   <TransitionSeries.Transition
-                    presentation={getTransitionForScene(scene.type)}
+                    presentation={getTransitionForScene(scene.type, idx)}
                     timing={linearTiming({ durationInFrames: TRANSITION_DURATION })}
                   />
                 )}
