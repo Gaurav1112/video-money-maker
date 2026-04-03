@@ -149,6 +149,26 @@ export function generateStoryboard(
   // shows a UNIQUE animation state instead of repeating the same viz.
   const enrichedScenes = assignVizVariants(timedScenes, topic);
 
+  // ── Compute visual beats AFTER word timestamps are populated ──
+  // This must happen here (not in script-generator) because wordTimestamps
+  // are populated by TTS, which runs AFTER script generation.
+  try {
+    const { computeVisualBeats } = require('../lib/visual-beats');
+    const { getVisualTemplate } = require('../lib/visual-templates');
+    for (const scene of enrichedScenes) {
+      if (scene.narration && scene.wordTimestamps && scene.wordTimestamps.length > 0) {
+        scene.visualBeats = computeVisualBeats(scene.narration, scene.wordTimestamps);
+      }
+      if (scene.type !== 'title' && !scene.templateId) {
+        const tmpl = getVisualTemplate(topic, sessionNumber, scene.heading || '', scene.type, scene.vizVariant);
+        scene.templateId = tmpl.templateId;
+        scene.templateVariant = tmpl.variant;
+      }
+    }
+  } catch {
+    // Visual beats not available — non-critical, scenes render without them
+  }
+
   return {
     fps,
     width,

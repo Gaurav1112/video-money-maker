@@ -310,7 +310,7 @@ export const LongVideo: React.FC<LongVideoProps> = ({ storyboard, noOverlays = f
         <IntroSlide
           durationInFrames={INTRO_DURATION}
           topic={storyboard.topic}
-          textHook={storyboard.scenes[0]?.heading}
+          textHook={storyboard.scenes[1]?.heading || storyboard.scenes[0]?.heading}
         />
       </Sequence>
 
