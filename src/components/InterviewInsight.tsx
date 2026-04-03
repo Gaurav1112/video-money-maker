@@ -1,7 +1,9 @@
 import React from 'react';
-import { useCurrentFrame, interpolate } from 'remotion';
+import { useCurrentFrame, useVideoConfig, interpolate, spring } from 'remotion';
 import { COLORS, FONTS, SIZES } from '../lib/theme';
-import { fadeIn, slideIn, slideUp, springIn, bounceIn, pulseGlow } from '../lib/animations';
+import { fadeIn, typewriter } from '../lib/animations';
+
+/* ─── Types ────────────────────────────────────────────────────────────────── */
 
 interface InterviewInsightProps {
   insight: string;
@@ -11,57 +13,90 @@ interface InterviewInsightProps {
   sceneIndex?: number;
   sceneStartFrame?: number;
   animationCues?: unknown[];
+  /** Scene heading used to derive the interviewer question */
+  heading?: string;
 }
 
-/**
- * Extracts 2-3 short bullet points from an insight/tip string.
- * Looks for sentence boundaries and picks the most action-oriented ones.
- */
-function extractBullets(insight: string, tip: string): string[] {
-  const combined = `${insight} ${tip}`;
-  // Split on sentence boundaries
-  const sentences = combined
+/* ─── Helpers ──────────────────────────────────────────────────────────────── */
+
+/** Derive an interviewer question from the scene heading or insight text */
+function deriveQuestion(heading?: string, insight?: string): string {
+  if (heading) {
+    // Strip markdown-style prefixes
+    const clean = heading.replace(/^#+\s*/, '').replace(/[*_`]/g, '').trim();
+    // If it already ends with ?, use it
+    if (clean.endsWith('?')) return clean;
+    // Common transformations
+    if (/^(how|what|why|when|where|which|can|does|is|are|should|would|could)/i.test(clean)) {
+      return clean.endsWith('.') ? clean.slice(0, -1) + '?' : clean + '?';
+    }
+    return `Can you explain ${clean.toLowerCase()}?`;
+  }
+  // Fallback: derive from first sentence of insight
+  if (insight) {
+    const firstSentence = insight.split(/[.!?]/)[0]?.trim();
+    if (firstSentence && firstSentence.length > 10) {
+      return `How would you approach ${firstSentence.toLowerCase()}?`;
+    }
+  }
+  return 'Walk me through your approach to this problem.';
+}
+
+/** Split insight into structured answer framework sections */
+function buildFrameworkSections(insight: string): Array<{ label: string; content: string }> {
+  const sentences = insight
     .split(/[.!?]+/)
-    .map((s) => s.trim())
-    .filter((s) => s.length > 15 && s.length < 100);
+    .map(s => s.trim())
+    .filter(s => s.length > 10);
 
-  if (sentences.length === 0) return [];
+  if (sentences.length === 0) {
+    return [
+      { label: 'Clarify', content: insight || 'Understand the requirements first.' },
+      { label: 'Design', content: 'Outline your solution approach.' },
+      { label: 'Tradeoffs', content: 'Discuss pros, cons, and alternatives.' },
+    ];
+  }
 
-  // Prefer sentences that contain interview-relevant keywords
-  const keywords = /\b(always|never|use|avoid|explain|show|demonstrate|mention|focus|remember|key|important|interviewers?|expect)\b/i;
-  const ranked = sentences.sort((a, b) => {
-    const aMatch = keywords.test(a) ? 1 : 0;
-    const bMatch = keywords.test(b) ? 1 : 0;
-    return bMatch - aMatch;
-  });
+  // Distribute sentences across framework sections
+  const sections: Array<{ label: string; content: string }> = [];
+  const labels = ['Clarify', 'Design', 'Tradeoffs'];
 
-  return ranked.slice(0, 3);
+  if (sentences.length >= 3) {
+    sections.push({ label: labels[0], content: sentences[0] + '.' });
+    const midSentences = sentences.slice(1, -1);
+    sections.push({ label: labels[1], content: midSentences.join('. ') + '.' });
+    sections.push({ label: labels[2], content: sentences[sentences.length - 1] + '.' });
+  } else if (sentences.length === 2) {
+    sections.push({ label: labels[0], content: sentences[0] + '.' });
+    sections.push({ label: labels[1], content: sentences[1] + '.' });
+    sections.push({ label: labels[2], content: 'Consider alternatives and edge cases.' });
+  } else {
+    sections.push({ label: labels[0], content: sentences[0] + '.' });
+    sections.push({ label: labels[1], content: 'Build on this foundation step by step.' });
+    sections.push({ label: labels[2], content: 'Weigh the tradeoffs carefully.' });
+  }
+
+  return sections;
 }
 
-/**
- * Highlights key phrases in a string by wrapping them in a styled span.
- * Returns an array of React nodes (plain strings + highlighted spans).
- */
+/** Highlights key interview phrases */
 function highlightKeyPhrases(text: string): React.ReactNode[] {
   const keywords = [
     'always', 'never', 'key', 'critical', 'important', 'must', 'should',
-    'interviewer', 'interviewers', 'expect', 'O(n)', 'O(log n)', 'O(1)',
+    'interviewer', 'interviewers', 'expect', 'O\\(n\\)', 'O\\(log n\\)', 'O\\(1\\)',
     'trade-off', 'tradeoff', 'edge case', 'edge cases', 'time complexity',
     'space complexity', 'optimize', 'optimal', 'efficient', 'explain',
   ];
-  const pattern = new RegExp(`\\b(${keywords.map((k) => k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})\\b`, 'gi');
+  const pattern = new RegExp(
+    `\\b(${keywords.map(k => k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})\\b`,
+    'gi',
+  );
 
   const parts = text.split(pattern);
   return parts.map((part, i) => {
-    if (keywords.some((k) => k.toLowerCase() === part.toLowerCase())) {
+    if (keywords.some(k => k.toLowerCase().replace(/\\\(/g, '(').replace(/\\\)/g, ')') === part.toLowerCase())) {
       return (
-        <span
-          key={i}
-          style={{
-            color: COLORS.gold,
-            fontWeight: 700,
-          }}
-        >
+        <span key={i} style={{ color: COLORS.gold, fontWeight: 700 }}>
           {part}
         </span>
       );
@@ -70,48 +105,68 @@ function highlightKeyPhrases(text: string): React.ReactNode[] {
   });
 }
 
+/* ─── Component ────────────────────────────────────────────────────────────── */
+
 const InterviewInsight: React.FC<InterviewInsightProps> = ({
   insight = '',
   tip = '',
   startFrame = 0,
+  heading,
 }) => {
   const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+  const elapsed = frame - startFrame;
 
-  // ── Animation timing (all relative to startFrame) ──────────────────────
-  const headingDelay   = startFrame;
-  const insightDelay   = startFrame + 18;
-  const proTipDelay    = startFrame + 38;
-  const bulletsDelay   = startFrame + 55;
+  const question = deriveQuestion(heading, insight);
+  const sections = buildFrameworkSections(insight);
 
-  // Heading: slides down from above
-  const headingSlide = slideUp(frame, headingDelay, -50, 35);
-  const headingOpacity = fadeIn(frame, headingDelay, 25);
+  /* ── Animation timing ────────────────────────────────────────────────────── */
 
-  // Star icon: bounces in
-  const iconScale = bounceIn(frame, headingDelay + 5);
+  // Interviewer chat bubble: spring entrance from top
+  const chatSpring = spring({
+    frame: Math.max(0, elapsed),
+    fps,
+    config: { damping: 12, stiffness: 100, mass: 0.8 },
+  });
+  const chatY = interpolate(chatSpring, [0, 1], [-80, 0]);
+  const chatOpacity = interpolate(chatSpring, [0, 0.4], [0, 1], {
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
+  });
 
-  // Insight text: fades in
-  const insightOpacity = fadeIn(frame, insightDelay, 30);
-  const insightSlide = slideUp(frame, insightDelay, 30, 35);
+  // Typewriter on question text
+  const typewriterDelay = startFrame + 12;
+  const typedQuestion = typewriter(question, frame, typewriterDelay, 1.2);
 
-  // Pro tip card: springs up from below
-  const tipSpring = springIn(frame, proTipDelay);
-  const tipSlide = slideUp(frame, proTipDelay, 60, 40);
-  const tipOpacity = fadeIn(frame, proTipDelay, 25);
+  // Framework card entrance
+  const cardDelay = 25;
+  const cardSpring = spring({
+    frame: Math.max(0, elapsed - cardDelay),
+    fps,
+    config: { damping: 14, stiffness: 100, mass: 0.9 },
+  });
+  const cardOpacity = interpolate(cardSpring, [0, 0.3], [0, 1], {
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
+  });
+  const cardY = interpolate(cardSpring, [0, 1], [40, 0]);
 
-  // Bullets: staggered fade-in
-  const bullets = extractBullets(insight, tip);
-
-  // Pulsing gold glow on the star
-  const starGlow = pulseGlow(frame, 0.1, 0.5, 1.0);
-
-  // Subtle accent line width animation
-  const accentWidth = interpolate(
-    frame,
-    [headingDelay, headingDelay + 45],
-    [0, 100],
-    { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
+  // Active section index: cycles through sections based on elapsed time
+  const sectionInterval = 40; // frames per section
+  const activeSection = Math.min(
+    sections.length - 1,
+    Math.max(0, Math.floor((elapsed - cardDelay - 15) / sectionInterval)),
   );
+
+  // Pro tip badge fade-in
+  const tipDelay = startFrame + cardDelay + sections.length * sectionInterval + 10;
+  const tipOpacity = fadeIn(frame, tipDelay, 25);
+  const tipSpring = spring({
+    frame: Math.max(0, frame - tipDelay),
+    fps,
+    config: { damping: 14, stiffness: 120, mass: 0.7 },
+  });
+  const tipY = interpolate(tipSpring, [0, 1], [30, 0]);
 
   return (
     <div
@@ -120,198 +175,288 @@ const InterviewInsight: React.FC<InterviewInsightProps> = ({
         height: '100%',
         display: 'flex',
         flexDirection: 'column',
-        justifyContent: 'center',
-        padding: '48px 56px',
         fontFamily: FONTS.text,
         boxSizing: 'border-box',
-        gap: 32,
+        padding: '40px 56px',
       }}
     >
-      {/* ── 1. HEADING ─────────────────────────────────────────────── */}
+      {/* ── Top 30%: Interviewer Chat Bubble ───────────────────────────────── */}
       <div
         style={{
+          flex: '0 0 28%',
           display: 'flex',
-          alignItems: 'center',
-          gap: 14,
-          opacity: headingOpacity,
-          transform: `translateY(${headingSlide}px)`,
+          flexDirection: 'column',
+          justifyContent: 'center',
+          opacity: chatOpacity,
+          transform: `translateY(${chatY}px)`,
         }}
       >
-        {/* Star icon */}
         <div
           style={{
-            fontSize: 38,
-            transform: `scale(${iconScale})`,
-            filter: `drop-shadow(0 0 10px ${COLORS.gold})`,
-            opacity: starGlow,
-            lineHeight: 1,
+            background: `linear-gradient(135deg, ${COLORS.darkAlt}, #151020)`,
+            borderRadius: 20,
+            padding: '28px 36px',
+            border: `1.5px solid ${COLORS.indigo}44`,
+            boxShadow: `0 8px 40px ${COLORS.dark}AA`,
+            position: 'relative',
           }}
         >
-          ★
-        </div>
-
-        <div>
+          {/* Chat tail */}
           <div
             style={{
-              fontSize: SIZES.heading3,
-              fontWeight: 800,
-              color: COLORS.saffron,
-              fontFamily: FONTS.heading,
-              letterSpacing: '-0.5px',
-              lineHeight: 1,
-            }}
-          >
-            Interview Insight
-          </div>
-          {/* Animated underline accent */}
-          <div
-            style={{
-              height: 3,
-              width: `${accentWidth}%`,
-              background: `linear-gradient(90deg, ${COLORS.gold}, ${COLORS.saffron}88)`,
-              borderRadius: 2,
-              marginTop: 6,
+              position: 'absolute',
+              top: -12,
+              left: 40,
+              width: 0,
+              height: 0,
+              borderLeft: '12px solid transparent',
+              borderRight: '12px solid transparent',
+              borderBottom: `12px solid ${COLORS.darkAlt}`,
             }}
           />
-        </div>
-      </div>
 
-      {/* ── 2. KEY INSIGHT — large, clear, one sentence ────────────── */}
-      <div
-        style={{
-          opacity: insightOpacity,
-          transform: `translateY(${insightSlide}px)`,
-        }}
-      >
-        <p
-          style={{
-            fontSize: 30,
-            fontWeight: 600,
-            color: COLORS.white,
-            lineHeight: 1.5,
-            margin: 0,
-            letterSpacing: '-0.2px',
-          }}
-        >
-          {highlightKeyPhrases(insight)}
-        </p>
-      </div>
-
-      {/* ── 3. PRO TIP CARD ────────────────────────────────────────── */}
-      <div
-        style={{
-          opacity: tipOpacity * tipSpring,
-          transform: `translateY(${tipSlide}px)`,
-          background: `linear-gradient(135deg, ${COLORS.teal}18, ${COLORS.teal}08)`,
-          border: `2px solid ${COLORS.teal}55`,
-          borderLeft: `5px solid ${COLORS.teal}`,
-          borderRadius: 14,
-          padding: '24px 28px',
-        }}
-      >
-        {/* Card label */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 10,
-            marginBottom: 12,
-          }}
-        >
+          {/* Label */}
           <div
             style={{
-              fontSize: 20,
-              lineHeight: 1,
-            }}
-          >
-            💡
-          </div>
-          <span
-            style={{
-              fontSize: SIZES.bodySmall,
-              fontWeight: 700,
-              color: COLORS.teal,
-              letterSpacing: '0.8px',
-              textTransform: 'uppercase' as const,
-            }}
-          >
-            Pro Tip
-          </span>
-        </div>
-
-        {/* Tip text */}
-        <p
-          style={{
-            fontSize: SIZES.body,
-            color: COLORS.white,
-            lineHeight: 1.55,
-            margin: 0,
-            fontWeight: 400,
-          }}
-        >
-          {highlightKeyPhrases(tip)}
-        </p>
-      </div>
-
-      {/* ── 4. WHAT INTERVIEWERS WANT — bullet points ──────────────── */}
-      {bullets.length > 0 && (
-        <div
-          style={{
-            opacity: fadeIn(frame, bulletsDelay, 25),
-          }}
-        >
-          <div
-            style={{
-              fontSize: SIZES.bodySmall,
-              fontWeight: 700,
-              color: COLORS.indigo,
-              letterSpacing: '0.6px',
-              textTransform: 'uppercase' as const,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 10,
               marginBottom: 14,
             }}
           >
-            What Interviewers Want
+            {/* Avatar circle */}
+            <div
+              style={{
+                width: 36,
+                height: 36,
+                borderRadius: '50%',
+                background: `linear-gradient(135deg, ${COLORS.saffron}, ${COLORS.gold})`,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: 18,
+                fontWeight: 900,
+                color: COLORS.dark,
+              }}
+            >
+              ?
+            </div>
+            <span
+              style={{
+                fontSize: SIZES.bodySmall,
+                fontWeight: 700,
+                color: COLORS.saffron,
+                letterSpacing: '0.8px',
+                textTransform: 'uppercase' as const,
+              }}
+            >
+              Interviewer asks:
+            </span>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {bullets.map((bullet, i) => {
-              const bulletOpacity = fadeIn(frame, bulletsDelay + i * 12, 20);
-              const bulletSlide = slideIn(frame, bulletsDelay + i * 12, 30, 25);
-              return (
+          {/* Question with typewriter */}
+          <div
+            style={{
+              fontSize: 30,
+              fontWeight: 600,
+              color: COLORS.white,
+              lineHeight: 1.45,
+              minHeight: 44,
+              fontFamily: FONTS.heading,
+            }}
+          >
+            {typedQuestion}
+            {/* Blinking cursor */}
+            {typedQuestion.length < question.length && (
+              <span
+                style={{
+                  display: 'inline-block',
+                  width: 3,
+                  height: 30,
+                  backgroundColor: COLORS.saffron,
+                  marginLeft: 2,
+                  verticalAlign: 'text-bottom',
+                  opacity: Math.sin(frame * 0.3) > 0 ? 1 : 0,
+                }}
+              />
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* ── Middle 50%: Answer Framework Card ──────────────────────────────── */}
+      <div
+        style={{
+          flex: '0 0 52%',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          opacity: cardOpacity,
+          transform: `translateY(${cardY}px)`,
+          gap: 12,
+        }}
+      >
+        {sections.map((section, i) => {
+          const isActive = elapsed >= cardDelay + 15 && i <= activeSection;
+          const isCurrent = i === activeSection && elapsed >= cardDelay + 15;
+
+          // Each section has its own spring for smooth highlighting
+          const sectionActivationFrame = cardDelay + 15 + i * sectionInterval;
+          const sectionSpring = spring({
+            frame: Math.max(0, elapsed - sectionActivationFrame),
+            fps,
+            config: { damping: 14, stiffness: 100, mass: 0.8 },
+          });
+          const sectionHighlight = interpolate(sectionSpring, [0, 1], [0, 1], {
+            extrapolateLeft: 'clamp',
+            extrapolateRight: 'clamp',
+          });
+
+          return (
+            <div
+              key={i}
+              style={{
+                display: 'flex',
+                alignItems: 'stretch',
+                borderRadius: 14,
+                overflow: 'hidden',
+                background: isCurrent
+                  ? `linear-gradient(135deg, ${COLORS.teal}14, ${COLORS.teal}08)`
+                  : isActive
+                    ? `${COLORS.darkAlt}`
+                    : `${COLORS.dark}88`,
+                border: `1.5px solid ${isCurrent ? `${COLORS.teal}55` : `${COLORS.indigo}22`}`,
+                transition: 'all 0.3s',
+                opacity: isActive ? 1 : 0.35,
+              }}
+            >
+              {/* Left accent border */}
+              <div
+                style={{
+                  width: 5,
+                  flexShrink: 0,
+                  background: isCurrent
+                    ? COLORS.teal
+                    : isActive
+                      ? `${COLORS.teal}66`
+                      : `${COLORS.indigo}33`,
+                  borderRadius: '4px 0 0 4px',
+                }}
+              />
+
+              <div style={{ padding: '20px 24px', flex: 1 }}>
+                {/* Section label */}
                 <div
-                  key={i}
                   style={{
                     display: 'flex',
-                    alignItems: 'flex-start',
-                    gap: 12,
-                    opacity: bulletOpacity,
-                    transform: `translateX(${bulletSlide}px)`,
+                    alignItems: 'center',
+                    gap: 10,
+                    marginBottom: 10,
                   }}
                 >
-                  {/* Bullet dot */}
+                  {/* Step number */}
                   <div
                     style={{
-                      width: 8,
-                      height: 8,
+                      width: 28,
+                      height: 28,
                       borderRadius: '50%',
-                      backgroundColor: COLORS.gold,
-                      marginTop: 7,
+                      background: isCurrent
+                        ? `linear-gradient(135deg, ${COLORS.teal}, ${COLORS.teal}CC)`
+                        : `${COLORS.indigo}44`,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: 14,
+                      fontWeight: 800,
+                      color: isCurrent ? COLORS.dark : COLORS.gray,
                       flexShrink: 0,
-                      boxShadow: `0 0 6px ${COLORS.gold}88`,
                     }}
-                  />
+                  >
+                    {i + 1}
+                  </div>
                   <span
                     style={{
                       fontSize: SIZES.bodySmall,
-                      color: COLORS.gray,
-                      lineHeight: 1.5,
+                      fontWeight: 800,
+                      color: isCurrent ? COLORS.teal : COLORS.gray,
+                      textTransform: 'uppercase' as const,
+                      letterSpacing: '1px',
                     }}
                   >
-                    {bullet}
+                    {section.label}
                   </span>
                 </div>
-              );
-            })}
+
+                {/* Section content — only fully visible when active */}
+                <div
+                  style={{
+                    fontSize: SIZES.bodySmall,
+                    color: isCurrent ? COLORS.white : `${COLORS.gray}CC`,
+                    lineHeight: 1.55,
+                    fontWeight: isCurrent ? 500 : 400,
+                    opacity: interpolate(sectionHighlight, [0, 1], [0.4, 1]),
+                  }}
+                >
+                  {isActive ? highlightKeyPhrases(section.content) : section.content}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* ── Bottom 15%: Pro Tip Badge ──────────────────────────────────────── */}
+      {tip && (
+        <div
+          style={{
+            flex: '0 0 15%',
+            display: 'flex',
+            alignItems: 'center',
+            opacity: tipOpacity,
+            transform: `translateY(${tipY}px)`,
+          }}
+        >
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 16,
+              background: `linear-gradient(135deg, ${COLORS.gold}14, ${COLORS.gold}08)`,
+              border: `2px solid ${COLORS.gold}44`,
+              borderRadius: 14,
+              padding: '18px 28px',
+              width: '100%',
+            }}
+          >
+            {/* Pro Tip badge */}
+            <div
+              style={{
+                flexShrink: 0,
+                background: `linear-gradient(135deg, ${COLORS.gold}, ${COLORS.saffron})`,
+                borderRadius: 8,
+                padding: '6px 14px',
+                fontSize: SIZES.caption,
+                fontWeight: 900,
+                color: COLORS.dark,
+                letterSpacing: '1px',
+                textTransform: 'uppercase' as const,
+                whiteSpace: 'nowrap' as const,
+              }}
+            >
+              PRO TIP
+            </div>
+
+            {/* Tip text */}
+            <div
+              style={{
+                fontSize: SIZES.bodySmall,
+                color: COLORS.white,
+                lineHeight: 1.5,
+                fontWeight: 400,
+              }}
+            >
+              {highlightKeyPhrases(tip)}
+            </div>
           </div>
         </div>
       )}
