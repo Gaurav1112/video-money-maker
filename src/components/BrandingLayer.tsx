@@ -102,6 +102,52 @@ export const BrandingLayer: React.FC<BrandingLayerProps> = ({
         })()}
       </div>
 
+      {/* Bottom marquee branding — scrolls opposite direction */}
+      <div
+        style={{
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          height: 42,
+          overflow: 'hidden',
+          zIndex: 100,
+          background: 'linear-gradient(90deg, rgba(232,93,38,0.95), rgba(253,184,19,0.9), rgba(232,93,38,0.95))',
+          borderTop: '2px solid rgba(253,184,19,0.6)',
+          boxShadow: '0 -2px 12px rgba(232,93,38,0.3)',
+        }}
+      >
+        {(() => {
+          const marqueeText = '  ★  guru-sishya.in  |  Crack FAANG Interviews  |  System Design + DSA  |  Free on YouTube  |  www.guru-sishya.in  |  Follow @guru_sishya.in  ';
+          const fullText = marqueeText + marqueeText + marqueeText;
+          const speed = 1.2;
+          const textWidth = fullText.length * 8;
+          const offset = (frame * speed) % (textWidth / 3);
+          return (
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                height: '100%',
+                whiteSpace: 'nowrap',
+                transform: `translateX(${-offset}px)`,
+              }}
+            >
+              <span style={{
+                fontSize: 18,
+                fontFamily: "'Inter', system-ui, sans-serif",
+                fontWeight: 800,
+                letterSpacing: 2,
+                color: '#0C0A15',
+                textShadow: '0 1px 2px rgba(0,0,0,0.2)',
+              }}>
+                {fullText}
+              </span>
+            </div>
+          );
+        })()}
+      </div>
+
       {/* Mid-video CTA card */}
       {showMidCta && (
         <Sequence from={midCtaStart} durationInFrames={midCtaDuration}>
