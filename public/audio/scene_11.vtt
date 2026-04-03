@@ -1,0 +1,44 @@
+1
+00:00:00,100 --> 00:00:02,563
+Let me show you the code.
+
+2
+00:00:02,513 --> 00:00:06,355
+Here's the equivalent Java implementation.
+
+3
+00:00:06,355 --> 00:00:12,684
+Here's a Main class in java that uses a hash map for efficient lookups.
+
+4
+00:00:12,684 --> 00:00:16,460
+The Main method is where the action happens.
+
+5
+00:00:16,460 --> 00:00:21,605
+First, we import the java.util.* module.
+
+6
+00:00:21,605 --> 00:00:29,394
+Then we create a hash map for fast key-value lookups — for O of 1 constant time lookups.
+
+7
+00:00:29,394 --> 00:00:33,447
+This is why hash maps are interview gold.
+
+8
+00:00:33,447 --> 00:00:40,934
+Next, we check if the value is null — to handle the edge case that trips up most developers.
+
+9
+00:00:40,934 --> 00:00:46,052
+After that, we insert the key-value pair into our map.
+
+10
+00:00:46,052 --> 00:00:49,973
+Then we call Main() to handle the operation.
+
+11
+00:00:49,973 --> 00:00:54,473
+Finally, we log the output to verify it works.
+

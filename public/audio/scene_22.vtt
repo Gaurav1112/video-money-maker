@@ -1,0 +1,16 @@
+1
+00:00:00,100 --> 00:00:07,102
+Time to test yourself dot  Here's a question that trips up even experienced developers.
+
+2
+00:00:07,052 --> 00:00:09,921
+See if you can get it right.
+
+3
+00:00:09,921 --> 00:00:16,210
+How do you pass user identity to downstream services after gateway validates token?
+
+4
+00:00:16,210 --> 00:00:24,947
+You can practice more questions like this with detailed explanations on guru-sishya.in slash api-gateway.
+

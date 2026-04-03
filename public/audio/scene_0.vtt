@@ -1,0 +1,24 @@
+1
+00:00:00,100 --> 00:00:07,576
+We've covered the fundamentals, the algorithms, and the failure modes of A P I Gateway.
+
+2
+00:00:07,526 --> 00:00:15,934
+Now let's tackle the part that actually breaks in production and how Netflix, Google, and Uber handle it.
+
+3
+00:00:15,934 --> 00:00:20,828
+This is session 10 of our A P I Gateway series.
+
+4
+00:00:20,828 --> 00:00:25,842
+Today's topic: Practice: Design an A P I Gateway.
+
+5
+00:00:25,842 --> 00:00:28,236
+Like the check-in counter.
+
+6
+00:00:28,236 --> 00:00:36,157
+You present your booking, the agent processes it through the airline system, and hands you a boarding pass.
+

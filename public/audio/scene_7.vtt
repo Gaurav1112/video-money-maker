@@ -1,0 +1,4 @@
+1
+00:00:00,100 --> 00:00:16,944
+So basically, most people miss this completely,  Rate Limiting: - Mobile: 60 req/min per user - Web: 120 req/min per user - Partners: one thousand req/min per A P I key (with paid tiers)
+

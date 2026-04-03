@@ -1,0 +1,28 @@
+1
+00:00:00,100 --> 00:00:03,247
+This is where Sishya becomes Guru.
+
+2
+00:00:03,197 --> 00:00:11,473
+Now pay attention here,  quick reminder, try 1.five times speed if you haven't already.
+
+3
+00:00:11,473 --> 00:00:18,276
+Authentication Flow: 1. Client sends JWT in Authorization header 2.
+
+4
+00:00:18,276 --> 00:00:25,460
+Gateway validates JWT signature (using public key, no DB call) 3.
+
+5
+00:00:25,460 --> 00:00:30,210
+Gateway extracts userId, role from token 4.
+
+6
+00:00:30,210 --> 00:00:35,328
+Gateway adds X-User-Id and X-User-Role headers 5.
+
+7
+00:00:35,328 --> 00:00:47,657
+Services read these headers (trust gateway) Plot twist: ChatGPT uses the exact same concepts we're learning here to handle millions of concurrent users.
+

@@ -1,0 +1,4 @@
+1
+00:00:00,100 --> 00:00:17,721
+Caching at Gateway: - Product catalog: Cache 5 min (read-heavy, rarely changes) - User cart: No cache (must be real-time) - Search results: Cache 30 sec with query as key , let that sink in for a second.
+

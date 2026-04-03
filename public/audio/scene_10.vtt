@@ -1,0 +1,8 @@
+1
+00:00:00,100 --> 00:00:35,142
+This next idea changes everything,  - 'I'd use BFF pattern because mobile and web have different data needs' - 'Rate limiting at the gateway prevents abuse before it reaches services' - 'Caching product catalog at the gateway reduces load on the product service by ninety percent' - 'JWT validation at the gateway means services don't need to implement auth independently' I watched a candidate explain this perfectly and get a 45 LPA offer at Google Bangalore.
+
+2
+00:00:35,092 --> 00:00:39,710
+Same concept, same interview room, same question.
+

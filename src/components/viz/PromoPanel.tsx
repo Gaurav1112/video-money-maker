@@ -12,13 +12,13 @@ interface PromoPanelProps {
 // Rotating promo cards — each shows for ~5 seconds
 const PROMO_CARDS = [
   {
-    stat: '138',
+    stat: '141',
     label: 'Topics Covered',
     detail: 'System Design • DSA • CS Fundamentals',
     color: '#E85D26',
   },
   {
-    stat: '1,933',
+    stat: '1,988',
     label: 'Practice Questions',
     detail: 'With detailed explanations & code',
     color: '#FFD700',
