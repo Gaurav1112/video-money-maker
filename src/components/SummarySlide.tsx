@@ -1,7 +1,8 @@
 import React from 'react';
-import { useCurrentFrame, AbsoluteFill, interpolate } from 'remotion';
+import { useCurrentFrame, AbsoluteFill, interpolate, spring } from 'remotion';
 import { COLORS, FONTS, SIZES } from '../lib/theme';
-import { fadeIn, slideUp, stagger, springIn, springScale } from '../lib/animations';
+import { fadeIn, slideUp, stagger, springIn, springScale, sweepUnderline, slideFromLeft, pulseGlow } from '../lib/animations';
+import type { VisualBeat } from '../types';
 
 interface SummarySlideProps {
   takeaways?: string[];
@@ -10,8 +11,30 @@ interface SummarySlideProps {
   nextTopic?: string;
   startFrame?: number;
   endFrame?: number;
+  /** If provided, renders a TemplateFactory diagram in the last 30% */
+  templateId?: string;
+  /** Visual beats for the TemplateFactory diagram */
+  visualBeats?: VisualBeat[];
 }
 
+/**
+ * Truncate text to max chars with ellipsis.
+ */
+function truncateText(text: string, max: number): string {
+  if (text.length <= max) return text;
+  return text.slice(0, max - 1) + '\u2026';
+}
+
+/**
+ * SummarySlide — Animated checklist + optional "money shot" diagram.
+ *
+ * Phase 1 (first 70%): Animated checklist with self-drawing elements
+ *   - "KEY TAKEAWAYS" header with gold underline that draws itself
+ *   - Each takeaway appears one by one with checkmark draw animation
+ *   - Previous items dim to 70%
+ *
+ * Phase 2 (last 30%): TemplateFactory diagram or Subscribe CTA
+ */
 const SummarySlide: React.FC<SummarySlideProps> = ({
   takeaways = [],
   topic = 'this topic',
@@ -19,8 +42,15 @@ const SummarySlide: React.FC<SummarySlideProps> = ({
   nextTopic,
   startFrame = 0,
   endFrame,
+  templateId,
+  visualBeats,
 }) => {
   const frame = useCurrentFrame();
+  const fps = 30;
+
+  const sceneDuration = endFrame != null ? endFrame - startFrame : 240;
+  const phase1Duration = Math.round(sceneDuration * 0.7);
+  const phase2Start = startFrame + phase1Duration;
 
   // Default takeaways so the slide is never blank
   const displayTakeaways =
@@ -32,40 +62,35 @@ const SummarySlide: React.FC<SummarySlideProps> = ({
           `Practice quizzes and flashcards at guru-sishya.in`,
         ];
 
-  // Celebration flash at start
-  const flashOpacity = interpolate(
-    frame,
-    [startFrame, startFrame + 5, startFrame + 15],
-    [0, 0.4, 0],
-    { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
-  );
+  // Per-item timing within phase 1
+  const itemCount = displayTakeaways.length;
+  const headerDuration = 25; // frames for header to appear
+  const availableForItems = phase1Duration - headerDuration - 10;
+  const perItemDelay = Math.max(12, Math.floor(availableForItems / Math.max(1, itemCount)));
 
-  // Heading animations
-  const headingSpring = springIn(frame, startFrame);
-  const headingY = slideUp(frame, startFrame, 60);
+  // ─── HEADER: "KEY TAKEAWAYS" ──────────────────────────────────────────
+  const headerOpacity = fadeIn(frame, startFrame, 15);
+  const headerY = slideUp(frame, startFrame, 40, 20);
 
-  // Checkmark stagger — each item appears 18 frames after the previous
-  const checkmarkDelay = 18;
+  // Gold underline draws itself
+  const underlineWidth = sweepUnderline(frame, startFrame + 8, 300, 20);
 
-  // Badge appears after all takeaways
-  const badgeStart = startFrame + 20 + displayTakeaways.length * checkmarkDelay;
-  const badgeSpring = springIn(frame, badgeStart);
-  const badgeY = slideUp(frame, badgeStart, 40);
+  // ─── PHASE 2 ANIMATIONS ──────────────────────────────────────────────
+  const phase2Opacity = fadeIn(frame, phase2Start, 20);
+  const phase2Y = slideUp(frame, phase2Start, 40, 25);
 
-  // CTA appears after badge
-  const ctaStart = badgeStart + 20;
-  const ctaSpring = springIn(frame, ctaStart);
-  const ctaScale = springScale(frame, ctaStart);
+  // CTA pulse
+  const ctaPulse = pulseGlow(frame, 0.06, 0.95, 1.05);
 
-  // Pulse glow on CTA
-  const ctaPulse = interpolate(
-    Math.sin((frame - ctaStart) * 0.07),
-    [-1, 1],
-    [0.98, 1.02],
-  );
-
-  // Confetti
-  const showConfetti = frame > startFrame + 5;
+  // Track which item is "active" (most recently appeared)
+  const getActiveIndex = (): number => {
+    for (let i = itemCount - 1; i >= 0; i--) {
+      const itemStart = stagger(i, startFrame + headerDuration, perItemDelay);
+      if (frame >= itemStart) return i;
+    }
+    return -1;
+  };
+  const activeIndex = getActiveIndex();
 
   return (
     <AbsoluteFill
@@ -75,73 +100,16 @@ const SummarySlide: React.FC<SummarySlideProps> = ({
         overflow: 'hidden',
       }}
     >
-      {/* Celebration flash */}
-      <div
-        style={{
-          position: 'absolute',
-          inset: 0,
-          backgroundColor: COLORS.gold,
-          opacity: flashOpacity,
-          zIndex: 10,
-        }}
-      />
-
-      {/* Confetti particles */}
-      {showConfetti &&
-        Array.from({ length: 24 }).map((_, i) => {
-          const confettiColors = [
-            COLORS.saffron,
-            COLORS.gold,
-            COLORS.teal,
-            COLORS.indigo,
-            COLORS.white,
-          ];
-          const startX = 10 + (i * 7.5) % 80;
-          const speed = 1.5 + (i % 3) * 0.5;
-          const yProgress = interpolate(
-            frame - startFrame - 5,
-            [0, 200],
-            [-10, 120],
-            { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
-          );
-          const x = startX + Math.sin(frame * 0.03 + i * 2) * 8;
-          const rotation = frame * speed * 3 + i * 45;
-          const confettiOpacity = interpolate(
-            frame - startFrame - 5,
-            [0, 20, 100, 160],
-            [0, 0.9, 0.6, 0],
-            { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
-          );
-
-          return (
-            <div
-              key={i}
-              style={{
-                position: 'absolute',
-                left: `${x}%`,
-                top: `${yProgress}%`,
-                width: i % 2 === 0 ? 8 : 12,
-                height: i % 2 === 0 ? 12 : 4,
-                backgroundColor: confettiColors[i % confettiColors.length],
-                opacity: confettiOpacity,
-                transform: `rotate(${rotation}deg)`,
-                borderRadius: i % 3 === 0 ? '50%' : 2,
-                zIndex: 5,
-              }}
-            />
-          );
-        })}
-
       {/* Background glow orb */}
       <div
         style={{
           position: 'absolute',
-          top: '10%',
+          top: '15%',
           left: '50%',
-          width: 900,
-          height: 700,
+          width: 800,
+          height: 600,
           borderRadius: '50%',
-          background: `radial-gradient(ellipse, ${COLORS.gold}12 0%, ${COLORS.saffron}06 40%, transparent 70%)`,
+          background: `radial-gradient(ellipse, ${COLORS.gold}10 0%, ${COLORS.saffron}05 40%, transparent 70%)`,
           transform: 'translateX(-50%)',
           filter: 'blur(80px)',
           zIndex: 1,
@@ -153,235 +121,293 @@ const SummarySlide: React.FC<SummarySlideProps> = ({
         style={{
           position: 'relative',
           zIndex: 6,
-          padding: '56px 96px',
+          padding: '50px 80px',
           display: 'flex',
           flexDirection: 'column',
           height: '100%',
-          gap: 0,
         }}
       >
-        {/* ── TOP LABEL: "Session X Complete" ── */}
+        {/* ── HEADER: KEY TAKEAWAYS ── */}
         <div
           style={{
-            opacity: headingSpring,
-            transform: `translateY(${headingY}px)`,
-            display: 'flex',
-            alignItems: 'center',
-            gap: 14,
-            marginBottom: 10,
+            opacity: headerOpacity,
+            transform: `translateY(${headerY}px)`,
+            marginBottom: 12,
           }}
         >
           <div
             style={{
-              fontSize: 34,
-              transform: `scale(${springScale(frame, startFrame + 5)})`,
-              filter: `drop-shadow(0 0 10px ${COLORS.gold}88)`,
-              lineHeight: 1,
-            }}
-          >
-            🏆
-          </div>
-          <div
-            style={{
-              fontSize: SIZES.bodySmall,
-              fontWeight: 700,
-              color: COLORS.gold,
+              fontSize: SIZES.heading3,
+              fontWeight: 900,
+              color: COLORS.white,
+              fontFamily: FONTS.heading,
+              letterSpacing: 4,
               textTransform: 'uppercase' as const,
-              letterSpacing: 3,
+              marginBottom: 8,
             }}
           >
-            Session {sessionNumber} Complete
+            KEY TAKEAWAYS
           </div>
+          {/* Self-drawing gold underline */}
+          <div
+            style={{
+              height: 3,
+              width: underlineWidth,
+              backgroundColor: COLORS.gold,
+              borderRadius: 2,
+              boxShadow: `0 0 12px ${COLORS.gold}66`,
+            }}
+          />
         </div>
 
-        {/* ── HEADING: "Key Takeaways" ── */}
+        {/* Session badge */}
         <div
           style={{
-            opacity: headingSpring,
-            transform: `translateY(${headingY}px)`,
-            fontSize: SIZES.heading2,
-            fontWeight: 800,
-            color: COLORS.saffron,
-            marginBottom: 36,
-            fontFamily: FONTS.heading,
-            lineHeight: 1.15,
-            letterSpacing: -0.5,
+            opacity: headerOpacity,
+            fontSize: SIZES.caption,
+            fontWeight: 600,
+            color: COLORS.gray,
+            marginBottom: 28,
+            letterSpacing: 1,
           }}
         >
-          Key Takeaways
+          {topic} {'\u2014'} Session {sessionNumber}
         </div>
 
-        {/* ── TAKEAWAY ITEMS ── */}
+        {/* ── CHECKLIST ITEMS ── */}
         <div
           style={{
             display: 'flex',
             flexDirection: 'column',
-            gap: 18,
-            flex: 1,
+            gap: 14,
+            flex: frame < phase2Start ? 1 : undefined,
           }}
         >
           {displayTakeaways.map((takeaway, index) => {
-            const itemStart = stagger(index, startFrame + checkmarkDelay, 18);
+            const itemStart = stagger(index, startFrame + headerDuration, perItemDelay);
             const itemSpring = springIn(frame, itemStart);
-            const checkScale = springScale(frame, itemStart);
-            const itemY = slideUp(frame, itemStart, 30);
+            const isActive = index === activeIndex;
+            const isPast = index < activeIndex;
+
+            // Icon slides in from left
+            const iconSlide = slideFromLeft(frame, itemStart, 30, 15);
+
+            // Text fades in slightly after icon
+            const textOpacity = fadeIn(frame, itemStart + 4, 12);
+
+            // Checkmark SVG draws itself (stroke-dashoffset animation)
+            const checkDrawProgress = interpolate(
+              frame,
+              [itemStart + 8, itemStart + 20],
+              [0, 1],
+              { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
+            );
+            const checkPathLength = 24; // approximate path length
+            const checkDashOffset = checkPathLength * (1 - checkDrawProgress);
+
+            // Dim previous items to 70%
+            const itemDim = isPast ? 0.7 : 1;
 
             return (
               <div
                 key={index}
                 style={{
-                  opacity: itemSpring,
-                  transform: `translateY(${itemY}px)`,
+                  opacity: itemSpring * itemDim,
                   display: 'flex',
                   alignItems: 'center',
-                  gap: 20,
-                  backgroundColor: `${COLORS.darkAlt}`,
+                  gap: 16,
+                  backgroundColor: isActive ? `${COLORS.darkAlt}` : `${COLORS.darkAlt}CC`,
                   borderRadius: 12,
-                  padding: '20px 28px',
-                  border: `1px solid ${COLORS.teal}30`,
-                  borderLeft: `4px solid ${COLORS.teal}`,
-                  boxShadow: `0 2px 24px ${COLORS.teal}10`,
+                  padding: '16px 24px',
+                  border: isActive
+                    ? `1px solid ${COLORS.teal}50`
+                    : `1px solid ${COLORS.teal}18`,
+                  borderLeft: `4px solid ${isActive ? COLORS.teal : `${COLORS.teal}60`}`,
+                  boxShadow: isActive ? `0 2px 20px ${COLORS.teal}15` : 'none',
                 }}
               >
-                {/* Animated checkmark circle */}
+                {/* Teal dot / checkmark icon sliding in from left */}
                 <div
                   style={{
-                    width: 36,
-                    height: 36,
-                    borderRadius: '50%',
-                    backgroundColor: COLORS.teal + '25',
-                    border: `2px solid ${COLORS.teal}80`,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
+                    transform: `translateX(${iconSlide.x}px)`,
+                    opacity: iconSlide.opacity,
                     flexShrink: 0,
-                    transform: `scale(${checkScale})`,
                   }}
                 >
-                  <span
+                  <div
                     style={{
-                      color: COLORS.teal,
-                      fontSize: 20,
-                      fontWeight: 900,
-                      lineHeight: 1,
+                      width: 28,
+                      height: 28,
+                      borderRadius: '50%',
+                      backgroundColor: `${COLORS.teal}20`,
+                      border: `2px solid ${COLORS.teal}66`,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
                     }}
                   >
-                    ✓
-                  </span>
+                    <div
+                      style={{
+                        width: 10,
+                        height: 10,
+                        borderRadius: '50%',
+                        backgroundColor: COLORS.teal,
+                      }}
+                    />
+                  </div>
                 </div>
 
                 {/* Takeaway text */}
                 <div
                   style={{
-                    fontSize: SIZES.body,
+                    flex: 1,
+                    opacity: textOpacity,
+                    fontSize: SIZES.bodySmall,
+                    fontWeight: 600,
                     color: COLORS.white,
-                    lineHeight: 1.5,
-                    fontWeight: 500,
+                    lineHeight: 1.45,
                   }}
                 >
-                  {takeaway}
+                  {truncateText(takeaway, 60)}
+                </div>
+
+                {/* Self-drawing green checkmark on right */}
+                <div style={{ flexShrink: 0, width: 28, height: 28 }}>
+                  <svg width={28} height={28} viewBox="0 0 28 28">
+                    <circle
+                      cx={14}
+                      cy={14}
+                      r={12}
+                      fill="none"
+                      stroke={`${COLORS.teal}44`}
+                      strokeWidth={2}
+                    />
+                    <path
+                      d="M8 14 L12 18 L20 10"
+                      fill="none"
+                      stroke={COLORS.teal}
+                      strokeWidth={2.5}
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeDasharray={checkPathLength}
+                      strokeDashoffset={checkDashOffset}
+                    />
+                  </svg>
                 </div>
               </div>
             );
           })}
         </div>
 
-        {/* ── MASTERY BADGE ── */}
-        <div
-          style={{
-            opacity: badgeSpring,
-            transform: `translateY(${badgeY}px)`,
-            marginTop: 28,
-            display: 'flex',
-            alignItems: 'center',
-            gap: 18,
-            backgroundColor: `${COLORS.gold}12`,
-            border: `2px solid ${COLORS.gold}50`,
-            borderRadius: 16,
-            padding: '18px 28px',
-            boxShadow: `0 4px 32px ${COLORS.gold}20`,
-          }}
-        >
-          {/* Shield / badge icon */}
+        {/* ── PHASE 2: Diagram or Subscribe CTA ── */}
+        {frame >= phase2Start - 5 && (
           <div
             style={{
-              fontSize: 42,
-              lineHeight: 1,
-              filter: `drop-shadow(0 0 10px ${COLORS.gold}66)`,
-              transform: `scale(${springScale(frame, badgeStart + 5)})`,
-            }}
-          >
-            🛡️
-          </div>
-          <div>
-            <div
-              style={{
-                fontSize: SIZES.bodySmall,
-                fontWeight: 700,
-                color: COLORS.gold,
-                textTransform: 'uppercase' as const,
-                letterSpacing: 2,
-                marginBottom: 4,
-              }}
-            >
-              Topic Mastery Unlocked
-            </div>
-            <div
-              style={{
-                fontSize: SIZES.body,
-                fontWeight: 600,
-                color: COLORS.white,
-              }}
-            >
-              You've completed{' '}
-              <span style={{ color: COLORS.saffron }}>{topic}</span>
-              {' '}— Session {sessionNumber}
-            </div>
-          </div>
-        </div>
-
-        {/* ── CTA BUTTON ── */}
-        <div
-          style={{
-            opacity: ctaSpring,
-            transform: `scale(${frame > ctaStart ? ctaPulse : ctaScale})`,
-            marginTop: 24,
-            display: 'flex',
-            justifyContent: 'center',
-          }}
-        >
-          <div
-            style={{
-              background: `linear-gradient(135deg, ${COLORS.saffron} 0%, ${COLORS.gold} 100%)`,
-              color: '#0C0A15',
-              padding: '18px 56px',
-              borderRadius: 50,
-              fontSize: SIZES.body,
-              fontWeight: 800,
-              fontFamily: FONTS.text,
+              opacity: phase2Opacity,
+              transform: `translateY(${phase2Y}px)`,
+              marginTop: 28,
+              flex: 1,
               display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center',
               alignItems: 'center',
-              gap: 14,
-              boxShadow: `0 6px 30px ${COLORS.saffron}55`,
-              letterSpacing: 0.5,
             }}
           >
-            {/* Arrow icon */}
-            <span style={{ fontSize: SIZES.body + 4 }}>🎯</span>
-            Practice now →&nbsp;
-            <span
-              style={{
-                textDecoration: 'underline',
-                textUnderlineOffset: 3,
-              }}
-            >
-              www.guru-sishya.in
-            </span>
+            {templateId ? (
+              /* Render TemplateFactory diagram — lazy loaded */
+              <TemplateFactoryWrapper
+                templateId={templateId}
+                visualBeats={visualBeats || []}
+                topic={topic}
+                fps={fps}
+              />
+            ) : (
+              /* Subscribe CTA */
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: 16,
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: SIZES.heading3,
+                    fontWeight: 800,
+                    color: COLORS.saffron,
+                    fontFamily: FONTS.heading,
+                    textAlign: 'center',
+                  }}
+                >
+                  Subscribe for more!
+                </div>
+                <div
+                  style={{
+                    transform: `scale(${ctaPulse})`,
+                    background: `linear-gradient(135deg, ${COLORS.saffron} 0%, ${COLORS.gold} 100%)`,
+                    color: COLORS.dark,
+                    padding: '16px 48px',
+                    borderRadius: 50,
+                    fontSize: SIZES.bodySmall,
+                    fontWeight: 800,
+                    fontFamily: FONTS.text,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 12,
+                    boxShadow: `0 6px 30px ${COLORS.saffron}55`,
+                    letterSpacing: 0.5,
+                  }}
+                >
+                  Practice now {'\u2192'} www.guru-sishya.in
+                </div>
+              </div>
+            )}
           </div>
-        </div>
+        )}
       </div>
     </AbsoluteFill>
   );
+};
+
+/**
+ * Wrapper that lazily loads TemplateFactory so missing files don't crash.
+ */
+const TemplateFactoryWrapper: React.FC<{
+  templateId: string;
+  visualBeats: VisualBeat[];
+  topic: string;
+  fps: number;
+}> = ({ templateId, visualBeats, topic, fps }) => {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const { default: TemplateFactory } = require('./templates/TemplateFactory');
+    return (
+      <div style={{ width: '100%', height: '100%', position: 'relative' }}>
+        <TemplateFactory
+          templateId={templateId}
+          variant="default"
+          beats={visualBeats}
+          accentColor={COLORS.teal}
+          fps={fps}
+          sceneHeading={topic}
+        />
+      </div>
+    );
+  } catch {
+    // TemplateFactory not available — show fallback
+    return (
+      <div
+        style={{
+          fontSize: SIZES.bodySmall,
+          color: COLORS.gray,
+          textAlign: 'center',
+        }}
+      >
+        Diagram: {templateId}
+      </div>
+    );
+  }
 };
 
 export default SummarySlide;
