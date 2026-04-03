@@ -1,9 +1,23 @@
 import React from 'react';
-import { useCurrentFrame, AbsoluteFill, interpolate, spring, useVideoConfig } from 'remotion';
-import { COLORS, FONTS, SIZES } from '../lib/theme';
-import { useSync } from '../hooks/useSync';
-import type { AnimationCue } from '../types';
+import {
+  useCurrentFrame,
+  AbsoluteFill,
+  interpolate,
+  spring,
+  useVideoConfig,
+  staticFile,
+  Img,
+} from 'remotion';
+import { COLORS, FONTS } from '../lib/theme';
+import { TemplateFactory } from './templates/TemplateFactory';
+import { getVisualTemplate } from '../lib/visual-templates';
+import { computeVisualBeats } from '../lib/visual-beats';
+import { getBackgroundImage } from '../lib/bg-images';
+import type { AnimationCue, VisualBeat } from '../types';
 
+// ---------------------------------------------------------------------------
+// Props — EXTENDS original interface with new optional fields
+// ---------------------------------------------------------------------------
 interface TextSectionProps {
   heading?: string;
   bullets?: string[];
@@ -14,113 +28,12 @@ interface TextSectionProps {
   sceneIndex?: number;
   sceneStartFrame?: number;
   animationCues?: AnimationCue[];
-}
-
-// --- Mood detection ---
-const MOOD_KEYWORDS = {
-  problem: ['problem', 'issue', 'fail', 'error', 'bug', 'crash', 'wrong', 'bad', 'slow', 'expensive', 'complex', 'difficult', 'challenge', 'risk', 'danger', 'warning', 'critical', 'broken', 'lost', 'miss'],
-  solution: ['solution', 'solve', 'fix', 'improve', 'fast', 'efficient', 'optimize', 'better', 'benefit', 'advantage', 'clean', 'elegant', 'simple', 'power', 'scalab', 'robust'],
-  stat: ['million', 'billion', 'thousand', 'percent', 'crore', 'lakh', '%', '10x', '100x', '50x', '99.9'],
-} as const;
-
-function detectMood(sentence: string): 'problem' | 'solution' | 'stat' | 'neutral' {
-  const lower = sentence.toLowerCase();
-  // Check for numbers first — stats are the most visually impactful
-  const hasNumber = /\d[\d,.]*[%xX]?(\s*(million|billion|thousand|crore|lakh))?/gi.test(sentence);
-  if (hasNumber && MOOD_KEYWORDS.stat.some(k => lower.includes(k))) return 'stat';
-  if (hasNumber) return 'stat';
-  if (MOOD_KEYWORDS.problem.some(k => lower.includes(k))) return 'problem';
-  if (MOOD_KEYWORDS.solution.some(k => lower.includes(k))) return 'solution';
-  return 'neutral';
-}
-
-function getMoodGradient(mood: string): string {
-  switch (mood) {
-    case 'problem': return `radial-gradient(ellipse at 50% 80%, ${COLORS.red}12 0%, transparent 70%)`;
-    case 'solution': return `radial-gradient(ellipse at 50% 80%, ${COLORS.teal}12 0%, transparent 70%)`;
-    case 'stat': return `radial-gradient(ellipse at 50% 80%, ${COLORS.gold}10 0%, transparent 70%)`;
-    default: return 'none';
-  }
-}
-
-function getMoodAccent(mood: string): string {
-  switch (mood) {
-    case 'problem': return COLORS.red;
-    case 'solution': return COLORS.teal;
-    case 'stat': return COLORS.gold;
-    default: return COLORS.saffron;
-  }
-}
-
-// --- Number extraction & formatting ---
-function extractNumbers(sentence: string): string[] {
-  const matches = sentence.match(/\d[\d,.]*[%xX]?(\s*(million|billion|thousand|crore|lakh|ms|MB|GB|TB|KB))?/gi);
-  return matches || [];
-}
-
-function extractKeyPhrase(sentence: string): string | null {
-  // Pull out quoted phrases
-  const quoted = sentence.match(/"([^"]+)"/);
-  if (quoted) return quoted[1];
-  // Look for meaningful multi-word phrases after connector words (must be 3+ words to qualify)
-  const named = sentence.match(/(?:called|known as|is a|means|is the)\s+([A-Z][a-zA-Z]+(?:\s+[A-Za-z]+){2,})/);
-  if (named) return named[1].trim();
-  // Look for strong conceptual phrases: 3+ capitalised/important words in sequence
-  const multiWord = sentence.match(/(?:[A-Z][a-zA-Z]+\s){2,}[A-Z][a-zA-Z]+/);
-  if (multiWord) return multiWord[0].trim();
-  return null;
-}
-
-// --- Keyword detection for highlighting ---
-const HIGHLIGHT_WORDS = new Set([
-  'important', 'key', 'critical', 'essential', 'fundamental', 'core',
-  'always', 'never', 'must', 'every', 'all', 'only', 'best', 'worst',
-  'first', 'last', 'main', 'primary', 'major', 'biggest', 'fastest',
-  'remember', 'note', 'notice', 'observe', 'imagine', 'think',
-]);
-
-function shouldHighlight(word: string): boolean {
-  const clean = word.toLowerCase().replace(/[^a-z]/g, '');
-  if (HIGHLIGHT_WORDS.has(clean)) return true;
-  // Highlight words that start with uppercase mid-sentence (proper nouns / tech terms)
-  if (/^[A-Z][a-z]/.test(word) && word.length > 2) return true;
-  // Highlight technical terms (camelCase, contains dots, all caps)
-  if (/[a-z][A-Z]/.test(word) || /\./.test(word) || (/^[A-Z]{2,}$/.test(word) && word.length > 1)) return true;
-  return false;
-}
-
-// --- Animated number counter ---
-function AnimatedNumber({ value, frame, fps, delay }: { value: string; frame: number; fps: number; delay: number }) {
-  const numericPart = parseFloat(value.replace(/[^0-9.]/g, ''));
-  const suffix = value.replace(/[\d,.]/g, '').trim();
-  const isPercentage = value.includes('%');
-  const hasDecimal = value.includes('.');
-
-  const countProgress = interpolate(
-    frame - delay,
-    [0, fps * 0.8],
-    [0, 1],
-    { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
-  );
-
-  // Eased count-up
-  const eased = 1 - Math.pow(1 - countProgress, 3); // easeOutCubic
-  const currentNum = numericPart * eased;
-
-  let display: string;
-  if (isNaN(numericPart)) {
-    display = value;
-  } else if (hasDecimal) {
-    const decimalPlaces = (value.split('.')[1] || '').replace(/[^0-9]/g, '').length;
-    display = currentNum.toFixed(decimalPlaces);
-  } else {
-    display = Math.round(currentNum).toLocaleString();
-  }
-
-  if (isPercentage) display += '%';
-  else if (suffix) display += ' ' + suffix;
-
-  return <>{display}</>;
+  // New visual-template props (all optional for backward compat)
+  visualBeats?: VisualBeat[];
+  templateId?: string;
+  templateVariant?: string;
+  accentColor?: string;
+  topic?: string;
 }
 
 // =============================
@@ -136,457 +49,164 @@ const TextSection: React.FC<TextSectionProps> = ({
   sceneIndex,
   sceneStartFrame,
   animationCues,
+  visualBeats: visualBeatsProp,
+  templateId: templateIdProp,
+  templateVariant: templateVariantProp,
+  accentColor: accentColorProp,
+  topic = '',
 }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
-  const sync = useSync(sceneIndex ?? 0, sceneStartFrame ?? startFrame);
-  const sceneDuration = endFrame - startFrame;
 
-  // --- Parse narration into sentences ---
-  const displayText = narration || content || '';
-  const sentences = displayText
-    .split(/(?<=[.!?])\s+/)
-    .map(s => s.trim())
-    .filter(s => s.length > 10 && s.length < 200);
+  // -------------------------------------------------------------------
+  // 1. Resolve template — either from props or auto-select
+  // -------------------------------------------------------------------
+  let templateId = templateIdProp || '';
+  let templateVariant = templateVariantProp || 'overview';
+  let accentColor = accentColorProp || COLORS.saffron;
 
-  const displaySentences = sentences.length >= 2
-    ? sentences.slice(0, 8)
-    : bullets.length > 0
-      ? bullets
-      : ['...'];
-
-  // --- Timing: which sentence is active ---
-  const framesPerSentence = Math.max(fps * 1.5, Math.floor(sceneDuration / (displaySentences.length + 0.5)));
-  const activeSentenceIndex = Math.min(
-    displaySentences.length - 1,
-    Math.floor(frame / framesPerSentence),
-  );
-  const sentenceLocalFrame = frame - activeSentenceIndex * framesPerSentence;
-
-  const currentSentence = displaySentences[activeSentenceIndex] || '';
-  const mood = detectMood(currentSentence);
-  const moodAccent = getMoodAccent(mood);
-  const numbers = extractNumbers(currentSentence);
-  const keyPhrase = extractKeyPhrase(currentSentence);
-  // A hero number must be meaningful: contains a digit and either a suffix (x, %, ms, MB…) or
-  // is accompanied by a magnitude word ("million", "billion", etc.) — plain single-digit counts don't qualify.
-  const hasHeroNumber = numbers.length > 0 && /\d[\d,.]*([%xX]|(\s*(million|billion|thousand|crore|lakh|ms|MB|GB|TB|KB))|\d{3,})/.test(numbers[0]);
-
-  // --- Current narration word for karaoke ---
-  const currentWord = sync.currentWord?.toLowerCase() || '';
-
-  // =========================
-  // ANIMATIONS
-  // =========================
-
-  // Heading entrance
-  const headingY = interpolate(frame, [0, 20], [40, 0], { extrapolateRight: 'clamp' });
-  const headingOpacity = interpolate(frame, [0, 15], [0, 1], { extrapolateRight: 'clamp' });
-
-  // Underline sweep
-  const underlineWidth = interpolate(frame, [8, 35], [0, 280], { extrapolateRight: 'clamp' });
-
-  // Sentence spring-in
-  const sentenceSpring = spring({
-    frame: sentenceLocalFrame,
-    fps,
-    config: { damping: 14, stiffness: 100, mass: 0.8 },
-  });
-
-  // Sentence slide from bottom
-  const sentenceY = interpolate(sentenceSpring, [0, 1], [60, 0]);
-  const sentenceOpacity = interpolate(sentenceSpring, [0, 1], [0, 1]);
-
-  // Hero number / key phrase zoom
-  const heroSpring = spring({
-    frame: Math.max(0, sentenceLocalFrame - 8),
-    fps,
-    config: { damping: 12, stiffness: 80, mass: 1.2 },
-  });
-  const heroScale = interpolate(heroSpring, [0, 1], [0.3, 1]);
-  const heroOpacity = interpolate(heroSpring, [0, 1], [0, 1]);
-
-  // Glow pulse for hero element
-  const glowPulse = Math.sin(frame * 0.08) * 0.3 + 0.7;
-
-  // Background mood transition
-  const moodOpacity = interpolate(sentenceLocalFrame, [0, fps * 0.5], [0, 1], { extrapolateRight: 'clamp' });
-
-  // --- Render sentence with word highlighting ---
-  function renderHighlightedSentence(text: string, isCurrent: boolean, fontSize: number) {
-    const words = text.split(/\s+/);
-    return words.map((word, wi) => {
-      const isSpoken = isCurrent && currentWord && word.toLowerCase().includes(currentWord);
-      const isHighlight = shouldHighlight(word);
-      const isNumber = /\d/.test(word);
-
-      let color = isCurrent ? COLORS.white : `${COLORS.white}50`;
-      let weight = isCurrent ? 500 : 400;
-      let wordScale = 1;
-
-      if (isCurrent && isSpoken) {
-        color = COLORS.gold;
-        weight = 700;
-        wordScale = 1.05;
-      } else if (isCurrent && isNumber) {
-        color = COLORS.gold;
-        weight = 800;
-      } else if (isCurrent && isHighlight) {
-        color = COLORS.saffron;
-        weight = 700;
-      }
-
-      return (
-        <span
-          key={wi}
-          style={{
-            color,
-            fontWeight: weight,
-            display: 'inline',
-            transform: `scale(${wordScale})`,
-          }}
-        >
-          {word}{' '}
-        </span>
-      );
-    });
+  if (!templateId) {
+    // Auto-select template from heading + topic keywords
+    const auto = getVisualTemplate(
+      topic,
+      sceneIndex ?? 0,
+      heading,
+      'text',
+    );
+    templateId = auto.templateId;
+    templateVariant = auto.variant;
+    accentColor = auto.accentColor;
   }
 
-  // --- History sentences (past) ---
-  const historySentences = displaySentences.slice(0, activeSentenceIndex);
+  // -------------------------------------------------------------------
+  // 2. Resolve visual beats — either from props or compute from narration
+  // -------------------------------------------------------------------
+  let beats: VisualBeat[] = visualBeatsProp || [];
+  if (beats.length === 0 && narration) {
+    // No word timestamps available at this level — build simple beats
+    // by splitting narration into sentences with estimated timing
+    const sentences = narration
+      .split(/(?<=[.!?])\s+/)
+      .map((s) => s.trim())
+      .filter((s) => s.length > 5);
+
+    const sceneDurationSec = (endFrame - startFrame) / fps;
+    const timePerSentence = sceneDurationSec / Math.max(1, sentences.length);
+
+    beats = sentences.map((text, i) => ({
+      startTime: i * timePerSentence,
+      endTime: (i + 1) * timePerSentence,
+      text,
+      beatIndex: i,
+      totalBeats: sentences.length,
+      keywords: [],
+    }));
+  }
+
+  // -------------------------------------------------------------------
+  // 3. Background image (subtle, 8% opacity)
+  // -------------------------------------------------------------------
+  const bgImagePath = getBackgroundImage('text');
+
+  // -------------------------------------------------------------------
+  // 4. Chapter marker animation (small heading, top-left)
+  // -------------------------------------------------------------------
+  const chapterOpacity = interpolate(frame, [0, 20], [0, 0.7], {
+    extrapolateRight: 'clamp',
+  });
+  const chapterX = interpolate(frame, [0, 20], [-20, 0], {
+    extrapolateRight: 'clamp',
+  });
+
+  // -------------------------------------------------------------------
+  // 5. Template entrance animation
+  // -------------------------------------------------------------------
+  const templateEntrance = spring({
+    frame: Math.max(0, frame - 5),
+    fps,
+    config: { damping: 18, stiffness: 80, mass: 1 },
+  });
+  const templateScale = interpolate(templateEntrance, [0, 1], [0.95, 1]);
+  const templateOpacity = interpolate(templateEntrance, [0, 1], [0, 1]);
+
+  // -------------------------------------------------------------------
+  // 6. Scene progress bar
+  // -------------------------------------------------------------------
+  const sceneDuration = endFrame - startFrame;
+  const progressPercent = Math.min(100, (frame / sceneDuration) * 100);
 
   return (
     <AbsoluteFill
       style={{
-        background: 'transparent',
+        background: COLORS.dark,
         fontFamily: FONTS.text,
         overflow: 'hidden',
       }}
     >
-      {/* ===== MOOD BACKGROUND OVERLAY ===== */}
+      {/* ===== BACKGROUND IMAGE — 8% opacity ===== */}
+      {bgImagePath && (
+        <Img
+          src={staticFile(bgImagePath)}
+          style={{
+            position: 'absolute',
+            inset: 0,
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            opacity: 0.08,
+            pointerEvents: 'none',
+          }}
+        />
+      )}
+
+      {/* ===== FULL-SCREEN TEMPLATE ===== */}
       <div
         style={{
           position: 'absolute',
           inset: 0,
-          background: getMoodGradient(mood),
-          opacity: moodOpacity,
-          pointerEvents: 'none',
-        }}
-      />
-
-      {/* ===== DECORATIVE ELEMENTS ===== */}
-      {/* Vertical accent line — left edge, pulsing */}
-      <div
-        style={{
-          position: 'absolute',
-          left: 20,
-          top: '5%',
-          bottom: '5%',
-          width: 3,
-          background: `linear-gradient(180deg, transparent, ${moodAccent}80, ${moodAccent}40, transparent)`,
-          borderRadius: 2,
-          opacity: 0.6 + glowPulse * 0.4,
-        }}
-      />
-
-      {/* Horizontal accent — top, sweeping */}
-      <div
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          width: interpolate(frame, [0, 40], [0, 100], { extrapolateRight: 'clamp' }) + '%',
-          height: 2,
-          background: `linear-gradient(90deg, ${moodAccent}60, transparent)`,
-        }}
-      />
-
-      {/* ===== TOP ZONE: Heading + History + Current Sentence (30%) ===== */}
-      <div
-        style={{
-          position: 'absolute',
-          top: 40,
-          left: 50,
-          right: 30,
-          height: '30%',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'flex-start',
-          gap: 10,
+          transform: `scale(${templateScale})`,
+          opacity: templateOpacity,
         }}
       >
-        {/* Heading */}
+        <TemplateFactory
+          templateId={templateId}
+          variant={templateVariant}
+          beats={beats}
+          accentColor={accentColor}
+          fps={fps}
+          sceneHeading={heading}
+          bullets={bullets.length > 0 ? bullets : undefined}
+          content={content || undefined}
+        />
+      </div>
+
+      {/* ===== CHAPTER MARKER — small heading, top-left ===== */}
+      {heading && (
         <div
           style={{
-            transform: `translateY(${headingY}px)`,
-            opacity: headingOpacity,
+            position: 'absolute',
+            top: 24,
+            left: 32,
+            zIndex: 10,
+            opacity: chapterOpacity,
+            transform: `translateX(${chapterX}px)`,
           }}
         >
           <div
             style={{
-              fontSize: SIZES.heading3,
-              fontWeight: 800,
-              color: COLORS.saffron,
+              fontSize: 18,
+              fontWeight: 600,
+              color: `${COLORS.gold}99`,
               fontFamily: FONTS.heading,
-              lineHeight: 1.2,
-              letterSpacing: '-0.02em',
+              letterSpacing: '0.04em',
+              textTransform: 'uppercase',
+              textShadow: '0 1px 4px rgba(0,0,0,0.6)',
             }}
           >
             {heading}
           </div>
-          <div
-            style={{
-              width: underlineWidth,
-              height: 3,
-              background: `linear-gradient(90deg, ${COLORS.saffron}, ${COLORS.gold}80, transparent)`,
-              borderRadius: 2,
-              marginTop: 6,
-            }}
-          />
         </div>
-
-        {/* History — faded small past sentences with slide-in entrance */}
-        {historySentences.length > 0 && (
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 2,
-              marginTop: 8,
-              maxHeight: 100,
-              overflow: 'hidden',
-            }}
-          >
-            {historySentences.slice(-2).map((s, i) => {
-              const age = historySentences.length - i; // 1 = most recent past, 2 = older
-              const fadeOpacity = interpolate(age, [1, 2], [0.25, 0.08], { extrapolateRight: 'clamp' });
-              // Entrance: slide from left + fade in
-              const bulletEntranceFrame = (historySentences.length - 2 + i) * framesPerSentence;
-              const bulletSlideProgress = spring({
-                frame: Math.max(0, frame - bulletEntranceFrame),
-                fps,
-                config: { damping: 16, stiffness: 100, mass: 0.7 },
-              });
-              const bulletSlideX = interpolate(bulletSlideProgress, [0, 1], [-30, 0]);
-              const bulletSlideOpacity = interpolate(bulletSlideProgress, [0, 1], [0, fadeOpacity]);
-              return (
-                <div
-                  key={i}
-                  style={{
-                    fontSize: 15,
-                    color: COLORS.white,
-                    opacity: bulletSlideOpacity,
-                    lineHeight: 1.4,
-                    fontFamily: FONTS.text,
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    transform: `translateX(${bulletSlideX}px)`,
-                  }}
-                >
-                  {s.length > 80 ? s.slice(0, 77) + '...' : s}
-                </div>
-              );
-            })}
-          </div>
-        )}
-
-        {/* Current Sentence — LARGE, animated slide from left + fade in */}
-        <div
-          style={{
-            marginTop: historySentences.length > 0 ? 10 : 20,
-            transform: `translateX(${interpolate(sentenceSpring, [0, 1], [-40, 0])}px) translateY(${sentenceY}px)`,
-            opacity: sentenceOpacity,
-            position: 'relative',
-          }}
-        >
-          <div
-            style={{
-              fontSize: 34,
-              lineHeight: 1.45,
-              fontFamily: FONTS.text,
-              fontWeight: 500,
-              letterSpacing: '-0.01em',
-            }}
-          >
-            {renderHighlightedSentence(currentSentence, true, 34)}
-          </div>
-          {/* Animated underline on current sentence — sweeps in from left */}
-          <div
-            style={{
-              marginTop: 6,
-              height: 2,
-              borderRadius: 1,
-              background: `linear-gradient(90deg, ${moodAccent}90, ${moodAccent}40, transparent)`,
-              width: interpolate(
-                sentenceSpring,
-                [0, 1],
-                [0, Math.min(currentSentence.length * 6, 500)],
-              ),
-              opacity: interpolate(
-                Math.sin(frame * 0.06),
-                [-1, 1],
-                [0.5, 0.9],
-              ),
-            }}
-          />
-        </div>
-      </div>
-
-      {/* ===== BOTTOM ZONE: Hero Number / Key Phrase / Big Impact (70%) ===== */}
-      <div
-        style={{
-          position: 'absolute',
-          bottom: 40,
-          left: 50,
-          right: 30,
-          height: '58%',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      >
-        {/* BIG NUMBER — when a stat is detected */}
-        {hasHeroNumber && (
-          <div
-            style={{
-              transform: `scale(${heroScale})`,
-              opacity: heroOpacity,
-              textAlign: 'center',
-            }}
-          >
-            <div
-              style={{
-                fontSize: numbers[0].replace(/[^0-9.]/g, '').length > 6 ? 72 : 96,
-                fontWeight: 900,
-                color: COLORS.gold,
-                fontFamily: FONTS.heading,
-                lineHeight: 1,
-                letterSpacing: '-0.03em',
-                textShadow: `0 0 ${40 * glowPulse}px ${COLORS.gold}50, 0 0 ${80 * glowPulse}px ${COLORS.gold}20`,
-                filter: `brightness(${1 + glowPulse * 0.15})`,
-              }}
-            >
-              <AnimatedNumber
-                value={numbers[0]}
-                frame={sentenceLocalFrame}
-                fps={fps}
-                delay={8}
-              />
-            </div>
-            {/* Unit / context label below the number */}
-            {numbers[0].match(/[a-zA-Z%]+/) && (
-              <div
-                style={{
-                  fontSize: 28,
-                  fontWeight: 600,
-                  color: `${COLORS.gold}90`,
-                  fontFamily: FONTS.heading,
-                  marginTop: 8,
-                  letterSpacing: '0.1em',
-                  textTransform: 'uppercase',
-                }}
-              >
-                {numbers[0].match(/[a-zA-Z%]+/)?.[0]}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* KEY PHRASE — when no number but a named concept */}
-        {!hasHeroNumber && keyPhrase && (
-          <div
-            style={{
-              transform: `scale(${heroScale})`,
-              opacity: heroOpacity,
-              textAlign: 'center',
-              padding: '0 20px',
-            }}
-          >
-            <div
-              style={{
-                fontSize: keyPhrase.length > 20 ? 48 : 64,
-                fontWeight: 800,
-                color: COLORS.saffron,
-                fontFamily: FONTS.heading,
-                lineHeight: 1.1,
-                letterSpacing: '-0.02em',
-                textShadow: `0 0 ${30 * glowPulse}px ${COLORS.saffron}30`,
-              }}
-            >
-              {keyPhrase}
-            </div>
-          </div>
-        )}
-
-        {/* FALLBACK: Show the HEADING again large + a visual divider —
-            DO NOT repeat the sentence (it's already in the top zone + caption bar) */}
-        {!hasHeroNumber && !keyPhrase && (
-          <div
-            style={{
-              transform: `scale(${heroScale})`,
-              opacity: heroOpacity * 0.6,
-              textAlign: 'center',
-              padding: '0 30px',
-            }}
-          >
-            <div
-              style={{
-                fontSize: 52,
-                fontWeight: 800,
-                color: moodAccent,
-                fontFamily: FONTS.heading,
-                lineHeight: 1.1,
-                letterSpacing: '-0.02em',
-                textShadow: `0 0 ${40 * glowPulse}px ${moodAccent}30`,
-              }}
-            >
-              {heading}
-            </div>
-            <div style={{
-              width: 80,
-              height: 3,
-              background: `linear-gradient(90deg, transparent, ${moodAccent}, transparent)`,
-              margin: '16px auto 0',
-              borderRadius: 2,
-            }} />
-          </div>
-        )}
-
-        {/* Progress dots — which sentence we're on */}
-        <div
-          style={{
-            position: 'absolute',
-            bottom: 20,
-            display: 'flex',
-            gap: 10,
-            alignItems: 'center',
-          }}
-        >
-          {displaySentences.map((_, i) => {
-            const isActive = i === activeSentenceIndex;
-            const isPast = i < activeSentenceIndex;
-            return (
-              <div
-                key={i}
-                style={{
-                  width: isActive ? 28 : 8,
-                  height: 8,
-                  borderRadius: 4,
-                  background: isActive
-                    ? moodAccent
-                    : isPast
-                      ? `${COLORS.white}30`
-                      : `${COLORS.white}12`,
-                  transition: 'width 0.3s',
-                  boxShadow: isActive ? `0 0 12px ${moodAccent}50` : 'none',
-                }}
-              />
-            );
-          })}
-        </div>
-      </div>
+      )}
 
       {/* ===== SCENE PROGRESS BAR — thin line at bottom ===== */}
       <div
@@ -594,9 +214,10 @@ const TextSection: React.FC<TextSectionProps> = ({
           position: 'absolute',
           bottom: 0,
           left: 0,
-          width: `${Math.min(100, (frame / sceneDuration) * 100)}%`,
+          width: `${progressPercent}%`,
           height: 2,
-          background: `linear-gradient(90deg, ${moodAccent}80, ${moodAccent})`,
+          background: `linear-gradient(90deg, ${accentColor}80, ${accentColor})`,
+          zIndex: 10,
         }}
       />
     </AbsoluteFill>
