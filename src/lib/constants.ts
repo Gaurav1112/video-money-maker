@@ -42,7 +42,7 @@ export const SHORT_SCENE_DEFAULTS = {
 export const MAX_SHORT_DURATION_FRAMES = 1800; // 60 seconds at 30fps
 export const MAX_REEL_DURATION_FRAMES = 2700;  // 90 seconds at 30fps
 
-export const INTRO_DURATION = 90; // frames (3 seconds — hook text + voice start)
+export const INTRO_DURATION = 150; // frames (5 seconds — visual hook + branding + voice start)
 export const OUTRO_DURATION = 150; // frames (5 seconds)
 /** @deprecated Use getTransitionDuration() from video-styles.ts instead. Kept as fallback only. */
 export const TRANSITION_DURATION = 15; // frames (0.5 seconds) — replaced by style-driven values
