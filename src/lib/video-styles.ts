@@ -15,6 +15,8 @@ export interface VideoStyle {
   bgmVolume: number;
   bgmChangeInterval: number;
   sfxDensity: SfxDensity;
+  transitionDuration: number;
+  dramaticTransitionDuration: number;
 }
 
 const EDUCATIONAL: VideoStyle = {
@@ -36,6 +38,8 @@ const EDUCATIONAL: VideoStyle = {
   bgmVolume: 0.12,
   bgmChangeInterval: 120,
   sfxDensity: 'sparse',
+  transitionDuration: 8,
+  dramaticTransitionDuration: 15,
 };
 
 const VIRAL: VideoStyle = {
@@ -57,7 +61,28 @@ const VIRAL: VideoStyle = {
   bgmVolume: 0.15,
   bgmChangeInterval: 60,
   sfxDensity: 'dense',
+  transitionDuration: 3,
+  dramaticTransitionDuration: 8,
 };
+
+const DRAMATIC_PAIRS: Array<[string | null, string]> = [
+  ['title', '*'],
+  [null, 'review'],
+  ['review', 'summary'],
+];
+
+export function getTransitionDuration(
+  prevSceneType: SceneType | null,
+  currSceneType: SceneType,
+  style: VideoStyle,
+): number {
+  for (const [prev, curr] of DRAMATIC_PAIRS) {
+    if ((prev === null || prev === prevSceneType) && (curr === '*' || curr === currSceneType)) {
+      return style.dramaticTransitionDuration;
+    }
+  }
+  return style.transitionDuration;
+}
 
 const STYLES: Record<string, VideoStyle> = {
   educational: EDUCATIONAL,

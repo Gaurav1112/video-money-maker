@@ -13,7 +13,7 @@ import { BgmLayer } from '../components/BgmLayer';
 import { SfxLayer } from '../components/SfxLayer';
 import { SplitLayout } from '../components/SplitLayout';
 import { ConceptViz } from '../components/ConceptViz';
-import { INTRO_DURATION, OUTRO_DURATION, TRANSITION_DURATION } from '../lib/constants';
+import { INTRO_DURATION, OUTRO_DURATION } from '../lib/constants';
 import { BrandingLayer } from '../components/BrandingLayer';
 import { AnimatedOverlay } from '../components/AnimatedOverlay';
 import {
@@ -36,7 +36,7 @@ import {
 } from '../components';
 import { SpeedReminder } from '../components/SpeedReminder';
 import { ZoomPunchLayer } from '../components/ZoomPunchLayer';
-import { getStyleForFormat } from '../lib/video-styles';
+import { getStyleForFormat, getTransitionDuration } from '../lib/video-styles';
 
 interface LongVideoProps {
   storyboard: Storyboard;
@@ -430,7 +430,13 @@ export const LongVideo: React.FC<LongVideoProps> = ({ storyboard, noOverlays = f
                 {!isFirst && (
                   <TransitionSeries.Transition
                     presentation={getTransitionForScene(scene.type, idx)}
-                    timing={linearTiming({ durationInFrames: TRANSITION_DURATION })}
+                    timing={linearTiming({
+                      durationInFrames: getTransitionDuration(
+                        idx > 0 ? contentScenes[idx - 1].type : 'title',
+                        scene.type,
+                        style,
+                      ),
+                    })}
                   />
                 )}
                 <TransitionSeries.Sequence durationInFrames={duration}>

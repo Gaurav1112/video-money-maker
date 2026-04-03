@@ -1,8 +1,9 @@
 import { Scene, Storyboard, TTSResult } from '../types';
-import { TIMING, INTRO_DURATION, OUTRO_DURATION, TRANSITION_DURATION } from '../lib/constants';
+import { TIMING, INTRO_DURATION, OUTRO_DURATION } from '../lib/constants';
 import { stitchAudio } from './audio-stitcher';
 import { assignVizVariants } from './script-generator';
 import { generateSfxTriggers } from '../lib/sfx-triggers';
+import { getStyleForFormat, getTransitionDuration } from '../lib/video-styles';
 import type { SfxDensity } from '../lib/video-styles';
 
 interface StoryboardOptions {
@@ -32,6 +33,7 @@ export function generateStoryboard(
   options: StoryboardOptions
 ): Storyboard {
   const { topic, sessionNumber, fps = 30, width = 1920, height = 1080 } = options;
+  const style = getStyleForFormat('long');
 
   // ── Stitch all scene audio into ONE master track ──
   // This eliminates audio overlap during TransitionSeries crossfades.
@@ -101,15 +103,17 @@ export function generateStoryboard(
       if (nextOffset !== -1) {
         // Duration = time until next scene's audio starts + transition overlap compensation.
         // This ensures TransitionSeries places the next scene exactly when its audio starts.
-        durationFrames = TIMING.secondsToFrames(nextOffset - offset) + TRANSITION_DURATION;
+        const prevType = i > 0 ? scenes[i - 1].type : 'title';
+        const transDuration = getTransitionDuration(prevType, scene.type, style);
+        durationFrames = TIMING.secondsToFrames(nextOffset - offset) + transDuration;
       } else {
         // Last scene with audio: use actual audio duration + 1s breathing room + transition
-        durationFrames = TIMING.secondsToFrames(audio.duration + 1.0) + TRANSITION_DURATION;
+        durationFrames = TIMING.secondsToFrames(audio.duration + 1.0) + style.transitionDuration;
       }
     } else {
       // No audio for this scene — use type-based default + transition compensation
       const durationSeconds = FALLBACK_SCENE_DURATION[scene.type] ?? 5;
-      durationFrames = TIMING.secondsToFrames(durationSeconds) + TRANSITION_DURATION;
+      durationFrames = TIMING.secondsToFrames(durationSeconds) + style.transitionDuration;
     }
 
     const startFrame = currentFrame;
