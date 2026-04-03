@@ -51,7 +51,7 @@ Auto-zoom overlay that adds subtle visual motion every few seconds, preventing s
 - Wraps child content in a `scale()` transform
 - Every `zoomInterval` seconds, spring-animate scale from 1.0 → `zoomScale` → 1.0
 - Duration of each punch: 0.8s (24 frames)
-- Uses `spring()` with damping 12, stiffness 150 for organic feel
+- Uses `interpolate()` with `Easing.bezier()` for guaranteed 24-frame timing (springs may not settle in 24 frames)
 - Only zooms during content scenes (not intro/outro)
 
 **Props:**
@@ -66,7 +66,9 @@ interface ZoomPunchLayerProps {
 
 **Implementation:** Use `useCurrentFrame()` to deterministically compute zoom trigger frames. No randomness — same input always produces same output (Remotion requirement).
 
-**Files:** Create `src/components/ZoomPunchLayer.tsx`. Wire into `LongVideo.tsx` wrapping the content `<Sequence>`.
+**Placement in LongVideo.tsx:** Wrap the `<Sequence from={INTRO_DURATION} durationInFrames={contentFrames}>` element (NOT individual `TransitionSeries.Sequence` children). The zoom applies to the entire content area including transitions, which is the desired behavior. `TransitionSeries` manages absolute positioning internally, so wrapping individual children would break crossfades.
+
+**Files:** Create `src/components/ZoomPunchLayer.tsx`. Wire into `LongVideo.tsx`.
 
 ## 3. Dynamic TTS Pacing (`src/pipeline/tts-engine.ts`) — MODIFY
 
@@ -74,9 +76,9 @@ interface ZoomPunchLayerProps {
 
 **Changes:**
 - Add `rate` parameter to `edgeTTS()` function signature: `rate?: string` (default `'-5%'`)
-- Add `rate` parameter to `generateTTS()` function signature
-- Thread rate through from `renderSession()` → `generateTTS()` → `edgeTTS()`
-- In `audio-stitcher.ts` or wherever scenes are iterated for TTS: look up rate from `VideoStyle.ttsRate[scene.type]`
+- Thread rate through the actual call chain: `generateSceneAudios()` → `generateAudio()` → `edgeTTS()`
+- The caller of `generateSceneAudios()` resolves rates per-scene from `VideoStyle.ttsRate[scene.type]` and passes them in, keeping tts-engine decoupled from video style concerns
+- **Cache key must include rate** — update the hash in `edgeTTS()` to: `crypto.createHash('sha256').update(text + voice + voiceLanguage + rate).digest('hex')`. Without this, different rates for the same text return stale cached audio (data corruption bug)
 
 **Rate map (educational):**
 | Scene Type | Rate | Rationale |
@@ -90,7 +92,7 @@ interface ZoomPunchLayerProps {
 | review | +0% | Quiz — clear pace |
 | summary | +10% | Wrap-up energy |
 
-**Files:** Modify `src/pipeline/tts-engine.ts`. Modify `src/pipeline/audio-stitcher.ts` (rate lookup per scene).
+**Files:** Modify `src/pipeline/tts-engine.ts` (add rate param to `edgeTTS()` and `generateAudio()`, update cache key). The rate lookup happens at the call site of `generateSceneAudios()`, not in `audio-stitcher.ts` (which only concatenates MP3s via ffmpeg).
 
 ## 4. Caption Modes (`src/components/CaptionOverlay.tsx`) — MODIFY
 
@@ -107,8 +109,13 @@ interface ZoomPunchLayerProps {
 - Bold sans-serif (Inter 800)
 - Full-width colored background bar
 - Active word: scale 1.3x + spring bounce + color pop
-- Single centered word or 3-word groups
+- 1-3 word groups (NOT the 8-14 word groups used in fireship mode)
 - Slam-in animation (translateY -20px → 0 with spring)
+
+**Implementation notes:**
+- Hormozi mode requires a **separate rendering branch**, not just CSS changes. The word grouping logic (`buildSentenceGroups`) must accept a `maxWords` parameter: 14 for fireship, 3 for hormozi
+- The existing `isEmphasis` and `isBreakPoint` helpers apply to both modes
+- Hormozi's "full-width colored background bar" replaces the dark-pill container — use a conditional render path based on mode
 
 **Props addition:**
 ```typescript
@@ -161,7 +168,9 @@ function splitIntoSubScenes(
 - `iris` — circular iris from center (clip-path circle)
 - `flip` — 3D card flip (perspective + rotateY)
 
-These 3 are custom `TransitionPresentation` implementations in a new file `src/components/transitions.ts`.
+These 3 are custom `TransitionPresentation` implementations in a new file `src/components/transitions.ts`. Each must implement the `TransitionPresentation` interface with `Slide` and `Overlay` components.
+
+**Note:** `flip` uses `perspective + rotateY` — test with Remotion's headless Chrome renderer, as some 3D CSS transforms may not render correctly in PNG-based screenshot mode. If `flip` causes artifacts, fall back to a 2D scale-flip approximation (scaleX 1→0→1).
 
 **Files:** Create `src/components/transitions.ts`. Modify `src/compositions/LongVideo.tsx` (`getTransitionForScene`).
 
@@ -172,9 +181,10 @@ Current BgmLayer works but is basic — single track, fixed volume. Upgrade:
 **Changes:**
 - Accept `trackChangeInterval` prop (default 120s = 2 min)
 - Accept `tracks` array prop (list of BGM file paths)
-- Crossfade between tracks: 3s overlap, fade-out old + fade-in new
 - Volume from `VideoStyle.bgmVolume` (0.12-0.15 range)
 - Track selection: rotate through `tracks` array by index
+
+**Remotion-compatible crossfade approach:** Cannot dynamically switch `<Audio>` src mid-render. Instead, pre-compute track segments as an array of `{ trackFile, startFrame, endFrame }` in a `useMemo`, then render each segment as a separate `<Sequence><Audio>` with fade-in/fade-out volume curves on the 3s (90-frame) overlap regions. This is the only declarative approach that works with Remotion's frame-by-frame renderer.
 
 **BGM tracks needed:** 3-4 royalty-free lo-fi tracks in `public/audio/bgm/`. These are asset files, not code — user will need to source them. The code should handle any number of tracks gracefully (loop if fewer tracks than changes needed).
 
@@ -205,24 +215,23 @@ function generateSfxTriggers(scenes: Scene[], style: VideoStyle): SfxTrigger[];
 
 **SFX audio files:** Need 7 short audio files in `public/audio/sfx/`. These are assets — user sources them. Code references them by name.
 
-**Files:** Create `src/lib/sfx-triggers.ts`. Modify `src/pipeline/storyboard.ts` to call `generateSfxTriggers()` during storyboard generation.
+**Files:** Create `src/lib/sfx-triggers.ts`. Call `generateSfxTriggers()` in `generateStoryboard()` (in `src/pipeline/storyboard.ts`) after `stitchAudio()` returns, merging results with any existing `allSfxTriggers` from the stitcher.
 
 ## 9. Progress Bar Milestones (`src/components/ProgressBar.tsx`) — MODIFY
 
-Add milestone celebrations at 25%, 50%, 75% progress:
+Add milestone celebrations at 25%, 50%, 75% progress.
 
-**Changes:**
-- At 25/50/75% progress, show a brief celebration overlay (1.5s):
+**Note:** `sceneName` and `sceneStartFrame` props already exist in ProgressBar.tsx with slide-in animation implemented. The actual new work is the milestone celebration overlay.
+
+**New changes:**
+- At 25/50/75% progress, show a brief celebration overlay (1.5s = 45 frames):
   - Confetti burst emoji (party popper)
   - Text: "25% done!", "Halfway there!", "Almost done!"
   - Spring scale animation 0 → 1.0
   - Gold glow behind text
-- Add `sceneName` prop to show current chapter label above progress bar
-- `sceneName` text slides in from left when scene changes (already partially implemented)
 
 **Props additions:**
 ```typescript
-sceneName?: string;       // Current scene heading
 milestoneAt?: number[];   // [0.25, 0.5, 0.75] — progress thresholds
 ```
 
@@ -244,32 +253,30 @@ Final integration step. Changes to `LongVideo.tsx`:
 
 ## File Change Summary
 
-### New Files (3)
+### New Files (4)
 | File | Purpose |
 |------|---------|
 | `src/lib/video-styles.ts` | Style system config |
 | `src/components/ZoomPunchLayer.tsx` | Auto-zoom overlay |
-| `src/lib/sub-scene-splitter.ts` | Sub-scene splitting for shorts |
-
-### Modified Files (8)
-| File | Changes |
-|------|---------|
-| `src/pipeline/tts-engine.ts` | Add `rate` param to `edgeTTS()` |
-| `src/pipeline/audio-stitcher.ts` | Thread per-scene TTS rate |
-| `src/components/CaptionOverlay.tsx` | Add fireship/hormozi modes |
-| `src/components/SceneTransitionFlash.tsx` | (minor cleanup only) |
-| `src/compositions/LongVideo.tsx` | Wire all new components + transition rotation |
-| `src/components/BgmLayer.tsx` | Multi-track crossfade |
-| `src/components/ProgressBar.tsx` | Milestone celebrations + sceneName |
-| `src/pipeline/storyboard.ts` | Auto-generate SFX triggers |
-
-### New Files (additional)
-| File | Purpose |
-|------|---------|
 | `src/components/transitions.ts` | Custom transition presentations (clockWipe, iris, flip) |
 | `src/lib/sfx-triggers.ts` | Auto SFX trigger generation |
 
-**Total: 5 new files, 8 modified files**
+### Modified Files (6)
+| File | Changes |
+|------|---------|
+| `src/pipeline/tts-engine.ts` | Add `rate` param to `edgeTTS()` + `generateAudio()`, update cache key |
+| `src/components/CaptionOverlay.tsx` | Add fireship/hormozi modes with separate render branches |
+| `src/compositions/LongVideo.tsx` | Wire all new components + transition rotation |
+| `src/components/BgmLayer.tsx` | Multi-track crossfade via multiple `<Sequence><Audio>` |
+| `src/components/ProgressBar.tsx` | Milestone celebrations |
+| `src/pipeline/storyboard.ts` | Call `generateSfxTriggers()` after stitching |
+
+### Deferred to Sub-project 2
+| File | Purpose |
+|------|---------|
+| `src/lib/sub-scene-splitter.ts` | Sub-scene splitting (needed for Viral Shorts, not Long Video) |
+
+**Total: 4 new files, 6 modified files (+ 1 deferred)**
 
 ---
 
@@ -281,7 +288,7 @@ Final integration step. Changes to `LongVideo.tsx`:
 - 3-4 lo-fi BGM tracks → `public/audio/bgm/`
 - 7 SFX files (whoosh, pop, ding, error, typing, impact, riser) → `public/audio/sfx/`
 
-**No new fonts needed.** JetBrains Mono for fireship captions can be loaded via `@remotion/google-fonts`.
+**Fonts:** JetBrains Mono for fireship captions — available via `@remotion/google-fonts/JetBrainsMono`.
 
 ---
 
