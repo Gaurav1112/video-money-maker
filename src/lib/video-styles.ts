@@ -1,0 +1,73 @@
+// src/lib/video-styles.ts
+import type { SceneType, VideoFormat } from '../types';
+
+export type CaptionMode = 'fireship' | 'hormozi';
+export type SfxDensity = 'sparse' | 'dense';
+export type TransitionType = 'fade' | 'slide-right' | 'slide-left' | 'slide-bottom' | 'slide-top' | 'wipe-left' | 'wipe-right' | 'clockWipe' | 'iris' | 'flip';
+
+export interface VideoStyle {
+  id: 'educational' | 'viral';
+  ttsRate: Record<SceneType, string>;
+  captionMode: CaptionMode;
+  zoomInterval: [number, number];
+  zoomScale: number;
+  transitionPool: TransitionType[];
+  bgmVolume: number;
+  bgmChangeInterval: number;
+  sfxDensity: SfxDensity;
+}
+
+const EDUCATIONAL: VideoStyle = {
+  id: 'educational',
+  ttsRate: {
+    title: '+15%',
+    text: '+0%',
+    code: '-5%',
+    diagram: '-5%',
+    table: '+0%',
+    interview: '+5%',
+    review: '+0%',
+    summary: '+10%',
+  },
+  captionMode: 'fireship',
+  zoomInterval: [3, 5],
+  zoomScale: 1.15,
+  transitionPool: ['fade', 'slide-right', 'wipe-left', 'slide-bottom', 'fade', 'slide-left', 'wipe-right', 'slide-top'],
+  bgmVolume: 0.12,
+  bgmChangeInterval: 120,
+  sfxDensity: 'sparse',
+};
+
+const VIRAL: VideoStyle = {
+  id: 'viral',
+  ttsRate: {
+    title: '+20%',
+    text: '+10%',
+    code: '+0%',
+    diagram: '+0%',
+    table: '+5%',
+    interview: '+10%',
+    review: '+5%',
+    summary: '+15%',
+  },
+  captionMode: 'hormozi',
+  zoomInterval: [1.5, 3],
+  zoomScale: 1.25,
+  transitionPool: ['fade', 'slide-right', 'wipe-left', 'iris'],
+  bgmVolume: 0.15,
+  bgmChangeInterval: 60,
+  sfxDensity: 'dense',
+};
+
+const STYLES: Record<string, VideoStyle> = {
+  educational: EDUCATIONAL,
+  viral: VIRAL,
+};
+
+export function getStyleForFormat(format: VideoFormat): VideoStyle {
+  return format === 'long' ? STYLES.educational : STYLES.viral;
+}
+
+export function getStyle(id: 'educational' | 'viral'): VideoStyle {
+  return STYLES[id];
+}
