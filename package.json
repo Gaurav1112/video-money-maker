@@ -20,6 +20,7 @@
     "render:session": "tsx scripts/render-session.ts",
     "render:shorts": "tsx scripts/render-viral-shorts.ts",
     "make:reels": "tsx scripts/make-reels.ts",
+    "metadata:all": "tsx scripts/generate-session-metadata.ts",
     "dev": "concurrently \"npm start\" \"npm run api\""
   },
   "keywords": [],
