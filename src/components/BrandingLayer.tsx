@@ -55,36 +55,52 @@ export const BrandingLayer: React.FC<BrandingLayerProps> = ({
         <LowerThirdCta topicSlug={topicSlug} format={format} />
       </Sequence>
 
-      {/* Bottom-right subtle watermark — small, unobtrusive */}
-      {frame >= watermarkStart && frame < watermarkEnd && (
-        <div
-          style={{
-            position: 'absolute',
-            top: isShort ? 16 : 20,
-            right: isShort ? 16 : 30,
-            opacity: 0.6,
-            zIndex: 100,
-            display: 'flex',
-            alignItems: 'center',
-            gap: 6,
-            background: 'rgba(12, 10, 21, 0.65)',
-            borderRadius: 8,
-            padding: isShort ? '4px 10px' : '5px 12px',
-            border: '1px solid rgba(232, 93, 38, 0.25)',
-            backdropFilter: 'blur(8px)',
-          }}
-        >
-          <span style={{
-            fontSize: 14,
-            fontFamily: "'Inter', system-ui, sans-serif",
-            fontWeight: 600,
-            color: '#E85D26',
-            letterSpacing: 0.3,
-          }}>
-            guru-sishya.in
-          </span>
-        </div>
-      )}
+      {/* Top marquee branding — always visible, scrolling ticker */}
+      <div
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          height: 42,
+          overflow: 'hidden',
+          zIndex: 100,
+          background: 'linear-gradient(90deg, rgba(232,93,38,0.95), rgba(253,184,19,0.9), rgba(232,93,38,0.95))',
+          borderBottom: '2px solid rgba(253,184,19,0.6)',
+          boxShadow: '0 2px 12px rgba(232,93,38,0.3)',
+        }}
+      >
+        {/* Scrolling marquee — 3 copies for seamless loop */}
+        {(() => {
+          const marqueeText = '  ★  guru-sishya.in  |  Master Your Interview  |  Land Your Dream Job  |  Subscribe for Daily Tips  |  www.guru-sishya.in  |  @guru_sishya.in  ';
+          const fullText = marqueeText + marqueeText + marqueeText;
+          const speed = 1.5; // pixels per frame
+          const textWidth = fullText.length * 8; // approximate
+          const offset = -(frame * speed) % (textWidth / 3);
+          return (
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                height: '100%',
+                whiteSpace: 'nowrap',
+                transform: `translateX(${offset}px)`,
+              }}
+            >
+              <span style={{
+                fontSize: 18,
+                fontFamily: "'Inter', system-ui, sans-serif",
+                fontWeight: 800,
+                letterSpacing: 2,
+                color: '#0C0A15',
+                textShadow: '0 1px 2px rgba(0,0,0,0.2)',
+              }}>
+                {fullText}
+              </span>
+            </div>
+          );
+        })()}
+      </div>
 
       {/* Mid-video CTA card */}
       {showMidCta && (
