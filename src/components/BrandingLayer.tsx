@@ -60,7 +60,7 @@ export const BrandingLayer: React.FC<BrandingLayerProps> = ({
         <div
           style={{
             position: 'absolute',
-            bottom: isShort ? 110 : 28,
+            top: isShort ? 16 : 20,
             right: isShort ? 16 : 30,
             opacity: 0.6,
             zIndex: 100,

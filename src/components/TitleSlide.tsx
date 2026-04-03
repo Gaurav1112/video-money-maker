@@ -1103,11 +1103,11 @@ const PhaseCta: React.FC<{
         </div>
       </div>
 
-      {/* guru-sishya.in branding */}
+      {/* guru-sishya.in branding — top area */}
       <div
         style={{
           position: 'absolute',
-          top: '67%',
+          top: 20,
           left: 0,
           right: 0,
           textAlign: 'center',
