@@ -29,33 +29,73 @@ interface CinematicOpenerProps {
 }
 
 // ── Style selection logic ────────────────────────────────────────────────────
-function selectStyle(topic: string, sessionNumber: number): number {
+function selectStyle(topic: string, _sessionNumber: number): number {
   const lower = topic.toLowerCase();
-  if (lower.includes(' vs ') || lower.includes('comparison') || lower.includes('versus'))
-    return 4;
-  if (
-    lower.includes('http') ||
-    lower.includes('tcp') ||
-    lower.includes('dns') ||
-    lower.includes('networking')
-  )
-    return 5;
-  if (
-    ['tree', 'graph', 'sort', 'search', 'hash', 'array', 'linked', 'stack', 'queue', 'heap'].some(
-      (k) => lower.includes(k),
-    )
-  )
-    return 3;
-  if (
-    lower.includes('load') ||
-    lower.includes('cach') ||
-    lower.includes('database') ||
-    lower.includes('scaling') ||
-    lower.includes('system design')
-  )
-    return 2;
-  // Rotate remaining between interview (1), crisis (2), salary (6)
-  return [1, 2, 6][sessionNumber % 3];
+
+  // Map EVERY topic category to a specific style
+  const TOPIC_STYLE_MAP: Record<string, number> = {
+    // Style 1: THE INTERVIEW (company/career topics)
+    'interview': 1, 'placement': 1, 'resume': 1, 'behavioral': 1,
+    'star method': 1, 'hr round': 1, 'coding round': 1,
+
+    // Style 2: THE CRISIS (infrastructure / system-design topics)
+    'load balancing': 2, 'scaling': 2, 'availability': 2,
+    'fault tolerance': 2, 'disaster recovery': 2, 'circuit breaker': 2,
+    'api gateway': 2, 'reverse proxy': 2, 'service discovery': 2,
+    'rate limiting': 2, 'throttling': 2, 'cdn': 2,
+    'monitoring': 2, 'logging': 2, 'tracing': 2,
+    'caching': 2, 'cache': 2, 'lru cache': 2,
+    'database': 2, 'sharding': 2, 'replication': 2, 'indexing': 2,
+    'microservices': 2, 'monolith': 2, 'system design': 2,
+    'message queue': 2, 'kafka': 2, 'rabbitmq': 2,
+    'docker': 2, 'kubernetes': 2, 'k8s': 2,
+    'blob storage': 2, 'mapreduce': 2, 'spark': 2,
+    'elasticsearch': 2, 'concurrency': 2, 'deadlock': 2, 'mutex': 2,
+
+    // Style 3: THE MYSTERY (algorithm / data-structure topics)
+    'binary search': 3, 'sorting': 3, 'dynamic programming': 3,
+    'tree': 3, 'graph': 3, 'array': 3, 'linked list': 3,
+    'hash': 3, 'stack': 3, 'queue': 3, 'heap': 3,
+    'trie': 3, 'bloom filter': 3, 'skip list': 3,
+    'b-tree': 3, 'merkle tree': 3, 'segment tree': 3,
+    'vector clock': 3, 'raft': 3, 'paxos': 3,
+    'consistent hashing': 3, 'gossip protocol': 3,
+    'leader election': 3, 'two phase commit': 3,
+
+    // Style 4: THE COMPARISON (vs / tradeoff topics)
+    'vs': 4, 'comparison': 4, 'sql vs nosql': 4,
+    'trade-off': 4, 'tradeoff': 4, 'cap theorem': 4,
+
+    // Style 5: THE JOURNEY (networking / protocol topics)
+    'http': 5, 'tcp': 5, 'dns': 5, 'websocket': 5,
+    'networking': 5, 'osi': 5, 'ssl': 5, 'tls': 5,
+    'grpc': 5, 'graphql': 5, 'rest': 5, 'oauth': 5, 'jwt': 5,
+    'pagination': 5, 'api design': 5,
+
+    // Style 6: THE SALARY (career / package topics)
+    'salary': 6, 'lpa': 6, 'package': 6, 'compensation': 6,
+    'negotiation': 6, 'offer': 6,
+
+    // Additional distributed-systems topics -> Style 2
+    'distributed': 2, 'event driven': 2, 'event-driven': 2,
+    'cqrs': 2, 'saga': 2, 'saga pattern': 2,
+    'authentication': 2, 'authorization': 2,
+  };
+
+  // Check exact and partial matches (longer keys first for specificity)
+  const sortedKeys = Object.keys(TOPIC_STYLE_MAP).sort((a, b) => b.length - a.length);
+  for (const key of sortedKeys) {
+    if (lower.includes(key)) return TOPIC_STYLE_MAP[key];
+  }
+
+  // For topics not in the map, rotate through ALL 6 styles based on topic hash
+  // This ensures different topics get different styles
+  let hash = 0;
+  for (let i = 0; i < topic.length; i++) {
+    hash = ((hash << 5) - hash) + topic.charCodeAt(i);
+    hash |= 0;
+  }
+  return (Math.abs(hash) % 6) + 1;
 }
 
 // ── Company detection (shared across styles) ────────────────────────────────

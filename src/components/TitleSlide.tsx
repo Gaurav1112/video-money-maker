@@ -18,6 +18,479 @@ interface TitleSlideProps {
   durationLabel?: string;
 }
 
+// ════════════════════════════════════════════════════════════════════════════════
+// TOPIC-SPECIFIC VISUALS — unique labels, colors, questions per topic
+// ════════════════════════════════════════════════════════════════════════════════
+interface TopicVisualConfig {
+  problemLabel: string;       // Phase 1: What problem text to show
+  problemIcon: string;        // Phase 1: What icon/emoji
+  problemColor: string;       // Phase 1: Flash color
+  questionText: string;       // Phase 2: What the interviewer asks
+  solutionLabels: string[];   // Phase 3: What architecture boxes to show
+  solutionColor: string;      // Phase 3: Success color
+}
+
+const TOPIC_VISUALS: Record<string, TopicVisualConfig> = {
+  'api gateway': {
+    problemLabel: 'CLIENTS LOST',
+    problemIcon: '\u{1F50C}',
+    problemColor: '#E74C3C',
+    questionText: 'Design an API Gateway',
+    solutionLabels: ['Gateway', 'Auth', 'Rate Limit', 'Routing'],
+    solutionColor: '#1DD1A1',
+  },
+  'caching': {
+    problemLabel: 'DATABASE OVERLOADED',
+    problemIcon: '\u{1F422}',
+    problemColor: '#F39C12',
+    questionText: 'How would you add caching?',
+    solutionLabels: ['Cache Layer', 'TTL', 'Eviction', 'Invalidation'],
+    solutionColor: '#FDB813',
+  },
+  'load balancing': {
+    problemLabel: 'SERVER CRASHED',
+    problemIcon: '\u{1F4A5}',
+    problemColor: '#E74C3C',
+    questionText: 'Design a load balancer',
+    solutionLabels: ['Load Balancer', 'Health Check', 'Round Robin', 'Failover'],
+    solutionColor: '#1DD1A1',
+  },
+  'database': {
+    problemLabel: 'DATA CORRUPTED',
+    problemIcon: '\u{1F5C3}',
+    problemColor: '#8E44AD',
+    questionText: 'Design the database layer',
+    solutionLabels: ['Primary DB', 'Replica', 'Sharding', 'Backup'],
+    solutionColor: '#A78BFA',
+  },
+  'microservices': {
+    problemLabel: 'MONOLITH BREAKING',
+    problemIcon: '\u{1F9F1}',
+    problemColor: '#E74C3C',
+    questionText: 'When to use microservices?',
+    solutionLabels: ['Service A', 'Service B', 'API Gateway', 'Message Bus'],
+    solutionColor: '#1DD1A1',
+  },
+  'message queue': {
+    problemLabel: 'MESSAGES DROPPED',
+    problemIcon: '\u{1F4E8}',
+    problemColor: '#E74C3C',
+    questionText: 'Design a message queue',
+    solutionLabels: ['Producer', 'Queue', 'Consumer', 'DLQ'],
+    solutionColor: '#F472B6',
+  },
+  'distributed': {
+    problemLabel: 'NETWORK PARTITION',
+    problemIcon: '\u{1F310}',
+    problemColor: '#3498DB',
+    questionText: 'Handle distributed failures',
+    solutionLabels: ['Node A', 'Node B', 'Consensus', 'Replication'],
+    solutionColor: '#1DD1A1',
+  },
+  'authentication': {
+    problemLabel: 'SECURITY BREACH',
+    problemIcon: '\u{1F513}',
+    problemColor: '#E74C3C',
+    questionText: 'Design auth system',
+    solutionLabels: ['Auth Server', 'JWT', 'OAuth', 'Session'],
+    solutionColor: '#27AE60',
+  },
+  'rate limiting': {
+    problemLabel: 'API ABUSED',
+    problemIcon: '\u{1F6AB}',
+    problemColor: '#E74C3C',
+    questionText: 'Implement rate limiting',
+    solutionLabels: ['Token Bucket', 'Sliding Window', 'Counter', 'Throttle'],
+    solutionColor: '#F39C12',
+  },
+  'consistent hashing': {
+    problemLabel: 'REBALANCING CHAOS',
+    problemIcon: '\u{1F504}',
+    problemColor: '#F39C12',
+    questionText: 'Explain consistent hashing',
+    solutionLabels: ['Hash Ring', 'Virtual Nodes', 'Partition', 'Rebalance'],
+    solutionColor: '#1DD1A1',
+  },
+  'circuit breaker': {
+    problemLabel: 'CASCADE FAILURE',
+    problemIcon: '\u{26A1}',
+    problemColor: '#E74C3C',
+    questionText: 'What is a circuit breaker?',
+    solutionLabels: ['Closed', 'Open', 'Half-Open', 'Fallback'],
+    solutionColor: '#1DD1A1',
+  },
+  'service discovery': {
+    problemLabel: 'SERVICES UNREACHABLE',
+    problemIcon: '\u{1F50D}',
+    problemColor: '#E74C3C',
+    questionText: 'Implement service discovery',
+    solutionLabels: ['Registry', 'Health Check', 'DNS', 'Load Balancer'],
+    solutionColor: '#3498DB',
+  },
+  'dns': {
+    problemLabel: 'DOMAIN NOT FOUND',
+    problemIcon: '\u{1F30D}',
+    problemColor: '#E74C3C',
+    questionText: 'How does DNS work?',
+    solutionLabels: ['Resolver', 'Root NS', 'TLD NS', 'Auth NS'],
+    solutionColor: '#3498DB',
+  },
+  'http': {
+    problemLabel: 'REQUEST FAILED',
+    problemIcon: '\u{1F4E1}',
+    problemColor: '#E74C3C',
+    questionText: 'Explain the HTTP lifecycle',
+    solutionLabels: ['Client', 'TCP Handshake', 'Request', 'Response'],
+    solutionColor: '#1DD1A1',
+  },
+  'tcp': {
+    problemLabel: 'PACKETS LOST',
+    problemIcon: '\u{1F4E6}',
+    problemColor: '#E74C3C',
+    questionText: 'How does TCP guarantee delivery?',
+    solutionLabels: ['SYN', 'SYN-ACK', 'ACK', 'Data Transfer'],
+    solutionColor: '#3498DB',
+  },
+  'websocket': {
+    problemLabel: 'CONNECTION DROPPED',
+    problemIcon: '\u{1F517}',
+    problemColor: '#E74C3C',
+    questionText: 'When to use WebSockets?',
+    solutionLabels: ['Handshake', 'Upgrade', 'Full Duplex', 'Heartbeat'],
+    solutionColor: '#1DD1A1',
+  },
+  'docker': {
+    problemLabel: 'DEPENDENCY HELL',
+    problemIcon: '\u{1F4E6}',
+    problemColor: '#2496ED',
+    questionText: 'Why use containers?',
+    solutionLabels: ['Image', 'Container', 'Volume', 'Network'],
+    solutionColor: '#2496ED',
+  },
+  'kubernetes': {
+    problemLabel: 'ORCHESTRATION CHAOS',
+    problemIcon: '\u{2388}',
+    problemColor: '#326CE5',
+    questionText: 'How does K8s orchestrate?',
+    solutionLabels: ['Pod', 'Service', 'Deployment', 'Ingress'],
+    solutionColor: '#326CE5',
+  },
+  'cdn': {
+    problemLabel: 'HIGH LATENCY',
+    problemIcon: '\u{1F30D}',
+    problemColor: '#F39C12',
+    questionText: 'How does a CDN work?',
+    solutionLabels: ['Origin', 'Edge Node', 'Cache', 'PoP'],
+    solutionColor: '#1DD1A1',
+  },
+  'reverse proxy': {
+    problemLabel: 'EXPOSED SERVERS',
+    problemIcon: '\u{1F6E1}',
+    problemColor: '#E74C3C',
+    questionText: 'What is a reverse proxy?',
+    solutionLabels: ['Proxy', 'SSL Termination', 'Routing', 'Caching'],
+    solutionColor: '#1DD1A1',
+  },
+  'sharding': {
+    problemLabel: 'TABLE TOO LARGE',
+    problemIcon: '\u{1FA93}',
+    problemColor: '#8E44AD',
+    questionText: 'When to shard a database?',
+    solutionLabels: ['Shard Key', 'Shard 1', 'Shard 2', 'Router'],
+    solutionColor: '#A78BFA',
+  },
+  'replication': {
+    problemLabel: 'SINGLE POINT OF FAILURE',
+    problemIcon: '\u{1F4CB}',
+    problemColor: '#E74C3C',
+    questionText: 'Explain database replication',
+    solutionLabels: ['Primary', 'Replica 1', 'Replica 2', 'Sync'],
+    solutionColor: '#1DD1A1',
+  },
+  'indexing': {
+    problemLabel: 'FULL TABLE SCAN',
+    problemIcon: '\u{1F50D}',
+    problemColor: '#F39C12',
+    questionText: 'How do indexes speed queries?',
+    solutionLabels: ['B-Tree Index', 'Hash Index', 'Query', 'Result'],
+    solutionColor: '#FDB813',
+  },
+  'sql': {
+    problemLabel: 'QUERY TIMEOUT',
+    problemIcon: '\u{1F4CA}',
+    problemColor: '#3498DB',
+    questionText: 'SQL vs NoSQL tradeoffs?',
+    solutionLabels: ['Schema', 'ACID', 'Joins', 'Normalization'],
+    solutionColor: '#3498DB',
+  },
+  'nosql': {
+    problemLabel: 'RIGID SCHEMA',
+    problemIcon: '\u{1F4C4}',
+    problemColor: '#27AE60',
+    questionText: 'When to choose NoSQL?',
+    solutionLabels: ['Document', 'Key-Value', 'Column', 'Graph'],
+    solutionColor: '#27AE60',
+  },
+  'concurrency': {
+    problemLabel: 'RACE CONDITION',
+    problemIcon: '\u{1F3C1}',
+    problemColor: '#E74C3C',
+    questionText: 'Handle concurrent access',
+    solutionLabels: ['Lock', 'Semaphore', 'CAS', 'Thread Pool'],
+    solutionColor: '#1DD1A1',
+  },
+  'deadlock': {
+    problemLabel: 'SYSTEM FROZEN',
+    problemIcon: '\u{1F9CA}',
+    problemColor: '#E74C3C',
+    questionText: 'How to prevent deadlocks?',
+    solutionLabels: ['Detection', 'Prevention', 'Avoidance', 'Recovery'],
+    solutionColor: '#1DD1A1',
+  },
+  'mutex': {
+    problemLabel: 'DATA CORRUPTION',
+    problemIcon: '\u{1F512}',
+    problemColor: '#E74C3C',
+    questionText: 'Mutex vs Semaphore',
+    solutionLabels: ['Mutex', 'Lock', 'Unlock', 'Critical Section'],
+    solutionColor: '#F39C12',
+  },
+  'event driven': {
+    problemLabel: 'TIGHT COUPLING',
+    problemIcon: '\u{1F4E2}',
+    problemColor: '#8E44AD',
+    questionText: 'Event-driven architecture?',
+    solutionLabels: ['Publisher', 'Event Bus', 'Subscriber', 'Handler'],
+    solutionColor: '#A78BFA',
+  },
+  'cqrs': {
+    problemLabel: 'READ/WRITE BOTTLENECK',
+    problemIcon: '\u{2194}',
+    problemColor: '#3498DB',
+    questionText: 'What is CQRS?',
+    solutionLabels: ['Command', 'Query', 'Write DB', 'Read DB'],
+    solutionColor: '#3498DB',
+  },
+  'saga': {
+    problemLabel: 'DISTRIBUTED TXN FAILED',
+    problemIcon: '\u{1F4DC}',
+    problemColor: '#E74C3C',
+    questionText: 'Saga pattern for transactions',
+    solutionLabels: ['Step 1', 'Step 2', 'Compensate', 'Orchestrator'],
+    solutionColor: '#1DD1A1',
+  },
+  'monitoring': {
+    problemLabel: 'BLIND SPOT',
+    problemIcon: '\u{1F441}',
+    problemColor: '#F39C12',
+    questionText: 'Design a monitoring system',
+    solutionLabels: ['Metrics', 'Alerts', 'Dashboard', 'Log Agg'],
+    solutionColor: '#FDB813',
+  },
+  'logging': {
+    problemLabel: 'NO VISIBILITY',
+    problemIcon: '\u{1F4DD}',
+    problemColor: '#F39C12',
+    questionText: 'Centralized logging design',
+    solutionLabels: ['Agent', 'Collector', 'Storage', 'Search'],
+    solutionColor: '#FDB813',
+  },
+  'tracing': {
+    problemLabel: 'REQUEST LOST',
+    problemIcon: '\u{1F50E}',
+    problemColor: '#3498DB',
+    questionText: 'Distributed tracing explained',
+    solutionLabels: ['Trace ID', 'Span', 'Collector', 'Visualizer'],
+    solutionColor: '#3498DB',
+  },
+  'elasticsearch': {
+    problemLabel: 'SEARCH TOO SLOW',
+    problemIcon: '\u{1F50D}',
+    problemColor: '#F39C12',
+    questionText: 'How does Elasticsearch work?',
+    solutionLabels: ['Index', 'Shard', 'Inverted Index', 'Query DSL'],
+    solutionColor: '#FDB813',
+  },
+  'blob storage': {
+    problemLabel: 'FILES EVERYWHERE',
+    problemIcon: '\u{1F4BE}',
+    problemColor: '#3498DB',
+    questionText: 'Design blob storage',
+    solutionLabels: ['Upload', 'Chunk', 'Replicate', 'CDN Serve'],
+    solutionColor: '#3498DB',
+  },
+  'mapreduce': {
+    problemLabel: 'DATA TOO BIG',
+    problemIcon: '\u{1F4CA}',
+    problemColor: '#27AE60',
+    questionText: 'How does MapReduce work?',
+    solutionLabels: ['Split', 'Map', 'Shuffle', 'Reduce'],
+    solutionColor: '#27AE60',
+  },
+  'kafka': {
+    problemLabel: 'EVENT STREAM LOST',
+    problemIcon: '\u{1F4E8}',
+    problemColor: '#E74C3C',
+    questionText: 'Why Kafka for streaming?',
+    solutionLabels: ['Producer', 'Broker', 'Partition', 'Consumer'],
+    solutionColor: '#1DD1A1',
+  },
+  'spark': {
+    problemLabel: 'BATCH TOO SLOW',
+    problemIcon: '\u{26A1}',
+    problemColor: '#F39C12',
+    questionText: 'Spark vs MapReduce',
+    solutionLabels: ['Driver', 'Executor', 'RDD', 'DAG'],
+    solutionColor: '#FDB813',
+  },
+  'leader election': {
+    problemLabel: 'SPLIT BRAIN',
+    problemIcon: '\u{1F451}',
+    problemColor: '#E74C3C',
+    questionText: 'How does leader election work?',
+    solutionLabels: ['Candidate', 'Vote', 'Leader', 'Follower'],
+    solutionColor: '#FDB813',
+  },
+  'gossip protocol': {
+    problemLabel: 'NODES OUT OF SYNC',
+    problemIcon: '\u{1F5E3}',
+    problemColor: '#8E44AD',
+    questionText: 'How gossip spreads state',
+    solutionLabels: ['Node A', 'Gossip', 'Node B', 'Convergence'],
+    solutionColor: '#A78BFA',
+  },
+  'vector clock': {
+    problemLabel: 'CAUSAL ORDERING LOST',
+    problemIcon: '\u{23F0}',
+    problemColor: '#3498DB',
+    questionText: 'Vector clocks for ordering',
+    solutionLabels: ['Clock A', 'Clock B', 'Merge', 'Resolve'],
+    solutionColor: '#3498DB',
+  },
+  'raft': {
+    problemLabel: 'NO CONSENSUS',
+    problemIcon: '\u{1F91D}',
+    problemColor: '#E74C3C',
+    questionText: 'Raft consensus algorithm',
+    solutionLabels: ['Leader', 'Log', 'Commit', 'Follower'],
+    solutionColor: '#1DD1A1',
+  },
+  'bloom filter': {
+    problemLabel: 'WASTED LOOKUPS',
+    problemIcon: '\u{1F338}',
+    problemColor: '#8E44AD',
+    questionText: 'How bloom filters save time',
+    solutionLabels: ['Bit Array', 'Hash 1', 'Hash 2', 'Probabilistic'],
+    solutionColor: '#A78BFA',
+  },
+  'lru cache': {
+    problemLabel: 'CACHE MISS STORM',
+    problemIcon: '\u{1F4A8}',
+    problemColor: '#F39C12',
+    questionText: 'Implement an LRU cache',
+    solutionLabels: ['HashMap', 'Doubly Linked', 'Evict', 'O(1) Access'],
+    solutionColor: '#FDB813',
+  },
+  'b-tree': {
+    problemLabel: 'DISK SEEK SLOW',
+    problemIcon: '\u{1F333}',
+    problemColor: '#27AE60',
+    questionText: 'Why databases use B-Trees',
+    solutionLabels: ['Root', 'Internal', 'Leaf', 'Balanced'],
+    solutionColor: '#27AE60',
+  },
+  'merkle tree': {
+    problemLabel: 'DATA INTEGRITY LOST',
+    problemIcon: '\u{1F332}',
+    problemColor: '#27AE60',
+    questionText: 'Merkle trees for verification',
+    solutionLabels: ['Root Hash', 'Branch', 'Leaf Hash', 'Verify'],
+    solutionColor: '#27AE60',
+  },
+  'skip list': {
+    problemLabel: 'LINEAR SEARCH',
+    problemIcon: '\u{23E9}',
+    problemColor: '#3498DB',
+    questionText: 'Skip list data structure',
+    solutionLabels: ['Level 0', 'Level 1', 'Level 2', 'O(log n)'],
+    solutionColor: '#3498DB',
+  },
+  'graphql': {
+    problemLabel: 'OVER-FETCHING',
+    problemIcon: '\u{1F4E5}',
+    problemColor: '#E535AB',
+    questionText: 'GraphQL vs REST',
+    solutionLabels: ['Schema', 'Query', 'Resolver', 'Response'],
+    solutionColor: '#E535AB',
+  },
+  'grpc': {
+    problemLabel: 'SLOW SERIALIZATION',
+    problemIcon: '\u{26A1}',
+    problemColor: '#3498DB',
+    questionText: 'Why use gRPC?',
+    solutionLabels: ['Proto', 'Stub', 'Channel', 'Streaming'],
+    solutionColor: '#3498DB',
+  },
+  'pagination': {
+    problemLabel: 'TIMEOUT ON LARGE DATA',
+    problemIcon: '\u{1F4C4}',
+    problemColor: '#F39C12',
+    questionText: 'Cursor vs Offset pagination',
+    solutionLabels: ['Offset', 'Cursor', 'Keyset', 'Response'],
+    solutionColor: '#FDB813',
+  },
+  'oauth': {
+    problemLabel: 'UNAUTHORIZED ACCESS',
+    problemIcon: '\u{1F511}',
+    problemColor: '#E74C3C',
+    questionText: 'OAuth 2.0 flow explained',
+    solutionLabels: ['Client', 'Auth Server', 'Token', 'Resource'],
+    solutionColor: '#27AE60',
+  },
+  'jwt': {
+    problemLabel: 'TOKEN FORGERY',
+    problemIcon: '\u{1F3AB}',
+    problemColor: '#E74C3C',
+    questionText: 'How JWT authentication works',
+    solutionLabels: ['Header', 'Payload', 'Signature', 'Verify'],
+    solutionColor: '#27AE60',
+  },
+  'scaling': {
+    problemLabel: 'TRAFFIC SPIKE',
+    problemIcon: '\u{1F4C8}',
+    problemColor: '#E74C3C',
+    questionText: 'Horizontal vs Vertical scaling',
+    solutionLabels: ['Scale Out', 'Scale Up', 'Auto Scale', 'Metrics'],
+    solutionColor: '#1DD1A1',
+  },
+  'cap theorem': {
+    problemLabel: 'IMPOSSIBLE TRADEOFF',
+    problemIcon: '\u{2696}',
+    problemColor: '#8E44AD',
+    questionText: 'Explain the CAP theorem',
+    solutionLabels: ['Consistency', 'Availability', 'Partition', 'Tradeoff'],
+    solutionColor: '#A78BFA',
+  },
+};
+
+function getTopicVisuals(topic: string): TopicVisualConfig {
+  const lower = topic.toLowerCase();
+  // Check longer keys first for specificity
+  const sortedKeys = Object.keys(TOPIC_VISUALS).sort((a, b) => b.length - a.length);
+  for (const key of sortedKeys) {
+    if (lower.includes(key)) return TOPIC_VISUALS[key];
+  }
+  // Fallback -- generic but still uses topic name
+  return {
+    problemLabel: 'SYSTEM FAILURE',
+    problemIcon: '\u{26A0}',
+    problemColor: '#E74C3C',
+    questionText: `Explain ${topic}`,
+    solutionLabels: [topic, 'Architecture', 'Implementation', 'Optimization'],
+    solutionColor: '#1DD1A1',
+  };
+}
+
 // ── FPS = 30. Phase mapping (title scene runs ~25-30s = 750-900 frames): ──
 // Phase 1:  0-150f   (0-5s)    "THE PROBLEM" — servers overwhelmed, errors climb
 // Phase 2:  150-450f (5-15s)   "THE QUESTION" — interview scenario, pressure
@@ -103,6 +576,8 @@ const CinematicFrame: React.FC<{ opacity: number }> = ({ opacity }) => (
 // PHASE 1: "THE PROBLEM" — servers overwhelmed, errors climb (0-150f / 0-5s)
 // ════════════════════════════════════════════════════════════════════════════════
 const PhaseProblem: React.FC<{ frame: number; topic: string }> = ({ frame, topic }) => {
+  const config = getTopicVisuals(topic);
+
   // Phase label: "THE PROBLEM" — springs in at frame 5
   const labelSpring = spring({
     frame: Math.max(0, frame - 5),
@@ -114,12 +589,11 @@ const PhaseProblem: React.FC<{ frame: number; topic: string }> = ({ frame, topic
     extrapolateRight: 'clamp',
   });
 
-  // Server boxes appear staggered — turn red one by one
-  const serverCount = 3;
+  // Server boxes appear staggered — turn problem-color one by one
   const serverData = [
-    { x: 660, y: 340, label: 'SRV-1' },
-    { x: 900, y: 340, label: 'SRV-2' },
-    { x: 1140, y: 340, label: 'SRV-3' },
+    { x: 660, y: 340, label: config.solutionLabels[0] || 'SRV-1' },
+    { x: 900, y: 340, label: config.solutionLabels[1] || 'SRV-2' },
+    { x: 1140, y: 340, label: config.solutionLabels[2] || 'SRV-3' },
   ];
 
   // Request arrows rain down from top
@@ -128,7 +602,7 @@ const PhaseProblem: React.FC<{ frame: number; topic: string }> = ({ frame, topic
     extrapolateRight: 'clamp',
   })));
 
-  // Each server turns red at different times
+  // Each server turns problem-color at different times
   const serverRedFrame = [45, 65, 85];
 
   // Error counter: 0 -> 127 -> 5842
@@ -143,7 +617,7 @@ const PhaseProblem: React.FC<{ frame: number; topic: string }> = ({ frame, topic
     extrapolateRight: 'clamp',
   });
 
-  // Red background pulse intensity
+  // Problem-color background pulse intensity
   const redPulse = frame > 50
     ? interpolate(Math.sin(frame * 0.12), [-1, 1], [0.02, 0.08])
     : 0;
@@ -154,14 +628,25 @@ const PhaseProblem: React.FC<{ frame: number; topic: string }> = ({ frame, topic
     extrapolateRight: 'clamp',
   });
 
+  // Problem icon spring
+  const iconSpring = spring({
+    frame: Math.max(0, frame - 10),
+    fps: 30,
+    config: { damping: 8, stiffness: 200, mass: 0.5 },
+  });
+  const iconOp = interpolate(frame, [10, 20, 80, 100], [0, 1, 1, 0], {
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
+  });
+
   return (
     <div style={{ position: 'absolute', inset: 0, opacity: phaseOp }}>
-      {/* Red alarm pulse overlay */}
+      {/* Problem-color alarm pulse overlay */}
       <div
         style={{
           position: 'absolute',
           inset: 0,
-          backgroundColor: COLORS.red,
+          backgroundColor: config.problemColor,
           opacity: redPulse,
         }}
       />
@@ -183,17 +668,32 @@ const PhaseProblem: React.FC<{ frame: number; topic: string }> = ({ frame, topic
             fontSize: 20,
             fontFamily: FONTS.code,
             fontWeight: 800,
-            color: COLORS.red,
+            color: config.problemColor,
             letterSpacing: 8,
             textTransform: 'uppercase',
-            textShadow: `0 0 20px ${COLORS.red}66`,
+            textShadow: `0 0 20px ${config.problemColor}66`,
           }}
         >
           THE PROBLEM
         </span>
       </div>
 
-      {/* Server boxes using AnimatedBox */}
+      {/* Topic-specific problem icon */}
+      <div
+        style={{
+          position: 'absolute',
+          top: '20%',
+          left: '50%',
+          transform: `translateX(-50%) scale(${interpolate(iconSpring, [0, 1], [3, 1])})`,
+          opacity: iconOp,
+          fontSize: 72,
+          textAlign: 'center',
+        }}
+      >
+        {config.problemIcon}
+      </div>
+
+      {/* Server boxes using AnimatedBox — labels from topic config */}
       {serverData.map((srv, i) => {
         const isRed = frame > serverRedFrame[i];
         return (
@@ -204,7 +704,7 @@ const PhaseProblem: React.FC<{ frame: number; topic: string }> = ({ frame, topic
             y={srv.y}
             width={160}
             height={70}
-            color={isRed ? COLORS.red : COLORS.teal}
+            color={isRed ? config.problemColor : COLORS.teal}
             isActive={isRed}
             entryFrame={15 + i * 10}
           />
@@ -253,9 +753,9 @@ const PhaseProblem: React.FC<{ frame: number; topic: string }> = ({ frame, topic
             fontSize: 56,
             fontFamily: FONTS.heading,
             fontWeight: 900,
-            color: errorVal > 1000 ? COLORS.red : errorVal > 50 ? COLORS.saffron : COLORS.gold,
+            color: errorVal > 1000 ? config.problemColor : errorVal > 50 ? COLORS.saffron : COLORS.gold,
             textShadow: errorVal > 1000
-              ? `0 0 30px ${COLORS.red}88`
+              ? `0 0 30px ${config.problemColor}88`
               : 'none',
           }}
         >
@@ -263,7 +763,7 @@ const PhaseProblem: React.FC<{ frame: number; topic: string }> = ({ frame, topic
         </span>
       </div>
 
-      {/* Shaking "SYSTEM OVERLOADED" text at end */}
+      {/* Shaking problem label text at end — topic-specific */}
       {frame > 90 && (
         <div
           style={{
@@ -284,12 +784,12 @@ const PhaseProblem: React.FC<{ frame: number; topic: string }> = ({ frame, topic
               fontSize: 28,
               fontFamily: FONTS.heading,
               fontWeight: 800,
-              color: COLORS.red,
+              color: config.problemColor,
               letterSpacing: 6,
-              textShadow: `0 0 20px ${COLORS.red}66`,
+              textShadow: `0 0 20px ${config.problemColor}66`,
             }}
           >
-            SYSTEM OVERLOADED
+            {config.problemLabel}
           </span>
         </div>
       )}
@@ -391,8 +891,9 @@ const PhaseQuestion: React.FC<{ frame: number; topic: string; title?: string }> 
     extrapolateRight: 'clamp',
   });
 
-  // The question to display
-  const questionText = title || `Explain ${topic}`;
+  // The question to display — topic-aware from config
+  const config = getTopicVisuals(topic);
+  const questionText = title || config.questionText;
   // Truncate to ~5 words for on-screen display
   const shortQuestion = questionText.split(' ').slice(0, 5).join(' ') + (questionText.split(' ').length > 5 ? '...' : '');
 
@@ -641,6 +1142,8 @@ const PhaseSolution: React.FC<{ frame: number; topic: string; objectives?: strin
   topic,
   objectives = [],
 }) => {
+  const config = getTopicVisuals(topic);
+
   // Relative frame within this phase
   const f = Math.max(0, frame - 450);
   const dur = 210; // 7 seconds
@@ -662,13 +1165,22 @@ const PhaseSolution: React.FC<{ frame: number; topic: string; objectives?: strin
     extrapolateRight: 'clamp',
   });
 
-  // Architecture boxes — building up (green, healthy)
-  const boxData = [
-    { x: 400, y: 280, label: 'Load Balancer', entryF: 30, color: COLORS.teal },
-    { x: 700, y: 420, label: 'Server Pool', entryF: 50, color: COLORS.teal },
-    { x: 1000, y: 420, label: 'Cache Layer', entryF: 70, color: COLORS.indigo },
-    { x: 1300, y: 280, label: 'Database', entryF: 90, color: COLORS.gold },
+  // Architecture boxes — building up, topic-specific labels and color
+  const sLabels = config.solutionLabels;
+  const sColor = config.solutionColor;
+  const boxPositions = [
+    { x: 400, y: 280 },
+    { x: 700, y: 420 },
+    { x: 1000, y: 420 },
+    { x: 1300, y: 280 },
   ];
+  const boxData = sLabels.map((label, i) => ({
+    x: boxPositions[i]?.x ?? 400 + i * 300,
+    y: boxPositions[i]?.y ?? 350,
+    label,
+    entryF: 30 + i * 20,
+    color: i % 2 === 0 ? sColor : (i === 1 ? COLORS.teal : COLORS.gold),
+  }));
 
   // Animated stats counters
   const uptimeVal = Math.round(
@@ -706,12 +1218,12 @@ const PhaseSolution: React.FC<{ frame: number; topic: string; objectives?: strin
 
   return (
     <div style={{ position: 'absolute', inset: 0, opacity: phaseOp }}>
-      {/* Green success glow */}
+      {/* Success glow — topic-specific color */}
       <div
         style={{
           position: 'absolute',
           inset: 0,
-          backgroundColor: COLORS.teal,
+          backgroundColor: sColor,
           opacity: greenPulse,
         }}
       />
@@ -733,10 +1245,10 @@ const PhaseSolution: React.FC<{ frame: number; topic: string; objectives?: strin
             fontSize: 20,
             fontFamily: FONTS.code,
             fontWeight: 800,
-            color: COLORS.teal,
+            color: sColor,
             letterSpacing: 8,
             textTransform: 'uppercase',
-            textShadow: `0 0 20px ${COLORS.teal}44`,
+            textShadow: `0 0 20px ${sColor}44`,
           }}
         >
           THE SOLUTION
