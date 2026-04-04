@@ -11,6 +11,9 @@ import {
 } from 'remotion';
 import type { Storyboard, Scene, WordTimestamp } from '../types';
 import { COLORS, FONTS } from '../lib/theme';
+import { TemplateFactory } from '../components/templates/TemplateFactory';
+import { getVisualTemplate } from '../lib/visual-templates';
+import { computeVisualBeats } from '../lib/visual-beats';
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 const WIDTH = 1080;
@@ -220,20 +223,13 @@ const TextContent: React.FC<{
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
-  // Extract key words from narration (first sentence, split into chunks)
-  const narrationWords = (scene.narration || '')
-    .split(/[.!?]/)[0]
-    ?.trim()
-    .split(/\s+/)
-    .filter(Boolean) || [];
-
-  // Group into chunks of 3-4 words
-  const chunks: string[] = [];
-  for (let i = 0; i < narrationWords.length; i += 3) {
-    chunks.push(narrationWords.slice(i, i + 3).join(' '));
-  }
-
-  const framesPerChunk = Math.max(60, Math.floor(contentDurationFrames / Math.max(chunks.length, 1)));
+  // Compute visual beats for progressive diagram reveal
+  const beats = React.useMemo(() => {
+    if (scene.wordTimestamps && scene.wordTimestamps.length > 0) {
+      return computeVisualBeats(scene.narration || '', scene.wordTimestamps);
+    }
+    return [];
+  }, [scene]);
 
   // Zoom pulse every 3 seconds
   const zoomFrame = frame % 90;
@@ -281,53 +277,28 @@ const TextContent: React.FC<{
         </div>
       )}
 
-      {/* Key words appear one by one center screen */}
+      {/* Visual template diagram — center area */}
       <div
         style={{
           position: 'absolute',
-          top: 500,
+          top: 320,
           bottom: 920,
-          left: 60,
-          right: 60,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
+          left: 20,
+          right: 20,
           transform: `scale(${zoomScale})`,
+          transformOrigin: 'center center',
         }}
       >
-        {chunks.map((chunk, idx) => {
-          const chunkStart = idx * framesPerChunk;
-          const chunkEnd = chunkStart + framesPerChunk;
-          const isVisible = frame >= chunkStart && frame < chunkEnd;
-
-          if (!isVisible) return null;
-
-          const localFrame = frame - chunkStart;
-          const enterSpring = spring({
-            frame: localFrame,
-            fps,
-            config: { damping: 10, stiffness: 160, mass: 0.6 },
-          });
-
-          return (
-            <div
-              key={idx}
-              style={{
-                fontSize: 44,
-                fontFamily: FONTS.heading,
-                fontWeight: 700,
-                color: COLORS.white,
-                textAlign: 'center',
-                lineHeight: 1.4,
-                opacity: interpolate(enterSpring, [0, 1], [0, 1]),
-                transform: `translateY(${interpolate(enterSpring, [0, 1], [30, 0])}px)`,
-                textShadow: '0 4px 12px rgba(0,0,0,0.8)',
-              }}
-            >
-              {chunk}
-            </div>
-          );
-        })}
+        <TemplateFactory
+          templateId={scene.templateId || 'ConceptDiagram'}
+          variant={scene.templateVariant || 'auto'}
+          beats={beats}
+          accentColor={COLORS.saffron}
+          fps={fps}
+          sceneHeading={scene.heading}
+          bullets={scene.bullets}
+          content={scene.content}
+        />
       </div>
     </AbsoluteFill>
   );
