@@ -90,12 +90,19 @@ export const RemotionRoot: React.FC = () => {
       <Composition
         id="ViralShort"
         component={asCompositionComponent(ViralShort)}
-        calculateMetadata={({ props }: { props: Record<string, unknown> }) => ({
-          durationInFrames: ((props.storyboard as Storyboard)?.durationInFrames || 1800) + 150,
-          fps: 30,
-          width: 1080,
-          height: 1920,
-        })}
+        calculateMetadata={({ props }: { props: Record<string, unknown> }) => {
+          const sb = props.storyboard as Storyboard;
+          const contentFrames = sb?.durationInFrames || 1800;
+          // Cap at 3 minutes (2700 frames) total: 120 hook + content (max 2490) + 90 outro
+          const maxContent = 2700 - 120 - 90;
+          const usedContent = Math.min(contentFrames, maxContent);
+          return {
+            durationInFrames: 120 + usedContent + 90, // hook + content + outro
+            fps: 30,
+            width: 1080,
+            height: 1920,
+          };
+        }}
         fps={30}
         width={1080}
         height={1920}
