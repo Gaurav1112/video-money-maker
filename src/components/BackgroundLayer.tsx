@@ -427,6 +427,22 @@ const CinematicAtmosphere: React.FC<{
   );
 };
 
+/** Scene-specific warm background colors — subtle variation per scene type */
+const SCENE_BG_COLORS: Record<string, string> = {
+  title:      '#0E0804',
+  hook:       '#0E0804',
+  code:       '#070F0D',
+  text:       '#0A0A1C',
+  concept:    '#0A0A1C',
+  table:      '#0C0D0A',
+  comparison: '#0C0D0A',
+  interview:  '#110906',
+  diagram:    '#080A12',
+  review:     '#070E0D',
+  quiz:       '#070E0D',
+  summary:    '#0C0D0A',
+};
+
 const BackgroundLayer: React.FC<BackgroundLayerProps> = ({ sceneType = 'text' }) => {
   const frame = useCurrentFrame();
 
@@ -469,11 +485,11 @@ const BackgroundLayer: React.FC<BackgroundLayerProps> = ({ sceneType = 'text' })
       break;
   }
 
-  // Default fallback
+  // Default fallback — uses warm background
   const colors = {
     primary: COLORS.saffron,
     secondary: COLORS.indigo,
-    bgTint: COLORS.dark,
+    bgTint: SCENE_BG_COLORS[sceneType] || COLORS.warmBg,
     gridOpacity: '03',
     orbIntensity: '08',
   };

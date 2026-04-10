@@ -185,7 +185,7 @@ async function main() {
   console.log('\nGenerating TTS audio (Kokoro)...');
   const audioResults = await generateSceneAudios(
     script.map(s => ({ narration: s.narration, type: s.type })),
-    'im_nicola',
+    'af_heart',
     'indian-english'
   );
   const totalAudioSecs = audioResults.reduce((sum, a) => sum + a.duration, 0);

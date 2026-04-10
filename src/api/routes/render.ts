@@ -28,8 +28,8 @@ router.post('/', (req, res) => {
     duration = 'medium',
     style = 'fireship',
     secondary_language = 'java',
-    // TTS voice settings — default to Indian male (im_nicola) for Guru Sishya
-    voice = 'im_nicola',
+    // TTS voice settings — default to Indian male (af_heart) for Guru Sishya
+    voice = 'af_heart',
     voice_language = 'indian-english',
   } = req.body;
 

@@ -36,6 +36,7 @@ import {
 import { CinematicOpener } from '../components/CinematicOpener';
 import { SpeedReminder } from '../components/SpeedReminder';
 import { PatternInterruptLayer } from '../components/PatternInterruptLayer';
+import { FilmGrain } from '../components/FilmGrain';
 import { getStyleForFormat, getTransitionDuration } from '../lib/video-styles';
 
 const ACCENT_COLORS = ['#E85D26', '#1DD1A1', '#FDB813', '#818CF8'];
@@ -573,6 +574,9 @@ export const LongVideo: React.FC<LongVideoProps> = ({ storyboard, noOverlays = f
       {syncTimeline && storyboard.allSfxTriggers && storyboard.allSfxTriggers.length > 0 && (
         <SfxLayer triggers={storyboard.allSfxTriggers} syncTimeline={syncTimeline} />
       )}
+
+      {/* Film grain overlay — deterministic SVG noise for organic feel */}
+      <FilmGrain opacity={0.04} />
     </AbsoluteFill>
   );
 };

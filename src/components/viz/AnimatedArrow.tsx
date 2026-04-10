@@ -2,6 +2,7 @@ import React from 'react';
 import { useCurrentFrame, useVideoConfig, spring, interpolate } from 'remotion';
 import { evolvePath } from '@remotion/paths';
 import { COLORS } from '../../lib/theme';
+import { getWobble } from '../../lib/wobble';
 
 interface AnimatedArrowProps {
   from: { x: number; y: number };
@@ -57,9 +58,11 @@ export const AnimatedArrow: React.FC<AnimatedArrowProps> = ({
     extrapolateRight: 'clamp',
   });
 
+  const wobble = getWobble(frame, Math.round(from.x + from.y + to.x + to.y));
+
   return (
     <svg
-      style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none' }}
+      style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none', transform: `translate(${wobble.x * 0.5}px, ${wobble.y * 0.5}px)` }}
     >
       {/* Arrow line */}
       <path

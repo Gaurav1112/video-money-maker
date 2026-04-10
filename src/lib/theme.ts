@@ -20,6 +20,8 @@ export const COLORS = {
   gray: '#A9ACB3',
   white: '#FFFFFF',
   red: '#EF4444',
+  warmBg: '#1a1825',      // slightly warmer than pure dark
+  warmBgAlt: '#1e1a2a',   // alternate warm
 } as const;
 
 export const FONTS = {

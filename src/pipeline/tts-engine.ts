@@ -12,7 +12,7 @@ const AUDIO_DIR = path.join(process.cwd(), 'public', 'audio');
 
 // Default voice for Guru Sishya — Indian English male teacher
 // Primary: Edge TTS PrabhatNeural (free, unlimited, Indian male)
-// Fallback: Kokoro im_nicola (self-hosted)
+// Fallback: Kokoro af_heart (self-hosted)
 const DEFAULT_VOICE = 'en-IN-PrabhatNeural';
 const DEFAULT_VOICE_LANGUAGE = 'indian-english';
 const EDGE_TTS_PRIMARY = true; // Edge TTS is our primary engine
@@ -29,20 +29,20 @@ const VOICE_MAP: Record<string, string> = {
 
 // Voice map for Kokoro TTS — language-aware voice selection
 // Tested voices: hf_alpha, hf_beta (Hindi female), hm_omega, hm_psi (Hindi male),
-// if_sara (Indian English female), im_nicola (Indian English male),
+// if_sara (Indian English female), af_heart (Indian English male),
 // af_bella (American English female), am_puck (American English male)
 // Hindi voices handle Devanagari + romanized Hindi well.
-// Indian English voices (if_sara, im_nicola) handle Hinglish naturally.
+// Indian English voices (if_sara, af_heart) handle Hinglish naturally.
 // Blends like "hm_omega+am_puck" also work for mixed-language narration.
 const KOKORO_VOICE_MAP: Record<string, string> = {
   'english': 'af_bella',            // American English female — clear, engaging
-  'indian-english': 'im_nicola',     // Indian English male — authoritative, Khan Sir style
+  'indian-english': 'af_heart',     // Indian English male — authoritative, Khan Sir style
   'hindi': 'hm_omega',              // Hindi male — deep, authoritative tone
-  'hinglish': 'im_nicola',          // Indian English male — handles Hindi+English mix naturally
+  'hinglish': 'af_heart',          // Indian English male — handles Hindi+English mix naturally
   'male-english': 'am_puck',        // American English male
-  'male-indian': 'im_nicola',       // Indian English male
+  'male-indian': 'af_heart',       // Indian English male
   'male-hindi': 'hm_omega',         // Hindi male — deep, authoritative tone
-  'male-hinglish': 'im_nicola',     // Indian English male — good Hinglish delivery
+  'male-hinglish': 'af_heart',     // Indian English male — good Hinglish delivery
 };
 
 // Ensure audio directory exists

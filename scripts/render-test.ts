@@ -10,7 +10,7 @@ async function main() {
   const script = generateScript(session, { language: 'python' });
   const audioResults = await generateSceneAudios(
     script.map(s => ({ narration: s.narration, type: s.type })),
-    'im_nicola',
+    'af_heart',
     'indian-english'
   );
   const storyboard = generateStoryboard(script, audioResults, {

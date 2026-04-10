@@ -1,6 +1,7 @@
 import React from 'react';
 import { useCurrentFrame, useVideoConfig, spring, interpolate, Img } from 'remotion';
 import { COLORS, FONTS } from '../../lib/theme';
+import { getWobble } from '../../lib/wobble';
 
 interface AnimatedBoxProps {
   label: string;
@@ -41,6 +42,7 @@ export const AnimatedBox: React.FC<AnimatedBoxProps> = ({
 
   const scale = interpolate(entrance, [0, 1], [0.7, 1.0]);
   const opacity = interpolate(entrance, [0, 1], [0, 1]);
+  const wobble = getWobble(frame, Math.round(x + y));
 
   const iconUrl = iconSlug
     ? `https://cdn.simpleicons.org/${iconSlug}/${color.replace('#', '')}`
@@ -54,7 +56,7 @@ export const AnimatedBox: React.FC<AnimatedBoxProps> = ({
         top: y - height / 2,
         width,
         height,
-        transform: `scale(${scale})`,
+        transform: `scale(${scale}) translate(${wobble.x}px, ${wobble.y}px) rotate(${wobble.rotate}deg)`,
         opacity,
         display: 'flex',
         flexDirection: 'column',
