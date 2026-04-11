@@ -233,28 +233,37 @@ async function chatterboxTTS(
   outputName?: string,
 ): Promise<TTSResult> {
   const { execSync } = await import('child_process');
-  const filename = outputName || `cb_${cacheKey.slice(0, 12)}.wav`;
-  const audioPath = path.join(AUDIO_DIR, filename);
-  const mp3Path = audioPath.replace(/\.wav$/, '.mp3');
+  const mp3Name = outputName || `cb_${cacheKey.slice(0, 12)}.mp3`;
+  const mp3Path = path.join(AUDIO_DIR, mp3Name);
+  const wavPath = path.join(AUDIO_DIR, mp3Name.replace(/\.mp3$/, '_tmp.wav'));
 
-  const cleanText = text.slice(0, 3000).replace(/"/g, '\\"');
+  const cleanText = text.slice(0, 3000).replace(/"/g, '\\"').replace(/`/g, '');
   const scriptPath = path.join(process.cwd(), 'scripts', 'chatterbox-tts.py');
 
   // Generate WAV via Chatterbox
   const output = execSync(
-    `python3 "${scriptPath}" --text "${cleanText}" --output "${audioPath}"`,
-    { timeout: 600000 }, // 10 min timeout (slow on CPU)
+    `python3 "${scriptPath}" --text "${cleanText}" --output "${wavPath}"`,
+    { timeout: 600000 },
   ).toString().trim();
 
-  const duration = parseFloat(output) || 0;
+  // Parse duration from last line of output
+  const durationLine = output.split('\n').pop() || '0';
+  let duration = parseFloat(durationLine) || 0;
 
-  // Convert WAV to MP3 for consistency with rest of pipeline
+  // Convert WAV to MP3
   try {
-    execSync(`ffmpeg -y -i "${audioPath}" -b:a 192k "${mp3Path}"`, { timeout: 30000 });
-    fs.unlinkSync(audioPath); // remove WAV
+    execSync(`ffmpeg -y -i "${wavPath}" -b:a 192k "${mp3Path}"`, { timeout: 30000 });
+    if (fs.existsSync(wavPath)) fs.unlinkSync(wavPath);
   } catch {
-    // If ffmpeg fails, rename WAV to MP3 path (Remotion handles both)
-    fs.renameSync(audioPath, mp3Path);
+    if (fs.existsSync(wavPath)) fs.renameSync(wavPath, mp3Path);
+  }
+
+  // Get duration from ffprobe if parsing failed
+  if (duration <= 0 && fs.existsSync(mp3Path)) {
+    try {
+      const probe = execSync(`ffprobe -v quiet -show_entries format=duration -of csv=p=0 "${mp3Path}"`, { timeout: 10000 }).toString().trim();
+      duration = parseFloat(probe) || 0;
+    } catch { /* ignore */ }
   }
 
   // Generate proportional word timestamps (Chatterbox doesn't provide word-level timing)
@@ -267,7 +276,7 @@ async function chatterboxTTS(
 
   const result: TTSResult = { audioPath: mp3Path, wordTimestamps, duration };
   cache.set(cacheKey, result);
-  console.log(`  ✓ Chatterbox TTS: ${filename.replace('.wav', '.mp3')} (${duration.toFixed(1)}s, ${words.length} words)`);
+  console.log(`  ✓ Chatterbox TTS: ${mp3Name} (${duration.toFixed(1)}s, ${words.length} words)`);
   return result;
 }
 
