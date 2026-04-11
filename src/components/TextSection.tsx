@@ -10,10 +10,80 @@ import {
 } from 'remotion';
 import { COLORS, FONTS } from '../lib/theme';
 import { TemplateFactory } from './templates/TemplateFactory';
+import { SketchDiagram } from './viz/SketchDiagram';
 import { getVisualTemplate } from '../lib/visual-templates';
 import { computeVisualBeats } from '../lib/visual-beats';
 import { getBackgroundImage } from '../lib/bg-images';
 import type { AnimationCue, VisualBeat } from '../types';
+import type { SketchNode, SketchEdge } from './viz/SketchDiagram';
+
+// ---------------------------------------------------------------------------
+// Sketch diagram data resolver — converts architecture/flow configs to sketch format
+// ---------------------------------------------------------------------------
+function getSketchDiagramData(
+  templateId: string,
+  variant: string,
+): { nodes: SketchNode[]; edges: SketchEdge[]; title?: string } | null {
+  try {
+    // Check architecture configs
+    const { ARCHITECTURE_CONFIGS } = require('./templates/architecture-configs');
+    const archConfigMap = ARCHITECTURE_CONFIGS[templateId];
+    if (archConfigMap) {
+      const config = archConfigMap[variant] ?? archConfigMap.overview ?? Object.values(archConfigMap)[0];
+      if (config) {
+        const nodes: SketchNode[] = config.nodes.map((n: any) => ({
+          id: n.id,
+          label: n.label,
+          x: n.x,
+          y: n.y,
+          width: n.width,
+          height: n.height,
+          color: n.color,
+          beatIndex: n.beatIndex,
+        }));
+        const edges: SketchEdge[] = config.edges.map((e: any) => ({
+          from: e.from,
+          to: e.to,
+          label: e.label,
+          dashed: e.dashed,
+          beatIndex: e.beatIndex,
+        }));
+        return { nodes, edges, title: config.title };
+      }
+    }
+
+    // Check flow configs — convert linear stages to nodes + edges
+    const { FLOW_CONFIGS } = require('./templates/flow-configs');
+    const flowConfig = FLOW_CONFIGS[templateId];
+    if (flowConfig) {
+      const stages = flowConfig.stages || [];
+      const count = stages.length;
+      const nodes: SketchNode[] = stages.map((s: any, i: number) => ({
+        id: s.id,
+        label: s.label,
+        x: 8 + (i / Math.max(1, count - 1)) * 84,
+        y: 45,
+        width: 160,
+        height: 70,
+        color: s.color,
+        icon: s.description ? undefined : undefined,
+        beatIndex: s.beatIndex,
+      }));
+      const edges: SketchEdge[] = [];
+      for (let i = 0; i < count - 1; i++) {
+        edges.push({
+          from: stages[i].id,
+          to: stages[i + 1].id,
+          beatIndex: stages[i + 1].beatIndex,
+        });
+      }
+      return { nodes, edges, title: flowConfig.title };
+    }
+  } catch {
+    // Configs not available — fall through
+  }
+  return null;
+}
 
 // ---------------------------------------------------------------------------
 // Props — EXTENDS original interface with new optional fields
@@ -184,16 +254,34 @@ const TextSection: React.FC<TextSectionProps> = ({
           opacity: templateOpacity,
         }}
       >
-        <TemplateFactory
-          templateId={templateId}
-          variant={templateVariant}
-          beats={beats}
-          accentColor={accentColor}
-          fps={fps}
-          sceneHeading={heading}
-          bullets={bullets.length > 0 ? bullets : undefined}
-          content={content || undefined}
-        />
+        {(() => {
+          // Check if this template is architecture or flow — use SketchDiagram
+          const sketchData = getSketchDiagramData(templateId, templateVariant);
+          if (sketchData) {
+            return (
+              <SketchDiagram
+                nodes={sketchData.nodes}
+                edges={sketchData.edges}
+                beats={beats}
+                fps={fps}
+                accentColor={accentColor}
+                title={sketchData.title}
+              />
+            );
+          }
+          return (
+            <TemplateFactory
+              templateId={templateId}
+              variant={templateVariant}
+              beats={beats}
+              accentColor={accentColor}
+              fps={fps}
+              sceneHeading={heading}
+              bullets={bullets.length > 0 ? bullets : undefined}
+              content={content || undefined}
+            />
+          );
+        })()}
       </div>
 
       {/* ===== CHAPTER MARKER — small heading, top-left ===== */}
