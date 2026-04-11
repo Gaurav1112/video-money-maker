@@ -37,6 +37,7 @@ import { CinematicOpener } from '../components/CinematicOpener';
 import { SpeedReminder } from '../components/SpeedReminder';
 import { PatternInterruptLayer } from '../components/PatternInterruptLayer';
 import { FilmGrain } from '../components/FilmGrain';
+import { HudOverlay } from '../components/HudOverlay';
 import { getStyleForFormat, getTransitionDuration } from '../lib/video-styles';
 
 const ACCENT_COLORS = ['#E85D26', '#1DD1A1', '#FDB813', '#818CF8'];
@@ -573,6 +574,15 @@ export const LongVideo: React.FC<LongVideoProps> = ({ storyboard, noOverlays = f
       {/* SFX triggers synced to word timestamps */}
       {syncTimeline && storyboard.allSfxTriggers && storyboard.allSfxTriggers.length > 0 && (
         <SfxLayer triggers={storyboard.allSfxTriggers} syncTimeline={syncTimeline} />
+      )}
+
+      {/* Jarvis HUD overlay — sci-fi corner brackets, data panel, progress ring, scan line */}
+      {!noOverlays && !isIntro && !isOutro && (
+        <HudOverlay
+          topic={storyboard.topic}
+          sessionNumber={storyboard.sessionNumber}
+          totalFrames={totalFrames}
+        />
       )}
 
       {/* Film grain overlay — deterministic SVG noise for organic feel */}
