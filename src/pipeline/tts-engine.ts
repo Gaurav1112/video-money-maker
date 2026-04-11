@@ -66,6 +66,14 @@ export async function generateAudio(
   const cached = cache.get<TTSResult>(cacheKey);
   if (cached && fs.existsSync(cached.audioPath)) return cached;
 
+  // Priority 0: Chatterbox TTS (MIT, beats ElevenLabs, sounds human)
+  // Slow on CPU (~10x realtime) but the voice quality is worth it
+  try {
+    return await chatterboxTTS(text, cacheKey, outputName);
+  } catch (cbErr) {
+    console.warn('Chatterbox TTS failed:', (cbErr as Error).message, '— trying Edge TTS...');
+  }
+
   // Priority 1: Edge TTS (free, unlimited, PrabhatNeural Indian male teacher)
   // Gets real sentence-level timestamps from VTT — no Whisper needed!
   try {
@@ -218,7 +226,52 @@ async function kokoroCaptionedSpeech(
   return { audioPath, wordTimestamps, duration };
 }
 
-// ─── Edge TTS (free Microsoft neural voices — PRIMARY ENGINE) ───
+// ─── Chatterbox TTS (MIT, beats ElevenLabs, human-sounding) ───
+async function chatterboxTTS(
+  text: string,
+  cacheKey: string,
+  outputName?: string,
+): Promise<TTSResult> {
+  const { execSync } = await import('child_process');
+  const filename = outputName || `cb_${cacheKey.slice(0, 12)}.wav`;
+  const audioPath = path.join(AUDIO_DIR, filename);
+  const mp3Path = audioPath.replace(/\.wav$/, '.mp3');
+
+  const cleanText = text.slice(0, 3000).replace(/"/g, '\\"');
+  const scriptPath = path.join(process.cwd(), 'scripts', 'chatterbox-tts.py');
+
+  // Generate WAV via Chatterbox
+  const output = execSync(
+    `python3 "${scriptPath}" --text "${cleanText}" --output "${audioPath}"`,
+    { timeout: 600000 }, // 10 min timeout (slow on CPU)
+  ).toString().trim();
+
+  const duration = parseFloat(output) || 0;
+
+  // Convert WAV to MP3 for consistency with rest of pipeline
+  try {
+    execSync(`ffmpeg -y -i "${audioPath}" -b:a 192k "${mp3Path}"`, { timeout: 30000 });
+    fs.unlinkSync(audioPath); // remove WAV
+  } catch {
+    // If ffmpeg fails, rename WAV to MP3 path (Remotion handles both)
+    fs.renameSync(audioPath, mp3Path);
+  }
+
+  // Generate proportional word timestamps (Chatterbox doesn't provide word-level timing)
+  const words = cleanText.split(/\s+/).filter(Boolean);
+  const wordTimestamps = words.map((word, i) => {
+    const start = (i / words.length) * duration;
+    const end = ((i + 1) / words.length) * duration;
+    return { word, start, end };
+  });
+
+  const result: TTSResult = { audioPath: mp3Path, wordTimestamps, duration };
+  cache.set(cacheKey, result);
+  console.log(`  ✓ Chatterbox TTS: ${filename.replace('.wav', '.mp3')} (${duration.toFixed(1)}s, ${words.length} words)`);
+  return result;
+}
+
+// ─── Edge TTS (free Microsoft neural voices — FALLBACK) ───
 // Uses en-IN-PrabhatNeural (Indian English male teacher voice)
 // Generates VTT subtitles for real sentence-level timestamps (no Whisper needed!)
 async function edgeTTS(
