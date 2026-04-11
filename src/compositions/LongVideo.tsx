@@ -107,6 +107,7 @@ function getSceneProps(scene: Scene, storyboard: Storyboard): Record<string, any
         templateVariant: scene.templateVariant,
         accentColor: ACCENT_COLORS[storyboard.sessionNumber % 4],
         topic: storyboard.topic,
+        d2Svg: scene.d2Svg,
       };
     case 'diagram':
       return {

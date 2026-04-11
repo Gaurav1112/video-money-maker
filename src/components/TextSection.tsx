@@ -104,6 +104,8 @@ interface TextSectionProps {
   templateVariant?: string;
   accentColor?: string;
   topic?: string;
+  /** Pre-rendered D2 SVG string (from storyboard phase) */
+  d2Svg?: string;
 }
 
 // =============================
@@ -124,6 +126,7 @@ const TextSection: React.FC<TextSectionProps> = ({
   templateVariant: templateVariantProp,
   accentColor: accentColorProp,
   topic = '',
+  d2Svg,
 }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
@@ -255,7 +258,41 @@ const TextSection: React.FC<TextSectionProps> = ({
         }}
       >
         {(() => {
-          // Check if this template is architecture or flow — use SketchDiagram
+          // Priority 1: Pre-rendered D2 SVG diagram (professional, deterministic)
+          if (d2Svg) {
+            const revealPercent = interpolate(
+              frame,
+              [0, Math.max(1, sceneDuration * 0.6)],
+              [0, 100],
+              { extrapolateRight: 'clamp' },
+            );
+            return (
+              <div
+                style={{
+                  position: 'absolute',
+                  top: 240,
+                  left: 40,
+                  right: 40,
+                  bottom: 400,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <div
+                  dangerouslySetInnerHTML={{ __html: d2Svg }}
+                  style={{
+                    maxWidth: '90%',
+                    maxHeight: '100%',
+                    clipPath: `inset(0 ${100 - revealPercent}% 0 0)`,
+                    transition: 'clip-path 0.5s ease-out',
+                  }}
+                />
+              </div>
+            );
+          }
+
+          // Priority 2: SketchDiagram from architecture/flow configs
           const sketchData = getSketchDiagramData(templateId, templateVariant);
           if (sketchData) {
             return (
@@ -269,6 +306,8 @@ const TextSection: React.FC<TextSectionProps> = ({
               />
             );
           }
+
+          // Priority 3: TemplateFactory (57 CSS-based templates)
           return (
             <TemplateFactory
               templateId={templateId}

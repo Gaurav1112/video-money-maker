@@ -169,6 +169,29 @@ export function generateStoryboard(
     // Visual beats not available — non-critical, scenes render without them
   }
 
+  // ── Pre-render D2 diagrams (Node.js only, execSync) ──
+  // D2 CLI renders SVGs during storyboard generation so that the browser
+  // rendering phase (Remotion) only needs to embed the SVG string.
+  try {
+    const { getD2Diagram } = require('../lib/d2-diagrams');
+    const { renderD2Diagram } = require('../lib/d2-renderer');
+    const diagramDef = getD2Diagram(topic);
+    if (diagramDef) {
+      for (const scene of enrichedScenes) {
+        if (scene.type === 'text' || scene.type === 'diagram') {
+          const svg = renderD2Diagram(diagramDef.nodes, diagramDef.edges, {
+            direction: diagramDef.direction,
+          });
+          if (svg) {
+            scene.d2Svg = svg;
+          }
+        }
+      }
+    }
+  } catch {
+    // D2 not available — non-critical, scenes render with TemplateFactory fallback
+  }
+
   return {
     fps,
     width,

@@ -26,6 +26,8 @@ export interface Scene {
   templateId?: string;
   /** Template variant selected by content keywords */
   templateVariant?: string;
+  /** Pre-rendered D2 SVG string (generated during storyboard phase, rendered in browser) */
+  d2Svg?: string;
   /**
    * Offset (in seconds) where this scene's audio begins in the master audio track.
    * Used by CaptionOverlay to sync subtitles to the actual audio position rather than
