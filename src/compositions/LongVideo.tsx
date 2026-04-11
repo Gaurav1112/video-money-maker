@@ -38,6 +38,7 @@ import { SpeedReminder } from '../components/SpeedReminder';
 import { PatternInterruptLayer } from '../components/PatternInterruptLayer';
 import { FilmGrain } from '../components/FilmGrain';
 import { HudOverlay } from '../components/HudOverlay';
+import { AvatarBubble } from '../components/AvatarBubble';
 import { getStyleForFormat, getTransitionDuration } from '../lib/video-styles';
 
 const ACCENT_COLORS = ['#E85D26', '#1DD1A1', '#FDB813', '#818CF8'];
@@ -582,6 +583,14 @@ export const LongVideo: React.FC<LongVideoProps> = ({ storyboard, noOverlays = f
           topic={storyboard.topic}
           sessionNumber={storyboard.sessionNumber}
           totalFrames={totalFrames}
+        />
+      )}
+
+      {/* Avatar bubble — bottom-left corner */}
+      {!noOverlays && !isIntro && !isOutro && (
+        <AvatarBubble
+          startFrame={INTRO_DURATION}
+          endFrame={INTRO_DURATION + contentFrames}
         />
       )}
 
