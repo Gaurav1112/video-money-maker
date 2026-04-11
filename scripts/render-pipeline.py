@@ -66,7 +66,7 @@ def render_session(topic, session, preview=False):
 
     # Step 1: Generate storyboard
     print("\n[1/3] Generating storyboard...")
-    code = run(f"npx tsx scripts/render-session.ts {topic} {session}", timeout=300)
+    code = run(f"npx tsx scripts/render-session.ts {topic} {session}", timeout=3600)
     if code != 0 or not props.exists():
         print(f"  FAILED: No props file generated. Topic may not have session {session}.")
         return False
