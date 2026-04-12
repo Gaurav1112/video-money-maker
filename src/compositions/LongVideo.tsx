@@ -587,9 +587,10 @@ export const LongVideo: React.FC<LongVideoProps> = ({ storyboard, noOverlays = f
         />
       )}
 
-      {/* Avatar bubble — bottom-left corner */}
+      {/* Avatar bubble — bottom-right corner with Indian teacher photo */}
       {!noOverlays && !isIntro && !isOutro && (
         <AvatarBubble
+          avatarPhoto="images/guru-avatar.jpg"
           startFrame={INTRO_DURATION}
           endFrame={INTRO_DURATION + contentFrames}
         />
