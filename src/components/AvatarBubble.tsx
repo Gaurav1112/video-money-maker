@@ -1,5 +1,5 @@
 import React from 'react';
-import { useCurrentFrame, useVideoConfig, Img, OffthreadVideo, interpolate, staticFile } from 'remotion';
+import { useCurrentFrame, useVideoConfig, Img, OffthreadVideo, interpolate, staticFile, Loop } from 'remotion';
 import { COLORS } from '../lib/theme';
 import { getWobble } from '../lib/wobble';
 
@@ -119,11 +119,13 @@ export const AvatarBubble: React.FC<AvatarBubbleProps> = ({
         boxShadow: `0 0 ${12 + mouthOpen * 8}px ${COLORS.saffron}33, 0 8px 32px rgba(0,0,0,0.15)`,
       }}>
         {avatarVideo ? (
-          <OffthreadVideo
-            src={staticFile(avatarVideo)}
-            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-            muted
-          />
+          <Loop durationInFrames={450}>
+            <OffthreadVideo
+              src={staticFile(avatarVideo)}
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              muted
+            />
+          </Loop>
         ) : avatarPhoto ? (
           <div style={{ position: 'relative', width: '100%', height: '100%' }}>
             <Img
