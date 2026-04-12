@@ -216,19 +216,15 @@ const TextSection: React.FC<TextSectionProps> = ({
         overflow: 'hidden',
       }}
     >
-      {/* Animated background — never plain black */}
+      {/* Subtle light background grid */}
       <div style={{ position: 'absolute', inset: 0 }}>
         <div style={{
           position: 'absolute', inset: 0,
           backgroundImage: `
-            linear-gradient(rgba(29,209,161,0.02) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(29,209,161,0.02) 1px, transparent 1px)
+            linear-gradient(rgba(0,0,0,0.03) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(0,0,0,0.03) 1px, transparent 1px)
           `,
           backgroundSize: '80px 80px',
-        }} />
-        <div style={{
-          position: 'absolute', inset: 0,
-          background: `radial-gradient(ellipse at 60% 50%, rgba(29,209,161,0.04) 0%, transparent 50%)`,
         }} />
       </div>
 
@@ -248,15 +244,29 @@ const TextSection: React.FC<TextSectionProps> = ({
         />
       )}
 
-      {/* ===== FULL-SCREEN TEMPLATE ===== */}
+      {/* ===== FULL-SCREEN TEMPLATE — wrapped in card ===== */}
       <div
         style={{
           position: 'absolute',
           inset: 0,
           transform: `scale(${templateScale})`,
           opacity: templateOpacity,
+          padding: 24,
         }}
       >
+        <div
+          style={{
+            backgroundColor: '#FFFFFF',
+            borderRadius: 16,
+            padding: 32,
+            boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
+            border: '1px solid #E2E0DC',
+            width: '100%',
+            height: '100%',
+            position: 'relative',
+            overflow: 'hidden',
+          }}
+        >
         {(() => {
           // Priority 1: Pre-rendered D2 SVG diagram (professional, deterministic)
           if (d2Svg) {
@@ -321,6 +331,7 @@ const TextSection: React.FC<TextSectionProps> = ({
             />
           );
         })()}
+        </div>
       </div>
 
       {/* ===== CHAPTER MARKER — small heading, top-left ===== */}
@@ -343,7 +354,7 @@ const TextSection: React.FC<TextSectionProps> = ({
               fontFamily: FONTS.heading,
               letterSpacing: '0.04em',
               textTransform: 'uppercase',
-              textShadow: '0 1px 4px rgba(0,0,0,0.6)',
+              textShadow: '0 1px 2px rgba(255,255,255,0.6)',
             }}
           >
             {heading}

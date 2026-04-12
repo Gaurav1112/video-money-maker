@@ -65,9 +65,9 @@ export const BrandingLayer: React.FC<BrandingLayerProps> = ({
           height: 42,
           overflow: 'hidden',
           zIndex: 100,
-          background: 'linear-gradient(90deg, rgba(232,93,38,0.95), rgba(253,184,19,0.9), rgba(232,93,38,0.95))',
-          borderBottom: '2px solid rgba(253,184,19,0.6)',
-          boxShadow: '0 2px 12px rgba(232,93,38,0.3)',
+          background: '#1E293B',
+          borderBottom: '2px solid #334155',
+          boxShadow: '0 2px 12px rgba(0,0,0,0.1)',
         }}
       >
         {/* Scrolling marquee — 3 copies for seamless loop */}
@@ -92,8 +92,8 @@ export const BrandingLayer: React.FC<BrandingLayerProps> = ({
                 fontFamily: "'Inter', system-ui, sans-serif",
                 fontWeight: 800,
                 letterSpacing: 2,
-                color: '#0C0A15',
-                textShadow: '0 1px 2px rgba(0,0,0,0.2)',
+                color: '#FFFFFF',
+                textShadow: 'none',
               }}>
                 {fullText}
               </span>
@@ -112,9 +112,9 @@ export const BrandingLayer: React.FC<BrandingLayerProps> = ({
           height: 42,
           overflow: 'hidden',
           zIndex: 100,
-          background: 'linear-gradient(90deg, rgba(232,93,38,0.95), rgba(253,184,19,0.9), rgba(232,93,38,0.95))',
-          borderTop: '2px solid rgba(253,184,19,0.6)',
-          boxShadow: '0 -2px 12px rgba(232,93,38,0.3)',
+          background: '#1E293B',
+          borderTop: '2px solid #334155',
+          boxShadow: '0 -2px 12px rgba(0,0,0,0.1)',
         }}
       >
         {(() => {
@@ -138,8 +138,8 @@ export const BrandingLayer: React.FC<BrandingLayerProps> = ({
                 fontFamily: "'Inter', system-ui, sans-serif",
                 fontWeight: 800,
                 letterSpacing: 2,
-                color: '#0C0A15',
-                textShadow: '0 1px 2px rgba(0,0,0,0.2)',
+                color: '#FFFFFF',
+                textShadow: 'none',
               }}>
                 {fullText}
               </span>
@@ -194,8 +194,8 @@ const LowerThirdCta: React.FC<{ topicSlug?: string; format: 'long' | 'short' }> 
     >
       <div
         style={{
-          background: 'rgba(12, 10, 21, 0.85)',
-          border: '2px solid #E85D26',
+          background: 'rgba(255, 255, 255, 0.92)',
+          border: '2px solid #2563EB',
           borderRadius: 24,
           padding: isShort ? '8px 16px' : '10px 20px',
           display: 'flex',
@@ -208,7 +208,7 @@ const LowerThirdCta: React.FC<{ topicSlug?: string; format: 'long' | 'short' }> 
           fontSize: isShort ? 14 : 17,
           fontFamily: "'Inter', system-ui, sans-serif",
           fontWeight: 600,
-          color: '#fff',
+          color: '#1E293B',
         }}>
           Full notes & practice →
         </span>
@@ -216,7 +216,7 @@ const LowerThirdCta: React.FC<{ topicSlug?: string; format: 'long' | 'short' }> 
           fontSize: isShort ? 14 : 17,
           fontFamily: "'Inter', system-ui, sans-serif",
           fontWeight: 800,
-          color: '#E85D26',
+          color: '#2563EB',
         }}>
           {url}
         </span>
@@ -253,10 +253,10 @@ const MidVideoCta: React.FC<{ format: 'long' | 'short' }> = ({ format }) => {
     >
       <div
         style={{
-          background: 'linear-gradient(135deg, rgba(232, 93, 38, 0.95), rgba(255, 150, 50, 0.95))',
+          background: 'linear-gradient(135deg, rgba(37, 99, 235, 0.95), rgba(59, 130, 246, 0.95))',
           borderRadius: 16,
           padding: isShort ? '14px 20px' : '18px 28px',
-          boxShadow: '0 8px 32px rgba(232, 93, 38, 0.4)',
+          boxShadow: '0 8px 32px rgba(37, 99, 235, 0.25)',
           backdropFilter: 'blur(10px)',
           display: 'flex',
           flexDirection: 'column',
@@ -268,7 +268,7 @@ const MidVideoCta: React.FC<{ format: 'long' | 'short' }> = ({ format }) => {
           style={{
             fontSize: isShort ? 21 : 29,
             fontWeight: 800,
-            color: '#fff',
+            color: '#FFFFFF',
             fontFamily: "'Inter', system-ui, sans-serif",
           }}
         >
@@ -293,8 +293,8 @@ const MidVideoCta: React.FC<{ format: 'long' | 'short' }> = ({ format }) => {
           }}
         >
           <div style={{
-            background: '#20C997',
-            color: '#0C0A15',
+            background: '#059669',
+            color: '#FFFFFF',
             padding: '6px 16px',
             borderRadius: 8,
             fontSize: isShort ? 14 : 17,
@@ -306,7 +306,7 @@ const MidVideoCta: React.FC<{ format: 'long' | 'short' }> = ({ format }) => {
           <span style={{
             fontSize: isShort ? 18 : 23,
             fontWeight: 800,
-            color: '#FFD700',
+            color: '#FFFFFF',
             fontFamily: "'Inter', system-ui, sans-serif",
           }}>
             www.guru-sishya.in
@@ -338,7 +338,7 @@ const EndCta: React.FC<{ format: 'long' | 'short' }> = ({ format }) => {
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        background: `linear-gradient(180deg, rgba(12, 10, 21, ${fadeIn * 0.85}) 0%, rgba(12, 10, 21, ${fadeIn * 0.95}) 100%)`,
+        background: `linear-gradient(180deg, rgba(30, 41, 59, ${fadeIn * 0.92}) 0%, rgba(30, 41, 59, ${fadeIn * 0.97}) 100%)`,
         zIndex: 300,
         gap: isShort ? 20 : 30,
         padding: 40,
@@ -349,10 +349,10 @@ const EndCta: React.FC<{ format: 'long' | 'short' }> = ({ format }) => {
         style={{
           fontSize: isShort ? 36 : 56,
           fontWeight: 800,
-          color: '#E85D26',
+          color: '#FFFFFF',
           fontFamily: "'Inter', system-ui, sans-serif",
           transform: `scale(${scaleIn})`,
-          textShadow: `0 0 ${40 * glowPulse}px rgba(232, 93, 38, ${0.5 * glowPulse})`,
+          textShadow: `0 0 ${40 * glowPulse}px rgba(37, 99, 235, ${0.5 * glowPulse})`,
         }}
       >
         Guru Sishya
@@ -362,7 +362,7 @@ const EndCta: React.FC<{ format: 'long' | 'short' }> = ({ format }) => {
       <div
         style={{
           fontSize: isShort ? 18 : 24,
-          color: '#FFD700',
+          color: '#93C5FD',
           fontFamily: "'Inter', system-ui, sans-serif",
           fontWeight: 600,
           opacity: fadeIn,
@@ -385,12 +385,12 @@ const EndCta: React.FC<{ format: 'long' | 'short' }> = ({ format }) => {
           <div
             key={feature}
             style={{
-              background: 'rgba(255,255,255,0.08)',
-              border: '1px solid rgba(232, 93, 38, 0.3)',
+              background: 'rgba(255,255,255,0.12)',
+              border: '1px solid rgba(148, 163, 184, 0.3)',
               borderRadius: 10,
               padding: isShort ? '8px 16px' : '10px 20px',
               fontSize: isShort ? 13 : 16,
-              color: '#fff',
+              color: '#FFFFFF',
               fontFamily: "'Inter', system-ui, sans-serif",
               fontWeight: 500,
               transform: `scale(${spring({ frame: frame - i * 5, fps, config: { damping: 15, stiffness: 100 } })})`,
@@ -406,11 +406,11 @@ const EndCta: React.FC<{ format: 'long' | 'short' }> = ({ format }) => {
         style={{
           fontSize: isShort ? 28 : 40,
           fontWeight: 800,
-          color: '#fff',
+          color: '#FFFFFF',
           fontFamily: "'Inter', system-ui, sans-serif",
           opacity: interpolate(frame, [25, 45], [0, 1], { extrapolateRight: 'clamp' }),
-          textShadow: `0 0 30px rgba(232, 93, 38, ${0.8 * glowPulse}), 0 0 60px rgba(232, 93, 38, ${0.4 * glowPulse})`,
-          background: 'linear-gradient(90deg, #E85D26, #FFD700)',
+          textShadow: `0 0 30px rgba(37, 99, 235, ${0.8 * glowPulse}), 0 0 60px rgba(37, 99, 235, ${0.4 * glowPulse})`,
+          background: 'linear-gradient(90deg, #3B82F6, #93C5FD)',
           WebkitBackgroundClip: 'text',
           WebkitTextFillColor: 'transparent',
           marginTop: 10,

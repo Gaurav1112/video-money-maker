@@ -296,7 +296,7 @@ const CaptionOverlay: React.FC<CaptionOverlayProps> = ({
                     textTransform: 'uppercase',
                     transform: `scale(${wordScale})`,
                     transformOrigin: 'center bottom',
-                    textShadow: '0 2px 8px rgba(0,0,0,0.5)',
+                    textShadow: '0 1px 3px rgba(255,255,255,0.8)',
                     letterSpacing: 1,
                   }}
                 >
@@ -324,10 +324,10 @@ const CaptionOverlay: React.FC<CaptionOverlayProps> = ({
           zIndex: 100,
         }}
       >
-        {/* Clean dark background strip */}
+        {/* Clean light background strip for light theme */}
         <div
           style={{
-            background: 'rgba(0, 0, 0, 0.70)',
+            background: 'rgba(255, 255, 255, 0.92)',
             borderRadius: 12,
             padding: '16px 32px',
             maxWidth: '80%',
@@ -338,6 +338,8 @@ const CaptionOverlay: React.FC<CaptionOverlayProps> = ({
             gap: 6,
             transform: `translateY(${slideY}px)`,
             opacity: slideOpacity,
+            boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
+            border: '1px solid rgba(0,0,0,0.06)',
           }}
         >
           {displayLines.map((lineWords, lineIdx) => {
@@ -413,11 +415,11 @@ const CaptionOverlay: React.FC<CaptionOverlayProps> = ({
                   // ── Determine color ──
                   let color: string;
                   if (isCurrent) {
-                    color = COLORS.saffron; // #E85D26
+                    color = COLORS.saffron; // ocean blue accent
                   } else if (emphasis) {
-                    color = COLORS.saffron; // emphasis words stay saffron even after spoken
+                    color = COLORS.saffron; // emphasis words stay accent even after spoken
                   } else {
-                    color = COLORS.white;
+                    color = '#1E293B'; // charcoal text on light bg
                   }
 
                   return (
@@ -434,9 +436,7 @@ const CaptionOverlay: React.FC<CaptionOverlayProps> = ({
                         transform: `scale(${wordScale})`,
                         transformOrigin: 'center bottom',
                         opacity: fadeIn,
-                        textShadow: isCurrent
-                          ? `0 0 8px rgba(255, 255, 255, 0.6), 0 2px 4px rgba(0, 0, 0, 0.8)`
-                          : `0 1px 3px rgba(0, 0, 0, 0.6)`,
+                        textShadow: '0 1px 3px rgba(255,255,255,0.8)',
                       }}
                     >
                       {word}

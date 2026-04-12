@@ -19,9 +19,9 @@ export const HudOverlay: React.FC<HudOverlayProps> = ({
 }) => {
   const frame = useCurrentFrame();
 
-  const TEAL = '#1DD1A1';
-  const SAFFRON = '#E85D26';
-  const GOLD = '#FDB813';
+  const TEAL = '#CBD5E1';     // subtle gray for light theme
+  const SAFFRON = '#94A3B8';  // muted slate for light theme
+  const GOLD = '#64748B';     // slate for light theme
 
   // --- Corner Brackets ---
   const bracketLength = 40;
@@ -130,7 +130,7 @@ export const HudOverlay: React.FC<HudOverlayProps> = ({
           top: 20,
           left: 20,
           padding: '8px 14px',
-          background: 'rgba(12, 10, 21, 0.4)',
+          background: 'rgba(255, 255, 255, 0.6)',
           borderLeft: `2px solid ${TEAL}`,
           borderRadius: '0 4px 4px 0',
           overflow: 'hidden',
