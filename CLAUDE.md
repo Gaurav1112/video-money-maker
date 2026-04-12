@@ -125,6 +125,17 @@ npx tsc --noEmit
 - roughjs, noisejs (hand-drawn look + organic wobble)
 - Chatterbox: `pip install chatterbox-tts` | Wrapper: `scripts/chatterbox-tts.py`
 
+## Current Visual Stack (2026-04-12)
+- Light theme (#F5F3EF warm off-white, blue/emerald accents)
+- D2 pre-rendered SVG diagrams (Terrastruct, `brew install d2`)
+- Chatterbox human voice (primary TTS)
+- Avatar bubble (220px, bottom-right, loops stock video or photo)
+- Rhubarb lip sync cues (2000+ mouth shapes per video)
+- Jarvis HUD overlay (corner brackets, progress ring, scan line)
+- Perlin noise wobble on all elements
+- Lucide React icons in diagram nodes
+- SadTalker being set up for real lip-synced avatar (Python 3.10 venv at tools/sadtalker-env/)
+
 ## TTS Priority Chain
 ```
 Chatterbox (human voice, slow on CPU ~10x realtime)
