@@ -176,10 +176,12 @@ export function generateStoryboard(
   try {
     const { getD2Diagram } = require('../lib/d2-diagrams');
     const { renderD2Diagram } = require('../lib/d2-renderer');
-    const diagramDef = getD2Diagram(topic);
-    if (diagramDef) {
-      for (const scene of enrichedScenes) {
-        if (scene.type === 'text' || scene.type === 'diagram') {
+    // Try scene heading first, then topic — so each scene gets a RELEVANT diagram
+    for (const scene of enrichedScenes) {
+      if (scene.type === 'text' || scene.type === 'diagram') {
+        // Try matching scene heading first (more specific), then topic (fallback)
+        const diagramDef = getD2Diagram(scene.heading || '') || getD2Diagram(topic);
+        if (diagramDef) {
           const svg = renderD2Diagram(diagramDef.nodes, diagramDef.edges, {
             direction: diagramDef.direction,
           });
