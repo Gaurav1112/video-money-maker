@@ -1,3 +1,4 @@
+import * as path from 'path';
 import { Scene, Storyboard, TTSResult } from '../types';
 import { TIMING, INTRO_DURATION, OUTRO_DURATION } from '../lib/constants';
 import { stitchAudio } from './audio-stitcher';
@@ -192,6 +193,26 @@ export function generateStoryboard(
     // D2 not available — non-critical, scenes render with TemplateFactory fallback
   }
 
+  // ── Generate Rhubarb lip sync cues from master audio ──
+  let mouthCues: Array<{ start: number; end: number; value: string }> = [];
+  try {
+    const { execSync } = require('child_process');
+    const rhubarbBin = path.join(process.cwd(), 'tools', 'Rhubarb-Lip-Sync-1.13.0-macOS', 'rhubarb');
+    const fs = require('fs');
+    if (fs.existsSync(rhubarbBin) && fs.existsSync(masterPath)) {
+      // Convert master MP3 to WAV for Rhubarb
+      const wavPath = masterPath.replace(/\.mp3$/, '_lip.wav');
+      execSync(`ffmpeg -y -i "${masterPath}" "${wavPath}"`, { timeout: 30000 });
+      const output = execSync(`"${rhubarbBin}" "${wavPath}" -f json`, { timeout: 300000 }).toString();
+      const parsed = JSON.parse(output);
+      mouthCues = parsed.mouthCues || [];
+      try { fs.unlinkSync(wavPath); } catch {}
+      console.log(`  ✓ Rhubarb lip sync: ${mouthCues.length} mouth cues`);
+    }
+  } catch (err) {
+    console.warn('  ⚠ Rhubarb lip sync skipped:', (err as Error).message?.slice(0, 80));
+  }
+
   return {
     fps,
     width,
@@ -203,6 +224,7 @@ export function generateStoryboard(
     sessionNumber,
     sceneOffsets,
     ...(mergedSfxTriggers.length > 0 ? { allSfxTriggers: mergedSfxTriggers } : {}),
+    ...(mouthCues.length > 0 ? { mouthCues } : {}),
   };
 }
 

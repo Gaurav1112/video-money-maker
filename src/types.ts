@@ -52,6 +52,8 @@ export interface Storyboard {
   nextTopic?: string;
   sceneOffsets?: number[];
   allSfxTriggers?: SfxTrigger[];
+  /** Rhubarb lip sync mouth cues for avatar animation */
+  mouthCues?: Array<{ start: number; end: number; value: string }>;
 }
 
 export interface SessionInput {
