@@ -47,15 +47,21 @@ fi
 
 # ── Render all sessions ──────────────────────────────────────────────────────
 if [ "$SESSION" = "--all" ]; then
-  for S in $(seq 1 10); do
+  for S in $(seq 1 2 10); do
+    S2=$((S+1))
     echo ""
     echo "╔══════════════════════════════════════════════════════════════╗"
-    echo "║  $TOPIC — Session $S                                        "
+    echo "║  $TOPIC — Sessions $S and $S2 in parallel                   "
     echo "╚══════════════════════════════════════════════════════════════╝"
-    bash scripts/full-pipeline.sh "$TOPIC" "$S" || {
-      echo "  ⚠ Session $S failed or doesn't exist. Stopping."
-      break
-    }
+    bash scripts/full-pipeline.sh "$TOPIC" "$S" &
+    PID1=$!
+    if [ $S2 -le 10 ]; then
+      bash scripts/full-pipeline.sh "$TOPIC" "$S2" &
+      PID2=$!
+    fi
+    wait $PID1 || echo "  ⚠ Session $S failed or doesn't exist."
+    [ -n "$PID2" ] && wait $PID2 || true
+    unset PID2
   done
   echo ""
   echo "═══ ALL DONE: $TOPIC ═══"
@@ -93,34 +99,40 @@ MASTER_AUDIO=$(node -e "const d=JSON.parse(require('fs').readFileSync('$PROPS','
 
 if [ -f "$SADTALKER_ENV" ] && [ -f "$GURU_FACE" ] && [ -f "$MASTER_AUDIO" ]; then
   echo ""
-  echo "[2/4] Generating lip-synced guru avatar (SadTalker)..."
 
-  # Convert master audio to WAV for SadTalker (only first 30 seconds — avatar loops)
-  AVATAR_AUDIO="/tmp/avatar-audio-${TOPIC}-s${SESSION}.wav"
-  ffmpeg -y -i "$MASTER_AUDIO" -t 30 "$AVATAR_AUDIO" 2>/dev/null
-
-  AVATAR_OUT="$PIPELINE_DIR/output/sadtalker-session"
-  mkdir -p "$AVATAR_OUT"
-
-  cd "$SADTALKER_DIR"
-  "$SADTALKER_ENV" inference.py \
-    --driven_audio "$AVATAR_AUDIO" \
-    --source_image "$GURU_FACE" \
-    --result_dir "$AVATAR_OUT" \
-    --still --preprocess resize 2>&1 | grep -E "Face Renderer|landmark|audio2exp" | tail -3
-  cd "$PIPELINE_DIR"
-
-  # Find and copy the output
-  AVATAR_RESULT=$(find "$AVATAR_OUT" -name "*.mp4" -newer "$AVATAR_AUDIO" | head -1)
-  if [ -n "$AVATAR_RESULT" ]; then
-    cp "$AVATAR_RESULT" "$AVATAR_VIDEO"
-    echo "  ✓ Guru avatar generated"
+  # Skip avatar generation if teacher-talking.mp4 already exists and is recent (<24h old)
+  if [ -f "$AVATAR_VIDEO" ] && [ $(stat -f %m "$AVATAR_VIDEO") -gt $(( $(date +%s) - 86400 )) ]; then
+    echo "[2/4] Guru avatar: using cached (less than 24h old)"
   else
-    echo "  ⚠ Avatar generation failed — using existing"
-  fi
+    echo "[2/4] Generating lip-synced guru avatar (SadTalker)..."
 
-  rm -f "$AVATAR_AUDIO"
-  rm -rf "$AVATAR_OUT"
+    # Convert master audio to WAV for SadTalker (only first 30 seconds — avatar loops)
+    AVATAR_AUDIO="/tmp/avatar-audio-${TOPIC}-s${SESSION}.wav"
+    ffmpeg -y -i "$MASTER_AUDIO" -t 30 "$AVATAR_AUDIO" 2>/dev/null
+
+    AVATAR_OUT="$PIPELINE_DIR/output/sadtalker-session"
+    mkdir -p "$AVATAR_OUT"
+
+    cd "$SADTALKER_DIR"
+    "$SADTALKER_ENV" inference.py \
+      --driven_audio "$AVATAR_AUDIO" \
+      --source_image "$GURU_FACE" \
+      --result_dir "$AVATAR_OUT" \
+      --still --preprocess resize 2>&1 | grep -E "Face Renderer|landmark|audio2exp" | tail -3
+    cd "$PIPELINE_DIR"
+
+    # Find and copy the output
+    AVATAR_RESULT=$(find "$AVATAR_OUT" -name "*.mp4" -newer "$AVATAR_AUDIO" | head -1)
+    if [ -n "$AVATAR_RESULT" ]; then
+      cp "$AVATAR_RESULT" "$AVATAR_VIDEO"
+      echo "  ✓ Guru avatar generated"
+    else
+      echo "  ⚠ Avatar generation failed — using existing"
+    fi
+
+    rm -f "$AVATAR_AUDIO"
+    rm -rf "$AVATAR_OUT"
+  fi
 else
   echo ""
   echo "[2/4] Skipping avatar (SadTalker not set up or no audio)"
@@ -130,7 +142,7 @@ fi
 echo ""
 echo "[3/4] Rendering video..."
 npx remotion render src/compositions/index.tsx LongVideo "$OUTPUT" \
-  --props="$PROPS" --concurrency=4 2>&1 | tail -3
+  --props="$PROPS" --concurrency=8 2>&1 | tail -3
 
 if [ ! -f "$OUTPUT" ]; then
   echo "  ✗ Render failed"

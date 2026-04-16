@@ -74,10 +74,10 @@ def render_session(topic, session, preview=False):
     # Step 2: Render
     if preview:
         print("\n[2/3] Rendering 30s PREVIEW...")
-        code = run(f"npx remotion render src/compositions/index.tsx LongVideo {output_path} --props={props} --frames=150-1050 --concurrency=4", timeout=300)
+        code = run(f"npx remotion render src/compositions/index.tsx LongVideo {output_path} --props={props} --frames=150-1050 --concurrency=8", timeout=300)
     else:
         print("\n[2/3] Rendering full video...")
-        code = run(f"npx remotion render src/compositions/index.tsx LongVideo {output_path} --props={props} --concurrency=4", timeout=600)
+        code = run(f"npx remotion render src/compositions/index.tsx LongVideo {output_path} --props={props} --concurrency=8", timeout=600)
 
     if code != 0:
         print(f"  FAILED: Render error.")

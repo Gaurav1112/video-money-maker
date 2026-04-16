@@ -120,7 +120,7 @@ npx tsc --noEmit
 
 ## Tech Stack
 - Remotion 4.0.441, React 19, TypeScript
-- **Chatterbox TTS (PRIMARY — sounds human, MIT)** + Edge TTS (fallback) + Kokoro af_heart (fallback)
+- **Edge TTS (PRIMARY — fast, free)** + Chatterbox (optional via CHATTERBOX=1) + Kokoro af_heart (fallback)
 - @remotion/transitions, @remotion/paths, @remotion/lottie
 - roughjs, noisejs (hand-drawn look + organic wobble)
 - Chatterbox: `pip install chatterbox-tts` | Wrapper: `scripts/chatterbox-tts.py`
@@ -149,8 +149,8 @@ npx tsc --noEmit
 
 ## TTS Priority Chain
 ```
-Chatterbox (human voice, slow on CPU ~10x realtime)
-  → Edge TTS PrabhatNeural (fast, sounds AI)
+Edge TTS PrabhatNeural (fast, default — 30s per video)
+  → Chatterbox (only with CHATTERBOX=1 — slow ~20min, human voice)
     → Kokoro af_heart (fast, American accent)
       → macOS native (offline fallback)
 ```

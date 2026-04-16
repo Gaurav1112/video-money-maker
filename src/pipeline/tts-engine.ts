@@ -66,15 +66,18 @@ export async function generateAudio(
   const cached = cache.get<TTSResult>(cacheKey);
   if (cached && fs.existsSync(cached.audioPath)) return cached;
 
-  // Priority 0: Chatterbox TTS (MIT, beats ElevenLabs, sounds human)
-  // Slow on CPU (~10x realtime) but the voice quality is worth it
-  try {
-    return await chatterboxTTS(text, cacheKey, outputName);
-  } catch (cbErr) {
-    console.warn('Chatterbox TTS failed:', (cbErr as Error).message, '— trying Edge TTS...');
+  // Priority 0: Chatterbox TTS (only when CHATTERBOX=1 env var is set — slow but human-sounding)
+  // ~10x realtime on CPU (~20 min per video). Use for final/polished renders only.
+  if (process.env.CHATTERBOX === '1') {
+    try {
+      return await chatterboxTTS(text, cacheKey, outputName);
+    } catch (cbErr) {
+      console.warn('Chatterbox TTS failed:', (cbErr as Error).message, '— trying Edge TTS...');
+    }
   }
 
-  // Priority 1: Edge TTS (free, unlimited, PrabhatNeural Indian male teacher)
+  // Priority 1: Edge TTS (fast, default — 30s total per video)
+  // Free, unlimited, PrabhatNeural Indian male teacher voice
   // Gets real sentence-level timestamps from VTT — no Whisper needed!
   try {
     return await edgeTTS(text, cacheKey, outputName, voiceLanguage, rate);
@@ -540,7 +543,7 @@ export async function generateSceneAudios(
     console.log(`  Generating audio for scene ${i + 1}/${scenes.length} [${scene.type}]...`);
     const spokenText = preprocessForSpeech(scene.narration);
     const sceneRate = rateMap?.[scene.type] ?? '-5%';
-    const result = await generateAudio(spokenText, resolvedVoice, `scene_${i}.mp3`, voiceLanguage, sceneRate);
+    const result = await generateAudio(spokenText, resolvedVoice, undefined, voiceLanguage, sceneRate);
     results.push(result);
   }
   return results;
