@@ -9,6 +9,178 @@ import { computeVisualBeats } from '../lib/visual-beats';
 import { getVisualTemplate } from '../lib/visual-templates';
 import { generateQuizOptions } from '../lib/quiz-options';
 
+// ---------------------------------------------------------------------------
+// Topic-Specific Examples — Indian + global companies mapped to topics
+// Ensures narration mentions the RIGHT company for the RIGHT topic.
+// ---------------------------------------------------------------------------
+const TOPIC_EXAMPLES: Record<string, {
+  company: string;
+  useCase: string;
+  scale: string;
+  problem: string;
+  solution: string;
+}> = {
+  'caching': {
+    company: 'Netflix',
+    useCase: 'serves 230 million users worldwide',
+    scale: '100 billion hours of content per year',
+    problem: 'database queries taking 500ms each',
+    solution: 'Redis cache layer reducing latency to 2ms',
+  },
+  'load balancing': {
+    company: 'Swiggy',
+    useCase: 'handles 2 million orders during lunch rush',
+    scale: '10,000 requests per second at peak',
+    problem: 'single server crashing under load',
+    solution: 'distributing traffic across 50 servers',
+  },
+  'api gateway': {
+    company: 'Flipkart',
+    useCase: 'routes every customer request through one entry point',
+    scale: '100 million users during Big Billion Days',
+    problem: 'clients calling 20 different services directly',
+    solution: 'single gateway handling auth, rate limiting, and routing',
+  },
+  'kafka': {
+    company: 'Uber',
+    useCase: 'processes ride data in real-time',
+    scale: '1 billion events per day',
+    problem: 'losing critical trip data during peak hours',
+    solution: 'distributed event streaming with guaranteed delivery',
+  },
+  'database': {
+    company: 'Razorpay',
+    useCase: 'processes UPI payments',
+    scale: '10,000 transactions per second',
+    problem: 'single database becoming a bottleneck',
+    solution: 'sharding across multiple database instances',
+  },
+  'microservices': {
+    company: 'PhonePe',
+    useCase: 'handles digital payments across India',
+    scale: '4 billion monthly transactions',
+    problem: 'monolith deployment taking 2 hours',
+    solution: 'independent microservices deployed in 5 minutes',
+  },
+  'distributed': {
+    company: 'Zomato',
+    useCase: 'syncs restaurant data across all cities',
+    scale: '500,000 restaurants in real-time',
+    problem: 'network partitions causing stale data',
+    solution: 'eventual consistency with conflict resolution',
+  },
+  'message queue': {
+    company: 'Swiggy',
+    useCase: 'processes order workflow',
+    scale: '2 million orders per day',
+    problem: 'synchronous calls causing cascading failures',
+    solution: 'async message queues decoupling services',
+  },
+  'authentication': {
+    company: 'Paytm',
+    useCase: 'secures 300 million wallets',
+    scale: '50 million logins per day',
+    problem: 'session tokens being stolen',
+    solution: 'JWT with short-lived access tokens and refresh rotation',
+  },
+  'rate limiting': {
+    company: 'Zerodha',
+    useCase: 'protects trading APIs',
+    scale: '15 million orders per day',
+    problem: 'bot attacks overwhelming the system',
+    solution: 'token bucket rate limiter at the API gateway',
+  },
+  'monitoring': {
+    company: 'CRED',
+    useCase: 'monitors payment health',
+    scale: '10,000 metrics per second',
+    problem: 'outage discovered 30 minutes late by users',
+    solution: 'real-time alerting with P95 latency thresholds',
+  },
+  'consistent hashing': {
+    company: 'Amazon DynamoDB',
+    useCase: 'distributes data across nodes',
+    scale: 'trillions of requests per day',
+    problem: 'adding a server reshuffles all data',
+    solution: 'hash ring with virtual nodes for minimal redistribution',
+  },
+  'cdn': {
+    company: 'Hotstar',
+    useCase: 'streams IPL cricket to 25 million concurrent viewers',
+    scale: '25 Tbps bandwidth at peak',
+    problem: 'buffering and high latency for users far from origin server',
+    solution: 'edge caching content at 200+ global PoPs',
+  },
+  'queue': {
+    company: 'Razorpay',
+    useCase: 'processes payment settlements',
+    scale: '5 million daily transactions',
+    problem: 'payment service overload during flash sales',
+    solution: 'message queue absorbing burst traffic for async processing',
+  },
+  'dns': {
+    company: 'Cloudflare',
+    useCase: 'resolves domain names globally',
+    scale: '1.2 trillion DNS queries per day',
+    problem: 'DNS lookup adding 200ms to every request',
+    solution: 'anycast routing to the nearest resolver',
+  },
+  'docker': {
+    company: 'Spotify',
+    useCase: 'deploys microservices for 500 million users',
+    scale: '1,000+ microservices in production',
+    problem: '"works on my machine" breaking in production',
+    solution: 'containerized deployments with identical environments everywhere',
+  },
+  'kubernetes': {
+    company: 'Flipkart',
+    useCase: 'orchestrates thousands of containers during Big Billion Days',
+    scale: '100 million users, 10,000+ pods',
+    problem: 'manual scaling and deployment failures',
+    solution: 'auto-scaling, self-healing container orchestration',
+  },
+  'sql': {
+    company: 'Zerodha',
+    useCase: 'stores trading and portfolio data',
+    scale: '15 million daily orders',
+    problem: 'complex queries slowing down as data grows',
+    solution: 'optimized indexes and query plans for sub-ms reads',
+  },
+  'nosql': {
+    company: 'Swiggy',
+    useCase: 'stores restaurant menus and real-time delivery data',
+    scale: '500,000 restaurant listings updated in real-time',
+    problem: 'rigid schema blocking rapid feature iteration',
+    solution: 'flexible document store for schema-less data',
+  },
+  'ci/cd': {
+    company: 'Razorpay',
+    useCase: 'ships payment features safely',
+    scale: '100+ deploys per day',
+    problem: 'manual deployment causing 2-hour outages',
+    solution: 'automated pipelines with canary releases and instant rollback',
+  },
+};
+
+/**
+ * Lookup topic-specific example. Matches by substring so "Load Balancing Algorithms"
+ * still matches the "load balancing" entry.
+ */
+function getTopicExample(topic: string): typeof TOPIC_EXAMPLES[string] {
+  const lower = topic.toLowerCase();
+  for (const [key, example] of Object.entries(TOPIC_EXAMPLES)) {
+    if (lower.includes(key)) return example;
+  }
+  // Fallback — generic but still useful
+  return {
+    company: 'Google',
+    useCase: 'handles search at scale',
+    scale: '8.5 billion searches per day',
+    problem: 'server overload during traffic spikes',
+    solution: 'distributed architecture with graceful degradation',
+  };
+}
+
 interface ScriptOptions {
   language?: string; // 'python' | 'java' -- fallback language for non-fenced code; both Python & Java are always included
   maxScenes?: number;
@@ -269,7 +441,7 @@ function generateInterviewReality(topic: string): string {
     `When an interviewer asks about ${topic}, they are not testing your memory. They want to see HOW you think about the problem.`,
     `Here is what most candidates get wrong about ${topic} in interviews. They jump straight to the solution without discussing trade-offs.`,
     `A senior engineer once told me... the best answer about ${topic} starts with WHY, not HOW.`,
-    `In real interviews at Google and Amazon, ${topic} questions are about your thought process, not the perfect answer.`,
+    `In real interviews at ${getTopicExample(topic).company} and other top companies, ${topic} questions are about your thought process, not the perfect answer.`,
     `The number one mistake with ${topic} in interviews? Not asking clarifying questions first. Always confirm the constraints.`,
   ];
   return realities[topic.length % realities.length];
@@ -710,7 +882,7 @@ function generateProblemSetup(topic: string): string {
 
     `Close your eyes and imagine you're in a system design interview. The interviewer says, "Design a system that handles one billion requests per day." If your brain just went blank, that's because you don't fully understand ${topic} yet. But you will in about 4 minutes.`,
 
-    `Every second, the internet processes over 100,000 Google searches, 9,000 tweets, and 80,000 YouTube views. How does NONE of this crash? The answer starts with ${topic}. And most developers have no clue how it actually works under the hood.`,
+    `Every second, ${getTopicExample(topic).company} ${getTopicExample(topic).useCase}, processing ${getTopicExample(topic).scale}. How does NONE of this crash? The answer starts with ${topic}. And most developers have no clue how it actually works under the hood.`,
   ];
 
   const seed = topic.length % problems.length;
@@ -944,7 +1116,7 @@ function generateSummaryNarration(topic: string, objectives: string[], nextTopic
   if (nextTopic) {
     nextEpisodeTease = ` In the next video, we'll tackle ${nextTopic}. Don't miss it.`;
   } else if (totalSessions && sessionNumber < totalSessions) {
-    nextEpisodeTease = ` Next session, we'll go even deeper into ${topic}. We'll see how this breaks at Netflix scale and what senior engineers do about it. Don't miss it.`;
+    nextEpisodeTease = ` Next session, we'll go even deeper into ${topic}. We'll see how this breaks at ${getTopicExample(topic).company} scale and what senior engineers do about it. Don't miss it.`;
   } else if (totalSessions && sessionNumber === totalSessions) {
     nextEpisodeTease = ` This was the final session in our ${topic} series. You now have a complete, interview-ready understanding. Go crush it.`;
   }
@@ -1335,7 +1507,7 @@ export function generateScript(session: SessionInput, options: ScriptOptions = {
   }
 
   // ── Personality injection — make narration viral and human ────────────
-  const personalizedScenes = personalityInjector(scenes, sessionNum);
+  const personalizedScenes = personalityInjector(scenes, sessionNum, session.topic);
 
   // ── Inject contradiction-based open loops ──────────────────────────────
   const withLoops = injectOpenLoops(personalizedScenes, session.topic, sessionNum);
@@ -1349,19 +1521,23 @@ export function generateScript(session: SessionInput, options: ScriptOptions = {
 // Think Tanay Pratap / Striver / Harkirat Singh energy for Indian tech audience.
 // ---------------------------------------------------------------------------
 
-/** Surprise facts — injected every 3rd text scene to create "wait what?!" moments */
-const SURPRISE_FACTS = [
-  "Fun fact: Google's load balancer handles over 1 BILLION requests per second. Let that sink in.",
-  "Here's something wild: Netflix's load balancer once failed and took down the ENTIRE internet for parts of the US.",
-  "Plot twist: Most load balancers you'll use in production... are actually FREE and open source.",
-  "Real talk: I've seen senior engineers at Amazon get this wrong in interviews. Don't be that person.",
-  "Hot take: If you can explain this concept clearly, you're already ahead of 80% of interview candidates.",
-  "Wild stat: AWS processes over 100 TRILLION events per day. And it all depends on concepts like this.",
-  "Fun fact: The first ever load balancer was literally just a guy manually switching server cables. We've come a long way.",
-  "Here's something nobody tells you: most production bugs at FAANG aren't code bugs. They're system design bugs.",
-  "Real talk: Flipkart's Big Billion Day crashed their servers THREE times before they got this right.",
-  "Plot twist: ChatGPT uses the exact same concepts we're learning here to handle millions of concurrent users.",
-];
+/** Surprise facts — injected every 3rd text scene to create "wait what?!" moments.
+ *  Now topic-aware: uses getTopicExample() so Kafka videos mention Uber, not load balancers. */
+function getTopicSurpriseFacts(topic: string): string[] {
+  const ex = getTopicExample(topic);
+  return [
+    `Fun fact: ${ex.company} ${ex.useCase} — handling ${ex.scale}. Let that sink in.`,
+    `Here's something wild: ${ex.company} once had a major outage because their ${topic.toLowerCase()} system failed. Cost them millions.`,
+    "Plot twist: Most production implementations of this... are actually FREE and open source.",
+    `Real talk: I've seen senior engineers at ${ex.company} get this wrong in interviews. Don't be that person.`,
+    "Hot take: If you can explain this concept clearly, you're already ahead of 80% of interview candidates.",
+    `Wild stat: ${ex.company} processes ${ex.scale}. And it all depends on concepts like this.`,
+    "Here's something nobody tells you: most production bugs at FAANG aren't code bugs. They're system design bugs.",
+    "Real talk: Flipkart's Big Billion Day crashed their servers THREE times before they got this right.",
+    "Plot twist: ChatGPT uses the exact same concepts we're learning here to handle millions of concurrent users.",
+    `Fun fact: ${ex.company}'s solution was ${ex.solution}. That's exactly what we're learning.`,
+  ];
+}
 
 /** Audience callouts — direct viewer engagement at key moments */
 const AUDIENCE_CALLOUTS = [
@@ -1378,7 +1554,7 @@ const AUDIENCE_CALLOUTS = [
   "Night owls watching at 2 AM — I see you. Let's make this study session count.",
   "Quick poll: drop '1' in comments if you're preparing for on-campus, '2' for off-campus.",
   "If your friends aren't watching this, they're going to ask YOU to explain it after placements.",
-  "Remember: TCS pays 3.3 LPA. Google pays 30+ LPA. The difference? Exactly what we're learning.",
+  "Remember: service companies pay 3.3 LPA. Product companies pay 30+ LPA. The difference? Exactly what we're learning.",
   "Yeh video dekh liya toh interview mein dhoom machao! Ab aage badhte hain.",
   "Everyone asks 'how to crack FAANG'. Nobody asks 'how to UNDERSTAND systems'. Be different.",
 ];
@@ -1386,13 +1562,13 @@ const AUDIENCE_CALLOUTS = [
 /** Emotional stakes — connect concepts to real career consequences */
 const EMOTIONAL_STAKES = [
   "This is the difference between a 12 LPA offer and a 40 LPA offer. I'm not exaggerating.",
-  "I know someone who got rejected from Google because they couldn't explain this. Don't let that be you.",
+  "I know someone who got rejected from a top product company because they couldn't explain this. Don't let that be you.",
   "This one concept shows up in literally every system design interview at FAANG.",
   "Master this, and you're not just interview-ready. You're production-ready. That's rare.",
   "This is the kind of knowledge that makes your team lead go 'wait, how do you know that?'",
   "Three months from now, when you're holding that offer letter, you'll remember this video.",
   "This separates the developers who GET callbacks from the ones who don't. Simple as that.",
-  "I watched a candidate explain this perfectly and get a 45 LPA offer at Google Bangalore. Same concept, same interview room, same question.",
+  "I watched a candidate explain this perfectly and get a 45 LPA offer at a top product company in Bangalore. Same concept, same interview room, same question.",
   "The last 5 people I mentored who understood this concept ALL cleared their system design rounds. All five.",
   "This is the concept that made me go from 'maybe I'll crack it' to 'I KNOW I'll crack it.'",
   "Your competition is watching this video too. The question is: will you actually practice it on guru-sishya.in? Link in the description.",
@@ -1444,7 +1620,7 @@ const GURU_MODE_PHRASES = [
  * - Injects guru-mode phrase at the deepest technical scene
  * - Appends catchphrase to the summary scene
  */
-export function personalityInjector(scenes: Scene[], sessionNumber: number = 1): Scene[] {
+export function personalityInjector(scenes: Scene[], sessionNumber: number = 1, topic: string = ''): Scene[] {
   const totalScenes = scenes.length;
   let textSceneCount = 0;
 
@@ -1491,8 +1667,9 @@ export function personalityInjector(scenes: Scene[], sessionNumber: number = 1):
     if (scene.type === 'text') {
       textSceneCount++;
       if (textSceneCount > 0 && textSceneCount % 3 === 0) {
-        const factIdx = (seed + textSceneCount) % SURPRISE_FACTS.length;
-        narration = `${narration} ${SURPRISE_FACTS[factIdx]}`;
+        const facts = getTopicSurpriseFacts(topic);
+        const factIdx = (seed + textSceneCount) % facts.length;
+        narration = `${narration} ${facts[factIdx]}`;
       }
     }
 
@@ -1652,9 +1829,9 @@ function extractBulletsFromNarration(narration: string, maxBullets: number = 3):
 const SESSION_1_HOOKS = [
   // ── Story openings (5) ──
   (topic: string) => `In 2023, a major tech company lost 14 million dollars in revenue because of ONE poorly implemented ${topic} system. Fourteen. Million. Dollars. Let me make sure that never happens to you.`,
-  (topic: string) => `I once watched a senior engineer get rejected at Google because they couldn't explain ${topic} properly. They had 10 years of experience. Let me tell you what they got wrong.`,
-  (topic: string) => `The engineer who built Netflix's ${topic} system shared something in a blog post that changed how I think about software forever. Let me share it with you.`,
-  (topic: string) => `Picture this. It's your final round interview at Amazon. The interviewer leans forward and says, "Tell me about ${topic}." Your next 5 minutes decide your career. Are you ready?`,
+  (topic: string) => `I once watched a senior engineer get rejected at ${getTopicExample(topic).company} because they couldn't explain ${topic} properly. They had 10 years of experience. Let me tell you what they got wrong.`,
+  (topic: string) => `The engineer who built ${getTopicExample(topic).company}'s ${topic} system shared something in a blog post that changed how I think about software forever. Let me share it with you.`,
+  (topic: string) => `Picture this. It's your final round interview at ${getTopicExample(topic).company}. The interviewer leans forward and says, "Tell me about ${topic}." Your next 5 minutes decide your career. Are you ready?`,
   (topic: string) => `A startup I advised went from 100 to 10 million users in 6 months. The ONLY reason they survived? They understood ${topic} deeply. Most companies don't.`,
 
   // ── Shocking questions (5) ──
@@ -1667,7 +1844,7 @@ const SESSION_1_HOOKS = [
   // ── Shocking facts (4) ──
   (topic: string) => `Did you know? Every single request you make on the internet touches ${topic} at least three times before reaching its destination. And most developers have no idea how it works.`,
   (topic: string) => `Here's a stat that should terrify you. 89 percent of production outages at big tech companies trace back to ${topic} failures. 89 percent.`,
-  (topic: string) => `Google processes 8.5 billion searches per day. Facebook handles 2.5 billion users. The secret sauce behind all of it? ${topic}. And I'm going to teach it to you in under 5 minutes.`,
+  (topic: string) => `${getTopicExample(topic).company} ${getTopicExample(topic).useCase}, processing ${getTopicExample(topic).scale}. The secret sauce behind all of it? ${topic}. And I'm going to teach it to you in under 5 minutes.`,
   (topic: string) => `The average tech interview lasts 45 minutes. ${topic} questions take up 15 of those minutes. That's one third of your interview riding on THIS topic.`,
 
   // ── Challenge hooks (4) ──
@@ -1690,7 +1867,7 @@ const SESSION_1_HOOKS = [
   (topic: string) => `${topic} is not what you think it is. I know that sounds dramatic, but hear me out. What they teach in school and what happens in production are two completely different things.`,
 
   // ── Authority hooks (4) ──
-  (topic: string) => `Google, Amazon, Meta, and Netflix all ask about ${topic} in their interviews. After studying hundreds of interview questions, I found the exact pattern they follow. Let me share it.`,
+  (topic: string) => `${getTopicExample(topic).company}, Google, and other top companies all ask about ${topic} in their interviews. After studying hundreds of interview questions, I found the exact pattern they follow. Let me share it.`,
   (topic: string) => `I've reviewed over 500 technical interview recordings. The number one reason candidates get rejected? They can't explain ${topic} with clarity and confidence. Let's fix that.`,
   (topic: string) => `The top 1 percent of engineers all have one thing in common. They don't just USE ${topic}. They understand it deeply enough to TEACH it. That's what we're doing today.`,
   (topic: string) => `After helping over 1000 students crack FAANG interviews, I can tell you the exact moment most interviews are won or lost. It's the ${topic} question. And here's how to nail it.`,
@@ -1701,10 +1878,10 @@ const SESSION_1_HOOKS = [
 
   // ── Dramatic / clickbait-worthy hooks (10) ──
   (topic: string) => `DELETE this video if I can't explain ${topic} in under 5 minutes...`,
-  (topic: string) => `I asked a Google L5 engineer to explain ${topic}. His answer shocked me.`,
+  (topic: string) => `I asked a senior engineer at ${getTopicExample(topic).company} to explain ${topic}. His answer shocked me.`,
   (topic: string) => `This one concept has appeared in EVERY FAANG interview this year.`,
   (topic: string) => `Most YouTube tutorials get ${topic} COMPLETELY wrong. Here's the truth.`,
-  (topic: string) => `My friend failed his Amazon interview because of ${topic}. Don't make his mistake.`,
+  (topic: string) => `My friend failed his ${getTopicExample(topic).company} interview because of ${topic}. Don't make his mistake.`,
   (topic: string) => `I spent 200 hours researching ${topic}. Here's everything in one video.`,
   (topic: string) => `WARNING: Once you understand ${topic}, you can't unsee it in every system you use.`,
   (topic: string) => `The REAL reason tech companies pay 50 LPA... they need people who understand THIS.`,
@@ -1738,7 +1915,7 @@ const SESSION_3_HOOKS = [
 
 /** Session 4+ hooks — expert level, production reality */
 const SESSION_4_PLUS_HOOKS = [
-  (topic: string) => `We've covered the fundamentals, the algorithms, and the failure modes of ${topic}. Now let's tackle the part that actually breaks in production and how Netflix, Google, and Uber handle it.`,
+  (topic: string) => `We've covered the fundamentals, the algorithms, and the failure modes of ${topic}. Now let's tackle the part that actually breaks in production and how ${getTopicExample(topic).company} handles it at ${getTopicExample(topic).scale}.`,
   (topic: string) => `Three sessions of ${topic} have made you more knowledgeable than most working engineers. But there's one more level. The level where you can ARCHITECT systems. Let's get there.`,
   (topic: string) => `If you've been following this series, you can already ace most ${topic} interview questions. Today we go beyond the interview. We're talking real production architecture at massive scale.`,
   (topic: string) => `This is the advanced ${topic} session that I wish existed when I was preparing for interviews. Everything we cover today comes from real production incidents at top tech companies.`,
@@ -2607,7 +2784,9 @@ export {
   ENCOURAGEMENT,
   ENGAGEMENT_HOOKS,
   // Personality exports
-  SURPRISE_FACTS,
+  getTopicSurpriseFacts,
+  getTopicExample,
+  TOPIC_EXAMPLES,
   AUDIENCE_CALLOUTS,
   EMOTIONAL_STAKES,
   CATCHPHRASE,
