@@ -48,14 +48,15 @@ export function generateStoryboard(
   const autoSfxTriggers = generateSfxTriggers(scenes, options.sfxDensity);
   const mergedSfxTriggers = [...(allSfxTriggers || []), ...autoSfxTriggers];
 
-  // Prepend branded intro scene
+  // Prepend branded intro scene — 25 seconds (750 frames) for movie-trailer opening
+  const TITLE_DURATION_FRAMES = 750;
   const introScene: Scene = {
     type: 'title' as const,
     content: 'Guru Sishya',
     narration: 'Welcome to Guru Sishya... Your path to mastering technical interviews.',
-    duration: 3,
+    duration: 25,
     startFrame: 0,
-    endFrame: INTRO_DURATION,
+    endFrame: TITLE_DURATION_FRAMES,
   };
 
   // ── SYNC MATH — aligning visual scene timing to audio offsets ──
