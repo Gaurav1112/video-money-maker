@@ -14,6 +14,9 @@ import { SketchDiagram } from './viz/SketchDiagram';
 import { getVisualTemplate } from '../lib/visual-templates';
 import { computeVisualBeats } from '../lib/visual-beats';
 import { getBackgroundImage } from '../lib/bg-images';
+import { TerminalScene } from './scenes/TerminalScene';
+import { BrowserScene } from './scenes/BrowserScene';
+import { DashboardScene } from './scenes/DashboardScene';
 import type { AnimationCue, VisualBeat } from '../types';
 import type { SketchNode, SketchEdge } from './viz/SketchDiagram';
 
@@ -108,6 +111,167 @@ interface TextSectionProps {
   d2Svg?: string;
 }
 
+// ---------------------------------------------------------------------------
+// Scene type auto-detection keywords
+// ---------------------------------------------------------------------------
+const TERMINAL_KEYWORDS = ['terminal', 'command', 'docker', 'deploy', 'install', 'run', 'kubectl', 'bash', 'npm', 'pip', 'shell', 'cli', 'ssh', 'git'];
+const BROWSER_KEYWORDS = ['api', 'response', 'endpoint', 'url', 'http', 'request', 'json', 'rest', 'graphql', 'webhook', 'browser'];
+const DASHBOARD_KEYWORDS = ['monitor', 'metric', 'performance', 'latency', 'throughput', 'health', 'dashboard', 'alert', 'observability', 'grafana', 'prometheus'];
+
+function detectSceneStyle(heading: string): 'terminal' | 'browser' | 'dashboard' | null {
+  const h = heading.toLowerCase();
+  if (TERMINAL_KEYWORDS.some(k => h.includes(k))) return 'terminal';
+  if (BROWSER_KEYWORDS.some(k => h.includes(k))) return 'browser';
+  if (DASHBOARD_KEYWORDS.some(k => h.includes(k))) return 'dashboard';
+  return null;
+}
+
+/**
+ * Generate terminal commands from scene bullets/narration.
+ */
+function generateTerminalCommands(
+  heading: string,
+  bullets: string[],
+  narration: string,
+): Array<{ cmd: string; output: string }> {
+  const commands: Array<{ cmd: string; output: string }> = [];
+  const h = heading.toLowerCase();
+
+  // Use bullets as basis for commands if available
+  if (bullets.length > 0) {
+    for (const bullet of bullets.slice(0, 4)) {
+      commands.push({
+        cmd: `echo "${bullet.slice(0, 60)}"`,
+        output: bullet,
+      });
+    }
+    return commands;
+  }
+
+  // Generate context-appropriate commands
+  if (h.includes('docker')) {
+    commands.push(
+      { cmd: 'docker ps', output: 'CONTAINER ID   IMAGE          STATUS\na1b2c3d4       nginx:latest   Up 3 hours\ne5f6g7h8       redis:alpine   Up 3 hours' },
+      { cmd: 'docker logs a1b2c3d4', output: '[notice] nginx started successfully' },
+    );
+  } else if (h.includes('kubectl') || h.includes('kubernetes')) {
+    commands.push(
+      { cmd: 'kubectl get pods', output: 'NAME                  READY   STATUS    RESTARTS   AGE\napp-6d4f5b8-x7z9k    1/1     Running   0          2h\ndb-8c3e2a1-m4n6p     1/1     Running   0          2h' },
+      { cmd: 'kubectl get services', output: 'NAME         TYPE        CLUSTER-IP     PORT(S)\napp-svc      ClusterIP   10.0.0.42      8080/TCP\ndb-svc       ClusterIP   10.0.0.88      5432/TCP' },
+    );
+  } else if (h.includes('npm') || h.includes('install')) {
+    commands.push(
+      { cmd: 'npm install', output: 'added 847 packages in 12s\n\n142 packages are looking for funding' },
+      { cmd: 'npm run build', output: '✓ Compiled successfully in 3.2s\n✓ Build output: dist/' },
+    );
+  } else if (h.includes('git')) {
+    commands.push(
+      { cmd: 'git status', output: 'On branch main\nYour branch is up to date.\n\nChanges to be committed:\n  modified:   src/app.ts' },
+      { cmd: 'git log --oneline -3', output: 'a1b2c3d feat: add load balancer\ne4f5g6h fix: connection pool\ni7j8k9l refactor: cache layer' },
+    );
+  } else {
+    // Generic: use first sentence of narration
+    const firstSentence = narration.split(/[.!?]/)[0]?.trim() || heading;
+    commands.push(
+      { cmd: `# ${heading}`, output: firstSentence },
+    );
+  }
+
+  return commands;
+}
+
+/**
+ * Generate browser content from scene data.
+ */
+function generateBrowserContent(
+  heading: string,
+  bullets: string[],
+  narration: string,
+): { url: string; content: string; title: string } {
+  const h = heading.toLowerCase();
+
+  let url = 'https://api.example.com';
+  let title = heading;
+
+  if (h.includes('api') || h.includes('endpoint') || h.includes('rest')) {
+    url = 'https://api.guru-sishya.in/v1/health';
+  } else if (h.includes('graphql')) {
+    url = 'https://api.guru-sishya.in/graphql';
+  } else if (h.includes('webhook')) {
+    url = 'https://hooks.guru-sishya.in/events';
+  }
+
+  // Build JSON-like response from bullets
+  if (bullets.length > 0) {
+    const jsonObj: Record<string, string> = { status: 'success' };
+    bullets.slice(0, 4).forEach((b, i) => {
+      const key = b.split(/[:\-—]/)[0]?.trim().toLowerCase().replace(/\s+/g, '_').slice(0, 20) || `field_${i}`;
+      const val = b.split(/[:\-—]/)[1]?.trim() || b;
+      jsonObj[key] = val;
+    });
+    return {
+      url,
+      title,
+      content: JSON.stringify(jsonObj, null, 2),
+    };
+  }
+
+  return {
+    url,
+    title,
+    content: JSON.stringify({
+      status: 'ok',
+      message: narration.split(/[.!?]/)[0]?.trim() || heading,
+      timestamp: '2026-04-02T10:30:00Z',
+    }, null, 2),
+  };
+}
+
+/**
+ * Generate dashboard metrics from scene data.
+ */
+function generateDashboardMetrics(
+  heading: string,
+  bullets: string[],
+): Array<{ label: string; value: number; unit?: string; color?: string; trend?: 'up' | 'down' | 'stable' }> {
+  const h = heading.toLowerCase();
+
+  // Try to extract numbers from bullets
+  if (bullets.length >= 2) {
+    return bullets.slice(0, 4).map((b, i) => {
+      const numMatch = b.match(/(\d+(?:\.\d+)?)/);
+      const value = numMatch ? parseFloat(numMatch[1]) : (i + 1) * 250;
+      const label = b.split(/[:\-—\d]/)[0]?.trim() || `Metric ${i + 1}`;
+      const colors = ['#60A5FA', '#4ADE80', '#FBBF24', '#F87171'];
+      const trends: Array<'up' | 'down' | 'stable'> = ['up', 'up', 'stable', 'down'];
+      return {
+        label,
+        value,
+        unit: h.includes('latency') ? 'ms' : h.includes('throughput') ? 'req/s' : '',
+        color: colors[i % 4],
+        trend: trends[i % 4],
+      };
+    });
+  }
+
+  // Default metrics based on heading context
+  if (h.includes('latency') || h.includes('performance')) {
+    return [
+      { label: 'P50 Latency', value: 45, unit: 'ms', color: '#4ADE80', trend: 'down' as const },
+      { label: 'P99 Latency', value: 230, unit: 'ms', color: '#FBBF24', trend: 'stable' as const },
+      { label: 'Throughput', value: 12500, unit: 'req/s', color: '#60A5FA', trend: 'up' as const },
+      { label: 'Error Rate', value: 0.2, unit: '%', color: '#F87171', trend: 'down' as const },
+    ];
+  }
+
+  return [
+    { label: 'Requests/sec', value: 8400, unit: 'req/s', color: '#60A5FA', trend: 'up' as const },
+    { label: 'Avg Response', value: 42, unit: 'ms', color: '#4ADE80', trend: 'down' as const },
+    { label: 'Uptime', value: 99.9, unit: '%', color: '#4ADE80', trend: 'stable' as const },
+    { label: 'Active Connections', value: 1250, unit: '', color: '#FBBF24', trend: 'up' as const },
+  ];
+}
+
 // =============================
 // MAIN COMPONENT
 // =============================
@@ -174,6 +338,54 @@ const TextSection: React.FC<TextSectionProps> = ({
       totalBeats: sentences.length,
       keywords: [],
     }));
+  }
+
+  // -------------------------------------------------------------------
+  // 2.5. Detect scene style — terminal, browser, dashboard, or default
+  // -------------------------------------------------------------------
+  const detectedStyle = detectSceneStyle(heading);
+
+  // If a software-environment style is detected, render that instead of the
+  // standard template layout. Return early to avoid rendering the default.
+  if (detectedStyle === 'terminal') {
+    const commands = generateTerminalCommands(heading, bullets, narration);
+    return (
+      <TerminalScene
+        commands={commands}
+        title={`Terminal — ${heading}`}
+        prompt="$ "
+        startFrame={startFrame}
+        sceneIndex={sceneIndex}
+        sceneDurationFrames={endFrame - startFrame}
+      />
+    );
+  }
+
+  if (detectedStyle === 'browser') {
+    const browserData = generateBrowserContent(heading, bullets, narration);
+    return (
+      <BrowserScene
+        url={browserData.url}
+        content={browserData.content}
+        title={browserData.title}
+        startFrame={startFrame}
+        sceneIndex={sceneIndex}
+        sceneDurationFrames={endFrame - startFrame}
+      />
+    );
+  }
+
+  if (detectedStyle === 'dashboard') {
+    const metrics = generateDashboardMetrics(heading, bullets);
+    return (
+      <DashboardScene
+        metrics={metrics}
+        title={`${heading} — Production`}
+        startFrame={startFrame}
+        sceneIndex={sceneIndex}
+        sceneDurationFrames={endFrame - startFrame}
+      />
+    );
   }
 
   // -------------------------------------------------------------------

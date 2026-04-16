@@ -33,6 +33,7 @@ import {
   SceneTransitionFlash,
   OutroSlide,
 } from '../components';
+import { IDEScene } from '../components/scenes/IDEScene';
 import { CinematicOpener } from '../components/CinematicOpener';
 import { SpeedReminder } from '../components/SpeedReminder';
 import { PatternInterruptLayer } from '../components/PatternInterruptLayer';
@@ -52,7 +53,7 @@ interface LongVideoProps {
 
 const SCENE_COMPONENT_MAP: Record<string, React.FC<any>> = {
   title: TitleSlide,
-  code: CodeReveal,
+  code: IDEScene,
   text: TextSection,
   diagram: DiagramSlide,
   table: ComparisonTable,
@@ -91,7 +92,7 @@ function getSceneProps(scene: Scene, storyboard: Storyboard): Record<string, any
       return {
         code: scene.content,
         language: scene.language || 'typescript',
-        title: scene.heading,
+        filename: scene.heading || `main.${(scene.language || 'ts').replace('typescript', 'ts').replace('javascript', 'js').replace('python', 'py')}`,
         highlightLines: scene.highlightLines,
         startFrame: 0,
         sceneDurationFrames: scene.endFrame - scene.startFrame,
