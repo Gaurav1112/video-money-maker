@@ -125,7 +125,7 @@ npx tsc --noEmit
 - roughjs, noisejs (hand-drawn look + organic wobble)
 - Chatterbox: `pip install chatterbox-tts` | Wrapper: `scripts/chatterbox-tts.py`
 
-## Current Visual Stack (2026-04-12)
+## Current Visual Stack (2026-04-16)
 - Light theme (#F5F3EF warm off-white, blue/emerald accents)
 - D2 pre-rendered SVG diagrams (Terrastruct, `brew install d2`)
 - Chatterbox human voice (primary TTS)
@@ -134,7 +134,18 @@ npx tsc --noEmit
 - Jarvis HUD overlay (corner brackets, progress ring, scan line)
 - Perlin noise wobble on all elements
 - Lucide React icons in diagram nodes
-- SadTalker being set up for real lip-synced avatar (Python 3.10 venv at tools/sadtalker-env/)
+- SadTalker lip-synced guru avatar (art_0 character, Python 3.10 venv at tools/sadtalker-env/)
+- CameraDrift (Ken Burns zoom 1.0→1.06 + pan)
+- CinematicGrade (teal-orange color grade via CSS filters)
+- Bokeh depth circles on backgrounds
+- Breathing vignette overlay
+- GlowTransition (light leak at scene cuts, available but not wired)
+
+## Security: ALL LOCAL, NO CLOUD
+- Every tool runs 100% offline after initial install
+- No data sent to any server
+- No API keys, no cloud services, no tokens
+- Safe for office laptop (only local computation)
 
 ## TTS Priority Chain
 ```
