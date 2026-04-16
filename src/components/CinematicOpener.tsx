@@ -281,6 +281,235 @@ const ParticleBurst: React.FC<{ frame: number; startFrame: number; count?: numbe
   );
 };
 
+/** Dramatic Warning Hook — first 3 seconds (frames 0-90) attention grab */
+const WarningHook: React.FC<{
+  frame: number;
+  fps: number;
+  hookText: string;
+  topic: string;
+}> = ({ frame, fps, hookText, topic }) => {
+  // Phase A: RED FLASH (frame 0-10)
+  const redFlashOp = interpolate(frame, [0, 1, 3, 10], [0, 1, 0.8, 0], {
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
+  });
+
+  // Phase B: WARNING text + alarm pulse (frame 10-30)
+  const warningOp = interpolate(frame, [10, 13, 25, 30], [0, 1, 1, 0], {
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
+  });
+  const warningScale = 1 + interpolate(Math.sin(frame * 0.4), [-1, 1], [0, 0.2]);
+  const borderPulse = interpolate(Math.sin(frame * 0.5), [-1, 1], [0.3, 1.0]);
+  const breakTextOp = interpolate(frame, [14, 18, 25, 30], [0, 1, 1, 0], {
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
+  });
+
+  // Phase C: Dramatic stat counter (frame 30-60)
+  const counterOp = interpolate(frame, [30, 35, 55, 60], [0, 1, 1, 0], {
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
+  });
+  const counterVal = Math.round(
+    interpolate(frame, [30, 55], [0, 10000000], {
+      extrapolateLeft: 'clamp',
+      extrapolateRight: 'clamp',
+    }),
+  );
+
+  // Phase D: Hook text slam (frame 60-90)
+  const hookSpring = spring({
+    frame: Math.max(0, frame - 60),
+    fps,
+    config: { damping: 8, stiffness: 200, mass: 0.5 },
+  });
+  const hookScale = interpolate(hookSpring, [0, 1], [0.3, 1.0]);
+  const hookOp = interpolate(frame, [60, 65, 85, 90], [0, 1, 1, 0], {
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
+  });
+
+  // Only render during frames 0-90
+  if (frame > 92) return null;
+
+  return (
+    <>
+      {/* Phase A: RED FLASH */}
+      <div
+        style={{
+          position: 'absolute',
+          inset: 0,
+          backgroundColor: '#DC2626',
+          opacity: redFlashOp,
+          zIndex: 100,
+        }}
+      />
+
+      {/* Phase B: WARNING text + pulsing border */}
+      {frame >= 10 && frame <= 30 && (
+        <>
+          {/* Dark background with red radial glow */}
+          <div
+            style={{
+              position: 'absolute',
+              inset: 0,
+              background: 'radial-gradient(circle at 50% 50%, #DC262640, #0A0A0A 70%)',
+              opacity: warningOp,
+              zIndex: 90,
+            }}
+          />
+          {/* Pulsing red border */}
+          <div
+            style={{
+              position: 'absolute',
+              inset: 0,
+              border: `4px solid rgba(220, 38, 38, ${borderPulse})`,
+              opacity: warningOp,
+              zIndex: 91,
+            }}
+          />
+          {/* Warning emoji */}
+          <div
+            style={{
+              position: 'absolute',
+              top: '32%',
+              left: '50%',
+              transform: `translateX(-50%) scale(${warningScale})`,
+              fontSize: 80,
+              opacity: warningOp,
+              zIndex: 92,
+            }}
+          >
+            {'⚠'}
+          </div>
+          {/* WARNING text */}
+          <div
+            style={{
+              position: 'absolute',
+              top: '34%',
+              left: 0,
+              right: 0,
+              textAlign: 'center',
+              opacity: warningOp,
+              zIndex: 92,
+            }}
+          >
+            <span
+              style={{
+                fontSize: 72,
+                fontFamily: FONTS.heading,
+                fontWeight: 900,
+                color: '#DC2626',
+                letterSpacing: 8,
+                textShadow: '0 0 40px #DC262680',
+              }}
+            >
+              WARNING
+            </span>
+          </div>
+          {/* "THIS CONCEPT BREAKS EVERYTHING" */}
+          <div
+            style={{
+              position: 'absolute',
+              top: '55%',
+              left: 0,
+              right: 0,
+              textAlign: 'center',
+              opacity: breakTextOp,
+              zIndex: 92,
+            }}
+          >
+            <span
+              style={{
+                fontSize: 40,
+                fontFamily: FONTS.heading,
+                fontWeight: 800,
+                color: COLORS.white,
+                letterSpacing: 2,
+                textShadow: '0 4px 20px rgba(0,0,0,0.8)',
+              }}
+            >
+              THIS CONCEPT BREAKS EVERYTHING
+            </span>
+          </div>
+        </>
+      )}
+
+      {/* Phase C: Dramatic stat counter */}
+      {frame >= 30 && frame <= 60 && (
+        <div
+          style={{
+            position: 'absolute',
+            top: '35%',
+            left: 0,
+            right: 0,
+            textAlign: 'center',
+            opacity: counterOp,
+            zIndex: 90,
+          }}
+        >
+          <span
+            style={{
+              fontSize: 120,
+              fontFamily: FONTS.heading,
+              fontWeight: 900,
+              color: COLORS.white,
+              letterSpacing: -2,
+              textShadow: `0 0 40px ${COLORS.saffron}60`,
+            }}
+          >
+            {counterVal.toLocaleString()}
+          </span>
+          <div
+            style={{
+              fontSize: 24,
+              fontFamily: FONTS.text,
+              fontWeight: 600,
+              color: COLORS.gray,
+              letterSpacing: 3,
+              marginTop: 8,
+            }}
+          >
+            DEVELOPERS GOT THIS WRONG IN INTERVIEWS
+          </div>
+        </div>
+      )}
+
+      {/* Phase D: Hook text slam */}
+      {frame >= 60 && frame <= 92 && (
+        <div
+          style={{
+            position: 'absolute',
+            top: '38%',
+            left: 0,
+            right: 0,
+            textAlign: 'center',
+            transform: `scale(${hookScale})`,
+            opacity: hookOp,
+            zIndex: 90,
+          }}
+        >
+          <span
+            style={{
+              fontSize: 56,
+              fontFamily: FONTS.heading,
+              fontWeight: 900,
+              color: COLORS.white,
+              lineHeight: 1.2,
+              textShadow: `0 0 30px ${COLORS.saffron}50, 0 6px 20px rgba(0,0,0,0.9)`,
+              maxWidth: '80%',
+              display: 'inline-block',
+            }}
+          >
+            {hookText || topic}
+          </span>
+        </div>
+      )}
+    </>
+  );
+};
+
 /** Branding bar — GURU SISHYA + tagline, used in Phase 3 of all styles */
 const BrandingReveal: React.FC<{ frame: number; fps: number; startFrame: number }> = ({
   frame,
@@ -1903,8 +2132,11 @@ export const CinematicOpener: React.FC<CinematicOpenerProps> = ({
       {/* Tech grid background — always present */}
       <TechGridBg frame={frame} accentColor={style === 2 ? COLORS.red : COLORS.saffron} />
 
-      {/* SFX — impact on entry */}
-      <Audio src={staticFile('audio/sfx/impact.wav')} volume={0.6} />
+      {/* SFX — impact on entry (LOUD for immediate attention grab) */}
+      <Audio src={staticFile('audio/sfx/impact.wav')} volume={0.8} />
+
+      {/* Dramatic Warning Hook — first 3 seconds (frames 0-90) */}
+      <WarningHook frame={frame} fps={fps} hookText={hookText} topic={topic} />
 
       {/* Cinematic corner brackets */}
       <CinematicFrame opacity={cornerOp} />

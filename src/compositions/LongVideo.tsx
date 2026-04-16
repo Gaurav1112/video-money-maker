@@ -348,7 +348,7 @@ export const LongVideo: React.FC<LongVideoProps> = ({ storyboard, noOverlays = f
 
             // SPLIT LAYOUT: Left 42% text panel + Right 58% full ConceptViz
             // The visualization is the STAR — it fills the right side completely
-            const isSplitScene = scene.type === 'text' || scene.type === 'interview';
+            const isSplitScene = false; // Disabled — text scenes now use full-screen TemplateFactory/D2/Terminal
             const renderedScene = isFullWidthScene ? (
               <AbsoluteFill style={{ zIndex: 2 }}>
                 <Component {...props} {...syncProps} />

@@ -376,7 +376,7 @@ function generateCodeWalkthrough(code: string, _language: string, topic: string 
   }
 
   // Build natural narration with varied connectors and WHY context
-  const connectors = ['First, we', 'Then we', 'Next, we', 'After that, we', 'Then we', 'Finally, we'];
+  const connectors = ['First, we', 'Now we', 'Here we', 'At this point, we', 'This is where we', 'Finally, we'];
   const parts: string[] = [];
   for (let i = 0; i < selected.length; i++) {
     const connector = i === 0 ? connectors[0]
@@ -683,7 +683,7 @@ function describeCodeLine(line: string): string {
 
   // Last resort: if line is short enough, describe it literally
   if (trimmed.length < 35) return `execute ${trimmed.replace(/;$/, '')}`;
-  return 'continue building our logic';
+  return `handle the ${trimmed.split(/[({=]/)[0].trim().slice(0, 30)} operation`;
 }
 
 /** Turn a parameter string like "servers, count: int" into readable text */
