@@ -38,6 +38,8 @@ import { SpeedReminder } from '../components/SpeedReminder';
 import { PatternInterruptLayer } from '../components/PatternInterruptLayer';
 import { FilmGrain } from '../components/FilmGrain';
 import { HudOverlay } from '../components/HudOverlay';
+import { CameraDrift } from '../components/CameraDrift';
+import { CinematicGrade } from '../components/CinematicGrade';
 import { AvatarBubble } from '../components/AvatarBubble';
 import { getStyleForFormat, getTransitionDuration } from '../lib/video-styles';
 
@@ -302,6 +304,7 @@ export const LongVideo: React.FC<LongVideoProps> = ({ storyboard, noOverlays = f
   const isOutro = frame >= INTRO_DURATION + contentFrames;
 
   return (
+    <CinematicGrade>
     <AbsoluteFill style={{ backgroundColor: COLORS.dark }}>
       {/* Animated background layer - adapts to scene type */}
       {!isIntro && !isOutro && <BackgroundLayer sceneType={currentSceneType} />}
@@ -457,7 +460,9 @@ export const LongVideo: React.FC<LongVideoProps> = ({ storyboard, noOverlays = f
                 )}
                 <TransitionSeries.Sequence durationInFrames={duration}>
                   <AbsoluteFill>
-                    {renderedScene}
+                    <CameraDrift>
+                      {renderedScene}
+                    </CameraDrift>
                     <PatternInterruptLayer
                       wordTimestamps={scene.wordTimestamps || []}
                       sceneType={scene.type}
@@ -601,6 +606,7 @@ export const LongVideo: React.FC<LongVideoProps> = ({ storyboard, noOverlays = f
       {/* Film grain overlay — deterministic SVG noise for organic feel */}
       <FilmGrain opacity={0.04} />
     </AbsoluteFill>
+    </CinematicGrade>
   );
 };
 

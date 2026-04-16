@@ -21,7 +21,19 @@ const BackgroundLayer: React.FC<BackgroundLayerProps> = ({ sceneType = 'text' })
   const bg = SCENE_TINTS[sceneType] || '#F5F3EF';
 
   return (
-    <AbsoluteFill style={{ backgroundColor: bg }} />
+    <AbsoluteFill style={{ backgroundColor: bg }}>
+      {/* Out-of-focus bokeh shapes for depth */}
+      {[0.15, 0.7, 0.4, 0.85].map((x, i) => (
+        <div key={`bokeh-${i}`} style={{
+          position: 'absolute',
+          left: `${x * 100}%`, top: `${(i * 25 + 10)}%`,
+          width: 120 + i * 40, height: 120 + i * 40,
+          borderRadius: '50%',
+          background: `radial-gradient(circle, rgba(37,99,235,0.05) 0%, transparent 70%)`,
+          filter: 'blur(30px)',
+        }} />
+      ))}
+    </AbsoluteFill>
   );
 };
 
