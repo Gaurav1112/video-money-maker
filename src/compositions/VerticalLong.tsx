@@ -20,6 +20,7 @@ import { VerticalCaptionOverlay } from '../components/vertical/VerticalCaptionOv
 import { VerticalTitleSlide } from '../components/vertical/VerticalTitleSlide';
 import VerticalComparisonTable from '../components/vertical/VerticalComparisonTable';
 import { VerticalTextSection } from '../components/vertical/VerticalTextSection';
+import { VerticalCodeReveal } from '../components/vertical/VerticalCodeReveal';
 import {
   TitleSlide,
   TextSection,
@@ -393,7 +394,7 @@ const CONTENT_SCALE = 1080 / 1920; // 0.5625 — exact fit, zero crop
 const ACCENT_COLORS = ['#2563EB', '#059669', '#D97706', '#7C3AED'];
 
 // ── Native vertical components — render at 1080x1920, no scaling needed ───────
-const NATIVE_VERTICAL_SCENES = new Set(['title', 'text', 'table', 'diagram']);
+const NATIVE_VERTICAL_SCENES = new Set(['title', 'text', 'table', 'diagram', 'code']);
 
 // ── Scene component map — vertical-native where available, horizontal fallback ─
 const VERTICAL_SCENE_MAP: Record<string, React.FC<any>> = {
@@ -401,6 +402,7 @@ const VERTICAL_SCENE_MAP: Record<string, React.FC<any>> = {
   text: VerticalTextSection,
   table: VerticalComparisonTable,
   diagram: VerticalTextSection, // diagrams use text section with d2Svg prop
+  code: VerticalCodeReveal,
 };
 
 // ── Horizontal fallback map (for code, interview, review, summary) ────────────
@@ -572,6 +574,17 @@ function getNativeSceneProps(scene: Scene, storyboard: Storyboard): Record<strin
         title: scene.heading || '',
       };
     }
+    case 'code':
+      return {
+        ...base,
+        code: scene.content || '',
+        language: scene.language || 'typescript',
+        title: scene.heading || `main.${scene.language === 'python' ? 'py' : 'ts'}`,
+        highlightLines: scene.highlightLines,
+        startFrame: 0,
+        sceneDurationFrames: scene.endFrame - scene.startFrame,
+        output: (scene as any).output,
+      };
     default:
       return { ...base, ...scene };
   }
