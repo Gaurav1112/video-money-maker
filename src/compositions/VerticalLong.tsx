@@ -16,6 +16,16 @@ import { REGIONS, VERTICAL_SIZES, SAFE_ZONE } from '../lib/vertical-layouts';
 import { selectBestHook } from '../lib/hook-formulas';
 import { getStyleForFormat, getTransitionDuration } from '../lib/video-styles';
 import { VerticalCaptionOverlay } from '../components/vertical/VerticalCaptionOverlay';
+import {
+  TitleSlide,
+  TextSection,
+  DiagramSlide,
+  ComparisonTable,
+  InterviewInsight,
+  ReviewQuestion,
+  SummarySlide,
+} from '../components';
+import { IDEScene } from '../components/scenes/IDEScene';
 
 // ── Dimensions ─────────────────────────────────────────────────────────────────
 const WIDTH = 1080;
@@ -368,351 +378,193 @@ const SceneHeading: React.FC<{ heading: string }> = ({ heading }) => {
   );
 };
 
-// ── Vertical code scene ────────────────────────────────────────────────────────
-const VerticalCodeScene: React.FC<{ scene: Scene }> = ({ scene }) => {
-  const frame = useCurrentFrame();
-  const codeLines = (scene.content || '').split('\n').slice(0, CODE_LIMITS_MAX_LINES);
-  const activeLineIdx = Math.min(codeLines.length - 1, Math.floor(frame / 8));
+// ── Scale constants: fit 1920×1080 components into 900px-wide vertical content ─
+const SCALE_FACTOR = 900 / 1920; // ≈ 0.469
+const ACCENT_COLORS = ['#2563EB', '#059669', '#D97706', '#7C3AED'];
 
-  return (
-    <AbsoluteFill style={{ backgroundColor: COLORS.dark }}>
-      <VerticalBg />
-      <SceneHeading heading={scene.heading || ''} />
-      <div style={{
-        position: 'absolute',
-        top: REGIONS.mainContent.y + 80,
-        left: SAFE_ZONE.left - 20,
-        right: SAFE_ZONE.right - 20,
-        bottom: HEIGHT - (REGIONS.captionZone.y - 20),
-        backgroundColor: '#1E1E2E',
-        borderRadius: 16,
-        padding: '20px 18px',
-        overflow: 'hidden',
-        borderTop: `3px solid ${COLORS.saffron}44`,
-      }}>
-        {codeLines.map((line, i) => {
-          const lineOpacity = interpolate(
-            frame - i * 5,
-            [0, 10],
-            [0, 1],
-            { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
-          );
-          const isActive = i === activeLineIdx;
-          return (
-            <div key={i} style={{
-              fontSize: CODE_FONT_SIZE,
-              fontFamily: FONTS.code,
-              color: isActive ? COLORS.white : `${COLORS.white}BB`,
-              lineHeight: 1.6,
-              whiteSpace: 'pre',
-              opacity: lineOpacity,
-              borderLeft: isActive ? `3px solid ${COLORS.saffron}` : '3px solid transparent',
-              paddingLeft: 10,
-              backgroundColor: isActive ? `${COLORS.saffron}12` : 'transparent',
-            }}>
-              {line || ' '}
-            </div>
-          );
-        })}
-      </div>
-    </AbsoluteFill>
-  );
+// ── Scene component map (same as LongVideo) ────────────────────────────────────
+const SCENE_COMPONENT_MAP: Record<string, React.FC<any>> = {
+  title: TitleSlide,
+  code: IDEScene,
+  text: TextSection,
+  diagram: DiagramSlide,
+  table: ComparisonTable,
+  interview: InterviewInsight,
+  review: ReviewQuestion,
+  summary: SummarySlide,
 };
 
-// Max lines and font size for code — sourced from CODE_LIMITS in vertical-layouts
-const CODE_LIMITS_MAX_LINES = 18;
-const CODE_FONT_SIZE = VERTICAL_SIZES.code;
+// ── Helper: extract a clean answer from narration (same logic as LongVideo) ───
+function extractAnswerFromNarration(narration: string, question: string): string {
+  const introPatterns = [
+    /^okay,?\s*pop\s*quiz\s*time\.?\s*/i,
+    /^alright,?\s*let'?s\s*test\s*if\s*you\s*were\s*really\s*paying\s*attention\.?\s*/i,
+    /^now\s*i\s*want\s*you\s*to\s*pause.*?seconds?\s*and\s*think\s*about\s*this\.?\s*seriously\.?\s*pausing\s*and\s*thinking\s*is\s*how\s*you\s*actually\s*learn\.?\s*/i,
+    /^here'?s\s*a\s*question\s*that\s*trips\s*up\s*even\s*experienced\s*developers\.?\s*see\s*if\s*you\s*can\s*get\s*it\s*right\.?\s*/i,
+    /^before\s*we\s*wrap\s*up,?\s*let\s*me\s*challenge\s*you\s*with\s*this\.?\s*if\s*you\s*can\s*answer\s*it.*?\.?\s*/i,
+    /^don'?t\s*scroll\s*ahead\.?\s*think\s*about\s*this.*?\.?\s*/i,
+    /^time\s*to\s*test\s*yourself\.?\s*/i,
+  ];
+  let cleaned = narration;
+  for (const pattern of introPatterns) {
+    cleaned = cleaned.replace(pattern, '');
+  }
+  const ctaPatterns = [
+    /\s*you\s*can\s*practice\s*more\s*questions?\s*like\s*this.*$/i,
+    /\s*head\s*over\s*to\s*guru-sishya\.in.*$/i,
+    /\s*practice\s*this\s*on\s*guru-sishya\.in.*$/i,
+  ];
+  for (const pattern of ctaPatterns) {
+    cleaned = cleaned.replace(pattern, '');
+  }
+  if (question && cleaned.includes(question)) {
+    cleaned = cleaned.replace(question, '').trim();
+  }
+  cleaned = cleaned.trim();
+  if (cleaned.length < 10) {
+    return 'Consider the core concepts, trade-offs, and real-world applications.';
+  }
+  return cleaned;
+}
 
-// ── Vertical text scene ────────────────────────────────────────────────────────
-const VerticalTextScene: React.FC<{ scene: Scene }> = ({ scene }) => {
-  const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
-  const bullets = scene.bullets && scene.bullets.length > 0
-    ? scene.bullets
-    : scene.content
-      ? scene.content.split(/\n+/).filter(Boolean)
-      : [];
+// ── Build props for each scene type (same logic as LongVideo.getSceneProps) ───
+function getSceneProps(scene: Scene, storyboard: Storyboard): Record<string, any> {
+  switch (scene.type) {
+    case 'title':
+      return {
+        topic: storyboard.topic,
+        sessionNumber: storyboard.sessionNumber,
+        title: scene.content,
+        objectives: scene.bullets || [],
+      };
+    case 'code':
+      return {
+        code: scene.content,
+        language: scene.language || 'typescript',
+        filename: scene.heading || `main.${(scene.language || 'ts').replace('typescript', 'ts').replace('javascript', 'js').replace('python', 'py')}`,
+        highlightLines: scene.highlightLines,
+        startFrame: 0,
+        sceneDurationFrames: scene.endFrame - scene.startFrame,
+      };
+    case 'text':
+      return {
+        heading: scene.heading || '',
+        bullets: scene.bullets || [scene.content],
+        content: scene.content || '',
+        narration: scene.narration || '',
+        startFrame: 0,
+        endFrame: scene.endFrame - scene.startFrame,
+        visualBeats: scene.visualBeats,
+        templateId: scene.templateId,
+        templateVariant: scene.templateVariant,
+        accentColor: ACCENT_COLORS[storyboard.sessionNumber % 4],
+        topic: storyboard.topic,
+        d2Svg: scene.d2Svg,
+      };
+    case 'diagram':
+      return {
+        svgContent: scene.content,
+        title: scene.heading || '',
+        startFrame: 0,
+      };
+    case 'table': {
+      const lines = scene.content.split('\n').filter(l => l.includes('|'));
+      const parsed = lines
+        .map(l => l.split('|').map(c => c.trim()).filter(Boolean))
+        .filter(cells => !cells.every(c => /^[-:]+$/.test(c)));
+      const headers = parsed[0] || [];
+      const rows = parsed.slice(1) || [];
+      return {
+        headers,
+        rows,
+        title: scene.heading || '',
+        startFrame: 0,
+        endFrame: scene.endFrame - scene.startFrame,
+      };
+    }
+    case 'interview':
+      return {
+        insight: scene.content,
+        tip: scene.narration,
+        startFrame: 0,
+      };
+    case 'review':
+      return {
+        question: scene.content,
+        answer: scene.heading || extractAnswerFromNarration(scene.narration || '', scene.content),
+        startFrame: 0,
+        endFrame: scene.endFrame - scene.startFrame,
+        quizOptions: scene.quizOptions,
+      };
+    case 'summary':
+      return {
+        takeaways: scene.bullets || [scene.content],
+        topic: storyboard.topic,
+        sessionNumber: storyboard.sessionNumber,
+        startFrame: 0,
+        templateId: scene.templateId,
+        visualBeats: scene.visualBeats,
+      };
+    default:
+      return {};
+  }
+}
 
-  return (
-    <AbsoluteFill style={{ backgroundColor: COLORS.dark }}>
-      <VerticalBg />
-      <SceneHeading heading={scene.heading || ''} />
-      <div style={{
-        position: 'absolute',
-        top: REGIONS.mainContent.y + 90,
-        left: SAFE_ZONE.left,
-        right: SAFE_ZONE.right,
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 20,
-      }}>
-        {bullets.slice(0, 6).map((bullet, idx) => {
-          const bulletSpring = spring({
-            frame: Math.max(0, frame - idx * 20),
-            fps,
-            config: { damping: 12, stiffness: 160, mass: 0.5 },
-          });
-          return (
-            <div key={idx} style={{
-              display: 'flex',
-              alignItems: 'flex-start',
-              gap: 16,
-              opacity: interpolate(bulletSpring, [0, 1], [0, 1]),
-              transform: `translateX(${interpolate(bulletSpring, [0, 1], [32, 0])}px)`,
-            }}>
-              <div style={{
-                width: 4,
-                minHeight: 32,
-                borderRadius: 2,
-                backgroundColor: idx === 0 ? COLORS.saffron : idx === 1 ? COLORS.gold : COLORS.teal,
-                marginTop: 6,
-                flexShrink: 0,
-              }} />
-              <span style={{
-                fontFamily: FONTS.text,
-                fontSize: VERTICAL_SIZES.bullet,
-                fontWeight: idx === 0 ? 700 : 500,
-                color: idx === 0 ? COLORS.white : `${COLORS.white}DD`,
-                lineHeight: 1.5,
-              }}>
-                {typeof bullet === 'string' ? bullet.trim() : ''}
-              </span>
-            </div>
-          );
-        })}
-      </div>
-    </AbsoluteFill>
-  );
-};
+// ── Vertical scene wrapper: scales rich 1920×1080 component into 900px column ─
+const VerticalSceneContent: React.FC<{ scene: Scene; storyboard: Storyboard }> = ({ scene, storyboard }) => {
+  const Component = SCENE_COMPONENT_MAP[scene.type];
+  const sceneProps = getSceneProps(scene, storyboard);
 
-// ── Vertical interview/review scene ───────────────────────────────────────────
-const VerticalInterviewScene: React.FC<{ scene: Scene }> = ({ scene }) => {
-  const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
-
-  const cardSpring = spring({
-    frame,
-    fps,
-    config: { damping: 10, stiffness: 140, mass: 0.7 },
-  });
-
-  const isReview = scene.type === 'review';
-  const bullets = scene.bullets && scene.bullets.length > 0
-    ? scene.bullets
-    : [];
-
-  return (
-    <AbsoluteFill style={{ backgroundColor: COLORS.dark }}>
-      <VerticalBg />
-
-      {/* Question card */}
-      <div style={{
-        position: 'absolute',
-        top: REGIONS.mainContent.y,
-        left: SAFE_ZONE.left,
-        right: SAFE_ZONE.right,
-        backgroundColor: isReview ? `${COLORS.saffron}12` : `${COLORS.teal}10`,
-        border: `1.5px solid ${isReview ? COLORS.saffron : COLORS.teal}44`,
-        borderRadius: 20,
-        padding: '32px 28px',
-        opacity: interpolate(cardSpring, [0, 1], [0, 1]),
-        transform: `scale(${interpolate(cardSpring, [0, 1], [0.92, 1])})`,
-      }}>
-        <div style={{
-          fontFamily: FONTS.heading,
-          fontSize: VERTICAL_SIZES.bodySmall,
-          fontWeight: 800,
-          color: isReview ? COLORS.saffron : COLORS.teal,
-          marginBottom: 12,
-          textTransform: 'uppercase' as const,
-          letterSpacing: 1,
-        }}>
-          {isReview ? '🎯 Quiz Time' : '💼 Interview Tip'}
-        </div>
-        <div style={{
-          fontFamily: FONTS.text,
-          fontSize: VERTICAL_SIZES.body,
-          fontWeight: 700,
-          color: COLORS.white,
-          lineHeight: 1.4,
-        }}>
-          {scene.heading || scene.content || ''}
-        </div>
-      </div>
-
-      {/* Bullets / answer */}
-      {bullets.length > 0 && (
+  if (!Component) {
+    // Minimal fallback for unknown scene types
+    return (
+      <AbsoluteFill style={{ backgroundColor: COLORS.dark }}>
+        <VerticalBg />
+        <SceneHeading heading={scene.heading || ''} />
         <div style={{
           position: 'absolute',
-          top: REGIONS.mainContent.y + 260,
+          top: REGIONS.mainContent.y + 90,
           left: SAFE_ZONE.left,
           right: SAFE_ZONE.right,
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 16,
         }}>
-          {bullets.slice(0, 4).map((bullet, idx) => {
-            const bSpring = spring({
-              frame: Math.max(0, frame - 20 - idx * 18),
-              fps,
-              config: { damping: 12, stiffness: 150, mass: 0.5 },
-            });
-            return (
-              <div key={idx} style={{
-                display: 'flex',
-                alignItems: 'flex-start',
-                gap: 14,
-                opacity: interpolate(bSpring, [0, 1], [0, 1]),
-                transform: `translateX(${interpolate(bSpring, [0, 1], [28, 0])}px)`,
-              }}>
-                <div style={{
-                  fontFamily: FONTS.heading,
-                  fontSize: VERTICAL_SIZES.bodySmall,
-                  fontWeight: 800,
-                  color: COLORS.gold,
-                  minWidth: 28,
-                }}>
-                  {idx + 1}.
-                </div>
-                <span style={{
-                  fontFamily: FONTS.text,
-                  fontSize: VERTICAL_SIZES.bullet,
-                  fontWeight: 500,
-                  color: `${COLORS.white}EE`,
-                  lineHeight: 1.45,
-                }}>
-                  {typeof bullet === 'string' ? bullet.trim() : ''}
-                </span>
-              </div>
-            );
-          })}
+          <div style={{
+            fontFamily: FONTS.text,
+            fontSize: VERTICAL_SIZES.body,
+            fontWeight: 500,
+            color: COLORS.white,
+            lineHeight: 1.6,
+          }}>
+            {scene.content || ''}
+          </div>
         </div>
-      )}
-    </AbsoluteFill>
-  );
-};
-
-// ── Vertical summary scene ─────────────────────────────────────────────────────
-const VerticalSummaryScene: React.FC<{ scene: Scene; topic: string }> = ({ scene, topic }) => {
-  const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
-  const takeaways = scene.bullets && scene.bullets.length > 0
-    ? scene.bullets
-    : scene.content
-      ? scene.content.split(/\n+/).filter(Boolean)
-      : [];
+      </AbsoluteFill>
+    );
+  }
 
   return (
     <AbsoluteFill style={{ backgroundColor: COLORS.dark }}>
       <VerticalBg />
 
+      {/* Scaled content area: 900px wide column containing a scaled-down 1920×1080 component */}
       <div style={{
         position: 'absolute',
         top: REGIONS.mainContent.y,
         left: SAFE_ZONE.left,
-        right: SAFE_ZONE.right,
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 8,
+        width: 900,
+        height: REGIONS.mainContent.height,
+        overflow: 'hidden',
       }}>
         <div style={{
-          fontFamily: FONTS.heading,
-          fontSize: VERTICAL_SIZES.heading2,
-          fontWeight: 900,
-          color: COLORS.gold,
-          marginBottom: 20,
+          width: 1920,
+          height: 1080,
+          transform: `scale(${SCALE_FACTOR})`,
+          transformOrigin: 'top left',
         }}>
-          Key Takeaways
+          <Component {...sceneProps} />
         </div>
-
-        {takeaways.slice(0, 5).map((item, idx) => {
-          const s = spring({
-            frame: Math.max(0, frame - idx * 18),
-            fps,
-            config: { damping: 12, stiffness: 140, mass: 0.6 },
-          });
-          return (
-            <div key={idx} style={{
-              display: 'flex',
-              alignItems: 'flex-start',
-              gap: 16,
-              paddingTop: 14,
-              paddingBottom: 14,
-              paddingLeft: 16,
-              paddingRight: 16,
-              borderRadius: 12,
-              backgroundColor: `${COLORS.saffron}0D`,
-              borderLeft: `4px solid ${COLORS.saffron}`,
-              opacity: interpolate(s, [0, 1], [0, 1]),
-              transform: `translateY(${interpolate(s, [0, 1], [20, 0])}px)`,
-            }}>
-              <div style={{
-                fontFamily: FONTS.heading,
-                fontSize: VERTICAL_SIZES.bodySmall,
-                fontWeight: 800,
-                color: COLORS.saffron,
-                minWidth: 24,
-              }}>
-                ✓
-              </div>
-              <span style={{
-                fontFamily: FONTS.text,
-                fontSize: VERTICAL_SIZES.bullet,
-                fontWeight: 500,
-                color: `${COLORS.white}EE`,
-                lineHeight: 1.45,
-              }}>
-                {typeof item === 'string' ? item.trim() : ''}
-              </span>
-            </div>
-          );
-        })}
       </div>
     </AbsoluteFill>
   );
-};
-
-// ── Generic fallback scene ─────────────────────────────────────────────────────
-const VerticalGenericScene: React.FC<{ scene: Scene }> = ({ scene }) => (
-  <AbsoluteFill style={{ backgroundColor: COLORS.dark }}>
-    <VerticalBg />
-    <SceneHeading heading={scene.heading || ''} />
-    <div style={{
-      position: 'absolute',
-      top: REGIONS.mainContent.y + 90,
-      left: SAFE_ZONE.left,
-      right: SAFE_ZONE.right,
-    }}>
-      <div style={{
-        fontFamily: FONTS.text,
-        fontSize: VERTICAL_SIZES.body,
-        fontWeight: 500,
-        color: COLORS.white,
-        lineHeight: 1.6,
-      }}>
-        {scene.content || ''}
-      </div>
-    </div>
-  </AbsoluteFill>
-);
-
-// ── Scene renderer dispatch ────────────────────────────────────────────────────
-const VerticalSceneContent: React.FC<{ scene: Scene; topic: string }> = ({ scene, topic }) => {
-  switch (scene.type) {
-    case 'code':
-      return <VerticalCodeScene scene={scene} />;
-    case 'text':
-    case 'diagram':
-    case 'table':
-      return <VerticalTextScene scene={scene} />;
-    case 'interview':
-    case 'review':
-      return <VerticalInterviewScene scene={scene} />;
-    case 'summary':
-      return <VerticalSummaryScene scene={scene} topic={topic} />;
-    default:
-      return <VerticalGenericScene scene={scene} />;
-  }
 };
 
 // ── Active scene detection (same logic as LongVideo) ──────────────────────────
@@ -815,7 +667,7 @@ export const VerticalLong: React.FC<VerticalLongProps> = ({ storyboard }) => {
                 )}
                 <TransitionSeries.Sequence durationInFrames={duration}>
                   <AbsoluteFill>
-                    <VerticalSceneContent scene={scene} topic={storyboard.topic} />
+                    <VerticalSceneContent scene={scene} storyboard={storyboard} />
                   </AbsoluteFill>
                 </TransitionSeries.Sequence>
               </React.Fragment>
