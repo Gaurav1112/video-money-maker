@@ -382,7 +382,14 @@ const SceneHeading: React.FC<{ heading: string }> = ({ heading }) => {
 };
 
 // ── Scale constants: fit 1920×1080 components into full 1080px vertical width ─
-const CONTENT_SCALE = 1080 / 1920; // 0.5625 — fills full width
+// Scale content to fill as much vertical space as possible
+// The components are 1920x1080. We want them to fill 1080px wide AND stretch taller.
+// Scale = 1080/1920 = 0.5625 for width. But we want to fill more height,
+// so we scale based on the content region height instead:
+// Content region is 1200px tall, component is 1080px tall -> scale = 1200/1080 = 1.11
+// But width would be 1920*1.11 = 2131 -> wider than 1080, needs crop
+// Best approach: scale to fill height, crop width (shows center of horizontal content)
+const CONTENT_SCALE = Math.min(REGIONS.mainContent.height / 1080, 1.15); // ~1.11, capped at 1.15
 const ACCENT_COLORS = ['#2563EB', '#059669', '#D97706', '#7C3AED'];
 
 // ── Scene component map (same as LongVideo) ────────────────────────────────────
@@ -548,7 +555,9 @@ const VerticalSceneContent: React.FC<{ scene: Scene; storyboard: Storyboard }> =
     <AbsoluteFill style={{ backgroundColor: '#0C0A15' }}>
       <VerticalBg />
 
-      {/* Scaled content area: full 1080px width, centered vertically in tall content region */}
+      {/* Content fills the full vertical content region.
+          Components render at 1920x1080, scaled up to fill 1200px height.
+          Width overflows (1920*1.11 = 2131px) so we crop horizontally (centered). */}
       <div style={{
         position: 'absolute',
         top: REGIONS.mainContent.y,
@@ -556,16 +565,15 @@ const VerticalSceneContent: React.FC<{ scene: Scene; storyboard: Storyboard }> =
         width: 1080,
         height: REGIONS.mainContent.height,
         overflow: 'hidden',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
       }}>
         <div style={{
+          position: 'absolute',
           width: 1920,
           height: 1080,
-          transform: `scale(${CONTENT_SCALE})`,
+          left: '50%',
+          top: '50%',
+          transform: `translate(-50%, -50%) scale(${CONTENT_SCALE})`,
           transformOrigin: 'center center',
-          flexShrink: 0,
         }}>
           <Component {...sceneProps} />
         </div>
@@ -701,11 +709,14 @@ export const VerticalLong: React.FC<VerticalLongProps> = ({ storyboard }) => {
           />
           <VerticalProgressBar progress={contentProgress} />
 
-          {/* Avatar bubble — bottom-right, between content and captions */}
+          {/* Avatar bubble — positioned container for AvatarBubble which has internal absolute positioning.
+              We create a relative box at the right spot so AvatarBubble's bottom:80/right:40 lands correctly. */}
           <div style={{
             position: 'absolute',
-            bottom: 420,
-            right: 30,
+            right: 0,
+            bottom: 300,
+            width: 300,
+            height: 300,
             zIndex: 90,
           }}>
             <AvatarBubble

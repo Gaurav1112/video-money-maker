@@ -541,10 +541,9 @@ export const LongVideo: React.FC<LongVideoProps> = ({ storyboard, noOverlays = f
         />
       )}
 
-      {/* Single master narration audio — starts at frame 60 (2s) so hook narration
-           overlaps with the CinematicOpener visual for maximum retention */}
+      {/* Single master narration audio — synced to content start at INTRO_DURATION */}
       {storyboard.audioFile && (
-        <Sequence from={60}>
+        <Sequence from={INTRO_DURATION}>
           <Audio
             src={staticFile(`audio/${storyboard.audioFile.split('/').pop()}`)}
             volume={(f) => {

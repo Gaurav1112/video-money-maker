@@ -315,7 +315,7 @@ const CaptionOverlay: React.FC<CaptionOverlayProps> = ({
       <div
         style={{
           position: 'absolute',
-          bottom: 100,
+          bottom: 50,
           left: '5%',
           right: '22%',
           display: 'flex',
@@ -324,13 +324,13 @@ const CaptionOverlay: React.FC<CaptionOverlayProps> = ({
           zIndex: 100,
         }}
       >
-        {/* Compact caption strip — semi-transparent, doesn't hide content */}
+        {/* Minimal caption strip — small, at bottom, doesn't hide content */}
         <div
           style={{
-            background: 'rgba(0, 0, 0, 0.75)',
-            borderRadius: 8,
-            padding: '10px 24px',
-            maxWidth: '70%',
+            background: 'rgba(0, 0, 0, 0.8)',
+            borderRadius: 6,
+            padding: '6px 18px',
+            maxWidth: '60%',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
@@ -427,7 +427,7 @@ const CaptionOverlay: React.FC<CaptionOverlayProps> = ({
                       style={{
                         display: 'inline-block',
                         fontFamily: FONTS.text,
-                        fontSize: isCurrent ? 38 : 32,
+                        fontSize: isCurrent ? 26 : 22,
                         fontWeight: isCurrent ? 800 : 600,
                         color,
                         lineHeight: 1.4,
