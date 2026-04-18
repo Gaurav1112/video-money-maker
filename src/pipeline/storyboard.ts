@@ -149,6 +149,12 @@ export function generateStoryboard(
   timedScenes.push(outroScene);
   currentFrame = outroScene.endFrame;
 
+  // ── Assign transitions from the style's transition pool ──
+  const transitionPool = style.transitionPool;
+  for (let i = 0; i < timedScenes.length; i++) {
+    (timedScenes[i] as any).transition = transitionPool[i % transitionPool.length];
+  }
+
   // ── Assign per-scene visualization variants ──
   // This enriches text/interview scenes with vizVariant so each scene
   // shows a UNIQUE animation state instead of repeating the same viz.

@@ -479,11 +479,11 @@ const TextSection: React.FC<TextSectionProps> = ({
             overflow: 'hidden',
           }}
         >
-        {/* Scene heading overlay — always visible so graphics context matches narration */}
+        {/* Scene heading overlay — below TopicHeader (44px marquee + 36px header = 80px) */}
         {heading && (
           <div style={{
             position: 'absolute',
-            top: 16,
+            top: 56,
             left: 24,
             right: 24,
             zIndex: 10,

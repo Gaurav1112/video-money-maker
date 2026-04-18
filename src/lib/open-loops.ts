@@ -121,10 +121,11 @@ export function injectOpenLoops(scenes: Scene[], topic: string, sessionNumber: n
     const plant = modified[loop.plantSceneIndex];
     const target = modified[loop.targetSceneIndex];
 
-    if (plant && plant.narration) {
+    // Only inject into text/interview scenes — skip code/diagram/table/summary
+    if (plant && plant.narration && plant.type === 'text') {
       plant.narration = `${plant.narration} ${loop.contradictionLine}`;
     }
-    if (target && target.narration) {
+    if (target && target.narration && target.type === 'text') {
       // GUARD: Don't prepend if the narration already starts with a hype phrase
       // (from OPEN_LOOP_PHRASES injected in generateScript). Avoids double-stacking.
       const startsWithHype = /^(Most people miss|This next idea|Here's the part|I saved the best|Wait for it|Don't skip|Keep watching)/i.test(target.narration);

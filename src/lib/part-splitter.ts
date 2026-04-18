@@ -21,8 +21,8 @@ export interface VideoPart {
   ctaText: string;             // "Follow for Part 2" or final CTA
 }
 
-const TARGET_PART_DURATION = 120;  // seconds (~2 min)
-const MAX_PART_DURATION = 170;     // seconds (under 3 min)
+const TARGET_PART_DURATION = 150;  // seconds (~2:30, targets 3 parts per session)
+const MAX_PART_DURATION = 180;     // seconds (3 min max)
 const MIN_PART_DURATION = 60;      // seconds (at least 1 min)
 
 /**

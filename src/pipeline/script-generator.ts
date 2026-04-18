@@ -2416,18 +2416,41 @@ function generateSceneSfxTriggers(
 // Long Scene Splitter — breaks text scenes >200 chars into 2 sub-scenes
 // to increase cuts/min from ~2.3 to 6-8 (reduces avg scene duration)
 // ---------------------------------------------------------------------------
-function splitLongScene(scene: Scene, currentFrame: number): Scene[] {
-  if (scene.type !== 'text' || !scene.narration || scene.narration.length < 200) return [scene];
+function splitLongScene(scene: Scene, _currentFrame: number): Scene[] {
+  // Split ANY text scene that is >150 chars OR >15 seconds
+  const tooLong = scene.narration && scene.narration.length > 150;
+  const tooSlow = scene.duration > 15;
+  if (scene.type !== 'text' || !scene.narration || (!tooLong && !tooSlow)) return [scene];
 
   const sentences = scene.narration.split(/(?<=[.!?])\s+/);
   if (sentences.length < 2) return [scene];
 
+  // For very long scenes (>25s or >300 chars), split into 3 parts
+  if ((scene.duration > 25 || scene.narration.length > 400) && sentences.length >= 3) {
+    const third = Math.ceil(sentences.length / 3);
+    const parts = [
+      sentences.slice(0, third).join(' '),
+      sentences.slice(third, third * 2).join(' '),
+      sentences.slice(third * 2).join(' '),
+    ];
+    const totalLen = scene.narration.length;
+    let frame = scene.startFrame;
+    return parts.map((part, i) => {
+      const dur = Math.max(4, Math.round((part.length / totalLen) * scene.duration));
+      const start = frame;
+      const end = start + TIMING.secondsToFrames(dur);
+      frame = end;
+      const suffix = i === 0 ? '' : i === 1 ? ' — Deep Dive' : ' — Key Insight';
+      return { ...scene, narration: part, duration: dur, startFrame: start, endFrame: end, heading: (scene.heading || '') + suffix, bullets: i === 0 ? (scene.bullets || []).slice(0, 2) : [] };
+    });
+  }
+
+  // Standard 2-way split
   const mid = Math.ceil(sentences.length / 2);
   const firstHalf = sentences.slice(0, mid).join(' ');
   const secondHalf = sentences.slice(mid).join(' ');
-
-  const firstDuration = Math.round((firstHalf.length / scene.narration.length) * scene.duration);
-  const secondDuration = scene.duration - firstDuration;
+  const firstDuration = Math.max(4, Math.round((firstHalf.length / scene.narration.length) * scene.duration));
+  const secondDuration = Math.max(4, scene.duration - firstDuration);
 
   return [
     { ...scene, narration: firstHalf, duration: firstDuration, endFrame: scene.startFrame + TIMING.secondsToFrames(firstDuration), bullets: (scene.bullets || []).slice(0, 2) },
