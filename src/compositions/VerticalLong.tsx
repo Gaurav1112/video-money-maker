@@ -17,6 +17,9 @@ import { REGIONS, VERTICAL_SIZES, SAFE_ZONE } from '../lib/vertical-layouts';
 import { selectBestHook } from '../lib/hook-formulas';
 import { getStyleForFormat, getTransitionDuration } from '../lib/video-styles';
 import { VerticalCaptionOverlay } from '../components/vertical/VerticalCaptionOverlay';
+import { VerticalTitleSlide } from '../components/vertical/VerticalTitleSlide';
+import VerticalComparisonTable from '../components/vertical/VerticalComparisonTable';
+import { VerticalTextSection } from '../components/vertical/VerticalTextSection';
 import {
   TitleSlide,
   TextSection,
@@ -389,7 +392,18 @@ const SceneHeading: React.FC<{ heading: string }> = ({ heading }) => {
 const CONTENT_SCALE = 1080 / 1920; // 0.5625 — exact fit, zero crop
 const ACCENT_COLORS = ['#2563EB', '#059669', '#D97706', '#7C3AED'];
 
-// ── Scene component map (same as LongVideo) ────────────────────────────────────
+// ── Native vertical components — render at 1080x1920, no scaling needed ───────
+const NATIVE_VERTICAL_SCENES = new Set(['title', 'text', 'table', 'diagram']);
+
+// ── Scene component map — vertical-native where available, horizontal fallback ─
+const VERTICAL_SCENE_MAP: Record<string, React.FC<any>> = {
+  title: VerticalTitleSlide,
+  text: VerticalTextSection,
+  table: VerticalComparisonTable,
+  diagram: VerticalTextSection, // diagrams use text section with d2Svg prop
+};
+
+// ── Horizontal fallback map (for code, interview, review, summary) ────────────
 const SCENE_COMPONENT_MAP: Record<string, React.FC<any>> = {
   title: TitleSlide,
   code: IDEScene,
@@ -517,8 +531,71 @@ function getSceneProps(scene: Scene, storyboard: Storyboard): Record<string, any
   }
 }
 
-// ── Vertical scene wrapper: scales rich 1920×1080 component to fill full 1080px width ─
+// ── Map scene data to native vertical component props ─────────────────────────
+function getNativeSceneProps(scene: Scene, storyboard: Storyboard): Record<string, any> {
+  const base = {
+    sceneIndex: storyboard.scenes.indexOf(scene),
+    sceneStartFrame: scene.startFrame,
+  };
+
+  switch (scene.type) {
+    case 'title':
+      return {
+        ...base,
+        topic: storyboard.topic,
+        sessionNumber: storyboard.sessionNumber,
+        title: scene.content,
+        objectives: scene.bullets || [],
+      };
+    case 'text':
+    case 'diagram':
+      return {
+        ...base,
+        heading: scene.heading || '',
+        bullets: scene.bullets || (scene.content ? scene.content.split('\n').filter(Boolean) : []),
+        content: scene.content || '',
+        narration: scene.narration || '',
+        d2Svg: scene.d2Svg,
+        templateId: scene.templateId,
+        topic: storyboard.topic,
+      };
+    case 'table': {
+      const lines = (scene.content || '').split('\n').filter(l => l.trim());
+      const headers = lines[0] ? lines[0].split('|').map(h => h.trim()).filter(Boolean) : [];
+      const rows = lines.slice(1)
+        .filter(l => !l.match(/^[\s|:-]+$/))
+        .map(l => l.split('|').map(c => c.trim()).filter(Boolean));
+      return {
+        ...base,
+        headers,
+        rows,
+        title: scene.heading || '',
+      };
+    }
+    default:
+      return { ...base, ...scene };
+  }
+}
+
+// ── Vertical scene wrapper ─────────────────────────────────────────────────────
+// Native vertical components render at 1080x1920 with no scaling.
+// Horizontal fallback scales 1920x1080 to fit 1080px wide (for code, interview, review, summary).
 const VerticalSceneContent: React.FC<{ scene: Scene; storyboard: Storyboard }> = ({ scene, storyboard }) => {
+  // Check for native vertical component first
+  const NativeComponent = VERTICAL_SCENE_MAP[scene.type];
+
+  if (NativeComponent) {
+    // NATIVE — render directly at full 1080x1920, no scaling
+    const nativeProps = getNativeSceneProps(scene, storyboard);
+    return (
+      <AbsoluteFill style={{ backgroundColor: '#0C0A15' }}>
+        <VerticalBg />
+        <NativeComponent {...nativeProps} />
+      </AbsoluteFill>
+    );
+  }
+
+  // FALLBACK — scale horizontal component (for code, interview, review, summary)
   const Component = SCENE_COMPONENT_MAP[scene.type];
   const sceneProps = getSceneProps(scene, storyboard);
 
@@ -527,22 +604,17 @@ const VerticalSceneContent: React.FC<{ scene: Scene; storyboard: Storyboard }> =
     return (
       <AbsoluteFill style={{ backgroundColor: '#0C0A15' }}>
         <VerticalBg />
-        <SceneHeading heading={scene.heading || ''} />
         <div style={{
           position: 'absolute',
-          top: REGIONS.mainContent.y + 90,
-          left: SAFE_ZONE.left,
-          right: SAFE_ZONE.right,
+          top: 200,
+          left: 60,
+          right: 60,
+          fontFamily: FONTS.text,
+          fontSize: 32,
+          color: '#FFFFFF',
+          lineHeight: 1.6,
         }}>
-          <div style={{
-            fontFamily: FONTS.text,
-            fontSize: VERTICAL_SIZES.body,
-            fontWeight: 500,
-            color: COLORS.white,
-            lineHeight: 1.6,
-          }}>
-            {scene.content || ''}
-          </div>
+          {scene.content || ''}
         </div>
       </AbsoluteFill>
     );
@@ -584,39 +656,6 @@ const VerticalSceneContent: React.FC<{ scene: Scene; storyboard: Storyboard }> =
           height: REGIONS.mainContent.height - Math.round(1080 * CONTENT_SCALE) + 40,
           background: `linear-gradient(180deg, ${COLORS.dark}00 0%, #0C0A15 15%, #0C0A15 100%)`,
         }} />
-
-        {/* Key insight text in the gradient zone — fills empty space with value */}
-        {scene.narration && (
-          <div style={{
-            position: 'absolute',
-            top: Math.round(1080 * CONTENT_SCALE) + 40,
-            left: 60,
-            right: 60,
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 12,
-          }}>
-            <div style={{
-              width: 40,
-              height: 3,
-              borderRadius: 2,
-              backgroundColor: COLORS.saffron,
-            }} />
-            <div style={{
-              fontFamily: FONTS.text,
-              fontSize: 28,
-              fontWeight: 500,
-              color: 'rgba(255,255,255,0.5)',
-              lineHeight: 1.5,
-              display: '-webkit-box',
-              WebkitLineClamp: 3,
-              WebkitBoxOrient: 'vertical' as any,
-              overflow: 'hidden',
-            }}>
-              {scene.narration.slice(0, 150)}...
-            </div>
-          </div>
-        )}
       </div>
     </AbsoluteFill>
   );
