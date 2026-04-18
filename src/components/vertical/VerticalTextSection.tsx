@@ -47,15 +47,15 @@ const MAX_BULLETS = 6;
 const BULLET_STAGGER_FRAMES = 15;
 
 // Layout y-positions
-const HEADING_Y = 80;
-const HEADING_ACCENT_HEIGHT = 40;
-const HEADING_ACCENT_WIDTH = 5;
-const BULLETS_START_Y = COMPONENT_DIMS.textSection.bulletStartY; // 220
-const BULLET_GAP = 24;
-const BULLET_LINE_HEIGHT = 1.4;
-const DIAGRAM_Y = 900;
-const DIAGRAM_WIDTH = 900;
-const DIAGRAM_HEIGHT = 600;
+const HEADING_Y = 100;
+const HEADING_ACCENT_HEIGHT = 50;
+const HEADING_ACCENT_WIDTH = 6;
+const BULLETS_START_Y = 280;
+const BULLET_GAP = 60;   // was 24 — much more vertical spacing
+const BULLET_LINE_HEIGHT = 1.6;
+const DIAGRAM_Y = 750;
+const DIAGRAM_WIDTH = 950;
+const DIAGRAM_HEIGHT = 550;
 const CAPTION_ZONE_Y = 1300;
 
 // ---------------------------------------------------------------------------
@@ -114,9 +114,9 @@ const AnimatedBullet: React.FC<BulletProps> = ({
     extrapolateRight: 'clamp',
   });
 
-  const fontSize = isFirst ? 38 : 34;
-  const fontWeight = isFirst ? 700 : 400;
-  const textColor = isFirst ? '#FFFFFF' : 'rgba(255,255,255,0.9)';
+  const fontSize = isFirst ? 48 : 42;
+  const fontWeight = isFirst ? 800 : 500;
+  const textColor = isFirst ? '#FFFFFF' : 'rgba(255,255,255,0.92)';
 
   return (
     <div
@@ -228,8 +228,8 @@ const HeadingRow: React.FC<HeadingRowProps> = ({
       <h1
         style={{
           fontFamily: FONTS.heading,
-          fontSize: 48,
-          fontWeight: 700,
+          fontSize: 56,
+          fontWeight: 800,
           color: '#FFFFFF',
           margin: 0,
           lineHeight: 1.15,

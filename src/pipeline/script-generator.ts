@@ -374,14 +374,22 @@ function getOpenLoopPhrase(seed: number): string {
 // Mid-Video Engagement Hooks — rotated to avoid "like and subscribe" fatigue
 // ---------------------------------------------------------------------------
 const ENGAGEMENT_HOOKS = [
-  'If you\'re finding this useful, drop a like. It genuinely helps more developers find this.',
-  'Quick knowledge check before we continue. Can you predict what comes next?',
-  'Pause the video and think about this for 10 seconds. Seriously. Active recall is how you learn.',
-  'This is the part that trips up 90% of candidates. Pay close attention.',
-  'Pro tip that most tutorials skip. Write this down.',
-  'Here\'s something I wish someone told me when I was starting out.',
-  'If you can explain this next part to a friend, you truly understand it.',
-  'Bookmark this timestamp. You\'ll want to come back to this before your interview.',
+  // Prediction prompts (research: highest retention impact)
+  'Pause. What happens next? Got your guess? Let me show you.',
+  'Stop. Before I reveal the answer — what would YOU do here? Think for 3 seconds.',
+  // Competence affirmations
+  'If you understood that, you\'re ahead of 90% of candidates. Not kidding.',
+  'Most tutorials don\'t cover this part. You\'re already in the top tier.',
+  // Comment drivers
+  'Drop your approach in the comments. I want to see how you think about this.',
+  'Hot take time. Agree or disagree? Tell me in the comments.',
+  // Stakes reminders
+  'This exact question showed up in Google interviews last month. Multiple candidates confirmed it.',
+  'Screenshot this diagram. You WILL see a variation in your interview.',
+  // Time anchors
+  'You\'re already halfway. And you know more than most engineers with 3 years of experience.',
+  // Challenge
+  'Quick — can you explain what we just covered to an imaginary friend? Try it. Right now. 10 seconds.',
 ];
 
 function getEngagementHook(seed: number): string {
@@ -961,18 +969,19 @@ function generateTopicMyths(topic: string): { myths: string[]; mythBullets: stri
 // Storytelling Arc: THE PROBLEM — Set up tension
 // ---------------------------------------------------------------------------
 function generateProblemSetup(topic: string): string {
+  const ex = getTopicExample(topic);
   const problems = [
-    `Imagine this. You've built an amazing app. Users love it. Then one morning you wake up and your app is on the front page of Hacker News. Suddenly 10 million people are trying to use your app at the same time. Your server crashes. Your users see error pages. Your boss is calling. This is the exact problem that ${topic} solves. And if you don't understand it, you WILL face this nightmare.`,
+    `100 users. Fine. 10,000 users. Struggling. 10 million users. Dead. Your server crashes. Users see error pages. Boss is calling. This is what ${topic} prevents. Miss this, and you WILL face this nightmare.`,
 
-    `Let me paint a picture for you. You're running a startup. Everything works great with 100 users. Then you get featured on Product Hunt. Traffic explodes. Without ${topic}, your entire system goes down in minutes. Real companies die because of this. Every. Single. Day. So let's make sure you never make this mistake.`,
+    `${ex.company}. ${ex.scale}. Zero downtime. How? ${topic}. Without it, their system would collapse in minutes. Real companies die from this. Every single day.`,
 
-    `Here's a scenario that happens more often than you'd think. A developer builds a system that works perfectly in testing. Ships it to production. Three months later, traffic grows 50x, and the whole thing collapses like a house of cards. The missing piece? ${topic}. Every time.`,
+    `Works in testing. Ships to production. Three months later, traffic grows 50x. Everything collapses. The missing piece? ${topic}. Every. Single. Time.`,
 
-    `Think about this. Right now, somewhere in the world, a developer is debugging a production outage at 3 AM. They're stressed, they're tired, and they're desperately googling ${topic}. You do NOT want to be that developer. So let me teach you this now, while you have time to actually learn it properly.`,
+    `3 AM. Production outage. On-call engineer, stressed, tired, desperately googling ${topic}. Don't be that engineer. Learn this now.`,
 
-    `Close your eyes and imagine you're in a system design interview. The interviewer says, "Design a system that handles one billion requests per day." If your brain just went blank, that's because you don't fully understand ${topic} yet. But you will in about 4 minutes.`,
+    `System design interview. "Design for one billion requests per day." Brain goes blank? That's because you don't know ${topic} yet. You will in 7 minutes.`,
 
-    `Every second, ${getTopicExample(topic).company} ${getTopicExample(topic).useCase}, processing ${getTopicExample(topic).scale}. How does NONE of this crash? The answer starts with ${topic}. And most developers have no clue how it actually works under the hood.`,
+    `${ex.company} processes ${ex.scale}. Zero crashes. The secret? ${topic}. Most engineers have no idea how it actually works.`,
   ];
 
   const seed = topic.length % problems.length;
@@ -984,17 +993,17 @@ function generateProblemSetup(topic: string): string {
 // ---------------------------------------------------------------------------
 function generateWrongAnswer(topic: string): string {
   const wrongAnswers = [
-    `Now, here's where most people go wrong. When someone asks about ${topic}, the typical answer is just the textbook definition. They recite it like a parrot. But that tells the interviewer NOTHING about your actual understanding. It's like saying a car is "a vehicle with four wheels." Technically correct. Completely useless.`,
+    `Most people answer ${topic} questions by reciting the textbook. Parrot mode. Interviewer learns nothing. Technically correct. Completely useless. Instant reject signal.`,
 
-    `The most common mistake I see is this. People learn ${topic} as a buzzword. They can name-drop it in conversation, but when you push them on the details, on the trade-offs, on the edge cases, they fall apart. And interviewers push. Hard.`,
+    `${topic} as a buzzword? Easy. ${topic} under pressure? People crumble. Push them on trade-offs. Push them on edge cases. They fall apart. Interviewers push. Hard.`,
 
-    `Let me tell you what DOESN'T work. Memorizing the Wikipedia article on ${topic}. Watching a 2-hour lecture once and calling it done. These approaches give you a false sense of confidence that crumbles the moment someone asks a follow-up question.`,
+    `Memorized the Wikipedia article? Cool. One follow-up question and that confidence crumbles. Memorization is not understanding.`,
 
-    `Here's the trap most developers fall into. They learn the WHAT of ${topic} but never the WHY. They can tell you what it does but not why it exists, what problem it solves, or what happens when it fails. And that gap? That's exactly where interviewers live.`,
+    `They learn WHAT ${topic} does. Never WHY it exists. Never what happens when it fails. That gap? That's exactly where interviewers live. That's where offers are lost.`,
 
-    `So many developers think they understand ${topic} because they've used it once or twice. But using something and understanding it are completely different. I've met engineers with 10 years of experience who can't explain the trade-offs. Don't be that person.`,
+    `Used ${topic} once in a project? That's not understanding. Engineers with 10 years experience can't explain the trade-offs. Don't be that engineer.`,
 
-    `The biggest misconception about ${topic}? That there's one right answer. People learn one approach and think they're done. But in reality, ${topic} involves trade-offs. The right answer always depends on the context. And THAT understanding is what gets you hired.`,
+    `One approach. One answer. Done, right? Wrong. ${topic} is ALL trade-offs. The right answer depends on context. Understanding THAT is what gets you hired.`,
   ];
 
   const seed = (topic.length * 3) % wrongAnswers.length;
@@ -1006,17 +1015,17 @@ function generateWrongAnswer(topic: string): string {
 // ---------------------------------------------------------------------------
 function generateRealAnswer(topic: string): string {
   const realAnswers = [
-    `Okay, so what IS the right way to think about ${topic}? Forget everything you've memorized. Let me rebuild this from first principles. And I promise, by the end, it will click so hard you'll wonder why it ever seemed confusing.`,
+    `Forget the textbook. First principles only. ${topic} solves ONE core problem. See that problem clearly, and everything clicks.`,
 
-    `Now let me show you how ${topic} ACTUALLY works. Not the simplified version from tutorials. The real thing. The version that senior engineers at top companies use every day. And I'm going to make it simple.`,
+    `How ${topic} ACTUALLY works. Not the tutorial version. The real thing. What senior engineers at ${getTopicExample(topic).company} use daily. Made simple.`,
 
-    `Alright, here's the real answer. ${topic} is fundamentally about solving one core problem. And once you see that core problem clearly, everything else is just details. Let me show you.`,
+    `${topic}. One core problem. Once you see it, everything else is details. Three key ideas. Master those three, answer any interview question. Here they are.`,
 
-    `So here's the truth about ${topic} that nobody tells beginners. It's not one thing. It's a family of solutions to a fundamental problem. And the magic is knowing which solution to apply when. Let me break it down.`,
+    `The truth about ${topic}? It's not one solution. It's a family of trade-offs. Knowing WHICH to apply WHEN — that's the real skill. Breaking it down now.`,
 
-    `Ready for the real explanation? ${topic} comes down to understanding three key ideas. Just three. Master these three ideas, and you can answer any interview question about ${topic} they throw at you. Here they are.`,
+    `Three ideas. That's it. Three ideas and you own ${topic}. Ready? Let's go.`,
 
-    `Okay, buckle up. This is where the actual learning happens. I'm going to explain ${topic} the way I wish someone had explained it to me. Step by step, with code, with visuals, with real examples. Let's go.`,
+    `Step by step. Code. Visuals. Real examples. ${topic} explained the way it should be taught. No fluff. Pure signal.`,
   ];
 
   const seed = (topic.length * 5) % realAnswers.length;
@@ -1244,18 +1253,44 @@ function generateSummaryNarration(topic: string, objectives: string[], nextTopic
 // Conversational Tone (makeConversational)
 // Transforms formal textbook prose into friendly, teacher-like narration.
 // ---------------------------------------------------------------------------
+// Anti-patterns that cause instant viewer drop-off (research-backed)
+const ANTI_PATTERNS = [
+  /\b(welcome to|in this video|let's begin|let's get started|before we begin)\b/gi,
+  /\b(hey guys|what's up|don't forget to|without further ado)\b/gi,
+  /\b(first things first|if you're new here|as always|I hope you're doing well)\b/gi,
+  /\b(it is important to note that|it should be noted that|it is worth mentioning)\b/gi,
+  /\b(as we all know|as you may know|as we discussed|as mentioned earlier)\b/gi,
+  /\b(let me explain|let me tell you|I want to talk about|I'd like to discuss)\b/gi,
+  /\b(bear with me|this is going to be a long one|I'll try to keep this short)\b/gi,
+  /\b(make sure to watch until the end|stay tuned)\b/gi,
+];
+
 function makeConversational(text: string): string {
   let result = text
-    // Only fix genuinely academic phrasing — keep everything else intact
+    // Fix academic phrasing
     .replace(/utilize/gi, 'use')
     .replace(/subsequently/gi, 'then')
     .replace(/functionality/gi, 'feature')
     .replace(/in order to/gi, 'to')
     .replace(/However,/g, "But")
     .replace(/Furthermore,/g, "Also,")
-    .replace(/Therefore,/g, "So");
-  // Strip completion signals — prevents viewer drop-off
-  return stripCompletionSignals(result);
+    .replace(/Therefore,/g, "So")
+    .replace(/In addition,/g, "Plus,")
+    .replace(/It is essential to/gi, "You need to")
+    .replace(/One must/gi, "You should")
+    .replace(/It can be observed that/gi, "Notice:")
+    .replace(/This demonstrates/gi, "This shows");
+
+  // Strip anti-patterns (research: cause instant drop-off)
+  for (const pattern of ANTI_PATTERNS) {
+    result = result.replace(pattern, '');
+  }
+
+  // Strip completion signals
+  result = stripCompletionSignals(result);
+
+  // Clean up double spaces and leading/trailing whitespace
+  return result.replace(/\s{2,}/g, ' ').trim();
 }
 
 // ---------------------------------------------------------------------------
@@ -1788,26 +1823,25 @@ const EMOTIONAL_STAKES = [
   "The interviewer has seen 500 candidates this month. 490 of them couldn't explain this. Be the other 10.",
 ];
 
-/** Conversational fillers — prepended to key sentences for natural speech flow.
- *  Mix of English + Hinglish for Indian tech audience. */
+/** Punchy openers — Fireship style, 2-4 words max */
 const CONVERSATIONAL_OPENERS = [
-  'Okay so... ',
-  "Here's the thing... ",
-  'And get this... ',
-  'Now here is where it gets spicy... ',
-  'Look, ',
-  'So basically, ',
-  'Alright, real talk... ',
-  'Now pay attention here... ',
+  'Plot twist. ',
+  'Quick fact. ',
+  'Here\'s the catch. ',
+  'Key insight: ',
+  'Now. ',
+  'But wait. ',
+  'The trick? ',
+  'Real talk. ',
 ];
 
-/** Conversational closers — appended after revelations */
+/** Punchy closers — tension builders, not filler */
 const CONVERSATIONAL_CLOSERS = [
-  ' ...which is pretty wild if you think about it.',
-  " ...and that's what most people miss.",
-  " ...and once you see it, you can't unsee it.",
-  ' ...let that sink in for a second.',
-  " ...and that changes everything.",
+  ' And that changes everything.',
+  ' Most people miss this.',
+  ' That\'s the key.',
+  ' Remember this.',
+  ' This alone is worth the whole video.',
 ];
 
 /** Brand catchphrase — appended to summary scenes */
