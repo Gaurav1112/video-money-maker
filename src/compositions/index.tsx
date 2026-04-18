@@ -5,6 +5,7 @@ import { LongVideo } from './LongVideo';
 import { ShortVideo } from './ShortVideo';
 import { MultiShort } from './MultiShort';
 import { ViralShort, calculateViralShortMetadata } from './ViralShort';
+import { VerticalLong, calculateVerticalLongMetadata } from './VerticalLong';
 import { ThumbnailComposition } from './Thumbnail';
 import type { Storyboard } from '../types';
 import type { ClipType } from './MultiShort';
@@ -97,13 +98,22 @@ export const RemotionRoot: React.FC = () => {
         defaultProps={{ storyboard: defaultStoryboard }}
       />
       <Composition
+        id="VerticalLong"
+        component={asCompositionComponent(VerticalLong)}
+        calculateMetadata={calculateVerticalLongMetadata}
+        fps={30}
+        width={1080}
+        height={1920}
+        defaultProps={{ storyboard: defaultStoryboard }}
+      />
+      <Composition
         id="Thumbnail"
         component={asCompositionComponent(ThumbnailComposition)}
         durationInFrames={1}
         fps={30}
         width={1280}
         height={720}
-        defaultProps={{ topic: 'Demo', sessionNumber: 1, category: 'General', language: 'TypeScript' }}
+        defaultProps={{ topic: 'Demo', sessionNumber: 1, hookText: 'Why 90% Get This WRONG' }}
       />
 
       {/* MultiShort compositions — one per clip type (4-5 targeted Shorts per long-form video) */}
