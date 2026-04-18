@@ -6,7 +6,7 @@ export type SfxDensity = 'sparse' | 'dense';
 export type TransitionType = 'fade' | 'slide-right' | 'slide-left' | 'slide-bottom' | 'slide-top' | 'wipe-left' | 'wipe-right' | 'clockWipe' | 'iris' | 'flip';
 
 export interface VideoStyle {
-  id: 'educational' | 'viral';
+  id: 'educational' | 'viral' | 'vertical';
   ttsRate: Record<SceneType, string>;
   captionMode: CaptionMode;
   zoomInterval: [number, number];
@@ -22,14 +22,14 @@ export interface VideoStyle {
 const EDUCATIONAL: VideoStyle = {
   id: 'educational',
   ttsRate: {
-    title: '+20%',
-    text: '+5%',
-    code: '-8%',
-    diagram: '+0%',
-    table: '+5%',
-    interview: '+10%',
-    review: '+8%',
-    summary: '+15%',
+    title: '+40%',
+    text: '+30%',
+    code: '+15%',
+    diagram: '+25%',
+    table: '+30%',
+    interview: '+35%',
+    review: '+30%',
+    summary: '+35%',
   },
   captionMode: 'fireship',
   zoomInterval: [3, 5],
@@ -45,14 +45,14 @@ const EDUCATIONAL: VideoStyle = {
 const VIRAL: VideoStyle = {
   id: 'viral',
   ttsRate: {
-    title: '+25%',
-    text: '+12%',
-    code: '+0%',
-    diagram: '+5%',
-    table: '+8%',
-    interview: '+15%',
-    review: '+12%',
-    summary: '+20%',
+    title: '+45%',
+    text: '+35%',
+    code: '+20%',
+    diagram: '+30%',
+    table: '+32%',
+    interview: '+40%',
+    review: '+35%',
+    summary: '+40%',
   },
   captionMode: 'hormozi',
   zoomInterval: [1.5, 3],
@@ -63,6 +63,29 @@ const VIRAL: VideoStyle = {
   sfxDensity: 'dense',
   transitionDuration: 3,
   dramaticTransitionDuration: 8,
+};
+
+const VERTICAL: VideoStyle = {
+  id: 'vertical',
+  ttsRate: {
+    title: '+40%',
+    text: '+30%',
+    code: '+15%',
+    diagram: '+25%',
+    table: '+30%',
+    interview: '+35%',
+    review: '+30%',
+    summary: '+35%',
+  },
+  captionMode: 'hormozi',
+  zoomInterval: [2, 4],
+  zoomScale: 1.12,
+  transitionPool: ['fade', 'slide-bottom', 'wipe-left', 'fade'],
+  bgmVolume: 0.10,
+  bgmChangeInterval: 90,
+  sfxDensity: 'sparse',
+  transitionDuration: 6,
+  dramaticTransitionDuration: 12,
 };
 
 const DRAMATIC_PAIRS: Array<[string | null, string]> = [
@@ -87,12 +110,14 @@ export function getTransitionDuration(
 const STYLES: Record<string, VideoStyle> = {
   educational: EDUCATIONAL,
   viral: VIRAL,
+  vertical: VERTICAL,
 };
 
 export function getStyleForFormat(format: VideoFormat): VideoStyle {
+  if (format === 'vertical') return STYLES.vertical;
   return format === 'long' ? STYLES.educational : STYLES.viral;
 }
 
-export function getStyle(id: 'educational' | 'viral'): VideoStyle {
+export function getStyle(id: 'educational' | 'viral' | 'vertical'): VideoStyle {
   return STYLES[id];
 }

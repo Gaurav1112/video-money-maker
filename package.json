@@ -20,6 +20,9 @@
     "render:session": "tsx scripts/render-session.ts",
     "render:shorts": "tsx scripts/render-viral-shorts.ts",
     "make:reels": "tsx scripts/make-reels.ts",
+    "render:vertical": "remotion render src/compositions/index.tsx VerticalLong --concurrency=6",
+    "render:vertical:session": "tsx scripts/render-vertical-session.ts",
+    "render:vertical:batch": "bash scripts/batch-render-vertical.sh",
     "metadata:all": "tsx scripts/generate-session-metadata.ts",
     "dev": "concurrently \"npm start\" \"npm run api\""
   },
@@ -46,6 +49,7 @@
     "noisejs": "^2.1.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
+    "react-terminal-ui": "^1.4.0",
     "remotion": "^4.0.441",
     "roughjs": "^4.6.6",
     "say": "^0.16.0",
