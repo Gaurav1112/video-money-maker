@@ -2,6 +2,7 @@ export const VIDEO_FORMATS = {
   long: { width: 1920, height: 1080, aspect: '16:9' as const },
   short: { width: 1080, height: 1920, aspect: '9:16' as const },
   thumb: { width: 1280, height: 720, aspect: '16:9' as const },
+  vertical: { width: 1080, height: 1920, aspect: '9:16' as const },
 } as const;
 
 export const TIMING = {
@@ -42,7 +43,7 @@ export const SHORT_SCENE_DEFAULTS = {
 export const MAX_SHORT_DURATION_FRAMES = 1800; // 60 seconds at 30fps
 export const MAX_REEL_DURATION_FRAMES = 2700;  // 90 seconds at 30fps
 
-export const INTRO_DURATION = 150; // frames (5 seconds — visual hook + branding + voice start)
+export const INTRO_DURATION = 150; // frames (5 seconds — cinematic intro styles need 150f for 3-phase animation)
 export const OUTRO_DURATION = 150; // frames (5 seconds)
 /** @deprecated Use getTransitionDuration() from video-styles.ts instead. Kept as fallback only. */
 export const TRANSITION_DURATION = 15; // frames (0.5 seconds) — replaced by style-driven values

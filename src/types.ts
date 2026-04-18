@@ -1,5 +1,5 @@
 export type SceneType = 'title' | 'text' | 'code' | 'diagram' | 'table' | 'interview' | 'review' | 'summary';
-export type VideoFormat = 'long' | 'short' | 'thumb';
+export type VideoFormat = 'long' | 'short' | 'thumb' | 'vertical';
 
 export interface Scene {
   type: SceneType;
