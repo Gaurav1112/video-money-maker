@@ -812,6 +812,8 @@ export const VerticalLong: React.FC<VerticalLongProps> = ({ storyboard }) => {
             zIndex: 90,
           }}>
             <AvatarBubble
+              avatarVideo="video/teacher-talking.mp4"
+              avatarPhoto="images/guru-avatar.jpg"
               mouthCues={storyboard.mouthCues}
               startFrame={0}
               endFrame={INTRO_DURATION + contentFrames}

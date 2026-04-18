@@ -397,34 +397,100 @@ export const VerticalTextSection: React.FC<VerticalTextSectionProps> = ({
         </div>
       )}
 
-      {/* ── BULLETS ── */}
-      {effectiveBullets.length > 0 && (
-        <div
-          style={{
-            position: 'absolute',
-            top: bulletsY,
-            left: MARGIN_X,
-            width: CONTENT_WIDTH,
-            maxHeight: maxBulletsHeight,
-            overflow: 'hidden',
-            display: 'flex',
-            flexDirection: 'column',
-          }}
-        >
-          {effectiveBullets.map((text, i) => (
-            <AnimatedBullet
-              key={i}
-              text={text}
-              index={i}
-              frame={frame}
-              fps={fps}
-              isFirst={i === 0}
-              color={BULLET_COLORS[i % BULLET_COLORS.length]}
-              sceneLocalFrame={sceneLocalFrame}
-            />
-          ))}
-        </div>
-      )}
+      {/* ── BULLETS — distributed evenly across vertical space ── */}
+      {effectiveBullets.length > 0 && (() => {
+        const availableHeight = (hasDiagram ? DIAGRAM_Y : CAPTION_ZONE_Y) - bulletsY - 40;
+        const bulletCount = effectiveBullets.length;
+        // Each bullet gets an equal slice of vertical space
+        const sliceHeight = Math.min(280, Math.floor(availableHeight / Math.max(bulletCount, 1)));
+
+        return (
+          <div
+            style={{
+              position: 'absolute',
+              top: bulletsY,
+              left: MARGIN_X,
+              right: MARGIN_X,
+              height: availableHeight,
+              overflow: 'hidden',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: bulletCount <= 4 ? 'space-around' : 'flex-start',
+              gap: bulletCount <= 4 ? 0 : 20,
+            }}
+          >
+            {effectiveBullets.map((text, i) => {
+              const delayFrames = i * BULLET_STAGGER_FRAMES;
+              const localFrame = Math.max(0, sceneLocalFrame - delayFrames);
+              const bulletColor = BULLET_COLORS[i % BULLET_COLORS.length];
+
+              const slideIn = spring({
+                frame: localFrame,
+                fps,
+                config: { damping: 16, stiffness: 100, mass: 0.7 },
+                from: 60,
+                to: 0,
+              });
+
+              const fadeIn = interpolate(localFrame, [0, 15], [0, 1], {
+                extrapolateLeft: 'clamp',
+                extrapolateRight: 'clamp',
+              });
+
+              const isFirst = i === 0;
+
+              return (
+                <div
+                  key={i}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 20,
+                    padding: '20px 24px',
+                    backgroundColor: isFirst ? 'rgba(232,93,38,0.08)' : 'rgba(255,255,255,0.03)',
+                    borderRadius: 16,
+                    borderLeft: `5px solid ${bulletColor}`,
+                    transform: `translateX(${slideIn}px)`,
+                    opacity: fadeIn,
+                    minHeight: bulletCount <= 3 ? 120 : 80,
+                  }}
+                >
+                  {/* Number badge */}
+                  <div style={{
+                    width: 44,
+                    height: 44,
+                    borderRadius: 12,
+                    backgroundColor: `${bulletColor}22`,
+                    border: `1.5px solid ${bulletColor}55`,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                    fontFamily: FONTS.heading,
+                    fontSize: 22,
+                    fontWeight: 800,
+                    color: bulletColor,
+                  }}>
+                    {i + 1}
+                  </div>
+
+                  {/* Bullet text */}
+                  <span style={{
+                    fontFamily: FONTS.text,
+                    fontSize: isFirst ? 44 : 38,
+                    fontWeight: isFirst ? 700 : 500,
+                    color: isFirst ? '#FFFFFF' : 'rgba(255,255,255,0.9)',
+                    lineHeight: 1.4,
+                    flex: 1,
+                  }}>
+                    {text}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        );
+      })()}
 
       {/* ── DIAGRAM AREA ── */}
       {hasDiagram && (
