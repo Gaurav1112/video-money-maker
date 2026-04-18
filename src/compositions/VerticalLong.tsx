@@ -382,14 +382,11 @@ const SceneHeading: React.FC<{ heading: string }> = ({ heading }) => {
 };
 
 // ── Scale constants: fit 1920×1080 components into full 1080px vertical width ─
-// Scale content to fill as much vertical space as possible
-// The components are 1920x1080. We want them to fill 1080px wide AND stretch taller.
-// Scale = 1080/1920 = 0.5625 for width. But we want to fill more height,
-// so we scale based on the content region height instead:
-// Content region is 1200px tall, component is 1080px tall -> scale = 1200/1080 = 1.11
-// But width would be 1920*1.11 = 2131 -> wider than 1080, needs crop
-// Best approach: scale to fill height, crop width (shows center of horizontal content)
-const CONTENT_SCALE = Math.min(REGIONS.mainContent.height / 1080, 1.15); // ~1.11, capped at 1.15
+// Scale to fit full width — NEVER crop content.
+// Components are 1920x1080. At scale 0.5625, they become 1080x607.
+// We position this at the TOP of the content area (not centered)
+// and fill the remaining space below with avatar + gradient.
+const CONTENT_SCALE = 1080 / 1920; // 0.5625 — exact fit, zero crop
 const ACCENT_COLORS = ['#2563EB', '#059669', '#D97706', '#7C3AED'];
 
 // ── Scene component map (same as LongVideo) ────────────────────────────────────
@@ -555,9 +552,8 @@ const VerticalSceneContent: React.FC<{ scene: Scene; storyboard: Storyboard }> =
     <AbsoluteFill style={{ backgroundColor: '#0C0A15' }}>
       <VerticalBg />
 
-      {/* Content fills the full vertical content region.
-          Components render at 1920x1080, scaled up to fill 1200px height.
-          Width overflows (1920*1.11 = 2131px) so we crop horizontally (centered). */}
+      {/* Content at top of region — NO crop, fits full width.
+          607px tall content + gradient fill below to avoid empty space. */}
       <div style={{
         position: 'absolute',
         top: REGIONS.mainContent.y,
@@ -566,17 +562,61 @@ const VerticalSceneContent: React.FC<{ scene: Scene; storyboard: Storyboard }> =
         height: REGIONS.mainContent.height,
         overflow: 'hidden',
       }}>
+        {/* Scaled component — anchored to top */}
         <div style={{
           position: 'absolute',
           width: 1920,
           height: 1080,
           left: '50%',
-          top: '50%',
-          transform: `translate(-50%, -50%) scale(${CONTENT_SCALE})`,
-          transformOrigin: 'center center',
+          top: 0,
+          transform: `translateX(-50%) scale(${CONTENT_SCALE})`,
+          transformOrigin: 'top center',
         }}>
           <Component {...sceneProps} />
         </div>
+
+        {/* Gradient fill below the content — smooth transition from component bg to dark */}
+        <div style={{
+          position: 'absolute',
+          top: Math.round(1080 * CONTENT_SCALE) - 40,
+          left: 0,
+          right: 0,
+          height: REGIONS.mainContent.height - Math.round(1080 * CONTENT_SCALE) + 40,
+          background: `linear-gradient(180deg, ${COLORS.dark}00 0%, #0C0A15 15%, #0C0A15 100%)`,
+        }} />
+
+        {/* Key insight text in the gradient zone — fills empty space with value */}
+        {scene.narration && (
+          <div style={{
+            position: 'absolute',
+            top: Math.round(1080 * CONTENT_SCALE) + 40,
+            left: 60,
+            right: 60,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 12,
+          }}>
+            <div style={{
+              width: 40,
+              height: 3,
+              borderRadius: 2,
+              backgroundColor: COLORS.saffron,
+            }} />
+            <div style={{
+              fontFamily: FONTS.text,
+              fontSize: 28,
+              fontWeight: 500,
+              color: 'rgba(255,255,255,0.5)',
+              lineHeight: 1.5,
+              display: '-webkit-box',
+              WebkitLineClamp: 3,
+              WebkitBoxOrient: 'vertical' as any,
+              overflow: 'hidden',
+            }}>
+              {scene.narration.slice(0, 150)}...
+            </div>
+          </div>
+        )}
       </div>
     </AbsoluteFill>
   );
