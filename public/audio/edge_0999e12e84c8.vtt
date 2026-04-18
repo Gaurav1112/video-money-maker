@@ -1,0 +1,28 @@
+1
+00:00:00,100 --> 00:00:13,089
+Now here is where it gets spicy,  this is within-session idempotence only — if the producer process restarts, it gets a new PID and sequence numbers reset.
+
+2
+00:00:13,039 --> 00:00:17,947
+Cross-session deduplication requires transactional IDs.
+
+3
+00:00:17,947 --> 00:00:25,789
+Here's something wild: Uber once had a major outage because their apache kafka system failed.
+
+4
+00:00:25,789 --> 00:00:28,013
+Cost them millions.
+
+5
+00:00:28,013 --> 00:00:35,539
+At 3 AM, a production server crashed because of Mechanism 3: Read-Committed Consumer.
+
+6
+00:00:35,539 --> 00:00:38,723
+The entire team was scrambling.
+
+7
+00:00:38,723 --> 00:00:42,565
+I will show you what went wrong in a minute.
+

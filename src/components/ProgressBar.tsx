@@ -107,10 +107,10 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
       <div
         style={{
           position: 'absolute',
-          bottom: 0,
+          bottom: 44,
           left: 0,
           right: 0,
-          height: 6,
+          height: 4,
           backgroundColor: `${COLORS.darkAlt}`,
         }}
       >
@@ -221,7 +221,7 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
         <div
           style={{
             position: 'absolute',
-            bottom: 14,
+            bottom: 56,
             left: 32,
             display: 'flex',
             alignItems: 'center',
@@ -262,7 +262,7 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
         <div
           style={{
             position: 'absolute',
-            bottom: 14,
+            bottom: 56,
             right: 32,
             display: 'flex',
             alignItems: 'center',

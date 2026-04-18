@@ -1,0 +1,24 @@
+1
+00:00:00,100 --> 00:00:08,905
+Here's the thing,  partition selection is one of the most consequential decisions when designing a Kafka-based system.
+
+2
+00:00:08,855 --> 00:00:16,723
+It affects ordering guarantees, load distribution, scalability, and even failure behavior.
+
+3
+00:00:16,723 --> 00:00:24,342
+This session covers how Kafka routes messages to partitions and the trade-offs of each approach.
+
+4
+00:00:24,342 --> 00:00:30,539
+Interviewers have a favorite trap question about How the Default Partitioner Works.
+
+5
+00:00:30,539 --> 00:00:34,250
+90 percent of candidates fall for it.
+
+6
+00:00:34,250 --> 00:00:38,131
+I will show you the trap and how to avoid it.
+

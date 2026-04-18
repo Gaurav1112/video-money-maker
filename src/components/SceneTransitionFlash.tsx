@@ -260,7 +260,7 @@ const SceneTransitionFlash: React.FC<SceneTransitionFlashProps> = ({
             fontSize: SIZES.heading3,
             fontFamily: LOADED_FONTS.heading,
             fontWeight: 800,
-            color: COLORS.white,
+            color: COLORS.textOnDark,
             letterSpacing: 3,
             textTransform: 'uppercase' as const,
             textShadow: `0 0 20px ${color}88`,
@@ -281,7 +281,7 @@ const SceneTransitionFlash: React.FC<SceneTransitionFlashProps> = ({
             fontSize: 28,
             fontFamily: LOADED_FONTS.code,
             fontWeight: 700,
-            color: COLORS.white,
+            color: COLORS.textOnDark,
             letterSpacing: 2,
             textShadow: `0 0 20px ${color}88, 0 2px 8px rgba(0,0,0,0.8)`,
           }}
@@ -309,7 +309,7 @@ const SceneTransitionFlash: React.FC<SceneTransitionFlashProps> = ({
             style={{
               width: `${progressPercent}%`,
               height: '100%',
-              background: `linear-gradient(90deg, ${color}, ${COLORS.white})`,
+              background: `linear-gradient(90deg, ${color}, ${COLORS.textOnDark})`,
               boxShadow: `0 0 12px ${color}80`,
               borderRadius: '0 2px 2px 0',
             }}

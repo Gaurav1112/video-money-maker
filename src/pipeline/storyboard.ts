@@ -48,13 +48,14 @@ export function generateStoryboard(
   const autoSfxTriggers = generateSfxTriggers(scenes, options.sfxDensity);
   const mergedSfxTriggers = [...(allSfxTriggers || []), ...autoSfxTriggers];
 
-  // Prepend branded intro scene — 25 seconds (750 frames) for movie-trailer opening
-  const TITLE_DURATION_FRAMES = 750;
+  // Minimal branded intro — 2 seconds (60 frames) watermark, NOT a 25s title card.
+  // The HOOK must play at second 0. Branding is a small visual, not narration.
+  const TITLE_DURATION_FRAMES = 60;
   const introScene: Scene = {
     type: 'title' as const,
     content: 'Guru Sishya',
-    narration: 'Welcome to Guru Sishya... Your path to mastering technical interviews.',
-    duration: 25,
+    narration: '', // NO narration on intro — hook starts immediately after
+    duration: 2,
     startFrame: 0,
     endFrame: TITLE_DURATION_FRAMES,
   };
@@ -135,10 +136,12 @@ export function generateStoryboard(
   }
 
   // Append branded outro scene
+  // RETENTION FIX: The outro is the LAST thing viewers hear. Generic "thanks for watching"
+  // gives zero reason to click the next video. Instead, end with urgency + specific next step.
   const outroScene: Scene = {
     type: 'summary' as const,
-    content: 'Thanks for watching',
-    narration: 'Thanks for watching. Practice this topic on guru-sishya.in... Subscribe for daily lessons. Your dream job is one interview away.',
+    content: 'Next video',
+    narration: `The next video in this ${topic} series covers the part that actually breaks in production. Subscribe and hit the bell so you don't miss it. See you there.`,
     duration: 5,
     startFrame: currentFrame,
     endFrame: currentFrame + OUTRO_DURATION,
@@ -197,23 +200,28 @@ export function generateStoryboard(
   }
 
   // ── Generate Rhubarb lip sync cues from master audio ──
+  // Skipped by default — AvatarBubble has sine-wave fallback that looks equivalent
+  // for the art_0 character. Enable with RHUBARB=1 for photorealistic avatars.
   let mouthCues: Array<{ start: number; end: number; value: string }> = [];
-  try {
-    const { execSync } = require('child_process');
-    const rhubarbBin = path.join(process.cwd(), 'tools', 'Rhubarb-Lip-Sync-1.13.0-macOS', 'rhubarb');
-    const fs = require('fs');
-    if (fs.existsSync(rhubarbBin) && fs.existsSync(masterPath)) {
-      // Convert master MP3 to WAV for Rhubarb
-      const wavPath = masterPath.replace(/\.mp3$/, '_lip.wav');
-      execSync(`ffmpeg -y -i "${masterPath}" "${wavPath}"`, { timeout: 30000 });
-      const output = execSync(`"${rhubarbBin}" "${wavPath}" -f json`, { timeout: 300000 }).toString();
-      const parsed = JSON.parse(output);
-      mouthCues = parsed.mouthCues || [];
-      try { fs.unlinkSync(wavPath); } catch {}
-      console.log(`  ✓ Rhubarb lip sync: ${mouthCues.length} mouth cues`);
+  if (process.env.RHUBARB === '1') {
+    try {
+      const { execSync } = require('child_process');
+      const rhubarbBin = path.join(process.cwd(), 'tools', 'Rhubarb-Lip-Sync-1.13.0-macOS', 'rhubarb');
+      const fs = require('fs');
+      if (fs.existsSync(rhubarbBin) && fs.existsSync(masterPath)) {
+        const wavPath = masterPath.replace(/\.mp3$/, '_lip.wav');
+        execSync(`ffmpeg -y -i "${masterPath}" "${wavPath}"`, { timeout: 30000 });
+        const output = execSync(`"${rhubarbBin}" "${wavPath}" -f json`, { timeout: 300000 }).toString();
+        const parsed = JSON.parse(output);
+        mouthCues = parsed.mouthCues || [];
+        try { fs.unlinkSync(wavPath); } catch {}
+        console.log(`  ✓ Rhubarb lip sync: ${mouthCues.length} mouth cues`);
+      }
+    } catch (err) {
+      console.warn('  ⚠ Rhubarb lip sync skipped:', (err as Error).message?.slice(0, 80));
     }
-  } catch (err) {
-    console.warn('  ⚠ Rhubarb lip sync skipped:', (err as Error).message?.slice(0, 80));
+  } else {
+    console.log('  ⏭ Rhubarb skipped (use RHUBARB=1 to enable)');
   }
 
   return {

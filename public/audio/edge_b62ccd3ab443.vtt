@@ -1,0 +1,16 @@
+1
+00:00:00,100 --> 00:00:09,607
+So basically, historically, Kafka depended on Apache ZooKeeper for cluster coordination — storing broker registrations, topic metadata, and controller election state.
+
+2
+00:00:09,557 --> 00:00:14,067
+ZooKeeper is a separate distributed system with its own operational overhead.
+
+3
+00:00:14,067 --> 00:00:19,153
+Here's something nobody tells you: most production bugs at FAANG aren't code bugs.
+
+4
+00:00:19,153 --> 00:00:21,163
+They're system design bugs.
+

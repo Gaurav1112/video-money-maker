@@ -9,6 +9,24 @@ import { refineTimestamps, isWhisperEnabled } from './whisper-timestamps';
 const cache = new NodeCache({ stdTTL: 2592000 }); // 30 days
 const KOKORO_API = process.env.KOKORO_API_URL || 'http://localhost:8880';
 const AUDIO_DIR = path.join(process.cwd(), 'public', 'audio');
+const CACHE_INDEX_PATH = path.join(AUDIO_DIR, '.tts-cache.json');
+
+// Persistent disk cache — survives process restarts, critical for batch renders
+function loadDiskCache(): Record<string, TTSResult> {
+  try {
+    if (fs.existsSync(CACHE_INDEX_PATH)) {
+      return JSON.parse(fs.readFileSync(CACHE_INDEX_PATH, 'utf-8'));
+    }
+  } catch {}
+  return {};
+}
+function saveDiskCache(key: string, result: TTSResult): void {
+  try {
+    const index = loadDiskCache();
+    index[key] = result;
+    fs.writeFileSync(CACHE_INDEX_PATH, JSON.stringify(index));
+  } catch {}
+}
 
 // Default voice for Guru Sishya — Indian English male teacher
 // Primary: Edge TTS PrabhatNeural (free, unlimited, Indian male)
@@ -53,7 +71,7 @@ export async function generateAudio(
   voice: string = DEFAULT_VOICE,
   outputName?: string,
   voiceLanguage: string = DEFAULT_VOICE_LANGUAGE,
-  rate: string = '-5%'
+  rate: string = '+30%'
 ): Promise<TTSResult> {
   // Resolve voices from language maps
   const kokoroVoice = KOKORO_VOICE_MAP[voiceLanguage] || voice;
@@ -62,12 +80,29 @@ export async function generateAudio(
 
   const cacheKey = crypto.createHash('sha256').update(text + edgeVoice + voiceLanguage + rate).digest('hex');
 
-  // Check cache
+  // Check memory cache first, then persistent disk cache
   const cached = cache.get<TTSResult>(cacheKey);
   if (cached && fs.existsSync(cached.audioPath)) return cached;
+  const diskCache = loadDiskCache();
+  const diskCached = diskCache[cacheKey];
+  if (diskCached && fs.existsSync(diskCached.audioPath)) {
+    cache.set(cacheKey, diskCached); saveDiskCache(cacheKey, diskCached);
+    console.log(`  [TTS] Disk cache hit: ${path.basename(diskCached.audioPath)}`);
+    return diskCached;
+  }
 
-  // Priority 0: Chatterbox TTS (only when CHATTERBOX=1 env var is set — slow but human-sounding)
-  // ~10x realtime on CPU (~20 min per video). Use for final/polished renders only.
+  // Priority 0: Kokoro ONNX (LOCAL, high quality MOS 4.2, 5-10x realtime)
+  // Sounds human, not robotic. DEFAULT for all renders.
+  // Skip with EDGE_TTS=1 to use old Edge TTS PrabhatNeural instead.
+  if (process.env.EDGE_TTS !== '1') {
+    try {
+      return await kokoroLocalTTS(text, cacheKey, outputName, rate);
+    } catch (kokoroErr) {
+      console.warn('Kokoro local TTS failed:', (kokoroErr as Error).message, '— trying Edge TTS...');
+    }
+  }
+
+  // Priority 1: Chatterbox TTS (only when CHATTERBOX=1 env var is set — slow but human-sounding)
   if (process.env.CHATTERBOX === '1') {
     try {
       return await chatterboxTTS(text, cacheKey, outputName);
@@ -76,13 +111,11 @@ export async function generateAudio(
     }
   }
 
-  // Priority 1: Edge TTS (fast, default — 30s total per video)
-  // Free, unlimited, PrabhatNeural Indian male teacher voice
-  // Gets real sentence-level timestamps from VTT — no Whisper needed!
+  // Priority 2: Edge TTS (fast fallback)
   try {
     return await edgeTTS(text, cacheKey, outputName, voiceLanguage, rate);
   } catch (edgeErr) {
-    console.warn('Edge TTS failed:', (edgeErr as Error).message, '— trying Kokoro...');
+    console.warn('Edge TTS failed:', (edgeErr as Error).message, '— trying Kokoro API...');
   }
 
   // Priority 2: Kokoro (self-hosted, good quality)
@@ -135,7 +168,7 @@ async function kokoroTTS(
   // Try /dev/captioned_speech first for REAL word-level timestamps
   try {
     const captionedResult = await kokoroCaptionedSpeech(text, voice, audioPath);
-    cache.set(cacheKey, captionedResult);
+    cache.set(cacheKey, captionedResult); saveDiskCache(cacheKey, captionedResult);
     console.log(`  ✓ Kokoro TTS (captioned): ${filename} (${captionedResult.duration.toFixed(1)}s, ${captionedResult.wordTimestamps.length} words)`);
     return captionedResult;
   } catch (captionedErr) {
@@ -162,7 +195,7 @@ async function kokoroTTS(
 
   const result = makeTimestamps(text, duration, audioPath);
   const refined = await whisperRefine(result);
-  cache.set(cacheKey, refined);
+  cache.set(cacheKey, refined); saveDiskCache(cacheKey, refined);
   console.log(`  ✓ Kokoro TTS (${isWhisperEnabled() ? 'whisper' : 'proportional'}): ${filename} (${refined.duration.toFixed(1)}s)`);
   return refined;
 }
@@ -278,9 +311,56 @@ async function chatterboxTTS(
   });
 
   const result: TTSResult = { audioPath: mp3Path, wordTimestamps, duration };
-  cache.set(cacheKey, result);
+  cache.set(cacheKey, result); saveDiskCache(cacheKey, result);
   console.log(`  ✓ Chatterbox TTS: ${mp3Name} (${duration.toFixed(1)}s, ${words.length} words)`);
   return result;
+}
+
+// ─── Kokoro ONNX (LOCAL, human-quality, 5-10x realtime) ───
+// Uses af_heart voice (warm, clear, professional)
+// Runs entirely local — no cloud, no API, no tokens
+async function kokoroLocalTTS(
+  text: string,
+  cacheKey: string,
+  outputName?: string,
+  rate: string = '+30%',
+): Promise<TTSResult> {
+  const { execSync } = require('child_process');
+  const scriptPath = path.join(process.cwd(), 'scripts', 'kokoro-tts.py');
+
+  // Convert rate string to speed multiplier: "+30%" → 1.3, "+0%" → 1.0, "-5%" → 0.95
+  const ratePercent = parseInt(rate.replace('%', '').replace('+', ''), 10) || 0;
+  const speed = 1.0 + ratePercent / 100;
+
+  const filename = outputName || `kokoro_${cacheKey.slice(0, 12)}.wav`;
+  const wavPath = path.join(AUDIO_DIR, filename);
+  const mp3Name = filename.replace(/\.wav$/, '.mp3');
+  const mp3Path = path.join(AUDIO_DIR, mp3Name);
+
+  // Escape text for shell
+  const cleanText = text.replace(/"/g, '\\"').replace(/\n/g, ' ').slice(0, 5000);
+
+  const output = execSync(
+    `python3 "${scriptPath}" --text "${cleanText}" --output "${wavPath}" --speed ${speed}`,
+    { timeout: 120000 },
+  ).toString().trim();
+
+  // Parse JSON result from stdout
+  const result = JSON.parse(output);
+
+  // Convert WAV to MP3
+  execSync(`ffmpeg -y -i "${wavPath}" -codec:a libmp3lame -b:a 128k "${mp3Path}"`, { timeout: 30000, stdio: 'pipe' });
+  try { fs.unlinkSync(wavPath); } catch {}
+
+  const ttsResult: TTSResult = {
+    audioPath: mp3Path,
+    duration: result.duration,
+    wordTimestamps: result.wordTimestamps,
+  };
+
+  cache.set(cacheKey, ttsResult); saveDiskCache(cacheKey, ttsResult);
+  console.log(`  ✓ Kokoro local: ${mp3Name} (${result.duration.toFixed(1)}s, ${result.realtimeFactor}x RT, voice=${result.voice})`);
+  return ttsResult;
 }
 
 // ─── Edge TTS (free Microsoft neural voices — FALLBACK) ───
@@ -291,7 +371,7 @@ async function edgeTTS(
   cacheKey: string,
   outputName?: string,
   voiceLanguage: string = 'indian-english',
-  rate: string = '-5%'
+  rate: string = '+30%'
 ): Promise<TTSResult> {
   const { execFileSync } = await import('child_process');
 
@@ -340,7 +420,7 @@ async function edgeTTS(
   }
 
   const result: TTSResult = { audioPath, wordTimestamps, duration };
-  cache.set(cacheKey, result);
+  cache.set(cacheKey, result); saveDiskCache(cacheKey, result);
   console.log(`  ✓ Edge TTS (${voice}): ${filename} (${duration.toFixed(1)}s, ${wordTimestamps.length} words)`);
   return result;
 }
@@ -430,7 +510,7 @@ async function macosTTS(
 
   const result = makeTimestamps(text, duration, m4aPath);
   const refined = await whisperRefine(result);
-  cache.set(cacheKey, refined);
+  cache.set(cacheKey, refined); saveDiskCache(cacheKey, refined);
   console.log(`  ✓ macOS TTS: ${filename} (${refined.duration.toFixed(1)}s)`);
   return refined;
 }
@@ -533,18 +613,24 @@ export async function generateSceneAudios(
   const resolvedVoice = VOICE_MAP[voiceLanguage] || voice;
   console.log(`  [TTS] generateSceneAudios voice=${voice} → resolved=${resolvedVoice} (lang=${voiceLanguage})`);
 
-  const results: TTSResult[] = [];
-  for (let i = 0; i < scenes.length; i++) {
-    const scene = scenes[i];
-    if (!scene.narration.trim()) {
-      results.push({ audioPath: '', wordTimestamps: [], duration: 0 });
-      continue;
-    }
-    console.log(`  Generating audio for scene ${i + 1}/${scenes.length} [${scene.type}]...`);
-    const spokenText = preprocessForSpeech(scene.narration);
-    const sceneRate = rateMap?.[scene.type] ?? '-5%';
-    const result = await generateAudio(spokenText, resolvedVoice, undefined, voiceLanguage, sceneRate);
-    results.push(result);
+  // Parallel TTS — up to 4 concurrent Edge TTS processes for ~3x speedup
+  const CONCURRENCY = parseInt(process.env.TTS_CONCURRENCY || '4', 10);
+  const results: TTSResult[] = new Array(scenes.length);
+
+  for (let batch = 0; batch < scenes.length; batch += CONCURRENCY) {
+    const chunk = scenes.slice(batch, batch + CONCURRENCY);
+    const promises = chunk.map(async (scene, j) => {
+      const i = batch + j;
+      if (!scene.narration.trim()) {
+        results[i] = { audioPath: '', wordTimestamps: [], duration: 0 };
+        return;
+      }
+      console.log(`  Generating audio for scene ${i + 1}/${scenes.length} [${scene.type}]...`);
+      const spokenText = preprocessForSpeech(scene.narration);
+      const sceneRate = rateMap?.[scene.type] ?? '+30%';
+      results[i] = await generateAudio(spokenText, resolvedVoice, undefined, voiceLanguage, sceneRate);
+    });
+    await Promise.all(promises);
   }
   return results;
 }

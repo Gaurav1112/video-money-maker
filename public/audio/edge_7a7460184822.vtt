@@ -1,0 +1,40 @@
+1
+00:00:00,100 --> 00:00:01,957
+Imagine this.
+
+2
+00:00:01,907 --> 00:00:04,855
+You've built an amazing app.
+
+3
+00:00:04,855 --> 00:00:06,934
+Users love it.
+
+4
+00:00:06,934 --> 00:00:13,434
+Then one morning you wake up and your app is on the front page of Hacker News.
+
+5
+00:00:13,434 --> 00:00:19,289
+Suddenly ten million people are trying to use your app at the same time.
+
+6
+00:00:19,289 --> 00:00:21,671
+Your server crashes.
+
+7
+00:00:21,671 --> 00:00:24,828
+Your users see error pages.
+
+8
+00:00:24,828 --> 00:00:27,263
+Your boss is calling.
+
+9
+00:00:27,263 --> 00:00:31,947
+This is the exact problem that Apache Kafka solves.
+
+10
+00:00:31,947 --> 00:00:36,868
+And if you don't understand it, you WILL face this nightmare.
+

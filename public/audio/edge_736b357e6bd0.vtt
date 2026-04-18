@@ -1,0 +1,36 @@
+1
+00:00:00,100 --> 00:00:13,510
+I saved the best insight for right here,  Consumers send heartbeats to the Group Coordinator on a background thread every heartbeat.interval.ms (default 3 s).
+
+2
+00:00:13,460 --> 00:00:25,671
+If the coordinator doesn't hear from a consumer within session.timeout.ms (default 45 s), it declares the consumer dead and triggers a rebalance.
+
+3
+00:00:25,671 --> 00:00:37,236
+Separately, if the consumer doesn't call poll() within max.poll.interval.ms (default 5 min), it's also considered failed.
+
+4
+00:00:37,236 --> 00:00:44,447
+This catches consumers that are alive (sending heartbeats) , but stuck in slow processing.
+
+5
+00:00:44,447 --> 00:00:51,105
+Real talk: I've seen senior engineers at Uber get this wrong in interviews.
+
+6
+00:00:51,105 --> 00:00:53,500
+Don't be that person.
+
+7
+00:00:53,500 --> 00:00:59,710
+Most developers think more Interview Reality Check means better performance.
+
+8
+00:00:59,710 --> 00:01:03,157
+It can , actually make things worse.
+
+9
+00:01:03,157 --> 00:01:05,552
+Stay tuned to see why.
+

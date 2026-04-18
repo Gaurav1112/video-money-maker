@@ -1,0 +1,4 @@
+1
+00:00:00,100 --> 00:00:18,280
+When asked "walk me through what happens when a producer sends a message to Kafka," trace the full path: producer serializes the record → determines partition → sends to partition leader's broker → leader writes to local log → leader replicates to followers → once ISR acknowledges (based on acks setting) → leader sends acknowledgment back to producer.
+

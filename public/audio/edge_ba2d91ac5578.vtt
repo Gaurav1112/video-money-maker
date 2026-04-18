@@ -1,0 +1,20 @@
+1
+00:00:00,100 --> 00:00:09,944
+This next idea changes everything,  A transactional.id creates a stable identity for the producer across restarts.
+
+2
+00:00:09,894 --> 00:00:23,197
+The broker fences old producer instances with the same transactional ID by bumping the producer epoch — old instances attempting to write are rejected with ProducerFencedException.
+
+3
+00:00:23,197 --> 00:00:27,447
+Master this, and you're not just interview-ready.
+
+4
+00:00:27,447 --> 00:00:29,644
+You're production-ready.
+
+5
+00:00:29,644 --> 00:00:31,394
+That's rare.
+

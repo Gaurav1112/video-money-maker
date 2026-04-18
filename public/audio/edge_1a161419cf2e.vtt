@@ -1,0 +1,60 @@
+1
+00:00:00,100 --> 00:00:03,721
+Alright, here's what you just learned.
+
+2
+00:00:03,671 --> 00:00:10,434
+Explain the role of brokers, topics, partitions, and offsets in a Kafka cluster.
+
+3
+00:00:10,434 --> 00:00:15,736
+Describe how replication and ISR provide fault tolerance.
+
+4
+00:00:15,736 --> 00:00:20,276
+Contrast ZooKeeper-based coordination with KRaft mode.
+
+5
+00:00:20,276 --> 00:00:22,434
+Stick with me here.
+
+6
+00:00:22,434 --> 00:00:26,828
+This is the part where real understanding happens.
+
+7
+00:00:26,828 --> 00:00:29,986
+Don't just watch and forget.
+
+8
+00:00:29,986 --> 00:00:31,750
+Go practice.
+
+9
+00:00:31,750 --> 00:00:33,907
+Build it in code.
+
+10
+00:00:33,907 --> 00:00:36,276
+Explain it to someone.
+
+11
+00:00:36,276 --> 00:00:38,539
+That's how it sticks.
+
+12
+00:00:38,539 --> 00:00:47,355
+The complete Apache Kafka course with cheatsheets and mock interviews is at guru-sishya.in slash apache-kafka.
+
+13
+00:00:47,355 --> 00:00:50,078
+Drop a like if this helped.
+
+14
+00:00:50,078 --> 00:01:05,236
+You now know how to explain the role of brokers, topics, partitions, and offsets in a kafka cluster, describe how replication and isr provide fault tolerance, and explain the trade-offs in an interview.
+
+15
+00:01:05,236 --> 00:01:07,960
+Ab interview mein dhoom machao!
+

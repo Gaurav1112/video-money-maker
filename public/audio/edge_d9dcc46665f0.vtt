@@ -1,0 +1,20 @@
+1
+00:00:00,100 --> 00:00:05,905
+So basically, "Does exactly-once in Kafka cover external systems?
+
+2
+00:00:05,855 --> 00:00:07,065
+No.
+
+3
+00:00:07,065 --> 00:00:15,828
+Kafka EOS is Kafka-internal: it guarantees each record appears exactly once in Kafka topics.
+
+4
+00:00:15,828 --> 00:00:22,842
+If your consumer writes to a database, Kafka EOS doesn't cover the database write.
+
+5
+00:00:22,842 --> 00:00:37,473
+You still need idempotent database operations (upsert by primary key), distributed transactions (two-phase commit), or the outbox pattern to achieve end-to-end exactly-once across systems.
+

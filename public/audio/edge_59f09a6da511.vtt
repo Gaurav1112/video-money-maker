@@ -1,0 +1,48 @@
+1
+00:00:00,100 --> 00:00:04,098
+My non-CS branch engineers, this one's especially for you.
+
+2
+00:00:04,048 --> 00:00:06,913
+Background doesn't matter, preparation does.
+
+3
+00:00:06,913 --> 00:00:11,028
+Chalo, ab deep dive karte hain,  i know you're tempted to skip ahead.
+
+4
+00:00:11,028 --> 00:00:12,038
+Don't.
+
+5
+00:00:12,038 --> 00:00:15,144
+This is the part that gets asked in interviews.
+
+6
+00:00:15,144 --> 00:00:22,528
+A topic is a named, durable, ordered log of records — conceptually similar to a database table, but append-only and replayable.
+
+7
+00:00:22,528 --> 00:00:26,009
+Every topic is divided into one or more partitions.
+
+8
+00:00:26,009 --> 00:00:30,423
+A partition is the fundamental unit of parallelism and ordering in Kafka.
+
+9
+00:00:30,423 --> 00:00:33,586
+Let me show you the end result of Replication first.
+
+10
+00:00:33,586 --> 00:00:36,375
+This is what a production system looks like.
+
+11
+00:00:36,375 --> 00:00:39,894
+Now here is the challenge: can you figure out HOW we get here?
+
+12
+00:00:39,894 --> 00:00:41,586
+Watch and find out.
+

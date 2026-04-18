@@ -1,0 +1,52 @@
+1
+00:00:00,100 --> 00:00:01,886
+Let me show you the code.
+
+2
+00:00:01,836 --> 00:00:05,416
+Remember when I said The Poll Loop is wrong for most systems?
+
+3
+00:00:05,416 --> 00:00:06,942
+Here is the proof.
+
+4
+00:00:06,942 --> 00:00:09,750
+Here's the equivalent Java implementation.
+
+5
+00:00:09,750 --> 00:00:17,144
+Here's a RobustConsumer class in java that monitors server health with periodic checks Here's the equivalent Java implementation.
+
+6
+00:00:17,144 --> 00:00:22,451
+Here's a RobustConsumer class in java that monitors server health with periodic checks.
+
+7
+00:00:22,451 --> 00:00:25,740
+The RobustConsumer method is where the action happens.
+
+8
+00:00:25,740 --> 00:00:31,644
+First, we import the org.apache.kafka.clients.consumer.* module.
+
+9
+00:00:31,644 --> 00:00:34,875
+Now we insert the key-value pair into our map.
+
+10
+00:00:34,875 --> 00:00:38,086
+Here we insert the key-value pair into our map.
+
+11
+00:00:38,086 --> 00:00:41,509
+At this point, we apply the @Override decorator.
+
+12
+00:00:41,509 --> 00:00:44,519
+This is where we iterate through each element.
+
+13
+00:00:44,519 --> 00:00:50,769
+we call processOrder() to handle the operation — because the order matters for our algorithm to work correctly.
+

@@ -154,7 +154,7 @@ const IntroSlide: React.FC<IntroSlideProps> = ({ topic = '', durationInFrames = 
     });
 
     return (
-      <AbsoluteFill style={{ backgroundColor: COLORS.dark, overflow: 'hidden' }}>
+      <AbsoluteFill style={{ backgroundColor: '#0C0A15', overflow: 'hidden' }}>
         {/* Animated tech grid background — never plain black */}
         <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
           {/* Subtle grid pattern */}
@@ -285,7 +285,7 @@ const IntroSlide: React.FC<IntroSlideProps> = ({ topic = '', durationInFrames = 
         }}>
           <div style={{
             fontSize: 60, fontFamily: FONTS.heading, fontWeight: 900,
-            color: COLORS.white, textAlign: 'center',
+            color: COLORS.textOnDark, textAlign: 'center',
             maxWidth: '72%', lineHeight: 1.2, letterSpacing: -2,
             textShadow: `0 0 50px ${COLORS.saffron}40, 0 6px 20px rgba(0,0,0,0.95)`,
           }}>
@@ -532,7 +532,7 @@ const IntroSlide: React.FC<IntroSlideProps> = ({ topic = '', durationInFrames = 
 
   return (
     <AbsoluteFill style={{
-      backgroundColor: COLORS.dark,
+      backgroundColor: '#0C0A15',
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
@@ -612,7 +612,7 @@ const IntroSlide: React.FC<IntroSlideProps> = ({ topic = '', durationInFrames = 
           position: 'absolute', top: '50%', left: 0,
           transform: `translateX(${flareX}px) translateY(-50%)`,
           width: 700, height: 10,
-          background: `linear-gradient(90deg, transparent, ${COLORS.white}EE, ${COLORS.gold}FF, ${COLORS.white}FF, ${COLORS.gold}FF, ${COLORS.white}EE, transparent)`,
+          background: `linear-gradient(90deg, transparent, ${COLORS.textOnDark}EE, ${COLORS.gold}FF, ${COLORS.textOnDark}FF, ${COLORS.gold}FF, ${COLORS.textOnDark}EE, transparent)`,
           filter: 'blur(2px)', opacity: flareOpacity, pointerEvents: 'none',
         }} />
         <div style={{
@@ -663,7 +663,7 @@ const IntroSlide: React.FC<IntroSlideProps> = ({ topic = '', durationInFrames = 
       {topic && frame >= typewriterStart && (
         <div style={{
           marginTop: 24, fontSize: 32, fontFamily: FONTS.heading, fontWeight: 800,
-          color: COLORS.white, opacity: topicOpacity, letterSpacing: 1,
+          color: COLORS.textOnDark, opacity: topicOpacity, letterSpacing: 1,
           textAlign: 'center', textShadow: `0 0 20px ${COLORS.teal}40`,
         }}>
           <span style={{ color: COLORS.teal }}>&gt; </span>

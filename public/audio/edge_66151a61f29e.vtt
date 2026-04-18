@@ -1,0 +1,28 @@
+1
+00:00:00,100 --> 00:00:04,931
+Kafka guarantees total ordering within a single partition.
+
+2
+00:00:04,881 --> 00:00:12,894
+A consumer reading partition P will receive records in the exact order they were appended by the producer.
+
+3
+00:00:12,894 --> 00:00:17,000
+there's no ordering guarantee across partitions.
+
+4
+00:00:17,000 --> 00:00:23,513
+This one concept shows up in literally every system design interview at FAANG.
+
+5
+00:00:23,513 --> 00:00:27,921
+Everyone says Custom Partitioner is the best approach.
+
+6
+00:00:27,921 --> 00:00:32,526
+That is , actually wrong for most real-world systems.
+
+7
+00:00:32,526 --> 00:00:35,552
+I will show you why in a moment.
+

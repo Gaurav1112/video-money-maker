@@ -243,9 +243,9 @@ const CaptionOverlay: React.FC<CaptionOverlayProps> = ({
         <div
           style={{
             position: 'absolute',
-            bottom: 80,
-            left: 0,
-            right: 0,
+            bottom: 100,
+            left: '5%',
+            right: '22%',
             display: 'flex',
             justifyContent: 'center',
             opacity: containerOpacity,
@@ -292,11 +292,11 @@ const CaptionOverlay: React.FC<CaptionOverlayProps> = ({
                     fontFamily: FONTS.text,
                     fontSize: isCurrent ? 44 : 38,
                     fontWeight: 800,
-                    color: isCurrent ? COLORS.white : (emphasis ? COLORS.gold : `${COLORS.white}DD`),
+                    color: isCurrent ? '#FFFFFF' : (emphasis ? COLORS.gold : '#FFFFFFdd'),
                     textTransform: 'uppercase',
                     transform: `scale(${wordScale})`,
                     transformOrigin: 'center bottom',
-                    textShadow: '0 1px 3px rgba(255,255,255,0.8)',
+                    textShadow: '0 2px 6px rgba(0,0,0,0.4)',
                     letterSpacing: 1,
                   }}
                 >
@@ -315,22 +315,22 @@ const CaptionOverlay: React.FC<CaptionOverlayProps> = ({
       <div
         style={{
           position: 'absolute',
-          bottom: 60,
-          left: 0,
-          right: 0,
+          bottom: 100,
+          left: '5%',
+          right: '22%',
           display: 'flex',
           justifyContent: 'center',
           opacity: containerOpacity,
           zIndex: 100,
         }}
       >
-        {/* Clean light background strip for light theme */}
+        {/* Compact caption strip — semi-transparent, doesn't hide content */}
         <div
           style={{
-            background: 'rgba(255, 255, 255, 0.92)',
-            borderRadius: 12,
-            padding: '16px 32px',
-            maxWidth: '80%',
+            background: 'rgba(0, 0, 0, 0.75)',
+            borderRadius: 8,
+            padding: '10px 24px',
+            maxWidth: '70%',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
@@ -338,8 +338,7 @@ const CaptionOverlay: React.FC<CaptionOverlayProps> = ({
             gap: 6,
             transform: `translateY(${slideY}px)`,
             opacity: slideOpacity,
-            boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
-            border: '1px solid rgba(0,0,0,0.06)',
+            boxShadow: '0 4px 16px rgba(0,0,0,0.3)',
           }}
         >
           {displayLines.map((lineWords, lineIdx) => {
@@ -376,7 +375,7 @@ const CaptionOverlay: React.FC<CaptionOverlayProps> = ({
                         style={{
                           display: 'inline-block',
                           fontFamily: FONTS.text,
-                          fontSize: 28,
+                          fontSize: 32,
                           fontWeight: 700,
                           color: 'transparent',
                           lineHeight: 1.5,
@@ -412,14 +411,14 @@ const CaptionOverlay: React.FC<CaptionOverlayProps> = ({
                         { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
                       );
 
-                  // ── Determine color ──
+                  // ── Determine color (white text on dark bg) ──
                   let color: string;
                   if (isCurrent) {
-                    color = COLORS.saffron; // ocean blue accent
+                    color = COLORS.gold; // highlighted current word
                   } else if (emphasis) {
-                    color = COLORS.saffron; // emphasis words stay accent even after spoken
+                    color = COLORS.saffron; // emphasis words
                   } else {
-                    color = '#1E293B'; // charcoal text on light bg
+                    color = '#FFFFFF'; // white on dark bg
                   }
 
                   return (
@@ -428,15 +427,15 @@ const CaptionOverlay: React.FC<CaptionOverlayProps> = ({
                       style={{
                         display: 'inline-block',
                         fontFamily: FONTS.text,
-                        fontSize: isCurrent ? 32 : 28,
-                        fontWeight: isCurrent ? 800 : 700,
+                        fontSize: isCurrent ? 38 : 32,
+                        fontWeight: isCurrent ? 800 : 600,
                         color,
-                        lineHeight: 1.5,
+                        lineHeight: 1.4,
                         letterSpacing: 0.3,
                         transform: `scale(${wordScale})`,
                         transformOrigin: 'center bottom',
                         opacity: fadeIn,
-                        textShadow: '0 1px 3px rgba(255,255,255,0.8)',
+                        textShadow: '0 1px 4px rgba(0,0,0,0.5)',
                       }}
                     >
                       {word}

@@ -1,0 +1,52 @@
+1
+00:00:00,100 --> 00:00:05,259
+Remember when I said Custom Partitioner is wrong for most systems?
+
+2
+00:00:05,209 --> 00:00:07,302
+Here is the proof.
+
+3
+00:00:07,302 --> 00:00:19,131
+Quick reminder, try 1.five times speed if you haven't already Quick reminder, try 1.five times speed if you haven't already.
+
+4
+00:00:19,131 --> 00:00:25,342
+I saved the best insight for right here,  Now let's see the Java version.
+
+5
+00:00:25,342 --> 00:00:28,986
+Here's a TierPartitioner class in java.
+
+6
+00:00:28,986 --> 00:00:33,315
+The TierPartitioner method is where the action happens.
+
+7
+00:00:33,315 --> 00:00:41,486
+First, we import the org.apache.kafka.clients.producer.Partitioner module.
+
+8
+00:00:41,486 --> 00:00:51,368
+Now we define our TierPartitioner class implementing Partitioner — this encapsulates all the complexity in one clean interface.
+
+9
+00:00:51,368 --> 00:00:56,789
+Here we handle the Object value, byte[] valueByte operation.
+
+10
+00:00:56,789 --> 00:01:04,815
+At this point, we check if the values match — to handle the edge case that trips up most developers.
+
+11
+00:01:04,815 --> 00:01:13,605
+This is where we apply the @Override public void close decorator — for O of 1 constant time lookups.
+
+12
+00:01:13,605 --> 00:01:17,657
+This is why hash maps are interview gold.
+
+13
+00:01:17,657 --> 00:01:21,328
+we log the output to verify it works.
+

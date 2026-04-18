@@ -142,7 +142,7 @@ fi
 echo ""
 echo "[3/4] Rendering video..."
 npx remotion render src/compositions/index.tsx LongVideo "$OUTPUT" \
-  --props="$PROPS" --concurrency=8 2>&1 | tail -3
+  --props="$PROPS" --concurrency=50% --gl=angle --crf=23 2>&1 | tail -3
 
 if [ ! -f "$OUTPUT" ]; then
   echo "  ✗ Render failed"

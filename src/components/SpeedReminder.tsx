@@ -89,7 +89,7 @@ export const SpeedReminder: React.FC<SpeedReminderProps> = ({
             <span style={{ fontSize: 22 }}>{msg.icon}</span>
             <span
               style={{
-                color: COLORS.white,
+                color: "#FFFFFF",
                 fontSize: 18,
                 fontWeight: 600,
                 fontFamily: 'Inter, sans-serif',
@@ -109,7 +109,7 @@ export const SpeedReminder: React.FC<SpeedReminderProps> = ({
                 justifyContent: 'center',
                 fontSize: 14,
                 fontWeight: 700,
-                color: COLORS.white,
+                color: "#FFFFFF",
               }}
             >
               1.5x

@@ -21,3 +21,6 @@ public/audio/scene_*.mp3
 
 # YouTube OAuth tokens (sensitive)
 .youtube-token.json
+
+# Lip sync tools (large binaries, auto-downloaded)
+tools/

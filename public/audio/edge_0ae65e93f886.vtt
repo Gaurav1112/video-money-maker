@@ -1,0 +1,28 @@
+1
+00:00:00,100 --> 00:00:03,607
+Here is why more Topics and Partitions can backfire.
+
+2
+00:00:03,557 --> 00:00:06,153
+This next idea changes everything.
+
+3
+00:00:06,153 --> 00:00:10,375
+This is what separates junior from senior answers in interviews.
+
+4
+00:00:10,375 --> 00:00:15,701
+This next idea changes everything,  Here's the typescript implementation in 4 lines.
+
+5
+00:00:15,701 --> 00:00:22,221
+First, we call orders() to handle the operation — because the order matters for our algorithm to work correctly.
+
+6
+00:00:22,221 --> 00:00:26,528
+Now we handle the Partition 0: [offset 0][offset operation.
+
+7
+00:00:26,528 --> 00:00:34,028
+Here we handle the Partition 1: [offset 0][offset operation. , we handle the Partition 2: [offset 0][offset operation.
+

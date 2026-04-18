@@ -711,7 +711,7 @@ export const VerticalLong: React.FC<VerticalLongProps> = ({ storyboard }) => {
             <AvatarBubble
               mouthCues={storyboard.mouthCues}
               startFrame={0}
-              endFrame={Infinity}
+              endFrame={INTRO_DURATION + contentFrames}
             />
           </div>
         </>

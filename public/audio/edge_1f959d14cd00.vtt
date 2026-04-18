@@ -1,0 +1,8 @@
+1
+00:00:00,100 --> 00:00:07,089
+If your friends aren't watching this, they're going to ask YOU to explain it after placements.
+
+2
+00:00:07,039 --> 00:00:24,197
+Kafka's default partitioner (DefaultPartitioner / UniformStickyPartitioner in newer versions) uses the following logic: Hot take: If you can explain this concept clearly, you're already ahead of eighty percent of interview candidates.
+

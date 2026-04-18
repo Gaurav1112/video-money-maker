@@ -1,0 +1,16 @@
+1
+00:00:00,100 --> 00:00:04,425
+Kafka guarantees ordering within a partition , but not across partitions.
+
+2
+00:00:04,375 --> 00:00:14,605
+This is a critical design constraint: if you need all events for a given entity (e.g., a user) to be processed in order, all those events must land in the same partition.
+
+3
+00:00:14,605 --> 00:00:21,538
+I watched a candidate explain this perfectly and get a 45 LPA offer at a top product company in Bangalore.
+
+4
+00:00:21,538 --> 00:00:24,913
+Same concept, same interview room, same question.
+

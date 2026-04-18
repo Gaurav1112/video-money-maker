@@ -1,0 +1,60 @@
+1
+00:00:00,100 --> 00:00:03,721
+Alright, here's what you just learned.
+
+2
+00:00:03,671 --> 00:00:10,973
+Explain the ISR mechanism and what causes a replica to leave and rejoin the ISR.
+
+3
+00:00:10,973 --> 00:00:19,000
+Configure replication factor and min.insync.replicas for a given durability target.
+
+4
+00:00:19,000 --> 00:00:24,776
+Describe the trade-off between unclean leader election and data loss.
+
+5
+00:00:24,776 --> 00:00:26,934
+Stick with me here.
+
+6
+00:00:26,934 --> 00:00:31,328
+This is the part where real understanding happens.
+
+7
+00:00:31,328 --> 00:00:34,486
+Don't just watch and forget.
+
+8
+00:00:34,486 --> 00:00:36,250
+Go practice.
+
+9
+00:00:36,250 --> 00:00:38,407
+Build it in code.
+
+10
+00:00:38,407 --> 00:00:40,776
+Explain it to someone.
+
+11
+00:00:40,776 --> 00:00:43,039
+That's how it sticks.
+
+12
+00:00:43,039 --> 00:00:51,855
+The complete Apache Kafka course with cheatsheets and mock interviews is at guru-sishya.in slash apache-kafka.
+
+13
+00:00:51,855 --> 00:00:54,578
+Drop a like if this helped.
+
+14
+00:00:54,578 --> 00:01:12,644
+You now know how to explain the isr mechanism and what causes a replica to leave and rejoin the isr, configure replication factor and min.insync.replicas for a given durability target, and explain the trade-offs in an interview.
+
+15
+00:01:12,644 --> 00:01:15,368
+Ab interview mein dhoom machao!
+

@@ -133,11 +133,12 @@ export const AnimatedBox: React.FC<AnimatedBoxProps> = ({
         <IconComponent size={24} color={preset.icon} strokeWidth={1.5} />
       )}
       <span style={{
-        fontSize: 15,
-        fontFamily: FONTS.text,
-        fontWeight: 600,
-        color: '#e2e8f0',
-        letterSpacing: 0.5,
+        fontSize: 18,
+        fontFamily: FONTS.heading,
+        fontWeight: 700,
+        color: '#FFFFFF',
+        letterSpacing: 0.3,
+        textShadow: '0 1px 3px rgba(0,0,0,0.5)',
         textAlign: 'center',
         overflow: 'hidden',
         textOverflow: 'ellipsis',

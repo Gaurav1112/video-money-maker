@@ -1,0 +1,20 @@
+1
+00:00:00,100 --> 00:00:07,405
+The way companies ask about Apache Kafka has completely changed in two thousand twenty six.
+
+2
+00:00:07,355 --> 00:00:11,631
+If you're still preparing the old way, you'll fail.
+
+3
+00:00:11,631 --> 00:00:14,039
+Here's the new approach.
+
+4
+00:00:14,039 --> 00:00:18,776
+This is session 6 of our Apache Kafka series.
+
+5
+00:00:18,776 --> 00:00:26,815
+Today's topic: Exactly-Once Semantics — Idempotent Producer, Transactions, Read-Committed Consumer.
+

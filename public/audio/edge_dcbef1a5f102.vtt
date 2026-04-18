@@ -1,0 +1,64 @@
+1
+00:00:00,100 --> 00:00:02,563
+Let me show you the code.
+
+2
+00:00:02,513 --> 00:00:08,341
+Remember when I said KStream vs KTable is wrong for most systems?
+
+3
+00:00:08,341 --> 00:00:10,434
+Here is the proof.
+
+4
+00:00:10,434 --> 00:00:13,421
+Most people miss this completely.
+
+5
+00:00:13,421 --> 00:00:19,144
+Most people miss this completely,  And in Java, it looks like this.
+
+6
+00:00:19,144 --> 00:00:22,736
+Here's a WordCountApp class in java.
+
+7
+00:00:22,736 --> 00:00:27,065
+The WordCountApp method is where the action happens.
+
+8
+00:00:27,065 --> 00:00:34,092
+First, we import the org.apache.kafka.streams.* module.
+
+9
+00:00:34,092 --> 00:00:37,631
+Now we define the buildTopology method.
+
+10
+00:00:37,631 --> 00:00:42,289
+Here we call flatMapValues() to handle the operation.
+
+11
+00:00:42,289 --> 00:00:47,776
+At this point, we call Produced.with() to process our data.
+
+12
+00:00:47,776 --> 00:00:52,842
+This is where we insert the key-value pair into our map.
+
+13
+00:00:52,842 --> 00:00:57,565
+we call Runtime.getRuntime() to process our data.
+
+14
+00:00:57,565 --> 00:01:03,065
+At 3 AM, a production server crashed because of Windowing.
+
+15
+00:01:03,065 --> 00:01:06,250
+The entire team was scrambling.
+
+16
+00:01:06,250 --> 00:01:10,092
+I will show you what went wrong in a minute.
+

@@ -13,15 +13,15 @@ interface HudOverlayProps {
  * All animations are deterministic (no Math.random).
  */
 export const HudOverlay: React.FC<HudOverlayProps> = ({
-  topic,
-  sessionNumber,
+  topic: _topic,
+  sessionNumber: _sessionNumber,
   totalFrames,
 }) => {
   const frame = useCurrentFrame();
 
   const TEAL = '#CBD5E1';     // subtle gray for light theme
   const SAFFRON = '#94A3B8';  // muted slate for light theme
-  const GOLD = '#64748B';     // slate for light theme
+  const _GOLD = '#64748B';    // slate for light theme (reserved)
 
   // --- Corner Brackets ---
   const bracketLength = 40;
@@ -52,31 +52,16 @@ export const HudOverlay: React.FC<HudOverlayProps> = ({
     pointerEvents: 'none' as const,
   });
 
-  // --- Scanline for top-left data panel (sweeps every 5s = 150 frames at 30fps) ---
-  const scanlineCycle = 150; // 5 seconds at 30fps
-  const scanlineProgress = (frame % scanlineCycle) / scanlineCycle;
-  const scanlineX = interpolate(scanlineProgress, [0, 1], [-100, 200]);
-
   // --- Animated full-frame scan line (sweeps top to bottom every 8s = 240 frames) ---
   const fullScanCycle = 240;
   const fullScanProgress = (frame % fullScanCycle) / fullScanCycle;
   const fullScanY = interpolate(fullScanProgress, [0, 1], [-2, 102]);
-
-  // --- Status indicator blink (REC blinks every 1s = 30 frames) ---
-  const recBlink = Math.floor(frame / 15) % 2 === 0; // toggle every 0.5s
-  const audioPulseOpacity = interpolate(
-    frame % 60,
-    [0, 30, 60],
-    [0.6, 1.0, 0.6],
-  );
 
   // --- Circular progress ring ---
   const progress = Math.min(frame / Math.max(totalFrames, 1), 1);
   const ringRadius = 16;
   const ringCircumference = 2 * Math.PI * ringRadius;
   const ringOffset = ringCircumference * (1 - progress);
-
-  const sessionLabel = `S${String(sessionNumber).padStart(2, '0')}`;
 
   return (
     <AbsoluteFill style={{ pointerEvents: 'none', zIndex: 50 }}>
@@ -123,147 +108,10 @@ export const HudOverlay: React.FC<HudOverlayProps> = ({
         }}
       />
 
-      {/* Top-left data panel */}
-      <div
-        style={{
-          position: 'absolute',
-          top: 20,
-          left: 20,
-          padding: '8px 14px',
-          background: 'rgba(255, 255, 255, 0.6)',
-          borderLeft: `2px solid ${TEAL}`,
-          borderRadius: '0 4px 4px 0',
-          overflow: 'hidden',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 4,
-        }}
-      >
-        {/* Topic name */}
-        <div
-          style={{
-            fontSize: 14,
-            fontFamily: "'Inter', monospace, sans-serif",
-            fontWeight: 600,
-            color: TEAL,
-            textTransform: 'uppercase' as const,
-            letterSpacing: '0.08em',
-            opacity: 0.8,
-          }}
-        >
-          {topic.replace(/-/g, ' ')}
-        </div>
-        {/* Session badge */}
-        <div
-          style={{
-            fontSize: 12,
-            fontFamily: "'Inter', monospace, sans-serif",
-            fontWeight: 700,
-            color: GOLD,
-            opacity: 0.7,
-          }}
-        >
-          {sessionLabel}
-        </div>
-        {/* Scanline sweep */}
-        <div
-          style={{
-            position: 'absolute',
-            top: 0,
-            bottom: 0,
-            left: `${scanlineX}%`,
-            width: 40,
-            background: `linear-gradient(90deg, transparent, rgba(29, 209, 161, 0.15), transparent)`,
-            pointerEvents: 'none' as const,
-          }}
-        />
-      </div>
+      {/* Top-left data panel removed — TopicHeader already shows topic + session */}
 
-      {/* Bottom-right status indicators */}
-      <div
-        style={{
-          position: 'absolute',
-          bottom: 24,
-          right: 24,
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 6,
-          alignItems: 'flex-end',
-        }}
-      >
-        {/* AUDIO — green, pulsing */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <span
-            style={{
-              fontSize: 10,
-              fontFamily: "'Inter', monospace, sans-serif",
-              fontWeight: 600,
-              color: '#4ade80',
-              opacity: 0.6,
-              letterSpacing: '0.05em',
-            }}
-          >
-            AUDIO
-          </span>
-          <div
-            style={{
-              width: 6,
-              height: 6,
-              borderRadius: '50%',
-              background: '#4ade80',
-              opacity: audioPulseOpacity * 0.5,
-            }}
-          />
-        </div>
-        {/* SYNC — green, steady */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <span
-            style={{
-              fontSize: 10,
-              fontFamily: "'Inter', monospace, sans-serif",
-              fontWeight: 600,
-              color: '#4ade80',
-              opacity: 0.6,
-              letterSpacing: '0.05em',
-            }}
-          >
-            SYNC
-          </span>
-          <div
-            style={{
-              width: 6,
-              height: 6,
-              borderRadius: '50%',
-              background: '#4ade80',
-              opacity: 0.5,
-            }}
-          />
-        </div>
-        {/* REC — red, blinking */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <span
-            style={{
-              fontSize: 10,
-              fontFamily: "'Inter', monospace, sans-serif",
-              fontWeight: 600,
-              color: '#ef4444',
-              opacity: recBlink ? 0.7 : 0.2,
-              letterSpacing: '0.05em',
-            }}
-          >
-            REC
-          </span>
-          <div
-            style={{
-              width: 6,
-              height: 6,
-              borderRadius: '50%',
-              background: '#ef4444',
-              opacity: recBlink ? 0.6 : 0.15,
-            }}
-          />
-        </div>
-      </div>
+      {/* Bottom-right status indicators removed — hidden behind AvatarBubble
+          and they look like debug telemetry, not professional video UI */}
 
       {/* Circular progress indicator — top-right */}
       <div

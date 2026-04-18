@@ -1,0 +1,20 @@
+1
+00:00:00,100 --> 00:00:01,896
+You've learned the theory.
+
+2
+00:00:01,846 --> 00:00:04,778
+Now here's where Apache Kafka gets REAL.
+
+3
+00:00:04,778 --> 00:00:09,192
+The next section is all production code — and it's the best part of this video.
+
+4
+00:00:09,192 --> 00:00:14,076
+Fun fact: Uber's solution was distributed event streaming with guaranteed delivery.
+
+5
+00:00:14,076 --> 00:00:16,586
+That's exactly what we're learning.
+

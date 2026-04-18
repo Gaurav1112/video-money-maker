@@ -1,0 +1,32 @@
+1
+00:00:00,100 --> 00:00:04,848
+Yeh wala topic samajh lo toh coding round se zyada system design round crack hoga.
+
+2
+00:00:04,798 --> 00:00:08,201
+Okay, so what's the right way to think about Apache Kafka?
+
+3
+00:00:08,201 --> 00:00:10,480
+Forget everything you've memorized.
+
+4
+00:00:10,480 --> 00:00:13,317
+Let me rebuild this from first principles.
+
+5
+00:00:13,317 --> 00:00:20,855
+And I promise, by the end, it will click so hard you'll wonder why it ever seemed confusing , and once you see it, you can't unsee it.
+
+6
+00:00:20,855 --> 00:00:25,432
+At 3 AM, a production server crashed because of Producer Internals.
+
+7
+00:00:25,432 --> 00:00:27,759
+The entire team was scrambling.
+
+8
+00:00:27,759 --> 00:00:30,567
+I will show you what went wrong in a minute.
+

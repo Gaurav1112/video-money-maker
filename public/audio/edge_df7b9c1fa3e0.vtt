@@ -1,0 +1,8 @@
+1
+00:00:00,100 --> 00:00:06,773
+This next idea changes everything,  Schema Registry stores versioned schemas.
+
+2
+00:00:06,723 --> 00:00:19,039
+Producers encode messages using the schema ID; consumers decode using the same registry — ensuring compatibility without embedding the schema in every message.
+

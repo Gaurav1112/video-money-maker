@@ -1,0 +1,28 @@
+1
+00:00:00,100 --> 00:00:09,694
+Look, most people miss this completely,  Assignors: - RangeAssignor (default): partitions assigned in ranges per topic.
+
+2
+00:00:09,644 --> 00:00:11,710
+Can be uneven.
+
+3
+00:00:11,710 --> 00:00:17,736
+RoundRobinAssignor: round-robin across all partitions of all topics.
+
+4
+00:00:17,736 --> 00:00:19,473
+More even.
+
+5
+00:00:19,473 --> 00:00:24,947
+StickyAssignor: minimizes partition movement between rebalances.
+
+6
+00:00:24,947 --> 00:00:33,105
+CooperativeStickyAssignor: incremental rebalance — only revoked partitions pause, others keep consuming.
+
+7
+00:00:33,105 --> 00:00:36,355
+Eliminates the stop-the-world rebalance.
+

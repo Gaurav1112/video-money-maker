@@ -1,0 +1,32 @@
+1
+00:00:00,100 --> 00:00:04,721
+Look, now, here's where most people go wrong.
+
+2
+00:00:04,671 --> 00:00:12,276
+When someone asks about Apache Kafka, the typical answer is just the textbook definition.
+
+3
+00:00:12,276 --> 00:00:15,039
+They recite it like a parrot.
+
+4
+00:00:15,039 --> 00:00:20,486
+But that tells the interviewer NOTHING about your actual understanding.
+
+5
+00:00:20,486 --> 00:00:25,039
+It's like saying a car is "a vehicle with four wheels.
+
+6
+00:00:25,039 --> 00:00:27,026
+Technically correct.
+
+7
+00:00:27,026 --> 00:00:29,328
+Completely useless.
+
+8
+00:00:29,328 --> 00:00:37,184
+Plot twist: Most production implementations of this,  are , actually FREE and open source.
+

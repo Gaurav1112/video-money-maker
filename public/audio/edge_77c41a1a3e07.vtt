@@ -1,0 +1,16 @@
+1
+00:00:00,100 --> 00:00:06,607
+Suno, yeh important hai,  Apache Kafka is a distributed, fault-tolerant, high-throughput event streaming platform.
+
+2
+00:00:06,557 --> 00:00:17,336
+Before writing a single line of producer or consumer code, you must internalize the physical and logical layout of a Kafka cluster — because every configuration decision flows from this mental model.
+
+3
+00:00:17,336 --> 00:00:23,000
+Fun fact: Uber processes ride data in real-time — handling one billion events per day.
+
+4
+00:00:23,000 --> 00:00:24,634
+Let that sink in.
+

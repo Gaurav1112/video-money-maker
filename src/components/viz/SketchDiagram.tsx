@@ -57,7 +57,8 @@ function getGenerator() {
   if (!_generator) {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const rough = require('roughjs');
-    _generator = rough.generator();
+    const roughModule = rough.default || rough;
+    _generator = roughModule.generator();
   }
   return _generator;
 }

@@ -1,0 +1,64 @@
+1
+00:00:00,100 --> 00:00:04,944
+Alright, real talk,  can you spot the bug in this approach?
+
+2
+00:00:04,894 --> 00:00:10,776
+Think about it,  - acks=0: Producer fires and forgets.
+
+3
+00:00:10,776 --> 00:00:13,736
+No wait for broker response.
+
+4
+00:00:13,736 --> 00:00:17,184
+Maximum throughput, zero durability.
+
+5
+00:00:17,184 --> 00:00:22,513
+Use only for metrics or logs where loss is acceptable.
+
+6
+00:00:22,513 --> 00:00:28,868
+acks=1: Leader acknowledges after writing to its local log.
+
+7
+00:00:28,868 --> 00:00:31,934
+Follower replication is async.
+
+8
+00:00:31,934 --> 00:00:36,802
+If the leader crashes before replication, data is lost.
+
+9
+00:00:36,802 --> 00:00:38,934
+Moderate throughput.
+
+10
+00:00:38,934 --> 00:00:45,460
+acks=all (or -1): All ISR members must acknowledge.
+
+11
+00:00:45,460 --> 00:00:55,947
+Combined with min.insync.replicas=2, this guarantees at least 2 replicas hold the data before acknowledgment.
+
+12
+00:00:55,947 --> 00:01:03,460
+Lowest I know someone who got rejected from a top product company because they couldn't explain this.
+
+13
+00:01:03,460 --> 00:01:06,000
+Don't let that be you.
+
+14
+00:01:06,000 --> 00:01:11,223
+Interviewers have a favorite trap question about Custom Partitioner.
+
+15
+00:01:11,223 --> 00:01:14,934
+90 percent of candidates fall for it.
+
+16
+00:01:14,934 --> 00:01:18,815
+I will show you the trap and how to avoid it.
+

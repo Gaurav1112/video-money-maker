@@ -1,0 +1,32 @@
+1
+00:00:00,100 --> 00:00:03,247
+This is where Sishya becomes Guru.
+
+2
+00:00:03,197 --> 00:00:19,184
+Register via: props.put(ProducerConfig.PARTITIONERCLASSCONFIG, TierPartitioner.class.getName()) Fun fact: Uber processes ride data in real-time — handling one billion events per day.
+
+3
+00:00:19,184 --> 00:00:21,421
+Let that sink in.
+
+4
+00:00:21,421 --> 00:00:27,828
+This is the kind of knowledge that makes your team lead go 'wait, how do you know that?
+
+5
+00:00:27,828 --> 00:00:32,973
+Let me show you the end result of Python Implementation first.
+
+6
+00:00:32,973 --> 00:00:36,789
+This is what a production system looks like.
+
+7
+00:00:36,789 --> 00:00:40,276
+Now the question is: HOW do we get here?
+
+8
+00:00:40,276 --> 00:00:41,986
+Stay tuned.
+

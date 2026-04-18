@@ -1,0 +1,48 @@
+1
+00:00:00,100 --> 00:00:02,563
+Let me show you the code.
+
+2
+00:00:02,513 --> 00:00:07,881
+Here is what replaced the textbook version of Producer Tuning.
+
+3
+00:00:07,881 --> 00:00:11,421
+And in Java, it looks like this.
+
+4
+00:00:11,421 --> 00:00:20,394
+Here's a HighThroughputProducer class in java that handles data serialization And in Java, it looks like this.
+
+5
+00:00:20,394 --> 00:00:26,723
+Here's a HighThroughputProducer class in java that handles data serialization.
+
+6
+00:00:26,723 --> 00:00:31,368
+The HighThroughputProducer method is where the action happens.
+
+7
+00:00:31,368 --> 00:00:39,407
+First, we import the org.apache.kafka.clients.producer.* module.
+
+8
+00:00:39,407 --> 00:00:43,828
+Now we insert the key-value pair into our map.
+
+9
+00:00:43,828 --> 00:00:48,223
+Here we insert the key-value pair into our map.
+
+10
+00:00:48,223 --> 00:00:53,355
+At this point, we call Properties() to handle the operation.
+
+11
+00:00:53,355 --> 00:00:58,421
+This is where we insert the key-value pair into our map.
+
+12
+00:00:58,421 --> 00:01:02,092
+we log the output to verify it works.
+

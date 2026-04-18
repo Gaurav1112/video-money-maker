@@ -1,0 +1,20 @@
+1
+00:00:00,100 --> 00:00:02,550
+Let me show you the end result first.
+
+2
+00:00:02,500 --> 00:00:06,288
+THIS is what a production-grade Apache Kafka system looks like.
+
+3
+00:00:06,288 --> 00:00:09,961
+Now let me show you exactly how to build it, step by step.
+
+4
+00:00:09,961 --> 00:00:13,259
+This is session 1 of our Apache Kafka series.
+
+5
+00:00:13,259 --> 00:00:17,961
+Today's topic: Kafka Architecture — Brokers, Topics, Partitions, Offsets.
+

@@ -73,8 +73,20 @@ export const AvatarBubble: React.FC<AvatarBubbleProps> = ({
       mouthOpen = MOUTH_OPENNESS[activeCue.value] || 0;
     }
   } else {
-    // Fallback: simulate speaking with sine wave (when no cues available)
-    mouthOpen = Math.max(0, Math.sin(frame * 0.25) * 0.4 + 0.1);
+    // Fallback: simulate speaking with sine wave — but ONLY during active narration.
+    // Use a gentle breathing motion when silent (no speaking pulse).
+    // Active narration: frames between startFrame and endFrame minus outro
+    const isNarrating = localFrame > 30 && localFrame < totalFrames - 60;
+    if (isNarrating) {
+      // Intermittent speaking: 2s on, 0.5s pause pattern to look natural
+      const cycle = (frame % 75); // 75 frames = 2.5s cycle
+      const isSpeaking = cycle < 60; // speak for 2s, pause for 0.5s
+      mouthOpen = isSpeaking
+        ? Math.max(0, Math.sin(frame * 0.25) * 0.4 + 0.1)
+        : 0;
+    } else {
+      mouthOpen = 0; // silent during intro/outro
+    }
   }
 
   // Smooth the mouth animation
@@ -154,10 +166,10 @@ export const AvatarBubble: React.FC<AvatarBubbleProps> = ({
             flexDirection: 'column',
           }}>
             <svg width="90" height="90" viewBox="0 0 24 24" fill="none">
-              <circle cx="12" cy="8" r="4" fill={`${COLORS.white}cc`} />
-              <path d="M4 21c0-4.418 3.582-8 8-8s8 3.582 8 8" fill={`${COLORS.white}99`} />
+              <circle cx="12" cy="8" r="4" fill={`${COLORS.textOnDark}cc`} />
+              <path d="M4 21c0-4.418 3.582-8 8-8s8 3.582 8 8" fill={`${COLORS.textOnDark}99`} />
             </svg>
-            <div style={{ fontSize: 24, fontWeight: 700, color: `${COLORS.white}cc`, marginTop: -4, letterSpacing: '0.1em' }}>GS</div>
+            <div style={{ fontSize: 24, fontWeight: 700, color: `${COLORS.textOnDark}cc`, marginTop: -4, letterSpacing: '0.1em' }}>GS</div>
           </div>
         )}
       </div>

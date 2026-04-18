@@ -1,0 +1,56 @@
+1
+00:00:00,100 --> 00:00:03,721
+Alright, here's what you just learned.
+
+2
+00:00:03,671 --> 00:00:15,697
+Understand Connect's source/sink architecture and deploy a connector via the REST A P I. Produce and consume Avro-encoded messages using Schema Registry.
+
+3
+00:00:15,697 --> 00:00:21,578
+Explain schema evolution compatibility modes and choose the right one.
+
+4
+00:00:21,578 --> 00:00:23,736
+Stick with me here.
+
+5
+00:00:23,736 --> 00:00:28,131
+This is the part where real understanding happens.
+
+6
+00:00:28,131 --> 00:00:31,289
+Don't just watch and forget.
+
+7
+00:00:31,289 --> 00:00:33,052
+Go practice.
+
+8
+00:00:33,052 --> 00:00:35,210
+Build it in code.
+
+9
+00:00:35,210 --> 00:00:37,578
+Explain it to someone.
+
+10
+00:00:37,578 --> 00:00:39,842
+That's how it sticks.
+
+11
+00:00:39,842 --> 00:00:48,657
+The complete Apache Kafka course with cheatsheets and mock interviews is at guru-sishya.in slash apache-kafka.
+
+12
+00:00:48,657 --> 00:00:51,381
+Drop a like if this helped.
+
+13
+00:00:51,381 --> 00:01:07,723
+You now know how to understand connect's source/sink architecture and deploy a connector via the rest api, produce and consume avro-encoded messages using schema registry, and explain the trade-offs in an interview.
+
+14
+00:01:07,723 --> 00:01:10,447
+Ab interview mein dhoom machao!
+

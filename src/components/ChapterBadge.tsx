@@ -86,7 +86,7 @@ export const ChapterBadge: React.FC<ChapterBadgeProps> = ({
           fontWeight: 700,
           color: COLORS.saffron,
           fontFamily: 'JetBrains Mono, monospace',
-          borderRight: `1px solid ${COLORS.white}10`,
+          borderRight: `1px solid ${"#FFFFFF"}10`,
         }}
       >
         {padNum(chapterNumber)}/{padNum(totalChapters)}
@@ -98,7 +98,7 @@ export const ChapterBadge: React.FC<ChapterBadgeProps> = ({
           padding: '8px 16px 8px 12px',
           fontSize: 14,
           fontWeight: 600,
-          color: COLORS.white,
+          color: "#FFFFFF",
           fontFamily: 'Inter, sans-serif',
           letterSpacing: 0.3,
         }}

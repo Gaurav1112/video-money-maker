@@ -1,0 +1,20 @@
+1
+00:00:00,100 --> 00:00:04,234
+Here's the json implementation in 5 lines.
+
+2
+00:00:04,184 --> 00:00:09,605
+First, we handle the "transforms": "addTimestamp,ma operation.
+
+3
+00:00:09,605 --> 00:00:15,894
+Now we handle the "transforms.addTimestamp.type" operation.
+
+4
+00:00:15,894 --> 00:00:22,342
+Here we handle the "transforms.addTimestamp.times operation.
+
+5
+00:00:22,342 --> 00:00:35,697
+At this point, we handle the "transforms.maskPII.type": "or operation. , we handle the "transforms.maskPII.fields": " operation.
+

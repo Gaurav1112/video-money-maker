@@ -1,0 +1,40 @@
+1
+00:00:00,100 --> 00:00:08,813
+So basically, by the way, this video works great at 1.five times speed for better listening.
+
+2
+00:00:08,763 --> 00:00:12,776
+Now, here's where most people go wrong.
+
+3
+00:00:12,776 --> 00:00:20,381
+When someone asks about Apache Kafka, the typical answer is just the textbook definition.
+
+4
+00:00:20,381 --> 00:00:23,144
+They recite it like a parrot.
+
+5
+00:00:23,144 --> 00:00:28,592
+But that tells the interviewer NOTHING about your actual understanding.
+
+6
+00:00:28,592 --> 00:00:33,144
+It's like saying a car is "a vehicle with four wheels.
+
+7
+00:00:33,144 --> 00:00:35,131
+Technically correct.
+
+8
+00:00:35,131 --> 00:00:37,434
+Completely useless.
+
+9
+00:00:37,434 --> 00:00:42,368
+Wild stat: Uber processes one billion events per day.
+
+10
+00:00:42,368 --> 00:00:46,197
+And it all depends on concepts like this.
+

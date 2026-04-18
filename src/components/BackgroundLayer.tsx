@@ -9,11 +9,11 @@ interface BackgroundLayerProps {
 const SCENE_TINTS: Record<string, string> = {
   title: '#F5F3EF',
   text: '#F5F3EF',
-  code: '#F8FAFC',    // slightly cooler for code
-  diagram: '#F5F3EF',
-  table: '#FEF9F0',   // slightly warmer for comparisons
-  interview: '#F0FDF4', // slight green tint for interview
-  review: '#FFF7ED',   // slight warm for quiz
+  code: '#E8F0FE',    // noticeably blue-tinted for code scenes
+  diagram: '#F0F0FA',  // light indigo for diagrams
+  table: '#FEF0D5',   // warm amber for comparisons
+  interview: '#DCFCE7', // green-tinted for interview
+  review: '#FEE8D6',   // warm orange tint for quiz
   summary: '#F5F3EF',
 };
 

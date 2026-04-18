@@ -1,0 +1,12 @@
+1
+00:00:00,100 --> 00:00:07,050
+Now here is where it gets spicy,  "How do you avoid duplicate processing in a consumer?
+
+2
+00:00:07,000 --> 00:00:14,447
+Enable enable.auto.commit=false, process the batch, then call commitSync().
+
+3
+00:00:14,447 --> 00:00:25,934
+Wrap the external side effect (e.g., database write) and the commit in an idempotent design so re-processing the same record has no net effect.
+

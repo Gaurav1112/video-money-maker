@@ -1,0 +1,28 @@
+1
+00:00:00,100 --> 00:00:04,886
+Here's the thing,  fast forward mode — here's the key takeaway in one sentence.
+
+2
+00:00:04,836 --> 00:00:16,365
+Per-partition commit (commitSync(offsetMap)): Commit offsets at specific positions per partition — useful when processing results are written to an external store and you want offset commits to be transactionally aligned.
+
+3
+00:00:16,365 --> 00:00:19,173
+Your competition is watching this video too.
+
+4
+00:00:19,173 --> 00:00:23,038
+The question is: will you , actually practice it on guru-sishya.in?
+
+5
+00:00:23,038 --> 00:00:24,750
+Link in the description.
+
+6
+00:00:24,750 --> 00:00:32,019
+There is one thing about Python Implementation that nobody mentions in tutorials, and it is exactly what interviewers test.
+
+7
+00:00:32,019 --> 00:00:34,028
+I will reveal it shortly.
+

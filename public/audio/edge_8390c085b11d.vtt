@@ -1,0 +1,4 @@
+1
+00:00:00,100 --> 00:00:10,973
+Now here is where it gets spicy,  historically, Kafka depended on Apache ZooKeeper for cluster coordination — storing broker registrations, topic metadata, and controller election state.
+

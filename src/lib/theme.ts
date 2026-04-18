@@ -1,12 +1,14 @@
 import { loadFont } from '@remotion/google-fonts/Inter';
 import { loadFont as loadCodeFont } from '@remotion/google-fonts/JetBrainsMono';
+import { loadFont as loadHeadingFont } from '@remotion/google-fonts/SpaceGrotesk';
 
 const { fontFamily: interFont } = loadFont();
 const { fontFamily: jetbrainsFont } = loadCodeFont();
+const { fontFamily: spaceGroteskFont } = loadHeadingFont();
 
 export const LOADED_FONTS = {
   text: interFont,
-  heading: interFont,
+  heading: spaceGroteskFont,
   code: jetbrainsFont,
 } as const;
 
@@ -27,21 +29,24 @@ export const COLORS = {
   subtleText: '#94A3B8',
   warmBg: '#F5F3EF',
   warmBgAlt: '#EDE9E3',
+  // Explicit colors for dark-background contexts (intros, overlays, badges)
+  textOnDark: '#FFFFFF',    // actual white for dark backgrounds
+  textOnLight: '#1E293B',   // charcoal for light backgrounds
 } as const;
 
 export const FONTS = {
   code: 'JetBrains Mono, monospace',
   text: 'Inter, sans-serif',
-  heading: 'Inter, sans-serif',
+  heading: 'Space Grotesk, sans-serif',
 } as const;
 
 export const SIZES = {
   heading1: 72,
   heading2: 48,
   heading3: 36,
-  body: 28,
-  bodySmall: 22,
-  caption: 16,
-  code: 22,
-  codeSmall: 18,
+  body: 32,
+  bodySmall: 26,
+  caption: 24,
+  code: 26,
+  codeSmall: 22,
 } as const;

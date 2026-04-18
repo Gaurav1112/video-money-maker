@@ -1,0 +1,40 @@
+1
+00:00:00,100 --> 00:00:02,523
+Guru mode activated.
+
+2
+00:00:02,473 --> 00:00:04,881
+Let's break this down.
+
+3
+00:00:04,881 --> 00:00:14,763
+And get this,  - Set vm.swappiness=1 — Kafka relies heavily on page cache; swapping kills throughput.
+
+4
+00:00:14,763 --> 00:00:20,815
+Increase ulimit -n one lakh — Kafka opens many file descriptors.
+
+5
+00:00:20,815 --> 00:00:26,144
+Use XFS or ext4 with noatime mount option.
+
+6
+00:00:26,144 --> 00:00:32,355
+Allocate dedicated disks; avoid NAS/SAN for log directories.
+
+7
+00:00:32,355 --> 00:00:38,171
+Three months of focused prep beats three years of unfocused coding.
+
+8
+00:00:38,171 --> 00:00:41,131
+This video is focused prep.
+
+9
+00:00:41,131 --> 00:00:47,723
+This is the difference between a 12 LPA offer and a 40 LPA offer.
+
+10
+00:00:47,723 --> 00:00:50,289
+I'm not exaggerating.
+

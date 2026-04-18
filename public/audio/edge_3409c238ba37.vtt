@@ -1,0 +1,60 @@
+1
+00:00:00,100 --> 00:00:03,721
+Alright, here's what you just learned.
+
+2
+00:00:03,671 --> 00:00:09,710
+Explain the internal producer pipeline from send() to broker acknowledgment.
+
+3
+00:00:09,710 --> 00:00:15,368
+Configure acks, retries, and idempotence for production durability.
+
+4
+00:00:15,368 --> 00:00:22,105
+Tune batch.size and linger.ms for throughput vs latency.
+
+5
+00:00:22,105 --> 00:00:24,263
+Stick with me here.
+
+6
+00:00:24,263 --> 00:00:28,657
+This is the part where real understanding happens.
+
+7
+00:00:28,657 --> 00:00:31,815
+Don't just watch and forget.
+
+8
+00:00:31,815 --> 00:00:33,578
+Go practice.
+
+9
+00:00:33,578 --> 00:00:35,736
+Build it in code.
+
+10
+00:00:35,736 --> 00:00:38,105
+Explain it to someone.
+
+11
+00:00:38,105 --> 00:00:40,368
+That's how it sticks.
+
+12
+00:00:40,368 --> 00:00:49,184
+The complete Apache Kafka course with cheatsheets and mock interviews is at guru-sishya.in slash apache-kafka.
+
+13
+00:00:49,184 --> 00:00:51,907
+Drop a like if this helped.
+
+14
+00:00:51,907 --> 00:01:06,828
+You now know how to explain the internal producer pipeline from send() to broker acknowledgment, configure acks, retries, and idempotence for production durability, and explain the trade-offs in an interview.
+
+15
+00:01:06,828 --> 00:01:09,552
+Ab interview mein dhoom machao!
+

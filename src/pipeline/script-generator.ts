@@ -10,176 +10,92 @@ import { getVisualTemplate } from '../lib/visual-templates';
 import { generateQuizOptions } from '../lib/quiz-options';
 
 // ---------------------------------------------------------------------------
-// Topic-Specific Examples — Indian + global companies mapped to topics
-// Ensures narration mentions the RIGHT company for the RIGHT topic.
+// Per-Video Phrase Dedup Tracker
+// Prevents repetitive template phrases from appearing more than once per video.
+// Reset via resetPhraseTracker() at the start of each generateScript() call.
 // ---------------------------------------------------------------------------
-const TOPIC_EXAMPLES: Record<string, {
-  company: string;
-  useCase: string;
-  scale: string;
-  problem: string;
-  solution: string;
-}> = {
-  'caching': {
-    company: 'Netflix',
-    useCase: 'serves 230 million users worldwide',
-    scale: '100 billion hours of content per year',
-    problem: 'database queries taking 500ms each',
-    solution: 'Redis cache layer reducing latency to 2ms',
-  },
-  'load balancing': {
-    company: 'Swiggy',
-    useCase: 'handles 2 million orders during lunch rush',
-    scale: '10,000 requests per second at peak',
-    problem: 'single server crashing under load',
-    solution: 'distributing traffic across 50 servers',
-  },
-  'api gateway': {
-    company: 'Flipkart',
-    useCase: 'routes every customer request through one entry point',
-    scale: '100 million users during Big Billion Days',
-    problem: 'clients calling 20 different services directly',
-    solution: 'single gateway handling auth, rate limiting, and routing',
-  },
-  'kafka': {
-    company: 'Uber',
-    useCase: 'processes ride data in real-time',
-    scale: '1 billion events per day',
-    problem: 'losing critical trip data during peak hours',
-    solution: 'distributed event streaming with guaranteed delivery',
-  },
-  'database': {
-    company: 'Razorpay',
-    useCase: 'processes UPI payments',
-    scale: '10,000 transactions per second',
-    problem: 'single database becoming a bottleneck',
-    solution: 'sharding across multiple database instances',
-  },
-  'microservices': {
-    company: 'PhonePe',
-    useCase: 'handles digital payments across India',
-    scale: '4 billion monthly transactions',
-    problem: 'monolith deployment taking 2 hours',
-    solution: 'independent microservices deployed in 5 minutes',
-  },
-  'distributed': {
-    company: 'Zomato',
-    useCase: 'syncs restaurant data across all cities',
-    scale: '500,000 restaurants in real-time',
-    problem: 'network partitions causing stale data',
-    solution: 'eventual consistency with conflict resolution',
-  },
-  'message queue': {
-    company: 'Swiggy',
-    useCase: 'processes order workflow',
-    scale: '2 million orders per day',
-    problem: 'synchronous calls causing cascading failures',
-    solution: 'async message queues decoupling services',
-  },
-  'authentication': {
-    company: 'Paytm',
-    useCase: 'secures 300 million wallets',
-    scale: '50 million logins per day',
-    problem: 'session tokens being stolen',
-    solution: 'JWT with short-lived access tokens and refresh rotation',
-  },
-  'rate limiting': {
-    company: 'Zerodha',
-    useCase: 'protects trading APIs',
-    scale: '15 million orders per day',
-    problem: 'bot attacks overwhelming the system',
-    solution: 'token bucket rate limiter at the API gateway',
-  },
-  'monitoring': {
-    company: 'CRED',
-    useCase: 'monitors payment health',
-    scale: '10,000 metrics per second',
-    problem: 'outage discovered 30 minutes late by users',
-    solution: 'real-time alerting with P95 latency thresholds',
-  },
-  'consistent hashing': {
-    company: 'Amazon DynamoDB',
-    useCase: 'distributes data across nodes',
-    scale: 'trillions of requests per day',
-    problem: 'adding a server reshuffles all data',
-    solution: 'hash ring with virtual nodes for minimal redistribution',
-  },
-  'cdn': {
-    company: 'Hotstar',
-    useCase: 'streams IPL cricket to 25 million concurrent viewers',
-    scale: '25 Tbps bandwidth at peak',
-    problem: 'buffering and high latency for users far from origin server',
-    solution: 'edge caching content at 200+ global PoPs',
-  },
-  'queue': {
-    company: 'Razorpay',
-    useCase: 'processes payment settlements',
-    scale: '5 million daily transactions',
-    problem: 'payment service overload during flash sales',
-    solution: 'message queue absorbing burst traffic for async processing',
-  },
-  'dns': {
-    company: 'Cloudflare',
-    useCase: 'resolves domain names globally',
-    scale: '1.2 trillion DNS queries per day',
-    problem: 'DNS lookup adding 200ms to every request',
-    solution: 'anycast routing to the nearest resolver',
-  },
-  'docker': {
-    company: 'Spotify',
-    useCase: 'deploys microservices for 500 million users',
-    scale: '1,000+ microservices in production',
-    problem: '"works on my machine" breaking in production',
-    solution: 'containerized deployments with identical environments everywhere',
-  },
-  'kubernetes': {
-    company: 'Flipkart',
-    useCase: 'orchestrates thousands of containers during Big Billion Days',
-    scale: '100 million users, 10,000+ pods',
-    problem: 'manual scaling and deployment failures',
-    solution: 'auto-scaling, self-healing container orchestration',
-  },
-  'sql': {
-    company: 'Zerodha',
-    useCase: 'stores trading and portfolio data',
-    scale: '15 million daily orders',
-    problem: 'complex queries slowing down as data grows',
-    solution: 'optimized indexes and query plans for sub-ms reads',
-  },
-  'nosql': {
-    company: 'Swiggy',
-    useCase: 'stores restaurant menus and real-time delivery data',
-    scale: '500,000 restaurant listings updated in real-time',
-    problem: 'rigid schema blocking rapid feature iteration',
-    solution: 'flexible document store for schema-less data',
-  },
-  'ci/cd': {
-    company: 'Razorpay',
-    useCase: 'ships payment features safely',
-    scale: '100+ deploys per day',
-    problem: 'manual deployment causing 2-hour outages',
-    solution: 'automated pipelines with canary releases and instant rollback',
-  },
-};
+const _usedPhraseTemplates = new Set<string>();
+
+function resetPhraseTracker(): void {
+  _usedPhraseTemplates.clear();
+}
 
 /**
- * Lookup topic-specific example. Matches by substring so "Load Balancing Algorithms"
- * still matches the "load balancing" entry.
+ * Returns the phrase only if it hasn't been used yet in this video.
+ * Tracks by a template key (not the full string) so parameterised phrases
+ * like "This is how {topic} works under the hood" still dedup.
  */
-function getTopicExample(topic: string): typeof TOPIC_EXAMPLES[string] {
-  const lower = topic.toLowerCase();
-  for (const [key, example] of Object.entries(TOPIC_EXAMPLES)) {
-    if (lower.includes(key)) return example;
-  }
-  // Fallback — generic but still useful
-  return {
-    company: 'Google',
-    useCase: 'handles search at scale',
-    scale: '8.5 billion searches per day',
-    problem: 'server overload during traffic spikes',
-    solution: 'distributed architecture with graceful degradation',
-  };
+function oncePerVideo(templateKey: string, phrase: string): string {
+  if (_usedPhraseTemplates.has(templateKey)) return '';
+  _usedPhraseTemplates.add(templateKey);
+  return phrase;
 }
+
+// ---------------------------------------------------------------------------
+// ASCII Art Detection
+// Detects box-drawing / ASCII diagram characters and replaces narration
+// with a semantic description instead of reading "vertical bar, box drawing".
+// ---------------------------------------------------------------------------
+const ASCII_BOX_CHARS = /[│─┌┐└┘├┤┬┴┼┏┓┗┛┣┫┳┻╋║═╔╗╚╝╠╣╦╩╬]/g;
+
+function containsAsciiArt(content: string): boolean {
+  const matches = content.match(ASCII_BOX_CHARS);
+  // Also check plain-ASCII box patterns: lines with 3+ of |, +, - used as drawing
+  const plainBoxLines = content.split('\n').filter(line => {
+    const stripped = line.replace(/\s/g, '');
+    // A line is "box drawing" if it has 3+ box chars or is mostly made of +, -, |
+    const boxChars = (stripped.match(/[|+\-]/g) || []).length;
+    return boxChars >= 3 && boxChars / stripped.length > 0.4;
+  });
+  return (matches !== null && matches.length >= 3) || plainBoxLines.length >= 2;
+}
+
+function asciiArtNarration(heading?: string): string {
+  if (heading) {
+    return `Here's a diagram showing ${heading.toLowerCase()}. Let me walk you through it.`;
+  }
+  return "Here's a diagram showing how the components connect. Let me walk you through it.";
+}
+
+// ---------------------------------------------------------------------------
+// Code-Topic Relevance Check
+// Ensures code content actually matches the video topic — prevents e.g.
+// ConsistentHash code appearing in a Kafka video.
+// ---------------------------------------------------------------------------
+const TOPIC_CODE_KEYWORDS: Record<string, string[]> = {
+  'kafka': ['kafka', 'producer', 'consumer', 'broker', 'partition', 'offset', 'topic', 'subscribe', 'publish', 'event stream', 'commit'],
+  'caching': ['cache', 'redis', 'memcache', 'ttl', 'evict', 'lru', 'invalidat', 'hit', 'miss', 'expire'],
+  'load balancing': ['load_balanc', 'loadbalanc', 'round_robin', 'roundrobin', 'health_check', 'healthcheck', 'server_pool', 'upstream', 'backend', 'weight'],
+  'consistent hashing': ['hash_ring', 'consistent_hash', 'virtual_node', 'vnode', 'hash ring'],
+  'api gateway': ['gateway', 'route', 'middleware', 'rate_limit', 'ratelimit', 'proxy', 'upstream'],
+  'microservices': ['microservice', 'service_registry', 'discovery', 'circuit_breaker', 'sidecar'],
+  'database': ['database', 'db_', 'query', 'schema', 'shard', 'replica', 'index', 'transaction', 'sql'],
+  'message queue': ['queue', 'enqueue', 'dequeue', 'rabbitmq', 'amqp', 'message_broker'],
+  'rate limiting': ['rate_limit', 'ratelimit', 'token_bucket', 'sliding_window', 'throttl'],
+  'monitoring': ['metric', 'monitor', 'alert', 'prometheus', 'grafana', 'healthcheck', 'dashboard'],
+};
+
+function isCodeRelevantToTopic(code: string, topic: string): boolean {
+  const lower = code.toLowerCase();
+  const topicLower = topic.toLowerCase();
+
+  // Find matching keyword list
+  for (const [key, keywords] of Object.entries(TOPIC_CODE_KEYWORDS)) {
+    if (topicLower.includes(key)) {
+      // Check if code contains at least one keyword for this topic
+      return keywords.some(kw => lower.includes(kw));
+    }
+  }
+
+  // No keyword list for this topic — allow by default
+  return true;
+}
+
+// ---------------------------------------------------------------------------
+// Topic-Specific Examples — imported from shared module to avoid circular deps
+// with hook-generator.ts (which also needs these).
+// ---------------------------------------------------------------------------
+import { TOPIC_EXAMPLES, getTopicExample } from '../lib/topic-examples';
 
 interface ScriptOptions {
   language?: string; // 'python' | 'java' -- fallback language for non-fenced code; both Python & Java are always included
@@ -360,6 +276,94 @@ const OPEN_LOOP_PHRASES = [
   'Here\'s the part that will blow your mind...',
   'Keep watching — this is the piece everyone skips...',
   'This next idea changes everything...',
+  'Wait for it... this is the moment everything clicks...',
+  'Don\'t skip this part. Seriously. This is interview gold...',
+  'I saved the best insight for right here...',
+  'This is the part that 99% of tutorials skip...',
+  'Okay pay VERY close attention to this next bit...',
+];
+
+// ---------------------------------------------------------------------------
+// Retention: Pattern Interrupt Tone Markers
+// Injected at specific intervals to break monotony and re-engage viewers.
+// These create pace changes in the narration — faster/slower/dramatic/quiet.
+// ---------------------------------------------------------------------------
+const PATTERN_INTERRUPTS = [
+  // Speed-up (creates urgency)
+  'Quick quick quick — let me rapid-fire through this.',
+  'Okay speed round. Three things you MUST remember.',
+  'Fast forward mode — here\'s the key takeaway in one sentence.',
+  // Slow dramatic (creates emphasis)
+  'Now... listen carefully. This. Is. The. Key.',
+  'Slow down for a second. Let this sink in.',
+  'Stop. Re-read that last sentence. It\'s THAT important.',
+  // Direct address (breaks fourth wall)
+  'Yes, YOU. The person watching at 2x speed. Slow down for this part.',
+  'I know you\'re tempted to skip ahead. Don\'t. This is the part that gets asked in interviews.',
+  'Real talk for a second. If you\'re just passively watching, pause and think about this.',
+  // Challenge (activates viewer)
+  'Before I show the answer, pause and try to guess.',
+  'Can you spot the bug in this approach? Think about it...',
+  'Predict what happens next. If you get it right, you\'re already thinking like a senior engineer.',
+  // Enthusiasm spike
+  'THIS. This right here is why I love teaching this topic.',
+  'Okay I am genuinely excited about this next part.',
+  'This is incredible once you see it.',
+];
+
+function getPatternInterrupt(seed: number): string {
+  return PATTERN_INTERRUPTS[seed % PATTERN_INTERRUPTS.length];
+}
+
+// ---------------------------------------------------------------------------
+// Retention: Completion Signal Avoidance
+// YouTube analytics show viewers drop off when they hear "conclusion" signals.
+// Strip these from ALL narration to avoid premature exits.
+// ---------------------------------------------------------------------------
+const COMPLETION_SIGNALS = [
+  /\b(to wrap up|to summarize|in conclusion|in summary|finally|lastly|to conclude)\b/gi,
+  /\b(that's (all|it|everything)|we're (almost )?(done|finished))\b/gi,
+  /\b(before (we|I) (end|finish|close|wrap))\b/gi,
+  /\b(as we come to the end)\b/gi,
+];
+
+function stripCompletionSignals(text: string): string {
+  let cleaned = text;
+  for (const pattern of COMPLETION_SIGNALS) {
+    cleaned = cleaned.replace(pattern, '');
+  }
+  // Clean up double spaces left by removal
+  return cleaned.replace(/\s{2,}/g, ' ').trim();
+}
+
+// ---------------------------------------------------------------------------
+// Retention: Midpoint Retention Trap
+// At exactly 50% of the video, plant a strong reason to keep watching.
+// Uses the "unfinished business" psychological principle.
+// ---------------------------------------------------------------------------
+const MIDPOINT_TRAPS = [
+  (topic: string) => `Okay quick recap. We covered the theory of ${topic}. Now comes the implementation — actual code you can use in production and explain in interviews.`,
+  (topic: string) => `So far we have the building blocks of ${topic}. Now let me show you how they connect in a real system. This is where understanding beats memorization.`,
+  (topic: string) => `Alright, theory done. Now the question every interviewer asks: "How would you actually implement ${topic}?" Let me show you.`,
+  (topic: string) => `Quick checkpoint — you now understand the WHY of ${topic}. Next up is the HOW. Production code, failure modes, and the edge cases interviewers love.`,
+  (topic: string) => `Good progress. You understand ${topic} conceptually. Now let me show you what it looks like in production — this is the part that gets you the offer.`,
+  (topic: string) => `We are halfway through. Everything after this is implementation and interview strategy for ${topic}. This is where it gets practical.`,
+];
+
+function getMidpointTrap(topic: string, seed: number): string {
+  return MIDPOINT_TRAPS[seed % MIDPOINT_TRAPS.length](topic);
+}
+
+// ---------------------------------------------------------------------------
+// Retention: Cliffhanger Endings (series-aware)
+// Strong unresolved tension that makes viewers click the NEXT video.
+// ---------------------------------------------------------------------------
+const CLIFFHANGER_ENDINGS = [
+  (topic: string, nextTopic: string) => `But here's what nobody tells you about ${topic}... it completely BREAKS when you combine it with ${nextTopic}. I'll show you exactly how in the next video. Don't miss it.`,
+  (topic: string, nextTopic: string) => `Everything we just learned has one critical weakness. And the solution? ${nextTopic}. Next video, I'll show you how these two concepts work together to build bulletproof systems.`,
+  (topic: string, nextTopic: string) => `There's one scenario where ${topic} fails spectacularly. And it's EXACTLY the scenario interviewers love to ask about. The answer involves ${nextTopic}. Next video.`,
+  (topic: string, _nextTopic: string) => `I left out one detail on purpose. The most dangerous edge case in ${topic}. If you want to know what it is... you know what to do. Next video drops soon.`,
+  (topic: string, nextTopic: string) => `Here's a secret: the best engineers don't use ${topic} alone. They combine it with ${nextTopic} for 10x performance. That's our next video. Subscribe so you don't miss it.`,
 ];
 
 function getOpenLoopPhrase(seed: number): string {
@@ -870,6 +874,92 @@ function describeParams(params: string): string {
 // ---------------------------------------------------------------------------
 // Storytelling Arc: THE PROBLEM — Set up tension
 // ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+// Myth Buster Opening — topic-specific wrong facts + dramatic reveal
+// Creates a "wait, WHAT?!" moment in the first 30 seconds
+// ---------------------------------------------------------------------------
+function generateTopicMyths(topic: string): { myths: string[]; mythBullets: string[]; reveal: string } {
+  const ex = getTopicExample(topic);
+  const lower = topic.toLowerCase();
+
+  // Topic-specific myth sets — 3 wrong "facts" that sound believable
+  const MYTH_SETS: Record<string, { myths: string[]; mythBullets: string[]; reveal: string }> = {
+    'kafka': {
+      myths: [
+        `Fact number 1: Kafka is just a message queue, like RabbitMQ.`,
+        `Fact number 2: Kafka guarantees exactly-once delivery out of the box.`,
+        `Fact number 3: More partitions always means better performance.`,
+      ],
+      mythBullets: ['Kafka = Message Queue?', 'Exactly-once by default?', 'More partitions = faster?'],
+      reveal: `Kafka is NOT a message queue. It's a distributed commit log. Exactly-once requires idempotent producers AND transactional consumers. And too many partitions actually HURT performance. Let me explain each one.`,
+    },
+    'caching': {
+      myths: [
+        `Fact number 1: Caching always makes your system faster.`,
+        `Fact number 2: Redis is the only caching solution you need.`,
+        `Fact number 3: Cache invalidation is just setting a TTL.`,
+      ],
+      mythBullets: ['Cache = Always faster?', 'Redis for everything?', 'TTL = Invalidation?'],
+      reveal: `Caching can actually make your system SLOWER if you cache wrong data. Redis is great but sometimes an in-memory HashMap is better. And cache invalidation? It's one of the two hardest problems in computer science. Let me show you why.`,
+    },
+    'load balancing': {
+      myths: [
+        `Fact number 1: Round robin is the best load balancing algorithm.`,
+        `Fact number 2: A load balancer eliminates all single points of failure.`,
+        `Fact number 3: Load balancers only work at the network level.`,
+      ],
+      mythBullets: ['Round Robin = Best?', 'No single point of failure?', 'Network level only?'],
+      reveal: `Round robin ignores server health completely. The load balancer ITSELF can be a single point of failure. And modern load balancing happens at Layer 4 AND Layer 7. Let me break this down properly.`,
+    },
+    'api gateway': {
+      myths: [
+        `Fact number 1: An API gateway is just a reverse proxy.`,
+        `Fact number 2: You always need an API gateway in microservices.`,
+        `Fact number 3: API gateways add latency and should be avoided.`,
+      ],
+      mythBullets: ['Just a reverse proxy?', 'Always needed?', 'Adds latency?'],
+      reveal: `An API gateway does authentication, rate limiting, circuit breaking, and request transformation — way more than a reverse proxy. Sometimes you DON'T need one. And the latency argument? ${ex.company} routes ${ex.scale} through one. Let me show you the real picture.`,
+    },
+    'microservices': {
+      myths: [
+        `Fact number 1: Microservices are always better than monoliths.`,
+        `Fact number 2: Each microservice should have its own database.`,
+        `Fact number 3: If Netflix uses microservices, so should you.`,
+      ],
+      mythBullets: ['Always better than monolith?', 'Own database each?', 'Copy Netflix?'],
+      reveal: `Most startups should START with a monolith. Shared databases are fine early on. And Netflix has 2000 engineers — you probably have 5. Copying their architecture will KILL your velocity. Let me show you when microservices actually make sense.`,
+    },
+    'database': {
+      myths: [
+        `Fact number 1: NoSQL is faster than SQL for everything.`,
+        `Fact number 2: Indexes always speed up your queries.`,
+        `Fact number 3: Normalization is always the right approach.`,
+      ],
+      mythBullets: ['NoSQL > SQL always?', 'Indexes = Always fast?', 'Always normalize?'],
+      reveal: `SQL beats NoSQL for complex queries and ACID transactions. Too many indexes SLOW down writes. And denormalization is sometimes the right call for read-heavy systems. ${ex.company} uses BOTH SQL and NoSQL. Let me explain when to use which.`,
+    },
+  };
+
+  // Find topic-specific myths
+  for (const [key, myths] of Object.entries(MYTH_SETS)) {
+    if (lower.includes(key)) return myths;
+  }
+
+  // Generic fallback — works for any topic
+  return {
+    myths: [
+      `Fact number 1: ${topic} is simple once you read the documentation.`,
+      `Fact number 2: There's one correct way to implement ${topic}.`,
+      `Fact number 3: You only need to know ${topic} basics for interviews.`,
+    ],
+    mythBullets: ['Simple from docs?', 'One correct way?', 'Basics enough?'],
+    reveal: `The documentation tells you WHAT, not WHY or WHEN. There are always multiple approaches with different trade-offs. And interviewers test ADVANCED ${topic} — basics won't cut it at ${ex.company}. Let me teach you the real deal.`,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Storytelling Arc: THE PROBLEM — Set up tension
+// ---------------------------------------------------------------------------
 function generateProblemSetup(topic: string): string {
   const problems = [
     `Imagine this. You've built an amazing app. Users love it. Then one morning you wake up and your app is on the front page of Hacker News. Suddenly 10 million people are trying to use your app at the same time. Your server crashes. Your users see error pages. Your boss is calling. This is the exact problem that ${topic} solves. And if you don't understand it, you WILL face this nightmare.`,
@@ -1065,6 +1155,17 @@ function generateCleanAnswer(question: string, topic: string, sessionContent?: s
  * that match keywords from the question.
  */
 function extractAnswerFromContent(question: string, content: string): string | null {
+  // Strip markdown formatting, code blocks, mermaid diagrams, ASCII art before extracting
+  const cleanContent = content
+    .replace(/```[\s\S]*?```/g, '')           // Remove fenced code blocks (including mermaid)
+    .replace(/`[^`]+`/g, '')                  // Remove inline code
+    .replace(/^#{1,6}\s+/gm, '')              // Remove heading markers
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')  // Remove markdown links
+    .replace(/[*_~]+/g, '')                   // Remove bold/italic/strikethrough
+    .replace(/[┌┐└┘├┤┬┴┼─│╔╗╚╝║═]+/g, '')  // Remove ASCII art box characters
+    .replace(/^\s*[-|]\s*/gm, '')             // Remove list markers and table pipes
+    .replace(/\n{2,}/g, '\n');                // Collapse multiple newlines
+
   // Extract key nouns/phrases from the question (skip common words)
   const stopWords = new Set(['what', 'is', 'the', 'a', 'an', 'and', 'or', 'how', 'does', 'do',
     'when', 'would', 'you', 'your', 'give', 'name', 'explain', 'why', 'each', 'for',
@@ -1078,8 +1179,8 @@ function extractAnswerFromContent(question: string, content: string): string | n
 
   if (keywords.length === 0) return null;
 
-  // Split content into sentences
-  const sentences = content.split(/[.!?]\s+/).filter(s => s.length > 20);
+  // Split cleaned content into sentences
+  const sentences = cleanContent.split(/[.!?]\s+/).filter(s => s.length > 20);
 
   // Score each sentence by keyword matches
   const scored = sentences.map(sentence => {
@@ -1111,24 +1212,28 @@ function generateSummaryNarration(topic: string, objectives: string[], nextTopic
   const skill2 = objectives[1] ?? `apply ${topic} in code`;
   const youLearnedClose = `You now know how to ${skill1.toLowerCase().replace(/^understand\s+/i, 'understand ')}, ${skill2.toLowerCase()}, and explain the trade-offs in an interview.`;
 
-  // Next episode tease — series-aware
+  // Cliffhanger ending — series-aware, stronger than simple "don't miss it"
   let nextEpisodeTease = '';
   if (nextTopic) {
-    nextEpisodeTease = ` In the next video, we'll tackle ${nextTopic}. Don't miss it.`;
+    const cliffSeed = (topic.length + sessionNumber) % CLIFFHANGER_ENDINGS.length;
+    nextEpisodeTease = ` ${CLIFFHANGER_ENDINGS[cliffSeed](topic, nextTopic)}`;
   } else if (totalSessions && sessionNumber < totalSessions) {
-    nextEpisodeTease = ` Next session, we'll go even deeper into ${topic}. We'll see how this breaks at ${getTopicExample(topic).company} scale and what senior engineers do about it. Don't miss it.`;
+    nextEpisodeTease = ` But we're not done. Next session reveals the part about ${topic} that breaks at ${getTopicExample(topic).company} scale. The part interviewers LOVE to ask about. Subscribe. You don't want to miss it.`;
   } else if (totalSessions && sessionNumber === totalSessions) {
-    nextEpisodeTease = ` This was the final session in our ${topic} series. You now have a complete, interview-ready understanding. Go crush it.`;
+    nextEpisodeTease = ` You've completed the entire ${topic} series. You're now in the top 5% of candidates for this topic. Go crush that interview.`;
   }
 
   const topicSlug = topic.toLowerCase().replace(/\s+/g, '-');
 
+  // RETENTION FIX: Cliffhanger goes LAST, not buried before CTA.
+  // The last sentence the viewer hears determines whether they click the next video.
+  // Structure: quick recap -> skills gained -> cliffhanger (the final emotional hit)
   const summaries = [
-    `Alright, let's bring it all together. Today you learned ${topObjectives}. ${closingEncouragement} And here's the most important thing: don't just watch this and forget. Go practice. Build it in code. Explain it to someone else. That's how it sticks. If you want the complete ${topic} course with cheatsheets, interactive quizzes, and mock interview questions, head over to guru-sishya.in slash ${topicSlug}. It's all there waiting for you. Drop a like if this helped, and I'll see you in the next one. ${youLearnedClose}${nextEpisodeTease}`,
+    `Alright, quick recap. ${topObjectives}. ${youLearnedClose} ${closingEncouragement} Practice at guru-sishya.in slash ${topicSlug}. Drop a like if this clicked.${nextEpisodeTease}`,
 
-    `So here's the bottom line. ${topObjectives}. ${closingEncouragement} You now know more about ${topic} than 90 percent of developers who just skim blog posts. But knowledge without practice is worthless. Go build something with ${topic} today. And if you want a structured path with coding exercises and interview prep, check out guru-sishya.in slash ${topicSlug}. Hit subscribe so you don't miss the next topic. Let's go. ${youLearnedClose}${nextEpisodeTease}`,
+    `Bottom line. ${topObjectives}. ${youLearnedClose} ${closingEncouragement} Structured path at guru-sishya.in slash ${topicSlug}.${nextEpisodeTease}`,
 
-    `Let me leave you with this. ${topic} is one of those topics that comes up again and again throughout your career. What you learned today gives you a massive advantage in interviews and in production. ${closingEncouragement} Now go cement it. The complete ${topic} module with practice problems, a cheatsheet, and a mock interview is waiting for you at guru-sishya.in slash ${topicSlug}. See you in the next video. ${youLearnedClose}${nextEpisodeTease}`,
+    `Here's what matters. ${youLearnedClose} ${closingEncouragement} Practice at guru-sishya.in slash ${topicSlug}.${nextEpisodeTease}`,
   ];
 
   const seed = topic.length % summaries.length;
@@ -1140,7 +1245,7 @@ function generateSummaryNarration(topic: string, objectives: string[], nextTopic
 // Transforms formal textbook prose into friendly, teacher-like narration.
 // ---------------------------------------------------------------------------
 function makeConversational(text: string): string {
-  return text
+  let result = text
     // Only fix genuinely academic phrasing — keep everything else intact
     .replace(/utilize/gi, 'use')
     .replace(/subsequently/gi, 'then')
@@ -1149,6 +1254,8 @@ function makeConversational(text: string): string {
     .replace(/However,/g, "But")
     .replace(/Furthermore,/g, "Also,")
     .replace(/Therefore,/g, "So");
+  // Strip completion signals — prevents viewer drop-off
+  return stripCompletionSignals(result);
 }
 
 // ---------------------------------------------------------------------------
@@ -1221,6 +1328,9 @@ function generateDefaultRecapPoints(topic: string, sessionNumber: number): strin
  * 10. SUMMARY + CTA (15s) — "Now go practice on guru-sishya.in"
  */
 export function generateScript(session: SessionInput, options: ScriptOptions = {}): Scene[] {
+  // Reset per-video phrase tracker so each video starts fresh
+  resetPhraseTracker();
+
   const {
     language = 'python',
     maxScenes = 30,
@@ -1243,20 +1353,17 @@ export function generateScript(session: SessionInput, options: ScriptOptions = {
   // generate content scenes first, but this would require significant refactoring.
   // The current approach is a pragmatic first iteration — hooks are still varied
   // via 7 formulas + deterministic seeding by topic + sessionNumber.
-  const dualHook = generateDualHook(session.topic, sessionNum, scenes);
-  let hookNarration = dualHook.spokenHook;
+  const dualHook = generateDualHook(session.topic, sessionNum, scenes, session.title);
+  // RETENTION FIX: Hook narration must be ONLY the hook — max 2 sentences, ~8 seconds.
+  // Series info + analogy are moved to scene 2 so the first 3-5s are pure emotional punch.
+  const hookNarration = dualHook.spokenHook;
 
-  // Inject analogy from the SESSION-SPECIFIC analogy set (different metaphor each session)
+  // Build series context for injection into scene 2 (NOT the hook)
   const analogy = getAnalogy(session.topic, sessionNum);
-  if (analogy) {
-    hookNarration += ` ${analogy}`;
-  }
-
-  // Series context
   const seriesInfo = totalSessions
-    ? ` This is session ${sessionNum} of ${totalSessions} in our complete ${session.topic} series.`
-    : ` This is session ${sessionNum} of our ${session.topic} series.`;
-  hookNarration += `${seriesInfo} Today's topic: ${session.title}.`;
+    ? `This is session ${sessionNum} of ${totalSessions} in our complete ${session.topic} series.`
+    : `This is session ${sessionNum} of our ${session.topic} series.`;
+  const scene2Preamble = `${seriesInfo} Today's topic: ${session.title}.${analogy ? ` ${analogy}` : ''}`;
 
   const titleDuration = SCENE_DEFAULTS.titleDuration;
   scenes.push({
@@ -1292,59 +1399,96 @@ export function generateScript(session: SessionInput, options: ScriptOptions = {
     });
   }
 
-  // ── 2. THE PROBLEM — Set up tension ─────────────────────────────────────
-  const problemNarration = generateProblemSetup(session.topic);
-  const problemDuration = 15;
-  scenes.push({
-    type: 'text',
-    content: problemNarration,
-    narration: problemNarration,
-    duration: problemDuration,
-    startFrame: currentFrame,
-    endFrame: (currentFrame += TIMING.secondsToFrames(problemDuration)),
-    heading: 'The Problem',
-    bullets: [
-      `Why ${session.topic} exists`,
-      'What happens without it',
-      'The real-world impact',
-    ],
-  });
+  // ── 2-4. MYTH BUSTER OPENING vs CLASSIC PROBLEM/ANSWER ────────────────
+  // Alternate between two opening structures per session for variety:
+  // ODD sessions: "Myth Buster" — 3 wrong facts → dramatic reveal → real answer
+  // EVEN sessions: Classic "Problem → Wrong Answer → Real Answer"
+  const useMythBuster = sessionNum % 2 === 1;
 
-  // ── 3. WRONG ANSWER — Create contrast ──────────────────────────────────
-  const wrongAnswerNarration = generateWrongAnswer(session.topic);
-  const wrongAnswerDuration = 12;
-  scenes.push({
-    type: 'text',
-    content: wrongAnswerNarration,
-    narration: wrongAnswerNarration,
-    duration: wrongAnswerDuration,
-    startFrame: currentFrame,
-    endFrame: (currentFrame += TIMING.secondsToFrames(wrongAnswerDuration)),
-    heading: 'The Common Mistake',
-    bullets: extractBulletsFromNarration(wrongAnswerNarration, 3),
-  });
+  if (useMythBuster) {
+    // ── MYTH BUSTER: Start with shocking wrong statements ──────────────
+    const myths = generateTopicMyths(session.topic);
+    const mythsNarration = `${scene2Preamble} Let me start with some facts you probably believe. ${myths.myths.join(' ')} All of that? COMPLETELY WRONG. Every single one. Let me show you why. ${myths.reveal}`;
+    const mythsDuration = 18;
+    scenes.push({
+      type: 'text',
+      content: mythsNarration,
+      narration: mythsNarration,
+      duration: mythsDuration,
+      startFrame: currentFrame,
+      endFrame: (currentFrame += TIMING.secondsToFrames(mythsDuration)),
+      heading: 'MYTH vs REALITY',
+      bullets: myths.mythBullets,
+    });
 
-  // ── 4. THE REAL ANSWER — Transition into deep dive ────────────────────
-  const realAnswerNarration = generateRealAnswer(session.topic);
-  const realAnswerDuration = 10;
-  scenes.push({
-    type: 'text',
-    content: realAnswerNarration,
-    narration: realAnswerNarration,
-    duration: realAnswerDuration,
-    startFrame: currentFrame,
-    endFrame: (currentFrame += TIMING.secondsToFrames(realAnswerDuration)),
-    heading: 'The Real Answer',
-    bullets: extractBulletsFromNarration(realAnswerNarration, 3),
-  });
+    // ── Real answer after myth bust ──────────────────────────────────
+    const realAnswerNarration = `Here's what's actually true. ${generateRealAnswer(session.topic)}`;
+    const realAnswerDuration = 10;
+    scenes.push({
+      type: 'text',
+      content: realAnswerNarration,
+      narration: realAnswerNarration,
+      duration: realAnswerDuration,
+      startFrame: currentFrame,
+      endFrame: (currentFrame += TIMING.secondsToFrames(realAnswerDuration)),
+      heading: 'The REAL Answer',
+      bullets: extractBulletsFromNarration(realAnswerNarration, 3),
+    });
+  } else {
+    // ── CLASSIC: Problem → Wrong Answer → Real Answer ────────────────
+    const problemNarrationBase = generateProblemSetup(session.topic);
+    const problemNarration = `${scene2Preamble} ${problemNarrationBase}`;
+    const problemDuration = 15;
+    scenes.push({
+      type: 'text',
+      content: problemNarration,
+      narration: problemNarration,
+      duration: problemDuration,
+      startFrame: currentFrame,
+      endFrame: (currentFrame += TIMING.secondsToFrames(problemDuration)),
+      heading: 'The Problem',
+      bullets: [
+        `Why ${session.topic} exists`,
+        'What happens without it',
+        'The real-world impact',
+      ],
+    });
+
+    const wrongAnswerNarration = generateWrongAnswer(session.topic);
+    const wrongAnswerDuration = 12;
+    scenes.push({
+      type: 'text',
+      content: wrongAnswerNarration,
+      narration: wrongAnswerNarration,
+      duration: wrongAnswerDuration,
+      startFrame: currentFrame,
+      endFrame: (currentFrame += TIMING.secondsToFrames(wrongAnswerDuration)),
+      heading: 'The Common Mistake',
+      bullets: extractBulletsFromNarration(wrongAnswerNarration, 3),
+    });
+
+    const realAnswerNarration = generateRealAnswer(session.topic);
+    const realAnswerDuration = 10;
+    scenes.push({
+      type: 'text',
+      content: realAnswerNarration,
+      narration: realAnswerNarration,
+      duration: realAnswerDuration,
+      startFrame: currentFrame,
+      endFrame: (currentFrame += TIMING.secondsToFrames(realAnswerDuration)),
+      heading: 'The Real Answer',
+      bullets: extractBulletsFromNarration(realAnswerNarration, 3),
+    });
+  }
 
   // ── 5-7. Parse content → DEEP DIVE + VISUAL + COMPARISON ─────────────
   const sections = parseMarkdown(session.content);
   let sectionIndex = 0;
   let hasInterview = false;
   let openLoopCounter = 0;     // tracks elapsed deep-dive scenes for open-loop injection
-  let halfwayInjected = false; // 50% engagement prompt guard
+  let halfwayInjected = false; // 50% midpoint retention trap guard
   let reHookInjected = false;  // 60% danger zone re-hook guard
+  let patternInterruptCounter = 0; // pattern interrupts every ~4 scenes
 
   for (const section of sections) {
     if (scenes.length >= maxScenes - 3) break; // Reserve for interview + review + summary
@@ -1362,11 +1506,19 @@ export function generateScript(session: SessionInput, options: ScriptOptions = {
     }
 
     // ── 60% Danger Zone Re-Hook (session-aware) ─────────────────────────
-    if (!reHookInjected && scenes.length === Math.floor(maxScenes * 0.6)) {
+    // RETENTION FIX: Moved from 60% to 70% — was only 2 scenes after the 50% midpoint trap,
+    // creating back-to-back meta-commentary that breaks immersion and feels desperate.
+    if (!reHookInjected && scenes.length === Math.floor(maxScenes * 0.7)) {
       reHookInjected = true;
       const seriesConnector = getSeriesConnector(sessionNum, session.topic);
+      // BUG FIX: "separates" phrase gated by oncePerVideo to avoid repetition
+      const separatesPhrase = oncePerVideo('separates-phrase',
+        `This is what separates the good developers from the GREAT ones.`);
+      const session1Hook = separatesPhrase
+        ? `Okay, stay with me. You've already learned the fundamentals of ${session.topic}. But this next part? ${separatesPhrase} Don't leave now.`
+        : `Okay, stay with me. You've already learned the fundamentals of ${session.topic}. But this next part is where it all clicks. Don't leave now.`;
       const reHookBase = sessionNum === 1
-        ? `Okay, stay with me. You've already learned the fundamentals of ${session.topic}. But this next part? This is what separates the good developers from the GREAT ones. Don't leave now.`
+        ? session1Hook
         : sessionNum === 2
         ? `This is the part where session 2 really pays off. The concepts from session 1 are about to click in a whole new way. Stay with me.`
         : sessionNum === 3
@@ -1385,34 +1537,89 @@ export function generateScript(session: SessionInput, options: ScriptOptions = {
       });
     }
 
-    // ── 50% Engagement Prompt (rotated per session to avoid repetition) ──
+    // ── 50% Midpoint Retention Trap ──
+    // RETENTION FIX: Instead of a separate 6s "Stay With Me" filler scene (which breaks
+    // immersion and adds dead air), inject the trap line INTO the next content scene's
+    // narration. This keeps the viewer in the content flow while still planting the hook.
     if (!halfwayInjected && scenes.length >= Math.floor(maxScenes * 0.5)) {
       halfwayInjected = true;
-      const engagementNarration = getEngagementHook(sessionNum + sectionIndex);
-      scenes.push({
-        type: 'text',
-        content: engagementNarration,
-        narration: engagementNarration,
-        duration: 4,
-        startFrame: currentFrame,
-        endFrame: (currentFrame += TIMING.secondsToFrames(4)),
-        heading: '',
-        bullets: [],
-      });
+      // Will be prepended to the next scene below (after sectionToScene)
     }
 
     const scene = sectionToScene(section, language, currentFrame, sectionIndex, session.topic);
 
+    // ── Midpoint trap injection (into this scene's narration, not a separate scene) ──
+    if (halfwayInjected && !reHookInjected && scenes.length === Math.floor(maxScenes * 0.5) + 1) {
+      const trapLine = getMidpointTrap(session.topic, sessionNum + sectionIndex);
+      scene.narration = `${trapLine} ${scene.narration}`;
+    }
+
     // ── Mid-Scene Open Loop (every ~3 deep-dive scenes ≈ 60-90 seconds) ─
+    // GUARD: Skip if injectOpenLoops() will also prepend to this scene.
+    // Open loops target code/interview/review/summary scenes, so skip those.
     openLoopCounter++;
-    if (openLoopCounter % 3 === 0) {
+    const isOpenLoopTarget = scene.type === 'code' || scene.type === 'interview' || scene.type === 'review' || scene.type === 'summary';
+    if (openLoopCounter % 3 === 0 && !isOpenLoopTarget) {
       const openLoop = getOpenLoopPhrase(openLoopCounter);
       scene.narration = `${openLoop} ${scene.narration}`;
     }
 
-    scenes.push(scene);
-    currentFrame = scene.endFrame;
+    // ── Pattern Interrupt (every ~4 scenes — pace change to break monotony) ─
+    // GUARD: Don't stack on same scene as open loop
+    patternInterruptCounter++;
+    const alreadyHasOpenLoop = openLoopCounter % 3 === 0 && !isOpenLoopTarget;
+    if (patternInterruptCounter % 4 === 0 && scene.type === 'text' && !alreadyHasOpenLoop) {
+      const interrupt = getPatternInterrupt(sessionNum * 3 + patternInterruptCounter);
+      scene.narration = `${interrupt} ${scene.narration}`;
+    }
+
+    const splitScenes = splitLongScene(scene, currentFrame);
+    for (const s of splitScenes) {
+      scenes.push(s);
+      currentFrame = s.endFrame;
+    }
     sectionIndex++;
+  }
+
+  // ── 7b. ENGAGEMENT CHECKPOINTS at 25%, 50%, 75% ───────────────────────
+  // Insert mini-quiz scenes retroactively to boost retention and cuts/min
+  {
+    const checkpointPositions = [
+      Math.floor(scenes.length * 0.25),
+      Math.floor(scenes.length * 0.5),
+      Math.floor(scenes.length * 0.75),
+    ];
+    const checkpointQuestions = [
+      `Quick check: can you explain what we just covered about ${session.topic}? Pause and try.`,
+      `Halfway checkpoint. If you can explain this to a friend right now, you truly understand it. Try it.`,
+      `Almost there. Before the final section, pause and think: how would YOU explain ${session.topic} in an interview?`,
+    ];
+    // Insert in reverse order so earlier indices stay valid
+    for (let ci = checkpointPositions.length - 1; ci >= 0; ci--) {
+      const pos = checkpointPositions[ci];
+      if (pos <= 0 || pos >= scenes.length) continue;
+      const checkpointDuration = 4;
+      const insertFrame = scenes[pos]?.startFrame ?? currentFrame;
+      const checkpointScene: Scene = {
+        type: 'text',
+        content: checkpointQuestions[ci],
+        narration: checkpointQuestions[ci],
+        duration: checkpointDuration,
+        startFrame: insertFrame,
+        endFrame: insertFrame + TIMING.secondsToFrames(checkpointDuration),
+        heading: ci === 1 ? 'Halfway Check' : ci === 0 ? 'Quick Check' : 'Final Check',
+        bullets: [],
+      };
+      scenes.splice(pos, 0, checkpointScene);
+    }
+    // Recompute frames after checkpoint insertions
+    let recomputeFrame = scenes[0]?.startFrame ?? 0;
+    for (const s of scenes) {
+      s.startFrame = recomputeFrame;
+      s.endFrame = recomputeFrame + TIMING.secondsToFrames(s.duration);
+      recomputeFrame = s.endFrame;
+    }
+    currentFrame = recomputeFrame;
   }
 
   // ── 8. INTERVIEW SECRET — if not already covered by a callout ─────────
@@ -1477,14 +1684,23 @@ export function generateScript(session: SessionInput, options: ScriptOptions = {
     bullets: session.objectives.slice(0, 4),
   });
 
-  // ── Speed reminder verbal mentions (at ~15% and ~55% of scenes) ──
-  const speedScene1 = Math.floor(scenes.length * 0.15);
-  const speedScene2 = Math.floor(scenes.length * 0.55);
-  if (scenes[speedScene1] && scenes[speedScene1].narration) {
-    scenes[speedScene1].narration = 'By the way, this video works great at 1.5x speed for better listening. ' + scenes[speedScene1].narration;
+  // Speed reminders removed — voice is already 1.3x, no need to ask for 1.5x
+
+  // ── Deduplicate narration text ─────────────────────────────────────────
+  // BUG FIX: Sometimes narration contains doubled text e.g. "sentence A sentence B. sentence A sentence B."
+  // Detect and remove the duplicate half.
+  for (const scene of scenes) {
+    if (scene.narration) {
+      scene.narration = deduplicateNarration(scene.narration);
+    }
   }
-  if (scenes[speedScene2] && scenes[speedScene2].narration) {
-    scenes[speedScene2].narration = 'Quick reminder, try 1.5x speed if you haven\'t already. ' + scenes[speedScene2].narration;
+
+  // ── Strip completion signals from ALL scenes ──────────────────────────
+  // Prevents YouTube viewer drop-off from hearing "to wrap up", "in conclusion"
+  for (const scene of scenes) {
+    if (scene.narration) {
+      scene.narration = stripCompletionSignals(scene.narration);
+    }
   }
 
   // ── Compute visual beats + template selection per scene ──────────────
@@ -1549,13 +1765,9 @@ const AUDIENCE_CALLOUTS = [
   "If you're switching from service-based to product-based, THIS is the stuff you need to know.",
   "For everyone who's been told 'you need a CS degree to crack FAANG'... watch me prove them wrong.",
   "My non-CS branch engineers, this one's especially for you. Background doesn't matter, preparation does.",
-  "Bhai, if you're grinding for placement season right now... this is your goldmine.",
-  "For everyone from tier-2 and tier-3 colleges — your DSA is your great equalizer.",
   "Night owls watching at 2 AM — I see you. Let's make this study session count.",
-  "Quick poll: drop '1' in comments if you're preparing for on-campus, '2' for off-campus.",
   "If your friends aren't watching this, they're going to ask YOU to explain it after placements.",
-  "Remember: service companies pay 3.3 LPA. Product companies pay 30+ LPA. The difference? Exactly what we're learning.",
-  "Yeh video dekh liya toh interview mein dhoom machao! Ab aage badhte hain.",
+  "Product companies pay 30+ LPA. Service companies pay 3.3 LPA. The difference? Exactly what we're learning.",
   "Everyone asks 'how to crack FAANG'. Nobody asks 'how to UNDERSTAND systems'. Be different.",
 ];
 
@@ -1576,7 +1788,8 @@ const EMOTIONAL_STAKES = [
   "The interviewer has seen 500 candidates this month. 490 of them couldn't explain this. Be the other 10.",
 ];
 
-/** Conversational fillers — prepended to key sentences for natural speech flow */
+/** Conversational fillers — prepended to key sentences for natural speech flow.
+ *  Mix of English + Hinglish for Indian tech audience. */
 const CONVERSATIONAL_OPENERS = [
   'Okay so... ',
   "Here's the thing... ",
@@ -1598,7 +1811,7 @@ const CONVERSATIONAL_CLOSERS = [
 ];
 
 /** Brand catchphrase — appended to summary scenes */
-const CATCHPHRASE = "Ab interview mein dhoom machao!";
+const CATCHPHRASE = "Now go crush that interview.";
 
 /** Guru mode transition — used when explaining the hard part */
 const GURU_MODE_PHRASES = [
@@ -1631,15 +1844,12 @@ export function personalityInjector(scenes: Scene[], sessionNumber: number = 1, 
   const callout25 = Math.floor(totalScenes * 0.25);
   const callout75 = Math.floor(totalScenes * 0.75);
   const stakes40 = Math.floor(totalScenes * 0.4);
-  const stakes60 = Math.floor(totalScenes * 0.6);
-  const guruModePoint = Math.floor(totalScenes * 0.55); // deepest technical part
+  // stakes60 and guruModePoint removed — filler reduction (max 2 per video)
 
   // Track which injections have fired (one-shot guards)
   let callout25Done = false;
   let callout75Done = false;
   let stakes40Done = false;
-  let stakes60Done = false;
-  let guruModeDone = false;
 
   return scenes.map((scene, idx) => {
     // Skip non-text scenes — keep code, table, diagram narration clean
@@ -1663,10 +1873,10 @@ export function personalityInjector(scenes: Scene[], sessionNumber: number = 1, 
       return { ...scene, narration };
     }
 
-    // ── Surprise facts: every 3rd text scene ─────────────────────
+    // ── Surprise facts: every 5th text scene (reduced from 3rd to cut filler) ──
     if (scene.type === 'text') {
       textSceneCount++;
-      if (textSceneCount > 0 && textSceneCount % 3 === 0) {
+      if (textSceneCount > 0 && textSceneCount % 5 === 0) {
         const facts = getTopicSurpriseFacts(topic);
         const factIdx = (seed + textSceneCount) % facts.length;
         narration = `${narration} ${facts[factIdx]}`;
@@ -1674,10 +1884,15 @@ export function personalityInjector(scenes: Scene[], sessionNumber: number = 1, 
     }
 
     // ── Conversational opener: add filler to first sentence ──────
+    // GUARD: Only use Hindi openers on casual narration, English openers on formal.
+    // Formal = contains academic words like "distributed", "architecture", "protocol"
     if (scene.type === 'text' && textSceneCount % 2 === 1) {
-      const openerIdx = (seed + idx) % CONVERSATIONAL_OPENERS.length;
       // Only prepend if narration doesn't already start conversationally
       if (!/^(Okay|Here's|And |Look|So |Now |Alright|But )/i.test(narration)) {
+        const isFormal = /\b(distributed|fault-tolerant|architecture|protocol|mechanism|implementation|monotonically|configuration|coordination)\b/i.test(narration.slice(0, 120));
+        // Use only English openers (indices 0-7) for formal text, allow Hindi (8-13) for casual
+        const openerPool = isFormal ? 8 : CONVERSATIONAL_OPENERS.length;
+        const openerIdx = (seed + idx) % openerPool;
         narration = CONVERSATIONAL_OPENERS[openerIdx] + lowercaseFirst(narration);
       }
     }
@@ -1710,19 +1925,8 @@ export function personalityInjector(scenes: Scene[], sessionNumber: number = 1, 
       narration = `${narration} ${EMOTIONAL_STAKES[stakesIdx]}`;
     }
 
-    // ── Emotional stakes at ~60% ─────────────────────────────────
-    if (!stakes60Done && idx >= stakes60 && scene.type === 'text') {
-      stakes60Done = true;
-      const stakesIdx = (seed + 2) % EMOTIONAL_STAKES.length;
-      narration = `${narration} ${EMOTIONAL_STAKES[stakesIdx]}`;
-    }
-
-    // ── Guru mode at ~55% (the hard part) ────────────────────────
-    if (!guruModeDone && idx >= guruModePoint && scene.type === 'text') {
-      guruModeDone = true;
-      const guruIdx = (seed) % GURU_MODE_PHRASES.length;
-      narration = `${GURU_MODE_PHRASES[guruIdx]} ${narration}`;
-    }
+    // ── Emotional stakes at ~60% — REMOVED (was stacking too much filler) ──
+    // ── Guru mode at ~55% — REMOVED (reduces filler phrases to max 2/video) ──
 
     return { ...scene, narration };
   });
@@ -1753,6 +1957,42 @@ function injectContractions(text: string): string {
     .replace(/\byou have\b/gi, "you've")
     .replace(/\bwe have\b/gi, "we've")
     .replace(/\bthey have\b/gi, "they've");
+}
+
+/**
+ * Deduplicate narration that contains the same text repeated back-to-back.
+ * Detects patterns like "A B C. A B C." where the second half is a copy of the first.
+ * Also catches sentence-level repeats within the narration.
+ */
+function deduplicateNarration(text: string): string {
+  if (!text || text.length < 20) return text;
+
+  // Strategy 1: Exact-half duplication — "X X" where the string is just X repeated twice
+  const trimmed = text.trim();
+  const halfLen = Math.floor(trimmed.length / 2);
+  // Check if first half equals second half (with some whitespace tolerance)
+  for (let offset = -3; offset <= 3; offset++) {
+    const splitPoint = halfLen + offset;
+    if (splitPoint <= 0 || splitPoint >= trimmed.length) continue;
+    const firstHalf = trimmed.slice(0, splitPoint).trim();
+    const secondHalf = trimmed.slice(splitPoint).trim();
+    if (firstHalf.length > 15 && firstHalf === secondHalf) {
+      return firstHalf;
+    }
+  }
+
+  // Strategy 2: Sentence-level dedup — remove consecutive duplicate sentences
+  const sentences = trimmed.split(/(?<=[.!?])\s+/);
+  const deduped: string[] = [];
+  const seen = new Set<string>();
+  for (const sentence of sentences) {
+    const normalized = sentence.toLowerCase().replace(/\s+/g, ' ').trim();
+    if (normalized.length > 10 && seen.has(normalized)) continue;
+    seen.add(normalized);
+    deduped.push(sentence);
+  }
+
+  return deduped.join(' ');
 }
 
 /** Lowercase the first character of a string (for prepending fillers) */
@@ -2139,6 +2379,29 @@ function generateSceneSfxTriggers(
 }
 
 // ---------------------------------------------------------------------------
+// Long Scene Splitter — breaks text scenes >200 chars into 2 sub-scenes
+// to increase cuts/min from ~2.3 to 6-8 (reduces avg scene duration)
+// ---------------------------------------------------------------------------
+function splitLongScene(scene: Scene, currentFrame: number): Scene[] {
+  if (scene.type !== 'text' || !scene.narration || scene.narration.length < 200) return [scene];
+
+  const sentences = scene.narration.split(/(?<=[.!?])\s+/);
+  if (sentences.length < 2) return [scene];
+
+  const mid = Math.ceil(sentences.length / 2);
+  const firstHalf = sentences.slice(0, mid).join(' ');
+  const secondHalf = sentences.slice(mid).join(' ');
+
+  const firstDuration = Math.round((firstHalf.length / scene.narration.length) * scene.duration);
+  const secondDuration = scene.duration - firstDuration;
+
+  return [
+    { ...scene, narration: firstHalf, duration: firstDuration, endFrame: scene.startFrame + TIMING.secondsToFrames(firstDuration), bullets: (scene.bullets || []).slice(0, 2) },
+    { ...scene, narration: secondHalf, duration: secondDuration, startFrame: scene.startFrame + TIMING.secondsToFrames(firstDuration), endFrame: scene.endFrame, heading: (scene.heading || '') + ' — Key Insight', bullets: (scene.bullets || []).slice(2) },
+  ];
+}
+
+// ---------------------------------------------------------------------------
 // Scene Construction
 // ---------------------------------------------------------------------------
 function sectionToScene(
@@ -2149,7 +2412,16 @@ function sectionToScene(
   topic: string = '',
 ): Scene {
   const type = mapSectionType(section.type);
-  let narration = generateNarration(section, topic);
+
+  // BUG FIX: Skip topic-bridge and topic-specific narration for code that doesn't match the topic.
+  // e.g., ConsistentHash code in a Kafka video should NOT say "This is how kafka works under the hood."
+  let effectiveTopic = topic;
+  if (type === 'code' && topic && !isCodeRelevantToTopic(section.content, topic)) {
+    // Strip topic from narration generation so it won't produce misleading topic bridges
+    effectiveTopic = '';
+  }
+
+  let narration = generateNarration(section, effectiveTopic);
 
   // No more stacking of aha phrases, encouragement, or repetition on every scene.
   // The narration from generateNarration() is already clean and complete.
@@ -2218,6 +2490,11 @@ function mapSectionType(type: string): SceneType {
 }
 
 function generateNarration(section: MarkdownSection, topic: string = ''): string {
+  // BUG FIX: ASCII art should NOT be read as narration — replace with semantic description
+  if (containsAsciiArt(section.content)) {
+    return asciiArtNarration(section.heading);
+  }
+
   switch (section.type) {
     case 'code':
       return summarizeCode(section.content, section.language || 'typescript', topic);
@@ -2277,13 +2554,20 @@ function summarizeCode(code: string, language: string, topic: string = ''): stri
   const purposeHint = inferCodePurpose(code);
   const walkthrough = generateCodeWalkthrough(code, language, topic);
 
+  // Connect the code to the TOPIC being taught — a real teacher says
+  // "this matters for X because..." not just "here's a class in python"
+  // BUG FIX: Use oncePerVideo so "works under the hood" only appears ONCE per video
+  const topicBridge = topic
+    ? oncePerVideo('topic-bridge', ` This is how ${topic.toLowerCase()} works under the hood.`)
+    : '';
+
   if (classMatch && funcMatch) {
     const purpose = purposeHint ? ` that ${purposeHint}` : '';
-    return `${langTransition}Here's a ${classMatch[1]} class in ${language}${purpose}. The ${funcMatch[1]} method is where the action happens. ${walkthrough}`;
+    return `${langTransition}Let me walk you through the ${classMatch[1]} class${purpose}.${topicBridge} The key method here is ${funcMatch[1]}. ${walkthrough}`;
   }
   if (classMatch) {
     const purpose = purposeHint ? ` that ${purposeHint}` : '';
-    return `${langTransition}Here's the ${classMatch[1]} class in ${language}${purpose}. ${walkthrough}`;
+    return `${langTransition}Let me walk you through the ${classMatch[1]} class${purpose}.${topicBridge} ${walkthrough}`;
   }
   if (funcMatch) {
     const purpose = purposeHint ? ` — it ${purposeHint}` : '';
@@ -2291,10 +2575,13 @@ function summarizeCode(code: string, language: string, topic: string = ''): stri
     const paramMatch = code.match(new RegExp(`${funcMatch[1]}\\s*\\(([^)]*)\\)`));
     const params = paramMatch ? paramMatch[1].replace(/self,?\s*/, '').trim() : '';
     const paramDesc = params ? ` that takes ${describeParams(params)}` : '';
-    return `${langTransition}This ${funcMatch[1]} function in ${language}${paramDesc}${purpose}. ${walkthrough}`;
+    return `${langTransition}This ${funcMatch[1]} function${paramDesc}${purpose}.${topicBridge} ${walkthrough}`;
   }
   const purpose = purposeHint ? ` This code ${purposeHint}.` : '';
-  return `${langTransition}Here's the ${language} implementation in ${lines.length} lines.${purpose} ${walkthrough}`;
+  // BUG FIX: "Here is the implementation in X lines" only appears ONCE per video
+  const implPhrase = oncePerVideo('impl-in-lines', `Here is the implementation in ${lines.length} lines.`);
+  const implFallback = implPhrase || `Let's look at this ${lines.length}-line implementation.`;
+  return `${langTransition}${implFallback}${purpose}${topicBridge} ${walkthrough}`;
 }
 
 /** Analyze code content to infer what it does — returns a verb phrase like "distributes traffic across servers" */

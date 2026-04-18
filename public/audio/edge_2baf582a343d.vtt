@@ -1,0 +1,20 @@
+1
+00:00:00,100 --> 00:00:07,089
+Now here is where it gets spicy,  quick quick quick — let me rapid-fire through this.
+
+2
+00:00:07,039 --> 00:00:19,934
+But here's where it gets really interesting,  EOS has overhead: each transaction requires a round-trip to the transaction coordinator for begin, commit, and abort.
+
+3
+00:00:19,934 --> 00:00:26,986
+Throughput drops approximately 20-thirty percent compared to non-transactional producers.
+
+4
+00:00:26,986 --> 00:00:40,197
+Tune transaction.timeout.ms (default 60 s) to match your batch processing time — transactions that exceed this timeout are automatically aborted by the broker.
+
+5
+00:00:40,197 --> 00:00:48,105
+Real talk: Flipkart's Big Billion Day crashed their servers THREE times before they got this right.
+

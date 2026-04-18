@@ -1,0 +1,32 @@
+1
+00:00:00,100 --> 00:00:03,607
+Here is why more Topics and Partitions can backfire.
+
+2
+00:00:03,557 --> 00:00:06,375
+Here is the implementation in 4 lines.
+
+3
+00:00:06,375 --> 00:00:12,923
+This is how apache kafka works under the hood This is what separates junior from senior answers in interviews.
+
+4
+00:00:12,923 --> 00:00:15,740
+Here is the implementation in 4 lines.
+
+5
+00:00:15,740 --> 00:00:18,894
+This is how apache kafka works under the hood.
+
+6
+00:00:18,894 --> 00:00:25,413
+First, we call orders() to handle the operation — because the order matters for our algorithm to work correctly.
+
+7
+00:00:25,413 --> 00:00:29,721
+Now we handle the Partition 0: [offset 0][offset operation.
+
+8
+00:00:29,721 --> 00:00:37,221
+Here we handle the Partition 1: [offset 0][offset operation. , we handle the Partition 2: [offset 0][offset operation.
+

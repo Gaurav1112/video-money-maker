@@ -1,0 +1,20 @@
+1
+00:00:00,100 --> 00:00:07,339
+Each partition has exactly one Leader replica and zero or more Follower replicas.
+
+2
+00:00:07,289 --> 00:00:12,355
+The total number of replicas is the replication factor (RF).
+
+3
+00:00:12,355 --> 00:00:22,131
+Followers continuously fetch from the leader using the same internal protocol as consumers, appending records to their local log.
+
+4
+00:00:22,131 --> 00:00:29,973
+Here's something wild: Uber once had a major outage because their apache kafka system failed.
+
+5
+00:00:29,973 --> 00:00:32,197
+Cost them millions.
+

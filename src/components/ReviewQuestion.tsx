@@ -263,7 +263,7 @@ const ReviewQuestion: React.FC<ReviewQuestionProps> = ({
             transform: `translateY(${questionY}px)`,
             fontSize: 28,
             fontWeight: 700,
-            color: COLORS.white,
+            color: COLORS.textOnDark,
             lineHeight: 1.5,
             marginBottom: 32,
             marginTop: 20,
@@ -368,7 +368,7 @@ const ReviewQuestion: React.FC<ReviewQuestionProps> = ({
                   style={{
                     fontSize: SIZES.bodySmall,
                     fontWeight: 600,
-                    color: COLORS.white,
+                    color: COLORS.textOnDark,
                     lineHeight: 1.4,
                     opacity: revealTextOpacity,
                   }}

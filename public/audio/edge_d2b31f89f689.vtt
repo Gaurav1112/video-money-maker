@@ -1,0 +1,16 @@
+1
+00:00:00,100 --> 00:00:06,839
+Bhai, if you're grinding for placement season right now,  this is your goldmine.
+
+2
+00:00:06,789 --> 00:00:13,881
+Most people miss this completely,  Connectors run as tasks inside a Connect worker.
+
+3
+00:00:13,881 --> 00:00:21,947
+Workers can be standalone (single process) or distributed (cluster, recommended for production).
+
+4
+00:00:21,947 --> 00:00:29,802
+Plot twist: Most production implementations of this,  are , actually FREE and open source.
+

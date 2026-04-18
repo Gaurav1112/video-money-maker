@@ -479,6 +479,36 @@ const TextSection: React.FC<TextSectionProps> = ({
             overflow: 'hidden',
           }}
         >
+        {/* Scene heading overlay — always visible so graphics context matches narration */}
+        {heading && (
+          <div style={{
+            position: 'absolute',
+            top: 16,
+            left: 24,
+            right: 24,
+            zIndex: 10,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 12,
+          }}>
+            <div style={{
+              width: 4,
+              height: 28,
+              backgroundColor: accentColor,
+              borderRadius: 2,
+            }} />
+            <span style={{
+              fontSize: 22,
+              fontWeight: 700,
+              color: '#1E293B',
+              fontFamily: 'Space Grotesk, Inter, sans-serif',
+              letterSpacing: '-0.3px',
+            }}>
+              {heading}
+            </span>
+          </div>
+        )}
+
         {(() => {
           // Priority 1: Pre-rendered D2 SVG diagram (professional, deterministic)
           if (d2Svg) {
@@ -551,7 +581,7 @@ const TextSection: React.FC<TextSectionProps> = ({
         <div
           style={{
             position: 'absolute',
-            top: 24,
+            top: 56,
             left: 32,
             zIndex: 10,
             opacity: chapterOpacity,
@@ -560,13 +590,13 @@ const TextSection: React.FC<TextSectionProps> = ({
         >
           <div
             style={{
-              fontSize: 18,
-              fontWeight: 600,
-              color: `${COLORS.gold}99`,
+              fontSize: 22,
+              fontWeight: 700,
+              color: COLORS.saffron,
               fontFamily: FONTS.heading,
-              letterSpacing: '0.04em',
+              letterSpacing: '0.06em',
               textTransform: 'uppercase',
-              textShadow: '0 1px 2px rgba(255,255,255,0.6)',
+              textShadow: 'none',
             }}
           >
             {heading}

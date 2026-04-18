@@ -1,0 +1,28 @@
+1
+00:00:00,100 --> 00:00:01,857
+Guru mode activated.
+
+2
+00:00:01,807 --> 00:00:03,567
+Let's break this down.
+
+3
+00:00:03,567 --> 00:00:08,259
+Quick reminder, try 1.five times speed if you haven't already.
+
+4
+00:00:08,259 --> 00:00:11,971
+Manual async commit (commitAsync(callback)): doesn't block.
+
+5
+00:00:11,971 --> 00:00:13,365
+Higher throughput.
+
+6
+00:00:13,365 --> 00:00:20,701
+Risk: if async commit fails, a later successful commit may cover it, but order of commits is not guaranteed across retries.
+
+7
+00:00:20,701 --> 00:00:25,778
+Best pattern: use async during normal operation, fall back to sync on shutdown.
+

@@ -72,7 +72,7 @@ const BucketSlot: React.FC<{
           justifyContent: 'center',
           fontWeight: 700,
           fontSize: 18,
-          color: COLORS.white,
+          color: "#FFFFFF",
           flexShrink: 0,
         }}
       >

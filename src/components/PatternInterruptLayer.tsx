@@ -156,7 +156,7 @@ export const PatternInterruptLayer: React.FC<PatternInterruptLayerProps> = ({
           }}>
             <span style={{
               fontSize: 22, fontFamily: FONTS.heading, fontWeight: 800,
-              color: COLORS.white, textTransform: 'uppercase', letterSpacing: 1,
+              color: COLORS.textOnDark, textTransform: 'uppercase', letterSpacing: 1,
             }}>
               {activeInterrupt.keyword}
             </span>

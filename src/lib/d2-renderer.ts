@@ -47,7 +47,7 @@ export function renderD2Diagram(
     else if (n.shape === 'hexagon') d2 += `  shape: hexagon\n`;
     d2 += `  style.fill: "${fill}"\n`;
     d2 += `  style.stroke: "${stroke}"\n`;
-    d2 += `  style.font-color: "#e2e8f0"\n`;
+    d2 += `  style.font-color: "#1a1a2e"\n`;
     d2 += `  style.border-radius: 12\n`;
     d2 += `}\n\n`;
   }

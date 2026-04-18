@@ -1,0 +1,4 @@
+1
+00:00:00,100 --> 00:00:06,425
+Dekho, samjho yeh carefully,  kafka guarantees ordering within a partition , but not across partitions.
+

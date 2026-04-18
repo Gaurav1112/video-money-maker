@@ -1,4 +1,0 @@
-1
-00:00:00,100 --> 00:00:17,931
-Now here is where it gets spicy,  requirements: - Mobile app + Web app + Partner A P Is - fifty thousand requests per second peak - 15 backend microservices - Must support authentication, rate limiting, caching
-

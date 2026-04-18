@@ -1,0 +1,20 @@
+1
+00:00:00,100 --> 00:00:07,971
+For everyone who's been told 'you need a CS degree to crack FAANG',  watch me prove them wrong.
+
+2
+00:00:07,921 --> 00:00:16,644
+Now here is where it gets spicy,  a default Kafka installation has no authentication or encryption.
+
+3
+00:00:16,644 --> 00:00:28,013
+Production deployments must configure SSL/TLS for encryption in transit, SASL for authentication, and ACLs for authorization.
+
+4
+00:00:28,013 --> 00:00:38,565
+There is one thing about SSL/TLS Configuration that nobody mentions in tutorials, and it is exactly what interviewers test.
+
+5
+00:00:38,565 --> 00:00:41,315
+I will reveal it shortly.
+

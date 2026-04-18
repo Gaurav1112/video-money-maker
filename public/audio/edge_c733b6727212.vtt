@@ -1,0 +1,24 @@
+1
+00:00:00,100 --> 00:00:01,497
+Stop.
+
+2
+00:00:01,447 --> 00:00:04,289
+Re-read that last sentence.
+
+3
+00:00:04,289 --> 00:00:06,592
+It's THAT important.
+
+4
+00:00:06,592 --> 00:00:15,131
+linger.ms and batch.size work together — a batch sends when either limit is reached.
+
+5
+00:00:15,131 --> 00:00:31,644
+Enabling idempotence (enable.idempotence=true) forces acks=all and max.in.flight=5, which slightly reduces throughput , but guarantees exactly-once delivery.
+
+6
+00:00:31,644 --> 00:00:41,815
+Monitor producer-metrics (batch-size-avg, record-send-rate) and consumer-fetch-manager-metrics (bytes-consumed-rate, records-lag).
+

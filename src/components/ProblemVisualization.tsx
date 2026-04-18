@@ -185,7 +185,7 @@ const ProblemVisualization: React.FC<ProblemVisualizationProps> = ({
                 boxShadow: `0 0 ${30 * (1 - overallProgress)}px ${COLORS.red}66`,
               }}
             >
-              <div style={{ fontSize: 28, color: COLORS.white, fontWeight: 800, fontFamily: FONTS.code }}>
+              <div style={{ fontSize: 28, color: COLORS.textOnDark, fontWeight: 800, fontFamily: FONTS.code }}>
                 &#9646;
               </div>
             </div>

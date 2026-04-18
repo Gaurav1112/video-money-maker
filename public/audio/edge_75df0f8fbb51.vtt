@@ -1,0 +1,8 @@
+1
+00:00:00,100 --> 00:00:14,813
+Look, in our last session, we covered Fundamentals, algorithms, and failure modes of Apache Kafka, Production-level implementation patterns, Trade-offs between different approaches at scale.
+
+2
+00:00:14,763 --> 00:00:19,500
+Today we're building on that foundation and going deeper.
+

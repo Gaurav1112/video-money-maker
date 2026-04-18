@@ -1,0 +1,28 @@
+1
+00:00:00,100 --> 00:00:01,839
+Yes, YOU.
+
+2
+00:00:01,789 --> 00:00:05,223
+The person watching at two times speed.
+
+3
+00:00:05,223 --> 00:00:07,894
+Slow down for this part.
+
+4
+00:00:07,894 --> 00:00:21,289
+But here's where it gets really interesting,  - Debezium is the most common source connector — it uses CDC (Change Data Capture) to stream DB changes via the binlog/WAL.
+
+5
+00:00:21,289 --> 00:00:30,355
+Schema Registry uses a binary wire format: 1 magic byte + 4-byte schema ID + Avro payload.
+
+6
+00:00:30,355 --> 00:00:37,065
+BACKWARD compatibility is the Confluent default and the safest for most teams.
+
+7
+00:00:37,065 --> 00:00:46,118
+Plot twist: ChatGPT uses the exact same concepts we're learning here to handle millions of concurrent users.
+

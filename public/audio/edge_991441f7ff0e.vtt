@@ -1,0 +1,28 @@
+1
+00:00:00,100 --> 00:00:05,155
+Here is the hidden catch about Topics and Partitions that interviewers love to ask.
+
+2
+00:00:05,105 --> 00:00:07,923
+Here is the implementation in 4 lines.
+
+3
+00:00:07,923 --> 00:00:13,278
+This is how apache kafka works under the hood Here is the implementation in 4 lines.
+
+4
+00:00:13,278 --> 00:00:16,432
+This is how apache kafka works under the hood.
+
+5
+00:00:16,432 --> 00:00:22,951
+First, we call orders() to handle the operation — because the order matters for our algorithm to work correctly.
+
+6
+00:00:22,951 --> 00:00:27,259
+Now we handle the Partition 0: [offset 0][offset operation.
+
+7
+00:00:27,259 --> 00:00:34,759
+Here we handle the Partition 1: [offset 0][offset operation. , we handle the Partition 2: [offset 0][offset operation.
+

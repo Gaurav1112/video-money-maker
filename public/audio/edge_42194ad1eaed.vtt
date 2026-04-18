@@ -1,0 +1,44 @@
+1
+00:00:00,100 --> 00:00:06,628
+And THAT is how we built Schema Registry & Avro from scratch to production-ready.
+
+2
+00:00:06,578 --> 00:00:10,118
+And in Java, it looks like this.
+
+3
+00:00:10,118 --> 00:00:19,460
+Here's a AvroProducerExample class in java that handles data serialization And in Java, it looks like this.
+
+4
+00:00:19,460 --> 00:00:26,171
+Here's a AvroProducerExample class in java that handles data serialization.
+
+5
+00:00:26,171 --> 00:00:31,171
+The AvroProducerExample method is where the action happens.
+
+6
+00:00:31,171 --> 00:00:40,210
+First, we import the io.confluent.kafka.serializers.KafkaAvroSerializer module.
+
+7
+00:00:40,210 --> 00:00:49,184
+Now we define our AvroProducerExample class — this encapsulates all the complexity in one clean interface.
+
+8
+00:00:49,184 --> 00:00:51,776
+Here we execute + "]}".
+
+9
+00:00:51,776 --> 00:00:57,118
+At this point, we insert the key-value pair into our map.
+
+10
+00:00:57,118 --> 00:01:02,184
+This is where we insert the key-value pair into our map.
+
+11
+00:01:02,184 --> 00:01:04,092
+we execute }).
+

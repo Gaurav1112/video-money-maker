@@ -1,0 +1,40 @@
+1
+00:00:00,100 --> 00:00:06,707
+Here is the hidden catch about Python Implementation that interviewers love to ask.
+
+2
+00:00:06,657 --> 00:00:09,763
+Here's how this looks in Python.
+
+3
+00:00:09,763 --> 00:00:18,052
+This producer function in python — it iterates to find the optimal value Here's how this looks in Python.
+
+4
+00:00:18,052 --> 00:00:24,171
+This producer function in python — it iterates to find the optimal value.
+
+5
+00:00:24,171 --> 00:00:27,657
+First, we import the queue module.
+
+6
+00:00:27,657 --> 00:00:30,894
+Now we define the producer function.
+
+7
+00:00:30,894 --> 00:00:36,723
+Here we print f'Produced: msg-{i}' to verify our result.
+
+8
+00:00:36,723 --> 00:00:43,355
+At this point, we call q.get and store the result in msg.
+
+9
+00:00:43,355 --> 00:00:49,473
+This is where we call threading.Thread and store the result in t1.
+
+10
+00:00:49,473 --> 00:00:53,868
+we call t1.join() to process our data.
+

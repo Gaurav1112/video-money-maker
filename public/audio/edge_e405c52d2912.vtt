@@ -1,0 +1,8 @@
+1
+00:00:00,100 --> 00:00:05,059
+Apache Kafka is a distributed, fault-tolerant, high-throughput event streaming platform.
+
+2
+00:00:05,009 --> 00:00:17,701
+Before writing a single line of producer or consumer code, you must internalize the physical and logical layout of a Kafka cluster — because every configuration decision flows from this mental model , and that's what most people miss.
+

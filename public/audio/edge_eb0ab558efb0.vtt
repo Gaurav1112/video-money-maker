@@ -1,0 +1,32 @@
+1
+00:00:00,100 --> 00:00:03,142
+First up, the Python version.
+
+2
+00:00:03,092 --> 00:00:06,605
+This demonstrate function in python.
+
+3
+00:00:06,605 --> 00:00:12,013
+First, we import Dict, List, Any from the typing module.
+
+4
+00:00:12,013 --> 00:00:20,105
+Now we print f"equals= Kafka Security equals=" to verify our result.
+
+5
+00:00:20,105 --> 00:00:23,842
+Here we call O() to handle the operation.
+
+6
+00:00:23,842 --> 00:00:29,855
+At this point, we print f'{k}: {v}' to verify our result.
+
+7
+00:00:29,855 --> 00:00:36,473
+This is where we print f'Size: {len(data)}' to verify our result.
+
+8
+00:00:36,473 --> 00:00:40,513
+we call demonstrate() to handle the operation.
+

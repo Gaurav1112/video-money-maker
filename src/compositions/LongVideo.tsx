@@ -15,7 +15,8 @@ import { SplitLayout } from '../components/SplitLayout';
 import { ConceptViz } from '../components/ConceptViz';
 import { INTRO_DURATION, OUTRO_DURATION } from '../lib/constants';
 import { BrandingLayer } from '../components/BrandingLayer';
-import { AnimatedOverlay } from '../components/AnimatedOverlay';
+// REMOVED: Visual clutter reduction — AnimatedOverlay adds particles/scan lines/vignette noise
+// import { AnimatedOverlay } from '../components/AnimatedOverlay';
 import {
   TitleSlide,
   CodeReveal,
@@ -37,14 +38,17 @@ import { IDEScene } from '../components/scenes/IDEScene';
 import { CinematicOpener } from '../components/CinematicOpener';
 import { SpeedReminder } from '../components/SpeedReminder';
 import { PatternInterruptLayer } from '../components/PatternInterruptLayer';
-import { FilmGrain } from '../components/FilmGrain';
-import { HudOverlay } from '../components/HudOverlay';
+// REMOVED: Visual clutter reduction — film grain is thematically wrong for tech tutorials
+// import { FilmGrain } from '../components/FilmGrain';
+// REMOVED: Visual clutter reduction — Jarvis HUD is thematically incoherent with educational content
+// import { HudOverlay } from '../components/HudOverlay';
 import { CameraDrift } from '../components/CameraDrift';
-import { CinematicGrade } from '../components/CinematicGrade';
+// REMOVED: Visual clutter reduction — teal-orange grading makes tutorials look like movie trailers
+// import { CinematicGrade } from '../components/CinematicGrade';
 import { AvatarBubble } from '../components/AvatarBubble';
 import { getStyleForFormat, getTransitionDuration } from '../lib/video-styles';
 
-const ACCENT_COLORS = ['#E85D26', '#1DD1A1', '#FDB813', '#818CF8'];
+const ACCENT_COLORS = ['#2563EB', '#059669', '#D97706', '#7C3AED'];
 
 interface LongVideoProps {
   storyboard: Storyboard;
@@ -304,14 +308,14 @@ export const LongVideo: React.FC<LongVideoProps> = ({ storyboard, noOverlays = f
   const isIntro = frame < INTRO_DURATION;
   const isOutro = frame >= INTRO_DURATION + contentFrames;
 
+  // REMOVED: CinematicGrade wrapper — teal-orange color grading is wrong for educational content
   return (
-    <CinematicGrade>
     <AbsoluteFill style={{ backgroundColor: COLORS.dark }}>
       {/* Animated background layer - adapts to scene type */}
       {!isIntro && !isOutro && <BackgroundLayer sceneType={currentSceneType} />}
 
-      {/* Animated overlay — particles, scan line, vignette, tech grid on every content frame */}
-      {!isIntro && !isOutro && <AnimatedOverlay sceneType={currentSceneType} />}
+      {/* REMOVED: AnimatedOverlay — particles, scan line, vignette, tech grid = visual noise */}
+      {/* {!isIntro && !isOutro && <AnimatedOverlay sceneType={currentSceneType} />} */}
 
       {/* Cinematic Opening — 6 movie-trailer styles, unique per topic */}
       <Sequence from={0} durationInFrames={INTRO_DURATION}>
@@ -537,9 +541,10 @@ export const LongVideo: React.FC<LongVideoProps> = ({ storyboard, noOverlays = f
         />
       )}
 
-      {/* Single master narration audio — no overlap possible */}
+      {/* Single master narration audio — starts at frame 60 (2s) so hook narration
+           overlaps with the CinematicOpener visual for maximum retention */}
       {storyboard.audioFile && (
-        <Sequence from={INTRO_DURATION}>
+        <Sequence from={60}>
           <Audio
             src={staticFile(`audio/${storyboard.audioFile.split('/').pop()}`)}
             volume={(f) => {
@@ -584,14 +589,14 @@ export const LongVideo: React.FC<LongVideoProps> = ({ storyboard, noOverlays = f
         <SfxLayer triggers={storyboard.allSfxTriggers} syncTimeline={syncTimeline} />
       )}
 
-      {/* Jarvis HUD overlay — sci-fi corner brackets, data panel, progress ring, scan line */}
-      {!noOverlays && !isIntro && !isOutro && (
+      {/* REMOVED: HudOverlay — Jarvis-style HUD is thematically incoherent with educational content */}
+      {/* {!noOverlays && !isIntro && !isOutro && (
         <HudOverlay
           topic={storyboard.topic}
           sessionNumber={storyboard.sessionNumber}
           totalFrames={totalFrames}
         />
-      )}
+      )} */}
 
       {/* Avatar bubble — bottom-right corner with Indian teacher photo */}
       {!noOverlays && !isIntro && !isOutro && (
@@ -604,10 +609,9 @@ export const LongVideo: React.FC<LongVideoProps> = ({ storyboard, noOverlays = f
         />
       )}
 
-      {/* Film grain overlay — deterministic SVG noise for organic feel */}
-      <FilmGrain opacity={0.04} />
+      {/* REMOVED: FilmGrain — film grain on tech tutorials is thematically wrong */}
+      {/* <FilmGrain opacity={0.04} /> */}
     </AbsoluteFill>
-    </CinematicGrade>
   );
 };
 

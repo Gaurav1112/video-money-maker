@@ -1,0 +1,20 @@
+1
+00:00:00,100 --> 00:00:06,309
+If you're not using this concept correctly, your system will crash the moment you hit ten thousand concurrent users.
+
+2
+00:00:06,259 --> 00:00:07,951
+I've seen it happen.
+
+3
+00:00:07,951 --> 00:00:09,355
+Here's the fix.
+
+4
+00:00:09,355 --> 00:00:12,605
+This is session 2 of our Apache Kafka series.
+
+5
+00:00:12,605 --> 00:00:17,355
+Today's topic: Producers Deep Dive — Acks, Idempotence, Batching, Compression.
+

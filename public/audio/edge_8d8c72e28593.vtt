@@ -1,0 +1,28 @@
+1
+00:00:00,100 --> 00:00:02,437
+Remember that 3 AM crash?
+
+2
+00:00:02,387 --> 00:00:06,317
+Here is exactly what went wrong with Topics and Partitions.
+
+3
+00:00:06,317 --> 00:00:08,913
+This next idea changes everything.
+
+4
+00:00:08,913 --> 00:00:14,240
+This next idea changes everything,  Here's the typescript implementation in 4 lines.
+
+5
+00:00:14,240 --> 00:00:20,759
+First, we call orders() to handle the operation — because the order matters for our algorithm to work correctly.
+
+6
+00:00:20,759 --> 00:00:25,067
+Now we handle the Partition 0: [offset 0][offset operation.
+
+7
+00:00:25,067 --> 00:00:32,567
+Here we handle the Partition 1: [offset 0][offset operation. , we handle the Partition 2: [offset 0][offset operation.
+

@@ -153,7 +153,7 @@ export const AlgorithmPanel: React.FC<AlgorithmPanelProps> = ({
                   style={{
                     fontSize: 13,
                     fontFamily: FONTS.code,
-                    color: isActive ? COLORS.white : COLORS.gray,
+                    color: isActive ? "#FFFFFF" : COLORS.gray,
                     fontWeight: isActive ? 600 : 400,
                     whiteSpace: 'pre',
                   }}

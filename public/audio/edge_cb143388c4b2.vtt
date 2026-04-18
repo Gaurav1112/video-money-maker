@@ -1,0 +1,44 @@
+1
+00:00:00,100 --> 00:00:01,886
+Let me show you the code.
+
+2
+00:00:01,836 --> 00:00:05,339
+Remember when I said The Cluster is wrong for most systems?
+
+3
+00:00:05,339 --> 00:00:06,865
+Here is the proof.
+
+4
+00:00:06,865 --> 00:00:09,048
+Most people miss this completely.
+
+5
+00:00:09,048 --> 00:00:14,086
+Most people miss this completely,  Here's the typescript implementation in 8 lines.
+
+6
+00:00:14,086 --> 00:00:16,346
+First, we handle the ┌───────────────────────────── operation.
+
+7
+00:00:16,346 --> 00:00:19,182
+Now we handle the │ Kafka Cluster operation.
+
+8
+00:00:19,182 --> 00:00:22,365
+Here we handle the │ │ Broker 1 │ │ Broker 2 │ │ operation.
+
+9
+00:00:22,365 --> 00:00:25,048
+At this point, we handle the │ │ operation.
+
+10
+00:00:25,048 --> 00:00:27,538
+This is where we handle the │ └──────────┘ └──────────┘ └ operation.
+
+11
+00:00:27,538 --> 00:00:29,375
+we handle the └───────────────────────────── operation.
+

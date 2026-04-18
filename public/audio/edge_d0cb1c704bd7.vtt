@@ -1,0 +1,36 @@
+1
+00:00:00,100 --> 00:00:02,563
+Let me show you the code.
+
+2
+00:00:02,513 --> 00:00:08,921
+Here is the hidden catch about Connect Architecture that interviewers love to ask.
+
+3
+00:00:08,921 --> 00:00:13,144
+Here's the typescript implementation in 2 lines.
+
+4
+00:00:13,144 --> 00:00:21,710
+First, we handle the Source System → [Source Conn operation Here's the typescript implementation in 2 lines.
+
+5
+00:00:21,710 --> 00:00:28,842
+First, we handle the Source System → [Source Conn operation. , we handle the operation.
+
+6
+00:00:28,842 --> 00:00:34,434
+Let me show you the end result of Schema Registry & Avro first.
+
+7
+00:00:34,434 --> 00:00:38,250
+This is what a production system looks like.
+
+8
+00:00:38,250 --> 00:00:41,736
+Now the question is: HOW do we get here?
+
+9
+00:00:41,736 --> 00:00:43,447
+Stay tuned.
+

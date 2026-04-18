@@ -1,0 +1,8 @@
+1
+00:00:00,100 --> 00:00:04,713
+Each partition is stored as a directory of segment files on the broker's disk.
+
+2
+00:00:04,663 --> 00:00:14,586
+A segment is a .log file (binary data) paired with an .index file (sparse offset index for fast seeks) and a .timeindex file (timestamp index).
+

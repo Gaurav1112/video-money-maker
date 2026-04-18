@@ -1,0 +1,20 @@
+1
+00:00:00,100 --> 00:00:04,213
+If your interviewer asks you to explain this concept right now, could you?
+
+2
+00:00:04,163 --> 00:00:06,000
+Most candidates freeze.
+
+3
+00:00:06,000 --> 00:00:10,778
+By the end of this video, you'll explain it better than most senior engineers.
+
+4
+00:00:10,778 --> 00:00:14,144
+This is session 3 of our Apache Kafka series.
+
+5
+00:00:14,144 --> 00:00:19,278
+Today's topic: Consumers & Consumer Groups — Rebalancing, Offsets, Poll Loop.
+

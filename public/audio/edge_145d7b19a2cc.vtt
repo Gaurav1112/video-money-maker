@@ -1,0 +1,64 @@
+1
+00:00:00,100 --> 00:00:03,963
+Okay so,  this is session 1 of our Apache Kafka series.
+
+2
+00:00:03,913 --> 00:00:08,615
+Today's topic: Kafka Architecture — Brokers, Topics, Partitions, Offsets.
+
+3
+00:00:08,615 --> 00:00:13,192
+Dekho, samjho yeh carefully,  chalo, pehle kuch facts sunte hain.
+
+4
+00:00:13,192 --> 00:00:17,538
+Fact number 1: Kafka is just a message queue, like RabbitMQ.
+
+5
+00:00:17,538 --> 00:00:22,250
+Fact number 2: Kafka guarantees exactly-once delivery out of the box.
+
+6
+00:00:22,250 --> 00:00:26,663
+Fact number 3: More partitions always means better performance.
+
+7
+00:00:26,663 --> 00:00:27,836
+Sab suna?
+
+8
+00:00:27,836 --> 00:00:28,846
+Accha.
+
+9
+00:00:28,846 --> 00:00:31,548
+Ab dhyan se suno,  YEH SAB GALAT HAI.
+
+10
+00:00:31,548 --> 00:00:32,807
+Haan, galat.
+
+11
+00:00:32,807 --> 00:00:35,519
+Aur main tumhe exactly bataunga ki kyun.
+
+12
+00:00:35,519 --> 00:00:37,721
+Kafka is NOT a message queue.
+
+13
+00:00:37,721 --> 00:00:39,865
+It's a distributed commit log.
+
+14
+00:00:39,865 --> 00:00:44,557
+Exactly-once requires idempotent producers AND transactional consumers.
+
+15
+00:00:44,557 --> 00:00:47,923
+And too many partitions , actually HURT performance.
+
+16
+00:00:47,923 --> 00:00:50,057
+Let me explain each one.
+

@@ -1,0 +1,24 @@
+1
+00:00:00,100 --> 00:00:06,030
+A Kafka cluster is a group of brokers — individual server processes, each with a unique integer ID.
+
+2
+00:00:05,980 --> 00:00:15,740
+One broker is elected the Controller, responsible for administrative duties: partition leader elections, topic creation and deletion, and cluster metadata propagation.
+
+3
+00:00:15,740 --> 00:00:21,288
+If the Controller broker dies, another is automatically elected , let that sink in for a second.
+
+4
+00:00:21,288 --> 00:00:26,019
+Most developers think more Topics and Partitions means better performance.
+
+5
+00:00:26,019 --> 00:00:28,538
+It can , actually make things worse.
+
+6
+00:00:28,538 --> 00:00:30,288
+Stay tuned to see why.
+

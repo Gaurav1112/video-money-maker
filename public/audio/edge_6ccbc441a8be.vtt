@@ -1,0 +1,60 @@
+1
+00:00:00,100 --> 00:00:03,721
+Alright, here's what you just learned.
+
+2
+00:00:03,671 --> 00:00:08,750
+Distinguish KStream from KTable and know when to use each.
+
+3
+00:00:08,750 --> 00:00:15,355
+Write stateless and stateful stream processing pipelines using the Streams DSL.
+
+4
+00:00:15,355 --> 00:00:19,736
+Configure tumbling, hopping, and session windows.
+
+5
+00:00:19,736 --> 00:00:21,894
+Stick with me here.
+
+6
+00:00:21,894 --> 00:00:26,289
+This is the part where real understanding happens.
+
+7
+00:00:26,289 --> 00:00:29,447
+Don't just watch and forget.
+
+8
+00:00:29,447 --> 00:00:31,210
+Go practice.
+
+9
+00:00:31,210 --> 00:00:33,368
+Build it in code.
+
+10
+00:00:33,368 --> 00:00:35,736
+Explain it to someone.
+
+11
+00:00:35,736 --> 00:00:38,000
+That's how it sticks.
+
+12
+00:00:38,000 --> 00:00:46,815
+The complete Apache Kafka course with cheatsheets and mock interviews is at guru-sishya.in slash apache-kafka.
+
+13
+00:00:46,815 --> 00:00:49,539
+Drop a like if this helped.
+
+14
+00:00:49,539 --> 00:01:04,631
+You now know how to distinguish kstream from ktable and know when to use each, write stateless and stateful stream processing pipelines using the streams dsl, and explain the trade-offs in an interview.
+
+15
+00:01:04,631 --> 00:01:07,355
+Ab interview mein dhoom machao!
+

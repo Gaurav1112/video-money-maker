@@ -42,13 +42,20 @@ const ComparisonRenderer: React.FC<ComparisonRendererProps> = ({
   const { fps } = useVideoConfig();
 
   const {
-    optionAName,
-    optionBName,
+    optionAName = 'Approach A',
+    optionBName = 'Approach B',
     optionAColor = COLORS.teal,
     optionBColor = COLORS.indigo,
-    rows,
+    rows: rawRows,
     title,
   } = config;
+
+  // Fallback: if no rows provided, generate placeholder rows from option names
+  const rows = (rawRows && rawRows.length > 0) ? rawRows : [
+    { attribute: 'Use Case', optionA: `Best for ${optionAName}`, optionB: `Best for ${optionBName}`, winner: 'tie' as const, beatIndex: 0 },
+    { attribute: 'Performance', optionA: 'Varies by scale', optionB: 'Varies by pattern', winner: 'tie' as const, beatIndex: 1 },
+    { attribute: 'Complexity', optionA: 'Moderate', optionB: 'Moderate', winner: 'tie' as const, beatIndex: 2 },
+  ];
 
   const elapsed = frame - startFrame;
 
@@ -87,7 +94,7 @@ const ComparisonRenderer: React.FC<ComparisonRendererProps> = ({
   /* ── Determine overall winner ───────────────────────────────────────────── */
   let aWins = 0;
   let bWins = 0;
-  for (const row of rows) {
+  for (const row of (rows || [])) {
     if (row.winner === 'A') aWins++;
     if (row.winner === 'B') bWins++;
   }
@@ -95,7 +102,7 @@ const ComparisonRenderer: React.FC<ComparisonRendererProps> = ({
     aWins > bWins ? 'A' : bWins > aWins ? 'B' : 'tie';
 
   /* ── Final beat: winner card scales up with gold glow ──────────────────── */
-  const lastBeat = rows.length > 0 ? Math.max(...rows.map((r) => r.beatIndex)) : 0;
+  const lastBeat = (rows || []).length > 0 ? Math.max(...(rows || []).map((r) => r.beatIndex)) : 0;
   const finalBeatDelay = 15 + lastBeat * 12 + 20;
   const finalSpring = spring({
     frame: Math.max(0, elapsed - finalBeatDelay),
@@ -267,7 +274,7 @@ const ComparisonRenderer: React.FC<ComparisonRendererProps> = ({
           </div>
 
           {/* Rows */}
-          {rows.map((row) => renderRow(row, 'A'))}
+          {(rows || []).map((row) => renderRow(row, 'A'))}
         </div>
 
         {/* ── VS Badge ────────────────────────────────────────────────────── */}
@@ -319,7 +326,7 @@ const ComparisonRenderer: React.FC<ComparisonRendererProps> = ({
           </div>
 
           {/* Rows */}
-          {rows.map((row) => renderRow(row, 'B'))}
+          {(rows || []).map((row) => renderRow(row, 'B'))}
         </div>
       </div>
 
