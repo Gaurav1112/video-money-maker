@@ -31,11 +31,11 @@ export const PLATFORM_SAFE = {
 
 /** Vertical layout regions (top-to-bottom stacking) */
 export const REGIONS = {
-  header: { y: 40, height: 80 },
-  mainContent: { y: 140, height: 1100 },
-  captionZone: { y: 1260, height: 300 },
-  bottomBar: { y: 1580, height: 80 },
-  ctaZone: { y: 1680, height: 200 },
+  header: { y: 30, height: 70 },
+  mainContent: { y: 100, height: 1200 },
+  captionZone: { y: 1320, height: 280 },
+  bottomBar: { y: 1620, height: 60 },
+  ctaZone: { y: 1700, height: 180 },
 };
 
 /** Font sizes scaled for vertical (larger for mobile readability) */

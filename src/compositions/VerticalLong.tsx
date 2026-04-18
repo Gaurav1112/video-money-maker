@@ -9,6 +9,7 @@ import { Storyboard, Scene } from '../types';
 import { COLORS, FONTS } from '../lib/theme';
 import { SyncTimeline } from '../lib/sync-engine';
 import { setSyncTimeline } from '../hooks/useSync';
+import { AvatarBubble } from '../components/AvatarBubble';
 import { BgmLayer } from '../components/BgmLayer';
 import { SfxLayer } from '../components/SfxLayer';
 import { INTRO_DURATION, OUTRO_DURATION } from '../lib/constants';
@@ -54,22 +55,24 @@ function getTransitionForScene(sceneIndex: number): TransitionPresentation<Recor
   return TRANSITION_POOL[sceneIndex % TRANSITION_POOL.length]();
 }
 
-// ── Subtle vertical background ─────────────────────────────────────────────────
+// ── Subtle vertical background (dark-mode optimised) ──────────────────────────
 const VerticalBg: React.FC = () => (
   <div style={{ position: 'absolute', inset: 0 }}>
+    {/* Very subtle grid — visible on dark bg */}
     <div style={{
       position: 'absolute',
       inset: 0,
       backgroundImage: `
-        linear-gradient(${COLORS.saffron}04 1px, transparent 1px),
-        linear-gradient(90deg, ${COLORS.saffron}04 1px, transparent 1px)
+        linear-gradient(${COLORS.saffron}08 1px, transparent 1px),
+        linear-gradient(90deg, ${COLORS.saffron}08 1px, transparent 1px)
       `,
       backgroundSize: '54px 54px',
     }} />
+    {/* Subtle saffron glow from top-center */}
     <div style={{
       position: 'absolute',
       inset: 0,
-      background: `radial-gradient(ellipse at 50% 30%, ${COLORS.saffron}06 0%, transparent 55%)`,
+      background: `radial-gradient(ellipse at 50% 20%, ${COLORS.saffron}12 0%, transparent 55%)`,
     }} />
   </div>
 );
@@ -109,7 +112,7 @@ const VerticalIntro: React.FC<{
   const badgeY = interpolate(springBadge, [0, 1], [20, 0]);
 
   return (
-    <AbsoluteFill style={{ backgroundColor: COLORS.dark }}>
+    <AbsoluteFill style={{ backgroundColor: '#0C0A15' }}>
       <VerticalBg />
 
       {/* Session badge */}
@@ -222,7 +225,7 @@ const VerticalOutro: React.FC<{
   const opacity = interpolate(s, [0, 1], [0, 1]);
 
   return (
-    <AbsoluteFill style={{ backgroundColor: COLORS.dark }}>
+    <AbsoluteFill style={{ backgroundColor: '#0C0A15' }}>
       <VerticalBg />
       <div style={{
         position: 'absolute',
@@ -378,8 +381,8 @@ const SceneHeading: React.FC<{ heading: string }> = ({ heading }) => {
   );
 };
 
-// ── Scale constants: fit 1920×1080 components into 900px-wide vertical content ─
-const SCALE_FACTOR = 900 / 1920; // ≈ 0.469
+// ── Scale constants: fit 1920×1080 components into full 1080px vertical width ─
+const CONTENT_SCALE = 1080 / 1920; // 0.5625 — fills full width
 const ACCENT_COLORS = ['#2563EB', '#059669', '#D97706', '#7C3AED'];
 
 // ── Scene component map (same as LongVideo) ────────────────────────────────────
@@ -510,7 +513,7 @@ function getSceneProps(scene: Scene, storyboard: Storyboard): Record<string, any
   }
 }
 
-// ── Vertical scene wrapper: scales rich 1920×1080 component into 900px column ─
+// ── Vertical scene wrapper: scales rich 1920×1080 component to fill full 1080px width ─
 const VerticalSceneContent: React.FC<{ scene: Scene; storyboard: Storyboard }> = ({ scene, storyboard }) => {
   const Component = SCENE_COMPONENT_MAP[scene.type];
   const sceneProps = getSceneProps(scene, storyboard);
@@ -518,7 +521,7 @@ const VerticalSceneContent: React.FC<{ scene: Scene; storyboard: Storyboard }> =
   if (!Component) {
     // Minimal fallback for unknown scene types
     return (
-      <AbsoluteFill style={{ backgroundColor: COLORS.dark }}>
+      <AbsoluteFill style={{ backgroundColor: '#0C0A15' }}>
         <VerticalBg />
         <SceneHeading heading={scene.heading || ''} />
         <div style={{
@@ -542,23 +545,27 @@ const VerticalSceneContent: React.FC<{ scene: Scene; storyboard: Storyboard }> =
   }
 
   return (
-    <AbsoluteFill style={{ backgroundColor: COLORS.dark }}>
+    <AbsoluteFill style={{ backgroundColor: '#0C0A15' }}>
       <VerticalBg />
 
-      {/* Scaled content area: 900px wide column containing a scaled-down 1920×1080 component */}
+      {/* Scaled content area: full 1080px width, centered vertically in tall content region */}
       <div style={{
         position: 'absolute',
         top: REGIONS.mainContent.y,
-        left: SAFE_ZONE.left,
-        width: 900,
+        left: 0,
+        width: 1080,
         height: REGIONS.mainContent.height,
         overflow: 'hidden',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
       }}>
         <div style={{
           width: 1920,
           height: 1080,
-          transform: `scale(${SCALE_FACTOR})`,
-          transformOrigin: 'top left',
+          transform: `scale(${CONTENT_SCALE})`,
+          transformOrigin: 'center center',
+          flexShrink: 0,
         }}>
           <Component {...sceneProps} />
         </div>
@@ -632,7 +639,7 @@ export const VerticalLong: React.FC<VerticalLongProps> = ({ storyboard }) => {
   );
 
   return (
-    <AbsoluteFill style={{ backgroundColor: COLORS.dark, width: WIDTH, height: HEIGHT }}>
+    <AbsoluteFill style={{ backgroundColor: '#0C0A15', width: WIDTH, height: HEIGHT }}>
 
       {/* ── Intro ── */}
       <Sequence from={0} durationInFrames={INTRO_DURATION}>
@@ -693,6 +700,20 @@ export const VerticalLong: React.FC<VerticalLongProps> = ({ storyboard }) => {
             sessionNumber={storyboard.sessionNumber}
           />
           <VerticalProgressBar progress={contentProgress} />
+
+          {/* Avatar bubble — bottom-right, between content and captions */}
+          <div style={{
+            position: 'absolute',
+            bottom: 420,
+            right: 30,
+            zIndex: 90,
+          }}>
+            <AvatarBubble
+              mouthCues={storyboard.mouthCues}
+              startFrame={0}
+              endFrame={Infinity}
+            />
+          </div>
         </>
       )}
 
