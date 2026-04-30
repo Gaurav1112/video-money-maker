@@ -64,6 +64,7 @@ interface MetadataFile {
     tags: string[];
     categoryId: string;
     chapters: string;
+    playlistTitle?: string;
   };
   instagramCaption?: string;
   thumbnailText?: string;
@@ -411,8 +412,9 @@ function generateAllMetadata(
       title: ytMeta.title,
       description,
       tags: ytMeta.tags,
-      categoryId: '27',
+      categoryId: '28', // Science & Technology — better tech recommendations than Education (27)
       chapters,
+      playlistTitle: `${topic} — Complete Series`,
     },
     thumbnailText: ytMeta.thumbnailText,
     instagramCaption: generateInstagramCaption(topic, 'Python', sessionNumber),
@@ -453,8 +455,9 @@ function generateAllMetadata(
         title: partTitle,
         description: partDescription,
         tags: partTags,
-        categoryId: '27',
+        categoryId: '28', // Science & Technology
         chapters: '', // Shorts don't have chapters
+        playlistTitle: `${topic} — Complete Series`,
       },
       thumbnailText: ytMeta.thumbnailText,
       instagramCaption: `${segment} \u2014 ${topic} in 60 seconds \ud83d\udd25\n\nPart ${p}/${totalParts} of Session ${sessionNumber}.\n\n\ud83d\udcda guru-sishya.in/${topicSlug}\n\n#${topic.replace(/\s+/g, '').toLowerCase()} #systemdesign #interviewprep #coding #tech #faang #placement #sde #engineering #backend`,

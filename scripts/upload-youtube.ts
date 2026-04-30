@@ -26,6 +26,8 @@ interface MetadataFile {
     tags: string[];
     categoryId: string;
     chapters: string;
+    /** Playlist name — auto-created if doesn't exist, video added to it */
+    playlistTitle?: string;
   };
   instagramCaption?: string;
   thumbnailText?: string;
@@ -242,7 +244,88 @@ async function uploadVideo(
   console.log(`URL:         ${result.url}`);
   console.log(`Status:      ${result.status}`);
 
+  // ── Auto-Playlist: find or create playlist, add video ──────────────────
+  const playlistTitle = metadata.youtube.playlistTitle;
+  if (playlistTitle) {
+    try {
+      const playlistId = await findOrCreatePlaylist(youtube, playlistTitle, tags);
+      await addVideoToPlaylist(youtube, playlistId, videoId);
+      console.log(`Playlist:    "${playlistTitle}" (${playlistId})`);
+    } catch (e) {
+      console.log(`Playlist:    Failed — ${(e as Error).message} (video still uploaded)`);
+    }
+  }
+
   return result;
+}
+
+// ── Playlist Management (deterministic: same topic = same playlist) ──────────
+
+/** Cache of playlist title → ID to avoid repeated API calls within a session */
+const _playlistCache: Record<string, string> = {};
+
+async function findOrCreatePlaylist(
+  youtube: youtube_v3.Youtube,
+  title: string,
+  tags: string[],
+): Promise<string> {
+  // Check cache first
+  if (_playlistCache[title]) return _playlistCache[title];
+
+  // Search existing playlists
+  const existing = await youtube.playlists.list({
+    part: ['snippet'],
+    mine: true,
+    maxResults: 50,
+  });
+
+  const found = existing.data.items?.find(
+    (p) => p.snippet?.title === title,
+  );
+
+  if (found?.id) {
+    _playlistCache[title] = found.id;
+    return found.id;
+  }
+
+  // Create new playlist
+  const created = await youtube.playlists.insert({
+    part: ['snippet', 'status'],
+    requestBody: {
+      snippet: {
+        title,
+        description: `Complete ${title} tutorial series for interview preparation. All sessions from basics to advanced.\n\nPractice at guru-sishya.in\n\n#SystemDesign #InterviewPrep #FAANG`,
+        tags: tags.slice(0, 10),
+      },
+      status: {
+        privacyStatus: 'public',
+      },
+    },
+  });
+
+  const newId = created.data.id!;
+  _playlistCache[title] = newId;
+  console.log(`Playlist:    Created "${title}" (${newId})`);
+  return newId;
+}
+
+async function addVideoToPlaylist(
+  youtube: youtube_v3.Youtube,
+  playlistId: string,
+  videoId: string,
+): Promise<void> {
+  await youtube.playlistItems.insert({
+    part: ['snippet'],
+    requestBody: {
+      snippet: {
+        playlistId,
+        resourceId: {
+          kind: 'youtube#video',
+          videoId,
+        },
+      },
+    },
+  });
 }
 
 // ─── CLI ─────────────────────────────────────────────────────────────────────
