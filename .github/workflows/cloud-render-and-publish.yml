@@ -111,12 +111,12 @@ jobs:
           npx tsx scripts/generate-upload-metadata.ts ${{ steps.pick.outputs.topic }} ${{ steps.pick.outputs.session }}
           cp output/${{ steps.pick.outputs.topic }}-s${{ steps.pick.outputs.session }}*.json output/videos/
 
-      - name: Upload artifacts
+      - name: Upload artifacts (temporary, deleted after publish)
         uses: actions/upload-artifact@v4
         with:
           name: ${{ steps.pick.outputs.topic }}-s${{ steps.pick.outputs.session }}
           path: output/videos/
-          retention-days: 30
+          retention-days: 3   # Auto-delete after 3 days (video is on YouTube already)
 
     outputs:
       topic: ${{ steps.pick.outputs.topic }}
