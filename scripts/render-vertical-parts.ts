@@ -62,6 +62,7 @@ for (const part of parts) {
     `--output="${outputFile}"`,
     '--codec=h264',
     '--crf=18',
+    '--audio-bitrate=192K',
     '--concurrency=4',
   ].join(' ');
 

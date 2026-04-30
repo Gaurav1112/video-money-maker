@@ -366,7 +366,7 @@ const VerticalComparisonTable: React.FC<VerticalComparisonTableProps> = ({
   const CANVAS_W = 1080;
 
   // Title region
-  const TITLE_Y = 60;
+  const TITLE_Y = 210; // was 60 — must be below SAFE_ZONE.top (200)
   const TITLE_H = 110;
 
   // Cards from vertical-layouts comparison dims

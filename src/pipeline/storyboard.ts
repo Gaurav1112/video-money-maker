@@ -14,6 +14,7 @@ interface StoryboardOptions {
   width?: number;
   height?: number;
   sfxDensity?: SfxDensity;
+  format?: 'long' | 'short' | 'vertical';
 }
 
 // Type-based fallback durations (seconds) used when a scene has no audio offset.
@@ -33,14 +34,14 @@ export function generateStoryboard(
   audioResults: TTSResult[],
   options: StoryboardOptions
 ): Storyboard {
-  const { topic, sessionNumber, fps = 30, width = 1920, height = 1080 } = options;
-  const style = getStyleForFormat('long');
+  const { topic, sessionNumber, fps = 30, width = 1920, height = 1080, format = 'long' } = options;
+  const style = getStyleForFormat(format);
 
   // ── Stitch all scene audio into ONE master track ──
   // This eliminates audio overlap during TransitionSeries crossfades.
   const { masterPath, sceneOffsets, allSfxTriggers } = stitchAudio(
     audioResults,
-    0.8, // 0.8s silence gap between scenes
+    format === 'vertical' ? 0.35 : 0.8, // shorter gap for vertical pacing
     `master-${topic.replace(/[^a-z0-9]/gi, '-')}-s${sessionNumber}.mp3`
   ) as ReturnType<typeof stitchAudio> & { allSfxTriggers?: Storyboard['allSfxTriggers'] };
 

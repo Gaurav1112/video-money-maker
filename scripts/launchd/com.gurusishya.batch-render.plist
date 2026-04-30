@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- Nightly batch render: runs at 2:00 AM daily, renders up to 3 sessions -->
+    <key>Label</key>
+    <string>com.gurusishya.batch-render</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/usr/local/bin/npx</string>
+        <string>tsx</string>
+        <string>scripts/batch-render-all.ts</string>
+        <string>--limit</string>
+        <string>3</string>
+    </array>
+
+    <key>WorkingDirectory</key>
+    <string>/Users/racit/PersonalProject/video-pipeline</string>
+
+    <key>StartCalendarInterval</key>
+    <dict>
+        <key>Hour</key>
+        <integer>2</integer>
+        <key>Minute</key>
+        <integer>0</integer>
+    </dict>
+
+    <key>StandardOutPath</key>
+    <string>/Users/racit/guru-sishya-logs/batch-render-stdout.log</string>
+
+    <key>StandardErrorPath</key>
+    <string>/Users/racit/guru-sishya-logs/batch-render-stderr.log</string>
+
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>HOME</key>
+        <string>/Users/racit</string>
+        <key>PATH</key>
+        <string>/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+        <key>NODE_OPTIONS</key>
+        <string>--max-old-space-size=8192</string>
+    </dict>
+
+    <!-- Don't run if machine is on battery -->
+    <key>LowPriorityIO</key>
+    <true/>
+
+    <!-- Keep alive: restart on crash, but not if exit 0 -->
+    <key>KeepAlive</key>
+    <dict>
+        <key>SuccessfulExit</key>
+        <false/>
+    </dict>
+
+    <!-- Throttle: wait at least 300s between restarts -->
+    <key>ThrottleInterval</key>
+    <integer>300</integer>
+
+    <!-- Nice level: run at lower priority -->
+    <key>Nice</key>
+    <integer>10</integer>
+</dict>
+</plist>

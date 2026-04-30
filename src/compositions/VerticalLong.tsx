@@ -6,21 +6,37 @@ import { fade } from '@remotion/transitions/fade';
 import { slide } from '@remotion/transitions/slide';
 import { wipe } from '@remotion/transitions/wipe';
 import { Storyboard, Scene } from '../types';
-import { COLORS, FONTS } from '../lib/theme';
+import { FONTS } from '../lib/theme';
+
+// ── Dark-mode colors for vertical — theme.ts is LIGHT mode (charcoal text, white bg).
+// Using COLORS from theme.ts on dark #0C0A15 background would render invisible text.
+const COLORS = {
+  saffron: '#E85D26',
+  gold: '#FDB813',
+  teal: '#1DD1A1',
+  white: '#FFFFFF',
+  dark: '#0C0A15',
+} as const;
 import { SyncTimeline } from '../lib/sync-engine';
 import { setSyncTimeline } from '../hooks/useSync';
 import { AvatarBubble } from '../components/AvatarBubble';
 import { BgmLayer } from '../components/BgmLayer';
 import { SfxLayer } from '../components/SfxLayer';
-import { INTRO_DURATION, OUTRO_DURATION } from '../lib/constants';
+import { VERTICAL_INTRO_DURATION, VERTICAL_OUTRO_DURATION } from '../lib/constants';
 import { REGIONS, VERTICAL_SIZES, SAFE_ZONE } from '../lib/vertical-layouts';
-import { selectBestHook } from '../lib/hook-formulas';
+import { generateDualHook } from '../lib/hook-generator';
 import { getStyleForFormat, getTransitionDuration } from '../lib/video-styles';
 import { VerticalCaptionOverlay } from '../components/vertical/VerticalCaptionOverlay';
 import { VerticalTitleSlide } from '../components/vertical/VerticalTitleSlide';
 import VerticalComparisonTable from '../components/vertical/VerticalComparisonTable';
 import { VerticalTextSection } from '../components/vertical/VerticalTextSection';
-import { VerticalCodeReveal } from '../components/vertical/VerticalCodeReveal';
+import VerticalCodeReveal from '../components/vertical/VerticalCodeReveal';
+import { VerticalInterviewInsight } from '../components/vertical/VerticalInterviewInsight';
+import { VerticalReviewQuestion } from '../components/vertical/VerticalReviewQuestion';
+import { VerticalSummarySlide } from '../components/vertical/VerticalSummarySlide';
+import { PatternInterruptLayer } from '../components/PatternInterruptLayer';
+import { CameraDrift } from '../components/CameraDrift';
+import { BrandingLayer } from '../components/BrandingLayer';
 import {
   TitleSlide,
   TextSection,
@@ -59,27 +75,55 @@ function getTransitionForScene(sceneIndex: number): TransitionPresentation<Recor
   return TRANSITION_POOL[sceneIndex % TRANSITION_POOL.length]();
 }
 
-// ── Subtle vertical background (dark-mode optimised) ──────────────────────────
-const VerticalBg: React.FC = () => (
-  <div style={{ position: 'absolute', inset: 0 }}>
-    {/* Very subtle grid — visible on dark bg */}
+// ── Dark-mode scene-tinted backgrounds with bokeh depth ─────────────────────
+// Matches horizontal BackgroundLayer richness but with dark palette
+const DARK_SCENE_TINTS: Record<string, string> = {
+  title:     '#0C0A15',
+  text:      '#0C0A15',
+  code:      '#0A0C1A', // dark blue tint for code
+  diagram:   '#0C0A18', // dark indigo for diagrams
+  table:     '#140E0A', // warm dark amber for comparisons
+  interview: '#0A120C', // dark green tint for interview
+  review:    '#14100A', // warm dark orange for quiz
+  summary:   '#0C0A15',
+};
+
+const VerticalBg: React.FC<{ sceneType?: string }> = ({ sceneType = 'text' }) => {
+  const bgFrame = useCurrentFrame();
+  const tint = DARK_SCENE_TINTS[sceneType] || '#0C0A15';
+  const glowOpacity = 0.08 + Math.sin(bgFrame * 0.025) * 0.04;
+
+  return (
+  <div style={{ position: 'absolute', inset: 0, backgroundColor: tint }}>
+    {/* Subtle grid */}
     <div style={{
-      position: 'absolute',
-      inset: 0,
+      position: 'absolute', inset: 0,
       backgroundImage: `
-        linear-gradient(${COLORS.saffron}08 1px, transparent 1px),
-        linear-gradient(90deg, ${COLORS.saffron}08 1px, transparent 1px)
+        linear-gradient(${COLORS.saffron}06 1px, transparent 1px),
+        linear-gradient(90deg, ${COLORS.saffron}06 1px, transparent 1px)
       `,
       backgroundSize: '54px 54px',
     }} />
-    {/* Subtle saffron glow from top-center */}
+    {/* Bokeh depth circles — scene-aware accent color */}
+    {[0.15, 0.7, 0.35, 0.85].map((x, i) => (
+      <div key={`bokeh-${i}`} style={{
+        position: 'absolute',
+        left: `${x * 100}%`, top: `${(i * 22 + 8)}%`,
+        width: 140 + i * 50, height: 140 + i * 50,
+        borderRadius: '50%',
+        background: `radial-gradient(circle, ${COLORS.saffron}08 0%, transparent 70%)`,
+        filter: 'blur(40px)',
+      }} />
+    ))}
+    {/* Pulsing radial glow */}
     <div style={{
-      position: 'absolute',
-      inset: 0,
-      background: `radial-gradient(ellipse at 50% 20%, ${COLORS.saffron}12 0%, transparent 55%)`,
+      position: 'absolute', inset: 0,
+      background: `radial-gradient(ellipse at 50% 25%, ${COLORS.saffron}10 0%, transparent 55%)`,
+      opacity: glowOpacity / 0.08,
     }} />
   </div>
-);
+  );
+};
 
 // ── Vertical Intro Screen ──────────────────────────────────────────────────────
 const VerticalIntro: React.FC<{
@@ -91,13 +135,14 @@ const VerticalIntro: React.FC<{
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
+  // Snap-in: visible by frame 3 (~0.1s) — no slow fade on vertical
   const s = spring({
     frame,
     fps,
-    config: { damping: 8, stiffness: 180, mass: 0.5 },
+    config: { damping: 25, stiffness: 500, mass: 0.2 },
   });
-  const scaleIn = interpolate(s, [0, 1], [0.75, 1]);
-  const opacityIn = interpolate(s, [0, 1], [0, 1]);
+  const scaleIn = interpolate(s, [0, 1], [0.92, 1]);
+  const opacityIn = interpolate(s, [0, 1], [0.5, 1]);
 
   // Fade out last 15 frames
   const fadeOut = interpolate(
@@ -108,9 +153,9 @@ const VerticalIntro: React.FC<{
   );
 
   const springBadge = spring({
-    frame: Math.max(0, frame - 30),
+    frame: Math.max(0, frame - 5),
     fps,
-    config: { damping: 10, stiffness: 200, mass: 0.4 },
+    config: { damping: 20, stiffness: 400, mass: 0.3 },
   });
   const badgeOpacity = interpolate(springBadge, [0, 1], [0, 1]);
   const badgeY = interpolate(springBadge, [0, 1], [20, 0]);
@@ -122,7 +167,7 @@ const VerticalIntro: React.FC<{
       {/* Session badge */}
       <div style={{
         position: 'absolute',
-        top: REGIONS.header.y + 16,
+        top: SAFE_ZONE.top + 16, // below platform status bar/search icons
         left: 0,
         right: 0,
         display: 'flex',
@@ -176,17 +221,47 @@ const VerticalIntro: React.FC<{
         transform: `scale(${scaleIn})`,
         gap: 24,
       }}>
-        <div style={{
-          fontSize: VERTICAL_SIZES.heading1,
-          fontFamily: FONTS.heading,
-          fontWeight: 900,
-          color: COLORS.white,
-          textAlign: 'center',
-          lineHeight: 1.2,
-          textShadow: '0 4px 24px rgba(0,0,0,0.8)',
-        }}>
-          {hookText}
-        </div>
+        {/* Hook text split: keyword (big, saffron) + context (smaller, white) */}
+        {(() => {
+          const words = hookText.split(' ');
+          // Smart split: if ≤3 words, show ALL as keyword (no context)
+          // If 4-6 words, split at 2 (short punchy keyword)
+          // If 7+ words, split at 3
+          const splitAt = words.length <= 3 ? words.length
+            : words.length <= 6 ? 2
+            : 3;
+          const keyword = words.slice(0, splitAt).join(' ');
+          const context = words.slice(splitAt).join(' ');
+          return (
+            <>
+              <div style={{
+                fontSize: 96,
+                fontFamily: FONTS.heading,
+                fontWeight: 900,
+                color: COLORS.saffron,
+                textAlign: 'center',
+                lineHeight: 1.1,
+                textShadow: '0 4px 24px rgba(0,0,0,0.8), 0 0 40px rgba(232,93,38,0.3)',
+              }}>
+                {keyword}
+              </div>
+              {context && (
+                <div style={{
+                  fontSize: 48,
+                  fontFamily: FONTS.heading,
+                  fontWeight: 700,
+                  color: COLORS.white,
+                  textAlign: 'center',
+                  lineHeight: 1.3,
+                  opacity: 0.85,
+                  textShadow: '0 2px 12px rgba(0,0,0,0.6)',
+                }}>
+                  {context}
+                </div>
+              )}
+            </>
+          );
+        })()}
 
         {/* Accent line */}
         <div style={{
@@ -196,16 +271,7 @@ const VerticalIntro: React.FC<{
           background: `linear-gradient(90deg, ${COLORS.saffron}, ${COLORS.gold})`,
         }} />
 
-        <div style={{
-          fontSize: VERTICAL_SIZES.bodySmall,
-          fontFamily: FONTS.text,
-          fontWeight: 500,
-          color: `${COLORS.white}99`,
-          textAlign: 'center',
-          letterSpacing: 0.5,
-        }}>
-          guru-sishya.in
-        </div>
+        {/* Branding removed from intro — every pixel is for the hook */}
       </div>
     </AbsoluteFill>
   );
@@ -215,17 +281,20 @@ const VerticalIntro: React.FC<{
 const VerticalOutro: React.FC<{
   topic: string;
   nextTopic?: string;
+  sessionNumber: number;
+  totalSessions?: number;
+  ctaText?: string;
   durationInFrames: number;
-}> = ({ topic, nextTopic, durationInFrames }) => {
+}> = ({ topic, nextTopic, sessionNumber, totalSessions, ctaText, durationInFrames }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
   const s = spring({
     frame,
     fps,
-    config: { damping: 10, stiffness: 150, mass: 0.6 },
+    config: { damping: 18, stiffness: 300, mass: 0.4 }, // snappier than before
   });
-  const scale = interpolate(s, [0, 1], [0.7, 1]);
+  const scale = interpolate(s, [0, 1], [0.85, 1]);
   const opacity = interpolate(s, [0, 1], [0, 1]);
 
   return (
@@ -243,6 +312,19 @@ const VerticalOutro: React.FC<{
         transform: `scale(${scale})`,
         padding: '0 60px',
       }}>
+        {/* Series progress */}
+        {totalSessions && totalSessions > 1 && (
+          <div style={{
+            fontFamily: FONTS.heading,
+            fontSize: VERTICAL_SIZES.bodySmall,
+            fontWeight: 700,
+            color: COLORS.saffron,
+            textAlign: 'center',
+            letterSpacing: 1,
+          }}>
+            Session {sessionNumber} of {totalSessions} complete · {Math.round((sessionNumber / totalSessions) * 100)}% interview-ready
+          </div>
+        )}
         <div style={{
           fontFamily: FONTS.heading,
           fontSize: VERTICAL_SIZES.heading2,
@@ -271,7 +353,20 @@ const VerticalOutro: React.FC<{
         }}>
           guru-sishya.in
         </div>
-        {nextTopic && (
+        {/* Part cliffhanger CTA or next topic tease */}
+        {ctaText ? (
+          <div style={{
+            marginTop: 20,
+            fontFamily: FONTS.heading,
+            fontSize: VERTICAL_SIZES.body,
+            fontWeight: 700,
+            color: COLORS.teal,
+            textAlign: 'center',
+            lineHeight: 1.4,
+          }}>
+            {ctaText}
+          </div>
+        ) : nextTopic ? (
           <div style={{
             marginTop: 20,
             fontFamily: FONTS.text,
@@ -282,7 +377,7 @@ const VerticalOutro: React.FC<{
           }}>
             Next: {nextTopic} →
           </div>
-        )}
+        ) : null}
         <div style={{
           marginTop: 8,
           fontFamily: FONTS.heading,
@@ -290,7 +385,7 @@ const VerticalOutro: React.FC<{
           fontWeight: 700,
           color: COLORS.saffron,
         }}>
-          Follow @guru_sishya.in
+          Subscribe · @guru_sishya
         </div>
       </div>
     </AbsoluteFill>
@@ -385,16 +480,16 @@ const SceneHeading: React.FC<{ heading: string }> = ({ heading }) => {
   );
 };
 
-// ── Scale constants: fit 1920×1080 components into full 1080px vertical width ─
-// Scale to fit full width — NEVER crop content.
-// Components are 1920x1080. At scale 0.5625, they become 1080x607.
-// We position this at the TOP of the content area (not centered)
-// and fill the remaining space below with avatar + gradient.
-const CONTENT_SCALE = 1080 / 1920; // 0.5625 — exact fit, zero crop
+// ── Scale: horizontal components at 75% fill vertical well ────────────────────
+// At 0.75: 1920→1440px wide (180px cropped per side), 1080→810px tall (fills content zone)
+// This preserves ALL the rich horizontal graphics (TemplateFactory diagrams, etc.)
+const CONTENT_SCALE = 0.75;
 const ACCENT_COLORS = ['#2563EB', '#059669', '#D97706', '#7C3AED'];
 
-// ── Native vertical components — render at 1080x1920, no scaling needed ───────
-const NATIVE_VERTICAL_SCENES = new Set(['title', 'text', 'table', 'diagram', 'code']);
+// ── Only title + code get native vertical (they're well-designed for 9:16) ────
+// Text/diagram/table/interview/review/summary use HORIZONTAL components at 75% scale
+// to keep all the rich TemplateFactory diagrams and visual templates visible.
+const NATIVE_VERTICAL_SCENES = new Set(['title', 'code']);
 
 // ── Scene component map — vertical-native where available, horizontal fallback ─
 const VERTICAL_SCENE_MAP: Record<string, React.FC<any>> = {
@@ -403,6 +498,9 @@ const VERTICAL_SCENE_MAP: Record<string, React.FC<any>> = {
   table: VerticalComparisonTable,
   diagram: VerticalTextSection, // diagrams use text section with d2Svg prop
   code: VerticalCodeReveal,
+  interview: VerticalInterviewInsight,
+  review: VerticalReviewQuestion,
+  summary: VerticalSummarySlide,
 };
 
 // ── Horizontal fallback map (for code, interview, review, summary) ────────────
@@ -554,7 +652,8 @@ function getNativeSceneProps(scene: Scene, storyboard: Storyboard): Record<strin
       return {
         ...base,
         heading: scene.heading || '',
-        bullets: scene.bullets || (scene.content ? scene.content.split('\n').filter(Boolean) : []),
+        // Pass bullets only if non-empty; let getEffectiveBullets handle fallback from content/narration
+        bullets: (scene.bullets && scene.bullets.length > 0) ? scene.bullets : undefined,
         content: scene.content || '',
         narration: scene.narration || '',
         d2Svg: scene.d2Svg,
@@ -585,6 +684,28 @@ function getNativeSceneProps(scene: Scene, storyboard: Storyboard): Record<strin
         sceneDurationFrames: scene.endFrame - scene.startFrame,
         output: (scene as any).output,
       };
+    case 'interview':
+      return {
+        ...base,
+        insight: scene.content || scene.narration || '',
+        tip: scene.narration || '',
+        heading: scene.heading || '',
+      };
+    case 'review':
+      return {
+        ...base,
+        question: scene.content || '',
+        answer: scene.heading || '',
+        heading: scene.heading || '',
+        quizOptions: scene.quizOptions || [],
+      };
+    case 'summary':
+      return {
+        ...base,
+        takeaways: scene.bullets || [scene.content],
+        topic: storyboard.topic,
+        sessionNumber: storyboard.sessionNumber,
+      };
     default:
       return { ...base, ...scene };
   }
@@ -594,17 +715,23 @@ function getNativeSceneProps(scene: Scene, storyboard: Storyboard): Record<strin
 // Native vertical components render at 1080x1920 with no scaling.
 // Horizontal fallback scales 1920x1080 to fit 1080px wide (for code, interview, review, summary).
 const VerticalSceneContent: React.FC<{ scene: Scene; storyboard: Storyboard }> = ({ scene, storyboard }) => {
-  // Check for native vertical component first
-  const NativeComponent = VERTICAL_SCENE_MAP[scene.type];
+  const sceneFrame = useCurrentFrame();
+  // Only use native vertical component if the scene type is in NATIVE_VERTICAL_SCENES
+  // Everything else uses the HORIZONTAL component (rich graphics) at 75% scale
+  const useNative = NATIVE_VERTICAL_SCENES.has(scene.type);
+  const NativeComponent = useNative ? VERTICAL_SCENE_MAP[scene.type] : undefined;
 
   if (NativeComponent) {
     // NATIVE — render directly at full 1080x1920, no scaling
+    // Wrapped in CameraDrift for Ken Burns motion (matches horizontal quality)
     const nativeProps = getNativeSceneProps(scene, storyboard);
     return (
-      <AbsoluteFill style={{ backgroundColor: '#0C0A15' }}>
-        <VerticalBg />
-        <NativeComponent {...nativeProps} />
-      </AbsoluteFill>
+      <CameraDrift>
+        <AbsoluteFill style={{ backgroundColor: '#0C0A15' }}>
+          <VerticalBg sceneType={scene.type} />
+          <NativeComponent {...nativeProps} />
+        </AbsoluteFill>
+      </CameraDrift>
     );
   }
 
@@ -633,43 +760,98 @@ const VerticalSceneContent: React.FC<{ scene: Scene; storyboard: Storyboard }> =
     );
   }
 
+  // Extract key info from scene for the context zone below the diagram
+  const sceneHeading = scene.heading || '';
+  const sceneBullets = (scene.bullets && scene.bullets.length > 0)
+    ? scene.bullets.slice(0, 3)
+    : (scene.content || '').split(/(?<=[.!?])\s+/).filter(s => s.length > 15).slice(0, 2);
+
   return (
     <AbsoluteFill style={{ backgroundColor: '#0C0A15' }}>
-      <VerticalBg />
+      <VerticalBg sceneType={scene.type} />
 
-      {/* Content at top of region — NO crop, fits full width.
-          607px tall content + gradient fill below to avoid empty space. */}
+      {/* ── TOP: Horizontal content card (diagrams, templates, full graphics) ── */}
+      <CameraDrift>
+        <div style={{
+          position: 'absolute',
+          top: 30,
+          left: 10,
+          right: 10,
+          height: 620,
+          overflow: 'hidden',
+          borderRadius: 16,
+          boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+        }}>
+          <div style={{
+            position: 'absolute',
+            width: 1920,
+            height: 1080,
+            left: 0,
+            top: 0,
+            transform: `scale(${1060 / 1920})`,
+            transformOrigin: 'top left',
+          }}>
+            <Component {...sceneProps} />
+          </div>
+        </div>
+      </CameraDrift>
+
+      {/* ── MIDDLE: Scene heading + key bullets (fills the gap) ── */}
       <div style={{
         position: 'absolute',
-        top: REGIONS.mainContent.y,
-        left: 0,
-        width: 1080,
-        height: REGIONS.mainContent.height,
-        overflow: 'hidden',
+        top: 680,
+        left: 60,
+        right: 60,
       }}>
-        {/* Scaled component — anchored to top */}
-        <div style={{
-          position: 'absolute',
-          width: 1920,
-          height: 1080,
-          left: '50%',
-          top: 0,
-          transform: `translateX(-50%) scale(${CONTENT_SCALE})`,
-          transformOrigin: 'top center',
-        }}>
-          <Component {...sceneProps} />
-        </div>
+        {/* Scene heading with accent bar */}
+        {sceneHeading && (
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 14,
+            marginBottom: 16,
+          }}>
+            <div style={{
+              width: 5, height: 36, borderRadius: 3,
+              backgroundColor: COLORS.saffron, flexShrink: 0,
+            }} />
+            <div style={{
+              fontFamily: FONTS.heading,
+              fontSize: 38,
+              fontWeight: 800,
+              color: '#FFFFFF',
+              lineHeight: 1.2,
+            }}>
+              {sceneHeading.length > 40 ? sceneHeading.slice(0, 40) + '...' : sceneHeading}
+            </div>
+          </div>
+        )}
 
-        {/* Gradient fill below the content — smooth transition from component bg to dark */}
-        <div style={{
-          position: 'absolute',
-          top: Math.round(1080 * CONTENT_SCALE) - 40,
-          left: 0,
-          right: 0,
-          height: REGIONS.mainContent.height - Math.round(1080 * CONTENT_SCALE) + 40,
-          background: `linear-gradient(180deg, ${COLORS.dark}00 0%, #0C0A15 15%, #0C0A15 100%)`,
-        }} />
+        {/* Key bullets */}
+        {sceneBullets.map((bullet, i) => (
+          <div key={i} style={{
+            display: 'flex',
+            alignItems: 'flex-start',
+            gap: 12,
+            marginBottom: 10,
+            padding: '10px 16px',
+            backgroundColor: i === 0 ? 'rgba(232,93,38,0.08)' : 'rgba(255,255,255,0.03)',
+            borderRadius: 12,
+            borderLeft: `4px solid ${[COLORS.saffron, COLORS.gold, COLORS.teal][i % 3]}`,
+          }}>
+            <span style={{
+              fontFamily: FONTS.text,
+              fontSize: 30,
+              fontWeight: i === 0 ? 600 : 400,
+              color: i === 0 ? '#FFFFFF' : 'rgba(255,255,255,0.85)',
+              lineHeight: 1.4,
+            }}>
+              {(typeof bullet === 'string' && bullet.length > 80) ? bullet.slice(0, 80) + '...' : bullet}
+            </span>
+          </div>
+        ))}
       </div>
+
     </AbsoluteFill>
   );
 };
@@ -699,7 +881,7 @@ export const VerticalLong: React.FC<VerticalLongProps> = ({ storyboard }) => {
   const { fps } = useVideoConfig();
 
   const contentFrames = storyboard.durationInFrames;
-  const totalFrames = INTRO_DURATION + contentFrames + OUTRO_DURATION;
+  const totalFrames = VERTICAL_INTRO_DURATION + contentFrames + VERTICAL_OUTRO_DURATION;
   const style = getStyleForFormat('vertical');
 
   // Content scenes (exclude title + summary wrapper scenes)
@@ -709,14 +891,14 @@ export const VerticalLong: React.FC<VerticalLongProps> = ({ storyboard }) => {
   const syncTimeline = React.useMemo(() => {
     const offsets = storyboard.sceneOffsets || [];
     const timestamps = contentScenes.map(s => s.wordTimestamps || []);
-    return new SyncTimeline(offsets, timestamps, fps, INTRO_DURATION);
+    return new SyncTimeline(offsets, timestamps, fps, VERTICAL_INTRO_DURATION);
   }, [storyboard, fps]);
 
   // Set synchronously during render (no useEffect — see LongVideo comment)
   setSyncTimeline(syncTimeline);
 
   // Active scene for captions — use audio timing, not visual frame
-  const audioTimeSeconds = (frame - INTRO_DURATION) / fps;
+  const audioTimeSeconds = (frame - VERTICAL_INTRO_DURATION) / fps;
   const activeScene = getActiveSceneByAudioTime(
     contentScenes,
     audioTimeSeconds,
@@ -726,15 +908,20 @@ export const VerticalLong: React.FC<VerticalLongProps> = ({ storyboard }) => {
 
   // Progress (based on content only)
   const contentProgress = contentFrames > 0
-    ? Math.min(1, Math.max(0, (frame - INTRO_DURATION) / contentFrames))
+    ? Math.min(1, Math.max(0, (frame - VERTICAL_INTRO_DURATION) / contentFrames))
     : 0;
 
-  const isIntro = frame < INTRO_DURATION;
-  const isOutro = frame >= INTRO_DURATION + contentFrames;
+  const isIntro = frame < VERTICAL_INTRO_DURATION;
+  const isOutro = frame >= VERTICAL_INTRO_DURATION + contentFrames;
 
   // Hook text for intro
   const hookText = React.useMemo(
-    () => selectBestHook(storyboard.topic, storyboard.sessionNumber),
+    () => generateDualHook(
+      storyboard.topic,
+      storyboard.sessionNumber,
+      storyboard.scenes,
+      storyboard.scenes[0]?.content,
+    ).textHook, // textHook = max 8 words (India-first companies), spokenHook = full sentence
     [storyboard.topic, storyboard.sessionNumber],
   );
 
@@ -742,17 +929,17 @@ export const VerticalLong: React.FC<VerticalLongProps> = ({ storyboard }) => {
     <AbsoluteFill style={{ backgroundColor: '#0C0A15', width: WIDTH, height: HEIGHT }}>
 
       {/* ── Intro ── */}
-      <Sequence from={0} durationInFrames={INTRO_DURATION}>
+      <Sequence from={0} durationInFrames={VERTICAL_INTRO_DURATION}>
         <VerticalIntro
           topic={storyboard.topic}
           sessionNumber={storyboard.sessionNumber}
           hookText={hookText}
-          durationInFrames={INTRO_DURATION}
+          durationInFrames={VERTICAL_INTRO_DURATION}
         />
       </Sequence>
 
       {/* ── Content scenes via TransitionSeries ── */}
-      <Sequence from={INTRO_DURATION} durationInFrames={contentFrames}>
+      <Sequence from={VERTICAL_INTRO_DURATION} durationInFrames={contentFrames}>
         <TransitionSeries>
           {contentScenes.map((scene, idx) => {
             const duration = scene.endFrame - scene.startFrame;
@@ -784,13 +971,36 @@ export const VerticalLong: React.FC<VerticalLongProps> = ({ storyboard }) => {
       </Sequence>
 
       {/* ── Outro ── */}
-      <Sequence from={INTRO_DURATION + contentFrames} durationInFrames={OUTRO_DURATION}>
+      <Sequence from={VERTICAL_INTRO_DURATION + contentFrames} durationInFrames={VERTICAL_OUTRO_DURATION}>
         <VerticalOutro
           topic={storyboard.topic}
           nextTopic={storyboard.nextTopic}
-          durationInFrames={OUTRO_DURATION}
+          sessionNumber={storyboard.sessionNumber}
+          totalSessions={(storyboard as any).totalSessions}
+          ctaText={(storyboard as any).partCtaText}
+          durationInFrames={VERTICAL_OUTRO_DURATION}
         />
       </Sequence>
+
+      {/* ── Avatar — visible from frame 0 (faces boost algorithm) ── */}
+      {!isOutro && (
+        <div style={{
+          position: 'absolute',
+          right: 40,
+          top: 1310, // below captions (1050+220=1270), in the bottom strip
+          width: 140,
+          height: 140,
+          zIndex: 90,
+        }}>
+          <AvatarBubble
+            avatarVideo="video/teacher-talking.mp4"
+            avatarPhoto="images/guru-avatar.jpg"
+            mouthCues={storyboard.mouthCues}
+            startFrame={0}
+            endFrame={VERTICAL_INTRO_DURATION + contentFrames}
+          />
+        </div>
+      )}
 
       {/* ── Persistent overlays (content phase only) ── */}
       {!isIntro && !isOutro && (
@@ -801,24 +1011,17 @@ export const VerticalLong: React.FC<VerticalLongProps> = ({ storyboard }) => {
           />
           <VerticalProgressBar progress={contentProgress} />
 
-          {/* Avatar bubble — positioned container for AvatarBubble which has internal absolute positioning.
-              We create a relative box at the right spot so AvatarBubble's bottom:80/right:40 lands correctly. */}
-          <div style={{
-            position: 'absolute',
-            right: 0,
-            bottom: 300,
-            width: 300,
-            height: 300,
-            zIndex: 90,
-          }}>
-            <AvatarBubble
-              avatarVideo="video/teacher-talking.mp4"
-              avatarPhoto="images/guru-avatar.jpg"
-              mouthCues={storyboard.mouthCues}
-              startFrame={0}
-              endFrame={INTRO_DURATION + contentFrames}
+          {/* Pattern interrupts — zoom, callout, color pulse every 3-5s */}
+          {activeScene && (
+            <PatternInterruptLayer
+              wordTimestamps={activeScene.wordTimestamps || []}
+              sceneType={activeScene.type}
+              narration={activeScene.narration || ''}
+              style={style}
+              fps={fps}
+              sceneDurationFrames={activeScene.endFrame - activeScene.startFrame}
             />
-          </div>
+          )}
         </>
       )}
 
@@ -829,8 +1032,8 @@ export const VerticalLong: React.FC<VerticalLongProps> = ({ storyboard }) => {
           text={activeScene.narration!}
           startFrame={
             activeScene.audioOffsetSeconds != null && activeScene.audioOffsetSeconds >= 0
-              ? INTRO_DURATION + Math.round(activeScene.audioOffsetSeconds * fps)
-              : INTRO_DURATION + activeScene.startFrame
+              ? VERTICAL_INTRO_DURATION + Math.round(activeScene.audioOffsetSeconds * fps)
+              : VERTICAL_INTRO_DURATION + activeScene.startFrame
           }
           durationInFrames={activeScene.endFrame - activeScene.startFrame}
           wordTimestamps={activeScene.wordTimestamps}
@@ -838,18 +1041,23 @@ export const VerticalLong: React.FC<VerticalLongProps> = ({ storyboard }) => {
         />
       )}
 
+      {/* ── Intro SFX — audio hook at frame 0 (silence = instant swipe) ── */}
+      <Sequence from={0} durationInFrames={VERTICAL_INTRO_DURATION}>
+        <Audio src={staticFile('audio/sfx/whoosh-in.wav')} volume={0.45} />
+      </Sequence>
+
       {/* ── Master narration audio ── */}
       {storyboard.audioFile && (
-        <Sequence from={INTRO_DURATION}>
+        <Sequence from={VERTICAL_INTRO_DURATION}>
           <Audio
             src={staticFile(`audio/${storyboard.audioFile.split('/').pop()}`)}
             volume={(f) => {
               const baseVolume = 1.0;
-              const fadeIn = interpolate(f, [0, 9], [0, 1], { extrapolateRight: 'clamp' });
-              const totalAudioFrames = storyboard.durationInFrames - INTRO_DURATION - OUTRO_DURATION;
+              const fadeIn = interpolate(f, [0, 8], [0, 1], { extrapolateRight: 'clamp' });
+              // contentFrames is already the content-only duration (no intro/outro)
               const fadeOut = interpolate(
                 f,
-                [totalAudioFrames - 9, totalAudioFrames],
+                [contentFrames - 8, contentFrames],
                 [1, 0],
                 { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
               );
@@ -859,7 +1067,7 @@ export const VerticalLong: React.FC<VerticalLongProps> = ({ storyboard }) => {
         </Sequence>
       )}
 
-      {/* ── BGM with sidechain ducking ── */}
+      {/* ── BGM — starts from frame 0 (not just content phase) ── */}
       {storyboard.bgmFile && syncTimeline && (
         <BgmLayer
           syncTimeline={syncTimeline}
@@ -874,6 +1082,13 @@ export const VerticalLong: React.FC<VerticalLongProps> = ({ storyboard }) => {
         <SfxLayer triggers={storyboard.allSfxTriggers} syncTimeline={syncTimeline} />
       )}
 
+      {/* ── Branding layer — watermark + mid-video CTA (matches horizontal) ── */}
+      <BrandingLayer
+        durationInFrames={totalFrames}
+        format="short"
+        topicSlug={storyboard.topic.toLowerCase().replace(/\s+/g, '-')}
+      />
+
     </AbsoluteFill>
   );
 };
@@ -887,7 +1102,7 @@ export function calculateVerticalLongMetadata({
   const sb = props.storyboard as Storyboard;
   const contentFrames = sb?.durationInFrames || 9000;
   return {
-    durationInFrames: contentFrames + INTRO_DURATION + OUTRO_DURATION,
+    durationInFrames: contentFrames + VERTICAL_INTRO_DURATION + VERTICAL_OUTRO_DURATION,
     fps: 30,
     width: WIDTH,
     height: HEIGHT,

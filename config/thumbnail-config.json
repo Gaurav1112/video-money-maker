@@ -1,0 +1,99 @@
+{
+  "_expert": "Expert 3: Ananya Desai — Thumbnail Science",
+
+  "research": {
+    "ctrFindings": {
+      "faceVsNoFace": "Faces increase CTR by 30-40% on average. However, for CODE-HEAVY tech tutorials, faces perform WORSE than diagrams/code screenshots. For system design (conceptual), face + emotion wins. Recommendation: use face for sessions 1 and 3 (intro + interview), no face for session 2 (code).",
+      "optimalWordCount": "3-5 words maximum. Every word above 5 reduces CTR by ~8%. The thumbnail text should be a DIFFERENT message than the title — complementary, not redundant.",
+      "fontChoice": "Bold sans-serif (Impact, Montserrat 900, Inter Black). Never serif, never thin weights. White text with dark stroke/shadow on colored backgrounds. Yellow/white text performs 20% better than other colors on dark backgrounds.",
+      "colorPsychology": {
+        "red": "Urgency, mistakes, warnings. Best for 'STOP doing this' thumbnails.",
+        "blue": "Trust, authority. Best for educational/tutorial content.",
+        "yellow": "Energy, attention. Best for 'trick' and 'secret' thumbnails.",
+        "green": "Success, growth. Best for 'how to' and solution content.",
+        "orange": "Enthusiasm. Best for system design (Kafka, messaging).",
+        "contrast": "The SINGLE most important factor. High contrast between text and background is more important than any specific color."
+      },
+      "layoutRules": [
+        "Text on the LEFT 2/3, visual on RIGHT 1/3 (eye tracking studies show left-to-right scan)",
+        "Never put text in the bottom-right corner (YouTube overlays timestamp there)",
+        "Top-left or center text gets 15% more attention than other positions",
+        "Use at most 2 font sizes (headline + subhead). 3+ sizes looks cluttered."
+      ]
+    },
+    "shortsVsLongForm": {
+      "shorts": "YouTube auto-generates Shorts thumbnails from the video. Custom thumbnails for Shorts are now supported (2025+) but auto-generated still performs better for most creators because they show actual video content. Recommendation: let YouTube auto-generate Shorts thumbnails.",
+      "longForm": "Always use custom thumbnails. Auto-generated thumbnails have 40% lower CTR."
+    },
+    "abTesting": "YouTube's built-in A/B test (Test & Compare) allows 3 thumbnail variants per video. Use it for every upload. Generate 3 variants: (A) text-heavy, (B) diagram/code, (C) face + minimal text. YouTube will automatically serve the best performer after 2 weeks."
+  },
+
+  "variants": {
+    "description": "Generate 3 thumbnail variants per video for A/B testing. Each variant emphasizes a different visual strategy.",
+    "variantA": {
+      "name": "text-heavy",
+      "strategy": "Bold hook text, large font, minimal background imagery",
+      "textSize": "72-80px",
+      "maxWords": 4,
+      "backgroundStyle": "solid gradient with radial glow",
+      "emphasis": "curiosity gap in text"
+    },
+    "variantB": {
+      "name": "diagram",
+      "strategy": "Architecture diagram or code snippet as hero image, small text overlay",
+      "textSize": "48-56px",
+      "maxWords": 3,
+      "backgroundStyle": "dark with neon accent lines (diagram visible)",
+      "emphasis": "visual complexity signals expertise"
+    },
+    "variantC": {
+      "name": "face-emotion",
+      "strategy": "Surprised/thinking face (AI or real), bold 2-3 word overlay",
+      "textSize": "64-72px",
+      "maxWords": 3,
+      "backgroundStyle": "split — face on right, color block on left",
+      "emphasis": "human connection + emotion"
+    }
+  },
+
+  "topicColorMap": {
+    "infrastructure": { "bg": ["#1E3A8A", "#0EA5E9"], "text": "#FFFFFF", "accent": "#3B82F6" },
+    "messaging":      { "bg": ["#7C2D12", "#F97316"], "text": "#FFFFFF", "accent": "#FB923C" },
+    "database":       { "bg": ["#064E3B", "#10B981"], "text": "#FFFFFF", "accent": "#34D399" },
+    "dsa":            { "bg": ["#134E4A", "#14B8A6"], "text": "#FFFFFF", "accent": "#5EEAD4" },
+    "architecture":   { "bg": ["#4C1D95", "#8B5CF6"], "text": "#FFFFFF", "accent": "#A78BFA" },
+    "networking":     { "bg": ["#312E81", "#6366F1"], "text": "#FFFFFF", "accent": "#818CF8" },
+    "security":       { "bg": ["#7F1D1D", "#EF4444"], "text": "#FFFFFF", "accent": "#FCA5A5" },
+    "default":        { "bg": ["#1E3A8A", "#3B82F6"], "text": "#FFFFFF", "accent": "#60A5FA" }
+  },
+
+  "fontConfig": {
+    "heading": {
+      "family": "Montserrat",
+      "weight": 900,
+      "fallback": "Inter, system-ui, sans-serif"
+    },
+    "subheading": {
+      "family": "Inter",
+      "weight": 700,
+      "fallback": "system-ui, sans-serif"
+    },
+    "code": {
+      "family": "JetBrains Mono",
+      "weight": 600,
+      "fallback": "Fira Code, monospace"
+    }
+  },
+
+  "dimensions": {
+    "longForm": { "width": 1280, "height": 720 },
+    "shorts": { "width": 1080, "height": 1920 },
+    "instagramCover": { "width": 1080, "height": 1080 }
+  },
+
+  "sessionStrategies": {
+    "1": { "preferredVariant": "variantA", "tone": "curiosity", "hookStyle": "question" },
+    "2": { "preferredVariant": "variantB", "tone": "technical", "hookStyle": "code-reveal" },
+    "3": { "preferredVariant": "variantC", "tone": "authority", "hookStyle": "senior-vs-junior" }
+  }
+}

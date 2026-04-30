@@ -62,7 +62,7 @@ const TOKEN_COLORS: Record<TokenType, string> = {
   keyword:    '#C792EA',
   string:     '#C3E88D',
   number:     '#FFCB6B',
-  comment:    '#546E7A',
+  comment:    '#6A8A9A', // was #546E7A — better contrast on dark bg for mobile
   function:   '#82AAFF',
   operator:   '#89DDFF',
   type:       '#4EC9B0',
@@ -228,14 +228,16 @@ function tokenizeLine(line: string, _language: string): Token[] {
 // ════════════════════════════════════════════════════════════════════════════════
 // LAYOUT CONSTANTS
 // ════════════════════════════════════════════════════════════════════════════════
-const MARGIN_H   = 50;          // horizontal margin each side
-const CODE_WIDTH = VERTICAL.width - MARGIN_H * 2;  // 980px
+const MARGIN_LEFT  = 60;          // matches SAFE_ZONE.left
+const MARGIN_RIGHT = 140;         // matches SAFE_ZONE.right (platform buttons)
+const MARGIN_H     = MARGIN_LEFT; // backward compat for positioning
+const CODE_WIDTH = VERTICAL.width - MARGIN_LEFT - MARGIN_RIGHT;  // 880px
 const FONT_SIZE  = CODE_LIMITS.fontSize;            // 28px
 const LINE_H_MULT = 1.6;
 const LINE_HEIGHT  = FONT_SIZE * LINE_H_MULT;       // ~44.8px
 const LINE_NUM_W   = 56;
-const TAB_Y        = 70;
-const CODE_BLOCK_Y = 120;
+const TAB_Y        = 220; // was 70 — must be below SAFE_ZONE.top (200)
+const CODE_BLOCK_Y = 270; // was 120
 const CODE_BLOCK_TOP_BORDER = 2;
 const CODE_PADDING_V = 20;
 const CODE_PADDING_H = 20;
@@ -298,8 +300,15 @@ const VerticalCodeReveal: React.FC<VerticalCodeRevealProps> = ({
       );
     }
   } else {
-    // Stagger 6 frames per line
-    currentRevealLine = Math.min(totalLines - 1, Math.floor(elapsed / FRAMES_PER_LINE));
+    // Proportional pacing: stretch reveal across 80% of scene duration
+    // Fall back to fixed stagger only for very short scenes
+    if (effectiveDuration > totalLines * FRAMES_PER_LINE * 1.5) {
+      const revealWindow = effectiveDuration * 0.8;
+      const framesPerLine = revealWindow / Math.max(1, totalLines);
+      currentRevealLine = Math.min(totalLines - 1, Math.floor(elapsed / framesPerLine));
+    } else {
+      currentRevealLine = Math.min(totalLines - 1, Math.floor(elapsed / FRAMES_PER_LINE));
+    }
   }
 
   const totalRevealed = Math.min(totalLines, currentRevealLine + 1);
@@ -322,18 +331,19 @@ const VerticalCodeReveal: React.FC<VerticalCodeRevealProps> = ({
     { extrapolateRight: 'clamp' },
   );
 
-  // ── Output panel springs in after all lines revealed + 30f delay ──────────
-  const outputDelayFrame = startFrame + totalLines * FRAMES_PER_LINE + 30;
-  const showOutput = !!output && frame >= outputDelayFrame;
+  // ── Output panel springs in at 75% reveal (not after 100%+30f) ───────────
+  const showOutput = !!output && revealProgress >= 0.75;
+  const outputAge = showOutput ? Math.max(0, elapsed - effectiveDuration * 0.75) : 0;
+  const outputDelayFrame = startFrame; // kept for backward compat reference
   const outputScale = showOutput
     ? spring({
-        frame: frame - outputDelayFrame,
+        frame: outputAge,
         fps,
         config: { damping: 16, stiffness: 140, mass: 0.6 },
       })
     : 0;
   const outputOpacity = showOutput
-    ? interpolate(frame - outputDelayFrame, [0, 10], [0, 1], { extrapolateRight: 'clamp' })
+    ? interpolate(outputAge, [0, 10], [0, 1], { extrapolateRight: 'clamp' })
     : 0;
 
   // ── File name from language ────────────────────────────────────────────────
@@ -533,6 +543,19 @@ const VerticalCodeReveal: React.FC<VerticalCodeRevealProps> = ({
             lineHeight: `${LINE_HEIGHT}px`,
             position: 'relative',
           }}>
+            {/* Scan-line spotlight — glowing gradient follows active line */}
+            {currentRevealLine < totalLines && (
+              <div style={{
+                position: 'absolute',
+                left: 0,
+                right: 0,
+                top: currentRevealLine * LINE_HEIGHT - 4,
+                height: LINE_HEIGHT + 8,
+                background: `linear-gradient(180deg, transparent, rgba(232,93,38,0.06), rgba(232,93,38,0.04), transparent)`,
+                pointerEvents: 'none',
+                zIndex: 2,
+              }} />
+            )}
             {lines.map((line, idx) => {
               const isVisible = idx < totalRevealed;
               const isActive   = idx === currentRevealLine && isVisible;
@@ -544,8 +567,8 @@ const VerticalCodeReveal: React.FC<VerticalCodeRevealProps> = ({
               const lineAge = Math.max(0, frame - lineStartFrame);
 
               const lineOpacity = isVisible
-                ? interpolate(lineAge, [0, 8], [0, 1], { extrapolateRight: 'clamp' }) * (isPast ? 0.45 : 1)
-                : 0;
+                ? interpolate(lineAge, [0, 8], [0, 1], { extrapolateRight: 'clamp' }) * (isPast ? 0.78 : 1)
+                : 0; // was 0.45 — past code must stay readable on mobile
               const lineSlide = isVisible
                 ? interpolate(lineAge, [0, 10], [-18, 0], {
                     extrapolateRight: 'clamp',
@@ -554,8 +577,9 @@ const VerticalCodeReveal: React.FC<VerticalCodeRevealProps> = ({
                 : -18;
 
               // Character-level typewriter on the currently-revealing line
+              // was lineAge * 14 (instant pop-in) — now 5 chars/frame for visible typing
               const charsVisible = isActive
-                ? Math.min(line.length, Math.floor(lineAge * 14))
+                ? Math.min(line.length, Math.floor(lineAge * 5))
                 : isVisible
                 ? line.length
                 : 0;
@@ -645,8 +669,7 @@ const VerticalCodeReveal: React.FC<VerticalCodeRevealProps> = ({
           borderRadius: 14,
           overflow: 'hidden',
           opacity: outputOpacity,
-          transform: `scaleY(${outputScale})`,
-          transformOrigin: 'top center',
+          transform: `translateY(${interpolate(outputScale, [0, 1], [30, 0])}px)`,
           border: `1px solid rgba(29,209,161,0.18)`,
           boxShadow: `0 6px 24px rgba(0,0,0,0.35), 0 0 0 1px rgba(29,209,161,0.06)`,
         }}>

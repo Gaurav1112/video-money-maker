@@ -163,7 +163,7 @@ const HOOK_FORMULAS: HookFormula[] = [
     const ex = getTopicExample(topic);
     return {
       textHook: `WARNING: ${topic} MASTERCLASS`,
-      spokenHook: `Warning: after this video, no interviewer can stop you on ${topic}. Full masterclass — ${ex.company} level architecture handling ${ex.scale}. Let's begin.`,
+      spokenHook: `Warning: after this video, no interviewer can stop you on ${topic}. Full masterclass — ${ex.company} level architecture handling ${ex.scale}. Let's go.`,
     };
   },
   // 18: Money hook

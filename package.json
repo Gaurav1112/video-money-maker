@@ -24,6 +24,13 @@
     "render:vertical:session": "tsx scripts/render-vertical-session.ts",
     "render:vertical:batch": "bash scripts/batch-render-vertical.sh",
     "metadata:all": "tsx scripts/generate-session-metadata.ts",
+    "publish:queue:generate": "tsx scripts/generate-publish-queue.ts",
+    "publish:queue:status": "tsx scripts/get-next-publish.ts --status",
+    "publish:next": "tsx scripts/get-next-publish.ts --force",
+    "publish:verify": "tsx scripts/verify-publish-setup.ts",
+    "publish:verify:videos": "tsx scripts/verify-publish-setup.ts --check-videos",
+    "publish:youtube": "tsx scripts/publish-to-youtube.ts",
+    "publish:instagram": "tsx scripts/publish-to-instagram.ts",
     "dev": "concurrently \"npm start\" \"npm run api\""
   },
   "keywords": [],

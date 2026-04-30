@@ -44,6 +44,8 @@ export const MAX_SHORT_DURATION_FRAMES = 1800; // 60 seconds at 30fps
 export const MAX_REEL_DURATION_FRAMES = 2700;  // 90 seconds at 30fps
 
 export const INTRO_DURATION = 150; // frames (5 seconds — cinematic intro styles need 150f for 3-phase animation)
+export const VERTICAL_INTRO_DURATION = 45; // frames (1.5 seconds — vertical must hook instantly)
 export const OUTRO_DURATION = 150; // frames (5 seconds)
+export const VERTICAL_OUTRO_DURATION = 60; // frames (2 seconds — don't waste time on end cards)
 /** @deprecated Use getTransitionDuration() from video-styles.ts instead. Kept as fallback only. */
 export const TRANSITION_DURATION = 15; // frames (0.5 seconds) — replaced by style-driven values

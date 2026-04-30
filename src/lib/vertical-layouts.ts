@@ -10,32 +10,32 @@ export const VERTICAL = {
   fps: 30,
 };
 
-/** Universal safe zone — visible on all platforms */
+/** Universal safe zone — worst-case union of all platforms (2025+ UIs) */
 export const SAFE_ZONE = {
-  top: 108,
-  bottom: 370,
+  top: 200,       // was 108 — YouTube Shorts has search+camera icons
+  bottom: 400,    // was 370 — YouTube desc+buttons extend further
   left: 60,
-  right: 120,
-  contentWidth: 900,
-  contentHeight: 1442,
-  contentX: 90,
-  contentY: 108,
+  right: 140,     // was 120 — YouTube like/comment/share stack
+  contentWidth: 880,   // 1080 - 60 - 140
+  contentHeight: 1320, // 1920 - 200 - 400
+  contentX: 60,
+  contentY: 200,
 };
 
-/** Platform-specific safe zones */
+/** Platform-specific safe zones (updated for 2025+ UIs) */
 export const PLATFORM_SAFE = {
-  instagram: { top: 108, bottom: 320, left: 60, right: 120 },
-  youtube: { top: 150, bottom: 250, left: 100, right: 100 },
-  tiktok: { top: 150, bottom: 370, left: 50, right: 50 },
+  instagram: { top: 120, bottom: 380, left: 60, right: 130 },
+  youtube: { top: 200, bottom: 400, left: 60, right: 140 },
+  tiktok: { top: 160, bottom: 370, left: 50, right: 120 },
 };
 
-/** Vertical layout regions (top-to-bottom stacking) */
+/** Vertical layout regions (top-to-bottom stacking, inside safe zones) */
 export const REGIONS = {
-  header: { y: 30, height: 70 },
-  mainContent: { y: 100, height: 1200 },
-  captionZone: { y: 1320, height: 280 },
-  bottomBar: { y: 1620, height: 60 },
-  ctaZone: { y: 1700, height: 180 },
+  header: { y: 120, height: 70 },          // was y:30 — below platform status bar
+  mainContent: { y: 200, height: 1100 },   // was y:100,h:1200 — fits inside safe zones
+  captionZone: { y: 1050, height: 220 },   // below heading+bullets zone, above avatar
+  bottomBar: { y: 1500, height: 6 },       // was y:1620 — above platform bottom chrome
+  ctaZone: { y: 1520, height: 0 },         // removed — CTA goes in outro only
 };
 
 /** Font sizes scaled for vertical (larger for mobile readability) */
@@ -45,7 +45,7 @@ export const VERTICAL_SIZES = {
   heading3: 38,
   body: 32,
   bodySmall: 28,
-  caption: 36,
+  caption: 64,   // was 36 — readable on phone, matches viral shorts
   code: 28,
   codeSmall: 24,
   bullet: 30,
@@ -86,9 +86,9 @@ export const COMPONENT_DIMS = {
   },
   comparison: {
     topY: 120,
-    topHeight: 700,
-    bottomY: 860,
-    bottomHeight: 700,
+    topHeight: 480,    // was 550 — fit both cards within safe zones after TITLE_Y=210
+    bottomY: 720,
+    bottomHeight: 480, // was 550
   },
   interview: {
     questionY: 120,

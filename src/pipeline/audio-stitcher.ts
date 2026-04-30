@@ -99,7 +99,7 @@ export function stitchAudio(
     execFileSync('ffmpeg', [
       '-y', '-f', 'lavfi', '-i', `anullsrc=r=24000:cl=mono`,
       '-t', String(gapSeconds),
-      '-codec:a', 'libmp3lame', '-b:a', '128k',
+      '-codec:a', 'libmp3lame', '-b:a', '192k',
       silencePath,
     ], { timeout: 10000, stdio: 'pipe' });
   }
@@ -134,7 +134,7 @@ export function stitchAudio(
   execFileSync('ffmpeg', [
     '-y', '-f', 'concat', '-safe', '0',
     '-i', listPath,
-    '-codec:a', 'libmp3lame', '-b:a', '128k',
+    '-codec:a', 'libmp3lame', '-b:a', '192k',
     rawMasterPath,
   ], { timeout: 120000, stdio: 'pipe' });
 
@@ -183,7 +183,7 @@ export function stitchAudio(
       `loudnorm=I=-14:LRA=11:TP=-1.5:measured_I=${measuredI}:measured_TP=${measuredTP}:measured_LRA=${measuredLRA}:measured_thresh=${measuredThresh}:offset=${offset}:linear=true`,
       'volume=3dB',  // slight boost to ensure we hit YouTube standard
     ].join(','),
-    '-codec:a', 'libmp3lame', '-b:a', '128k',
+    '-codec:a', 'libmp3lame', '-b:a', '192k',
     masterPath,
   ], { timeout: 120000, stdio: 'pipe' });
 

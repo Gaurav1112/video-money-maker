@@ -781,17 +781,57 @@ function generatePlaylist(topic: string): string {
 
 // ─── Pinned Comment & Community Post ──────────────────────────────────────────
 
-export function generatePinnedComment(topic: string, topicSlug: string): string {
-  return `Want to practice ${topic} with real interview questions? I built a FREE platform with 1,988 questions → guru-sishya.in/${topicSlug}\n\nWhich part of ${topic} do you find hardest? Drop it below — I'll cover it in the next video! 👇`;
+// ─── Expert 4 (Rajan Mehta): SEO-Optimized Pinned Comments ──────────────────
+// Pinned comments are indexed by YouTube search, boost comment count (engagement
+// signal), and drive traffic. Each template ends with a question to encourage
+// replies — more replies = higher engagement = more algorithmic promotion.
+
+const PINNED_COMMENT_TEMPLATES: Record<TopicType, string[]> = {
+  'system-design': [
+    `Want to practice {topic} with real interview questions? I built a FREE platform with 5,800+ questions at guru-sishya.in/{slug}\n\nWhich company's {topic} architecture should I break down next? Drop it below!`,
+    `This took 40+ hours to research. If it helped you, a like genuinely helps the channel grow.\n\nFREE practice: guru-sishya.in/{slug}\n\nDrop your interview experience with {topic} — I read every comment!`,
+    `Timestamps in the description if you want to jump to specific sections.\n\nFREE prep: guru-sishya.in/{slug}\n\nWhat's the trickiest {topic} question you've been asked? Let me know and I'll solve it in a future video!`,
+  ],
+  'data-structure': [
+    `Solved 100+ {topic} problems and found 5 core patterns. All covered here.\n\nFREE practice: guru-sishya.in/{slug}\n\nWhat's the hardest {topic} problem you've seen? Drop it below!`,
+    `This is the {topic} video I wish existed when I was preparing for interviews.\n\nFREE prep: guru-sishya.in/{slug}\n\nWhich {topic} operation confuses you the most? I'll make a dedicated video!`,
+  ],
+  'algorithm': [
+    `Stop memorizing — understand the PATTERN. That's what this video teaches.\n\nFREE practice: guru-sishya.in/{slug}\n\nWhich {topic} variant should I cover next?`,
+    `Every {topic} pattern you need, coded and explained.\n\nFREE prep: guru-sishya.in/{slug}\n\nDrop your favorite {topic} trick in the comments!`,
+  ],
+  'concept': [
+    `If this helped {topic} click for you, drop a comment — it helps the algorithm show this to more students.\n\nFREE practice: guru-sishya.in/{slug}\n\nWhat concept should I explain next?`,
+  ],
+  'language': [
+    `These {topic} patterns will genuinely make you a better developer.\n\nFREE practice: guru-sishya.in/{slug}\n\nWhat {topic} feature trips you up the most? Let me know!`,
+  ],
+};
+
+export function generatePinnedComment(topic: string, topicSlug: string, sessionNumber = 1): string {
+  const type = classifyTopic(topic);
+  const templates = PINNED_COMMENT_TEMPLATES[type];
+  const idx = seededIndex(topic, sessionNumber, 139, templates.length);
+  return templates[idx]
+    .replace(/{topic}/g, topic)
+    .replace(/{slug}/g, topicSlug);
 }
 
+// ─── Expert 4 (Rajan Mehta): Community Post Templates ────────────────────────
+// Community posts with polls get 2-3x more interaction than plain text.
+// Post a teaser 2 hours BEFORE upload for the "velocity hack" — primes
+// subscribers to click immediately when the video goes live.
+
 export function generateCommunityPost(topic: string, title: string, objectives: string[], topicSlug: string): string {
-  // Poll format for maximum engagement (SEO research: polls get 2-3x more interaction)
   const options = objectives.slice(0, 3);
   const option1 = options[0] || `${topic} Advanced Patterns`;
   const option2 = options[1] || `${topic} Interview Questions`;
   const option3 = options[2] || `System Design with ${topic}`;
-  return `🔥 New video: ${title}\n\nWhat should I cover next?\n□ ${option1}\n□ ${option2}\n□ ${option3}\n□ Something else (comment below!)\n\nFull prep at guru-sishya.in/${topicSlug}`;
+  return `NEW VIDEO dropping at 7:15 PM tonight!\n\n${topic} \u2014 the question that separates 12 LPA from 45 LPA answers.\n\nSet a reminder. This one's important.\n\nPoll: What's your biggest struggle with ${topic}?\n\u25a1 Understanding the concept\n\u25a1 Implementing in code\n\u25a1 Explaining in interviews\n\u25a1 Knowing when to use it\n\nFull prep at guru-sishya.in/${topicSlug}`;
+}
+
+export function generatePostReleaseCommunityPost(topic: string, title: string, sessionNumber: number, topicSlug: string): string {
+  return `Just dropped: ${title}\n\nThis is Session ${sessionNumber} of the complete ${topic} series.\n\nWatch now and tell me what clicked for you.\n\nFREE practice: guru-sishya.in/${topicSlug}`;
 }
 
 // ─── DALL-E Thumbnail Prompts (category-aware) ──────────────────────────────

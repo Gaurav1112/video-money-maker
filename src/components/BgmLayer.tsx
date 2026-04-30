@@ -44,7 +44,7 @@ export const BgmLayer: React.FC<BgmLayerProps> = (props) => {
     syncTimeline,
     bgmFile,
     mood,
-    duckVolume = 0.04,
+    duckVolume = 0.07, // was 0.04 — audible on phone speakers during narration
     baseVolume = 0.10,
   } = props;
   const frame = useCurrentFrame();

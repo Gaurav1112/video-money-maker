@@ -1,0 +1,64 @@
+name: Batch Render Sessions
+
+# Renders 3 sessions nightly at 2 AM IST (8:30 PM UTC previous day)
+# Uses self-hosted runner with access to local content + Remotion
+
+on:
+  schedule:
+    - cron: '30 20 * * *'   # 8:30 PM UTC = 2:00 AM IST daily
+
+  workflow_dispatch:
+    inputs:
+      topic:
+        description: 'Specific topic slug (leave empty for auto-pick)'
+        required: false
+        default: ''
+      session:
+        description: 'Specific session number (leave empty for auto-pick)'
+        required: false
+        default: ''
+      limit:
+        description: 'Number of sessions to render (default 3)'
+        required: false
+        default: '3'
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  render:
+    runs-on: self-hosted
+    timeout-minutes: 360   # 6 hours max for 3 sessions
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Render sessions
+        run: |
+          if [ -n "${{ inputs.topic }}" ] && [ -n "${{ inputs.session }}" ]; then
+            echo "Rendering specific: ${{ inputs.topic }} session ${{ inputs.session }}"
+            npx tsx scripts/render-and-stage.ts ${{ inputs.topic }} ${{ inputs.session }}
+          else
+            echo "Auto-rendering next ${{ inputs.limit || '3' }} sessions"
+            npx tsx scripts/batch-render-all.ts --limit ${{ inputs.limit || '3' }}
+          fi
+
+      - name: Show status
+        if: always()
+        run: npx tsx scripts/dashboard.ts --json > render-report.json 2>/dev/null || true
+
+      - name: Commit queue updates
+        if: success()
+        run: |
+          git config user.name "Guru Sishya Bot"
+          git config user.email "bot@guru-sishya.in"
+          git add config/topic-queue.json config/publish-queue.json || true
+          git diff --staged --quiet || git commit -m "chore: update render queue [skip ci]"
+          git push || true

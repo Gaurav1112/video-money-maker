@@ -54,6 +54,13 @@ export interface Storyboard {
   allSfxTriggers?: SfxTrigger[];
   /** Rhubarb lip sync mouth cues for avatar animation */
   mouthCues?: Array<{ start: number; end: number; value: string }>;
+  /** Total sessions in the topic (for series progress display) */
+  totalSessions?: number;
+  /** Part metadata — set by createPartStoryboard for multi-part renders */
+  partHookText?: string;
+  partCtaText?: string;
+  partNumber?: number;
+  totalParts?: number;
 }
 
 export interface SessionInput {

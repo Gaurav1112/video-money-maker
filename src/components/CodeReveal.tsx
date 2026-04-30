@@ -49,7 +49,7 @@ const TOKEN_COLORS: Record<TokenType, string> = {
   type: '#4EC9B0',
   punctuation: '#BABED8',
   decorator: '#FFCB6B',
-  plain: COLORS.white,
+  plain: '#E2E0DC', // was COLORS.white (#1E293B charcoal) — need light text on dark IDE bg
 };
 
 const KEYWORDS = new Set([

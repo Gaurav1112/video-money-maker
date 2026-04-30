@@ -21,9 +21,19 @@ export interface VideoPart {
   ctaText: string;             // "Follow for Part 2" or final CTA
 }
 
-const TARGET_PART_DURATION = 150;  // seconds (~2:30, targets 3 parts per session)
-const MAX_PART_DURATION = 180;     // seconds (3 min max)
-const MIN_PART_DURATION = 60;      // seconds (at least 1 min)
+/** Platform-specific split configurations */
+export type SplitMode = 'connected-series' | 'youtube-short' | 'instagram-reel';
+
+const SPLIT_CONFIGS: Record<SplitMode, { target: number; max: number; min: number }> = {
+  'connected-series': { target: 150, max: 180, min: 60 },   // ~2:30 parts, 3 per session
+  'youtube-short':    { target: 50,  max: 58,  min: 15 },   // <60s for Shorts shelf
+  'instagram-reel':   { target: 55,  max: 88,  min: 15 },   // <90s for Reels
+};
+
+// Default config (backward compat)
+const TARGET_PART_DURATION = 150;
+const MAX_PART_DURATION = 180;
+const MIN_PART_DURATION = 60;
 
 /**
  * Split storyboard into parts at scene boundaries.
@@ -34,10 +44,11 @@ const MIN_PART_DURATION = 60;      // seconds (at least 1 min)
  * 4. Never split mid-scene
  * 5. Each part gets intro/outro metadata for rendering
  */
-export function splitIntoParts(storyboard: Storyboard): VideoPart[] {
+export function splitIntoParts(storyboard: Storyboard, mode: SplitMode = 'connected-series'): VideoPart[] {
   const fps = storyboard.fps || 30;
   const scenes = storyboard.scenes;
   const sceneOffsets = storyboard.sceneOffsets || [];
+  const config = SPLIT_CONFIGS[mode];
 
   // Skip the title scene (index 0) for splitting purposes
   // It always goes in Part 1
@@ -62,7 +73,7 @@ export function splitIntoParts(storyboard: Storyboard): VideoPart[] {
     const sceneDuration = (scene.endFrame - scene.startFrame) / fps;
 
     // Would adding this scene exceed MAX?
-    if (currentDuration + sceneDuration > MAX_PART_DURATION && currentScenes.length > 1) {
+    if (currentDuration + sceneDuration > config.max && currentScenes.length > 1) {
       // Finalize current part
       const audioStart = currentStartOffset;
       const audioEnd = contentOffsets[i] ?? (audioStart + currentDuration);
@@ -87,7 +98,7 @@ export function splitIntoParts(storyboard: Storyboard): VideoPart[] {
     currentDuration += sceneDuration;
 
     // Check for natural break points (after TARGET reached)
-    if (currentDuration >= TARGET_PART_DURATION) {
+    if (currentDuration >= config.target) {
       const isNaturalBreak =
         scene.type === 'summary' ||
         scene.type === 'review' ||
@@ -98,7 +109,7 @@ export function splitIntoParts(storyboard: Storyboard): VideoPart[] {
         : 0;
 
       // Split if natural break OR would exceed MAX with next scene
-      if (isNaturalBreak || currentDuration + nextSceneDuration > MAX_PART_DURATION) {
+      if (isNaturalBreak || currentDuration + nextSceneDuration > config.max) {
         if (i < contentScenes.length - 1) { // Don't split if this is the last scene
           const audioStart = currentStartOffset;
           const audioEnd = contentOffsets[i + 1] ?? (audioStart + currentDuration);
@@ -143,12 +154,26 @@ export function splitIntoParts(storyboard: Storyboard): VideoPart[] {
     part.totalParts = totalParts;
     part.isFirst = part.partNumber === 1;
     part.isLast = part.partNumber === totalParts;
-    part.hookText = part.isFirst
-      ? `${storyboard.topic} — Part 1/${totalParts}`
-      : `Part ${part.partNumber}/${totalParts}`;
-    part.ctaText = part.isLast
-      ? 'Follow @guru_sishya.in for more'
-      : `Follow for Part ${part.partNumber + 1} →`;
+    // Content-aware hook: use previous part's last heading as context bridge
+    if (part.isFirst) {
+      part.hookText = `${storyboard.topic} — Part 1/${totalParts}`;
+    } else {
+      const prevPart = parts[part.partNumber - 2];
+      const lastHeading = prevPart?.scenes[prevPart.scenes.length - 1]?.heading;
+      part.hookText = lastHeading
+        ? `Part ${part.partNumber}/${totalParts} — "${lastHeading}" changes everything`
+        : `Part ${part.partNumber}/${totalParts}`;
+    }
+    // Cliffhanger CTA: tease the next part's first scene
+    if (part.isLast) {
+      part.ctaText = 'Subscribe · @guru_sishya';
+    } else {
+      const nextPart = parts[part.partNumber];
+      const nextHeading = nextPart?.scenes[0]?.heading;
+      part.ctaText = nextHeading
+        ? `Next: "${nextHeading}" — where most candidates fail. Part ${part.partNumber + 1} →`
+        : `Follow for Part ${part.partNumber + 1} →`;
+    }
   }
 
   return parts;
@@ -217,6 +242,11 @@ export function createPartStoryboard(
     scenes: reindexedScenes,
     durationInFrames: part.durationInFrames,
     sceneOffsets: newOffsets,
+    // Part metadata for rendering
+    partHookText: part.hookText,
+    partCtaText: part.ctaText,
+    partNumber: part.partNumber,
+    totalParts: part.totalParts,
     // Audio file stays the same — VerticalLong will seek to the right position
   };
 }

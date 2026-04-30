@@ -45,6 +45,7 @@ const cmd = [
   `--output="${outputFile}"`,
   '--codec=h264',
   '--crf=18',
+  '--audio-bitrate=192K',
   '--concurrency=6',
 ].join(' ');
 

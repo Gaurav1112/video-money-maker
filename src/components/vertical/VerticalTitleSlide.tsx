@@ -43,24 +43,24 @@ const TOPIC_INTRO_CONTENT: Record<string, TopicIntroContent> = {
   'load balancing': {
     statNumber: '1,000,000',
     statLabel: 'requests per second at peak',
-    statContext: 'This is what Netflix handles on a Friday night.',
+    statContext: 'Swiggy handles this during lunch rush. Every single day.',
     questionLine1: 'What happens...',
     questionLine2: '...when traffic 10x overnight?',
-    questionHook: 'YOUR interview depends on this answer.',
+    questionHook: 'Asked in Swiggy SDE-2 — 90% fail this.',
     teaserPoints: [
       'The algorithm that distributes traffic perfectly',
       'Health checks that prevent total downtime',
-      'Why Netflix never goes down',
+      'Why Swiggy never crashes during IPL dinner rush',
     ],
     accentColor: '#E85D26',
   },
   'caching': {
     statNumber: '230,000,000',
-    statLabel: 'users served by Netflix',
+    statLabel: 'users served globally',
     statContext: 'Every single request hits the cache first.',
     questionLine1: 'What happens...',
     questionLine2: "...when the database can't keep up?",
-    questionHook: 'YOUR interview depends on this answer.',
+    questionHook: 'The 12 LPA vs 45 LPA answer. Right here.',
     teaserPoints: [
       'The caching layer that saves millions',
       'Redis vs Memcached — the real answer',
@@ -71,24 +71,24 @@ const TOPIC_INTRO_CONTENT: Record<string, TopicIntroContent> = {
   'api gateway': {
     statNumber: '10,000,000',
     statLabel: 'API calls per minute',
-    statContext: 'This is what Stripe processes daily.',
+    statContext: 'Flipkart processes this during Big Billion Days.',
     questionLine1: 'What happens...',
     questionLine2: '...when clients hit your backend directly?',
-    questionHook: 'YOUR interview depends on this answer.',
+    questionHook: 'Flipkart asks this in round 3. Most freeze.',
     teaserPoints: [
       'The single entry point that controls everything',
       'Rate limiting, auth, routing — one layer',
-      'The pattern every FAANG company uses',
+      'The pattern Flipkart uses at scale',
     ],
     accentColor: '#E85D26',
   },
   'database': {
     statNumber: '2,500,000,000',
     statLabel: 'rows in a single table',
-    statContext: "This is what Facebook's user table looks like.",
+    statContext: "Razorpay's transaction table looks like this.",
     questionLine1: 'What happens...',
     questionLine2: '...when your queries take 30 seconds?',
-    questionHook: 'YOUR interview depends on this answer.',
+    questionHook: 'Senior engineers still get this wrong.',
     teaserPoints: [
       'The schema design that scales to billions',
       'Indexing strategies that cut latency 100x',
@@ -98,11 +98,11 @@ const TOPIC_INTRO_CONTENT: Record<string, TopicIntroContent> = {
   },
   'microservices': {
     statNumber: '2,000',
-    statLabel: 'microservices at Amazon',
-    statContext: 'Every team owns exactly one service.',
+    statLabel: 'microservices at PhonePe',
+    statContext: 'Every UPI payment flows through independent services.',
     questionLine1: 'What happens...',
     questionLine2: '...when the monolith becomes unmaintainable?',
-    questionHook: 'YOUR interview depends on this answer.',
+    questionHook: 'PhonePe asks this in HLD rounds. Know it cold.',
     teaserPoints: [
       'The decomposition strategy that actually works',
       'Service boundaries — how to draw the line',
@@ -113,10 +113,10 @@ const TOPIC_INTRO_CONTENT: Record<string, TopicIntroContent> = {
   'message queue': {
     statNumber: '50,000,000',
     statLabel: 'messages per second through Kafka',
-    statContext: 'LinkedIn processes this in real-time.',
+    statContext: 'Swiggy processes this many order events daily.',
     questionLine1: 'What happens...',
     questionLine2: '...when services need to talk asynchronously?',
-    questionHook: 'YOUR interview depends on this answer.',
+    questionHook: 'This separates a 10 LPA offer from 40 LPA.',
     teaserPoints: [
       'The decoupling pattern that prevents cascading failures',
       'At-least-once vs exactly-once delivery',
@@ -130,7 +130,7 @@ const TOPIC_INTRO_CONTENT: Record<string, TopicIntroContent> = {
     statContext: 'This is how DynamoDB distributes data.',
     questionLine1: 'What happens...',
     questionLine2: '...when you add a server to the cluster?',
-    questionHook: 'YOUR interview depends on this answer.',
+    questionHook: 'Asked in every system design round. Every single one.',
     teaserPoints: [
       'The hash ring that minimizes data movement',
       'Virtual nodes — the trick that ensures balance',
@@ -141,10 +141,10 @@ const TOPIC_INTRO_CONTENT: Record<string, TopicIntroContent> = {
   'rate limiting': {
     statNumber: '429',
     statLabel: 'Too Many Requests',
-    statContext: 'The HTTP status that protects your system.',
+    statContext: 'Zerodha uses this to protect trading APIs.',
     questionLine1: 'What happens...',
     questionLine2: '...when a single client floods your API?',
-    questionHook: 'YOUR interview depends on this answer.',
+    questionHook: 'Zerodha SDE-2. Round 2. This exact question.',
     teaserPoints: [
       'Token bucket vs sliding window — which to pick',
       'Distributed rate limiting across servers',
@@ -155,10 +155,10 @@ const TOPIC_INTRO_CONTENT: Record<string, TopicIntroContent> = {
   'circuit breaker': {
     statNumber: '3',
     statLabel: 'seconds to detect a cascade failure',
-    statContext: "Netflix's Hystrix catches it before you notice.",
+    statContext: "PhonePe catches payment failures before users notice.",
     questionLine1: 'What happens...',
     questionLine2: '...when one service brings down everything?',
-    questionHook: 'YOUR interview depends on this answer.',
+    questionHook: 'Most candidates cannot explain this clearly.',
     teaserPoints: [
       'Closed, open, half-open — the three states',
       'The fallback strategy that saves the user',
@@ -169,10 +169,10 @@ const TOPIC_INTRO_CONTENT: Record<string, TopicIntroContent> = {
   'docker': {
     statNumber: '13,000,000',
     statLabel: 'developers using Docker',
-    statContext: 'Every modern deployment starts here.',
+    statContext: 'Flipkart deploys 1000+ containers with this.',
     questionLine1: 'What happens...',
     questionLine2: "...when your app works on your machine but not in production?",
-    questionHook: 'YOUR interview depends on this answer.',
+    questionHook: 'The answer that gets you past the DevOps round.',
     teaserPoints: [
       'Containers vs VMs — the fundamental difference',
       'The Dockerfile pattern every team uses',
@@ -183,10 +183,10 @@ const TOPIC_INTRO_CONTENT: Record<string, TopicIntroContent> = {
   'kubernetes': {
     statNumber: '5,600,000',
     statLabel: 'clusters running worldwide',
-    statContext: 'Google built it to run their own infrastructure.',
+    statContext: 'Flipkart runs 10,000+ pods during Big Billion Days.',
     questionLine1: 'What happens...',
     questionLine2: '...when you need to orchestrate 1000 containers?',
-    questionHook: 'YOUR interview depends on this answer.',
+    questionHook: 'Know this or lose the infrastructure round.',
     teaserPoints: [
       'Pods, services, deployments — the building blocks',
       'Auto-scaling that responds in seconds',
@@ -197,10 +197,10 @@ const TOPIC_INTRO_CONTENT: Record<string, TopicIntroContent> = {
   'cdn': {
     statNumber: '300',
     statLabel: 'milliseconds saved per request',
-    statContext: 'Cloudflare has 300+ PoPs across the globe.',
+    statContext: 'Hotstar delivers IPL streams to 25M concurrent viewers.',
     questionLine1: 'What happens...',
     questionLine2: '...when users are 10,000 miles from your server?',
-    questionHook: 'YOUR interview depends on this answer.',
+    questionHook: 'Hotstar asks this. The answer decides your offer.',
     teaserPoints: [
       'Edge caching that makes content feel instant',
       'Cache invalidation — the hard problem',
@@ -211,10 +211,10 @@ const TOPIC_INTRO_CONTENT: Record<string, TopicIntroContent> = {
   'kafka': {
     statNumber: '7,000,000,000',
     statLabel: 'messages per day at Uber',
-    statContext: 'Every ride, every payment — all through Kafka.',
+    statContext: 'Every Uber ride, every Swiggy order — all through Kafka.',
     questionLine1: 'What happens...',
     questionLine2: '...when you need real-time event streaming?',
-    questionHook: 'YOUR interview depends on this answer.',
+    questionHook: 'Uber asks this in round 3. Most candidates freeze.',
     teaserPoints: [
       'Topics, partitions, consumer groups explained',
       'Why Kafka is faster than traditional queues',
@@ -225,10 +225,10 @@ const TOPIC_INTRO_CONTENT: Record<string, TopicIntroContent> = {
   'authentication': {
     statNumber: '81',
     statLabel: 'percent of breaches caused by weak auth',
-    statContext: "Verizon's Data Breach Report, every single year.",
+    statContext: "Paytm secures 300M wallets with this.",
     questionLine1: 'What happens...',
     questionLine2: '...when your auth system has a single flaw?',
-    questionHook: 'YOUR interview depends on this answer.',
+    questionHook: 'Get this wrong and you fail the security round.',
     teaserPoints: [
       'OAuth 2.0 + JWT — the complete flow',
       'Session vs token-based — when to use which',
@@ -242,7 +242,7 @@ const TOPIC_INTRO_CONTENT: Record<string, TopicIntroContent> = {
     statContext: "That's only 5 minutes of downtime per year.",
     questionLine1: 'What happens...',
     questionLine2: '...when the network splits in half?',
-    questionHook: 'YOUR interview depends on this answer.',
+    questionHook: 'The question that separates junior from senior.',
     teaserPoints: [
       "The CAP theorem — you can't have it all",
       'Consensus algorithms that keep data consistent',
@@ -264,7 +264,7 @@ function getTopicIntro(topic: string): TopicIntroContent {
     statContext: 'This is what top companies handle.',
     questionLine1: 'What happens...',
     questionLine2: `...when your ${topic.toLowerCase()} fails?`,
-    questionHook: 'YOUR interview depends on this answer.',
+    questionHook: 'The answer most candidates get wrong.',
     teaserPoints: [
       `The ${topic.toLowerCase()} pattern every engineer must know`,
       'The implementation detail interviewers dig into',
@@ -434,9 +434,9 @@ export const VerticalTitleSlide: React.FC<VerticalTitleSlideProps> = ({
       <div
         style={{
           position: 'absolute',
-          top: 90,
-          left: 0,
-          right: 0,
+          top: 210, // was 90 — below SAFE_ZONE.top (200)
+          left: 60,
+          right: 140, // SAFE_ZONE.right — avoid platform buttons
           display: 'flex',
           justifyContent: 'center',
           opacity: badge.opacity,

@@ -1,0 +1,72 @@
+{
+  "schedule": {
+    "days": ["Tuesday", "Thursday", "Saturday"],
+    "timeIST": "19:15",
+    "timezone": "Asia/Kolkata",
+    "_note": "See config/optimal-schedule.json for detailed rationale + seasonal adjustments"
+  },
+  "shortsSchedule": {
+    "staggerDelayMinutes": 120,
+    "part1TimeIST": "12:30",
+    "part2TimeIST": "14:30",
+    "part3TimeIST": "21:30",
+    "_note": "Shorts post at different times than long-form: lunch, afternoon, bedtime"
+  },
+  "youtube": {
+    "enabled": true,
+    "longForm": true,
+    "shorts": true,
+    "scheduledPublish": true,
+    "defaultPrivacy": "public",
+    "playlistPrefix": "Guru Sishya — ",
+    "categoryId": "27",
+    "defaultLanguage": "en",
+    "defaultAudioLanguage": "en",
+    "embeddable": true,
+    "license": "youtube",
+    "setRecordingDate": true,
+    "hindiLocalization": true,
+    "_note": "Hidden API params: recordingDetails, localizations, embeddable, license — see upload-youtube.ts"
+  },
+  "instagram": {
+    "enabled": true,
+    "reels": true,
+    "maxReelsPerSession": 3,
+    "tunnelPort": 9876
+  },
+  "rotation": {
+    "strategy": "round-robin-category",
+    "categoryOrder": [
+      "system-design",
+      "dsa",
+      "system-design-cases",
+      "infrastructure",
+      "languages",
+      "frameworks",
+      "databases",
+      "fundamentals",
+      "frontend"
+    ],
+    "maxConsecutiveSameTopic": 1,
+    "priorityWeight": {
+      "high": 3,
+      "medium": 2,
+      "low": 1
+    }
+  },
+  "retry": {
+    "maxAttempts": 3,
+    "backoffMinutes": [5, 15, 60],
+    "retryOnCodes": [500, 502, 503, 429]
+  },
+  "notifications": {
+    "slackWebhookUrl": "",
+    "emailOnFailure": false,
+    "logFile": "logs/auto-publish.log"
+  },
+  "paths": {
+    "guruSishyaBase": "~/Documents/guru-sishya",
+    "publishHistory": "config/publish-history.json",
+    "topicQueue": "config/topic-queue.json"
+  }
+}

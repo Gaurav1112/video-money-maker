@@ -58,6 +58,115 @@ function asciiArtNarration(heading?: string): string {
 }
 
 // ---------------------------------------------------------------------------
+// Story Arc System — transforms flat content into 5-act narratives
+// Every technical topic becomes: character → problem → failed fix →
+// mentor insight → real mechanism → tradeoff revelation
+// ---------------------------------------------------------------------------
+
+type StoryAct = 'setup' | 'conflict' | 'rising' | 'climax' | 'resolution';
+
+/** Indian-context analogy bank — relatable metaphors for each topic category */
+const ANALOGY_BANK: Record<string, { character: string; world: string; problem: string; metaphor: string }> = {
+  'message-queue': {
+    character: 'Ravi, a village postmaster',
+    world: 'a post office handling 200 letters daily',
+    problem: 'letters pile up, get lost, arrive at wrong houses',
+    metaphor: 'post office',
+  },
+  'load-balancing': {
+    character: 'Priya, a chai shop owner on MG Road',
+    world: 'a chai stall with one counter',
+    problem: 'Diwali rush creates a line around the block',
+    metaphor: 'chai shop',
+  },
+  'database': {
+    character: 'Arjun, a school librarian',
+    world: 'a library with 50,000 books and one register',
+    problem: 'students wait 20 minutes to find a single book',
+    metaphor: 'library',
+  },
+  'caching': {
+    character: 'Meera, a street food vendor',
+    world: 'a pani puri stall making everything from scratch',
+    problem: 'regular customers wait just as long as new ones',
+    metaphor: 'pani puri stall',
+  },
+  'streaming': {
+    character: 'Deepak, a newspaper editor',
+    world: 'a printing press batching all news into one edition',
+    problem: 'breaking news at 2 PM reaches readers at 6 AM next day',
+    metaphor: 'newspaper',
+  },
+  'replication': {
+    character: 'Sunita, a recipe keeper',
+    world: 'a family where only grandmother knows the recipes',
+    problem: 'when grandmother falls ill, nobody can cook',
+    metaphor: 'family recipe book',
+  },
+  'default': {
+    character: 'Dev, a junior engineer at a Bangalore startup',
+    world: 'a startup that just hit 1000 users',
+    problem: 'the system that worked for 10 users is breaking at 1000',
+    metaphor: 'startup',
+  },
+};
+
+function getStoryAnalogy(topic: string): typeof ANALOGY_BANK['default'] {
+  const lower = topic.toLowerCase();
+  for (const [key, val] of Object.entries(ANALOGY_BANK)) {
+    if (key !== 'default' && (lower.includes(key) || lower.includes(key.replace('-', ' ')))) return val;
+  }
+  if (lower.includes('kafka') || lower.includes('producer') || lower.includes('consumer')) return ANALOGY_BANK['message-queue'];
+  if (lower.includes('cache') || lower.includes('redis')) return ANALOGY_BANK['caching'];
+  return ANALOGY_BANK['default'];
+}
+
+/** Wrap narration in story framing based on the current act */
+function storyFrameNarration(narration: string, act: StoryAct, topic: string, idx: number): string {
+  const a = getStoryAnalogy(topic);
+  const name = a.character.split(',')[0];
+  switch (act) {
+    case 'setup':
+      return idx === 0
+        ? `Let me tell you about ${a.character}. Imagine ${a.world}. The problem? ${a.problem}. ${narration}`
+        : `In ${name}'s ${a.metaphor}, ${narration.charAt(0).toLowerCase()}${narration.slice(1)}`;
+    case 'conflict':
+      return idx === 0
+        ? `Here's what happens when you try the obvious solution. ${narration} Sounds reasonable? Watch what breaks.`
+        : `And that's exactly where things go wrong. ${narration}`;
+    case 'rising':
+      return idx === 0
+        ? `Now here's the insight that changes everything. ${narration}`
+        : `Think about it this way. ${narration}`;
+    case 'climax':
+      return idx === 0 ? `Now let me show you how this actually works. ${narration}` : narration;
+    case 'resolution':
+      return idx === 0
+        ? `So what's the catch? Every solution has a cost. ${narration}`
+        : `${narration} And that's the tradeoff — back in ${name}'s ${a.metaphor}, this is the moment they realized: there's no free lunch.`;
+    default:
+      return narration;
+  }
+}
+
+/** Map flat sections into a 5-act story arc */
+function storyArcMapper(sections: MarkdownSection[]): Array<{ act: StoryAct; section: MarkdownSection }> {
+  const total = sections.length;
+  if (total <= 2) return sections.map(s => ({ act: 'climax' as StoryAct, section: s }));
+
+  return sections.map((section, i) => {
+    const pct = i / total;
+    let act: StoryAct;
+    if (pct < 0.15) act = 'setup';
+    else if (pct < 0.30) act = 'conflict';
+    else if (pct < 0.45) act = 'rising';
+    else if (pct < 0.85) act = 'climax';
+    else act = 'resolution';
+    return { act, section };
+  });
+}
+
+// ---------------------------------------------------------------------------
 // Code-Topic Relevance Check
 // Ensures code content actually matches the video topic — prevents e.g.
 // ConsistentHash code appearing in a Kafka video.
@@ -1516,16 +1625,60 @@ export function generateScript(session: SessionInput, options: ScriptOptions = {
     });
   }
 
-  // ── 5-7. Parse content → DEEP DIVE + VISUAL + COMPARISON ─────────────
-  const sections = parseMarkdown(session.content);
+  // ── 5-7. Parse content → DEEP DIVE via Story Arc ─────────────────────
+  const rawSections = parseMarkdown(session.content);
+  const arcSections = storyArcMapper(rawSections);
+  // Backward-compat alias: sections = raw for any code that still references it
+  const sections = rawSections;
   let sectionIndex = 0;
+  let arcIndex = 0;
   let hasInterview = false;
   let openLoopCounter = 0;     // tracks elapsed deep-dive scenes for open-loop injection
   let halfwayInjected = false; // 50% midpoint retention trap guard
   let reHookInjected = false;  // 60% danger zone re-hook guard
   let patternInterruptCounter = 0; // pattern interrupts every ~4 scenes
+  let interviewAnchor1Done = false; // 30% interview anchor
+  let interviewAnchor2Done = false; // 60% interview anchor
 
   for (const section of sections) {
+    // ── Story arc framing — wrap narration in character-driven context ─────
+    const arcEntry = arcSections[arcIndex] || { act: 'climax' as StoryAct, section };
+    const currentAct = arcEntry.act;
+    arcIndex = Math.min(arcIndex + 1, arcSections.length - 1);
+
+    // ── Interview Anchor #1 at ~30% of deep dive ──────────────────────────
+    if (!interviewAnchor1Done && scenes.length >= Math.floor(maxScenes * 0.3)) {
+      interviewAnchor1Done = true;
+      const ex = getTopicExample(session.topic);
+      const anchor1 = `If an interviewer asks you "What is ${session.topic}?" right now, here's your answer based on what we just covered. ${ex.company} uses this to ${ex.useCase}. But they won't stop there. They'll dig deeper. And that's exactly what we're about to do.`;
+      scenes.push({
+        type: 'interview' as SceneType,
+        content: anchor1,
+        narration: anchor1,
+        duration: 8,
+        startFrame: currentFrame,
+        endFrame: (currentFrame += TIMING.secondsToFrames(8)),
+        heading: 'Interview Check-In',
+      });
+      hasInterview = true;
+    }
+
+    // ── Interview Anchor #2 at ~60% of deep dive ──────────────────────────
+    if (!interviewAnchor2Done && scenes.length >= Math.floor(maxScenes * 0.6)) {
+      interviewAnchor2Done = true;
+      const ex = getTopicExample(session.topic);
+      const anchor2 = `The interviewer's follow-up: "What are the tradeoffs?" This is where ${ex.company}-level candidates shine. Here's the framework that separates a 15 LPA answer from a 45 LPA answer.`;
+      scenes.push({
+        type: 'interview' as SceneType,
+        content: anchor2,
+        narration: anchor2,
+        duration: 8,
+        startFrame: currentFrame,
+        endFrame: (currentFrame += TIMING.secondsToFrames(8)),
+        heading: 'Interview Deep Dive',
+      });
+      hasInterview = true;
+    }
     if (scenes.length >= maxScenes - 3) break; // Reserve for interview + review + summary
 
     if (section.type === 'callout') hasInterview = true;
@@ -1608,6 +1761,11 @@ export function generateScript(session: SessionInput, options: ScriptOptions = {
       scene.narration = `${interrupt} ${scene.narration}`;
     }
 
+    // ── Apply story arc framing to narration ────────────────────────────
+    if (scene.type === 'text' && scene.narration) {
+      scene.narration = storyFrameNarration(scene.narration, currentAct, session.topic, sectionIndex);
+    }
+
     const splitScenes = splitLongScene(scene, currentFrame);
     for (const s of splitScenes) {
       scenes.push(s);
@@ -1625,24 +1783,24 @@ export function generateScript(session: SessionInput, options: ScriptOptions = {
       Math.floor(scenes.length * 0.75),
     ];
     const checkpointQuestions = [
-      `Quick check: can you explain what we just covered about ${session.topic}? Pause and try.`,
-      `Halfway checkpoint. If you can explain this to a friend right now, you truly understand it. Try it.`,
-      `Almost there. Before the final section, pause and think: how would YOU explain ${session.topic} in an interview?`,
+      `Quick mental check. What does ${session.topic} actually do? Think about it. 3 seconds. Got it? Good.`,
+      `Halfway challenge. If an interviewer asks you to explain ${session.topic} right now, what would you say? Pause and think.`,
+      `Almost done. How would you explain the tradeoffs of ${session.topic} in an interview? This separates 15 LPA from 45 LPA answers.`,
     ];
     // Insert in reverse order so earlier indices stay valid
     for (let ci = checkpointPositions.length - 1; ci >= 0; ci--) {
       const pos = checkpointPositions[ci];
       if (pos <= 0 || pos >= scenes.length) continue;
-      const checkpointDuration = 4;
+      const checkpointDuration = 6; // was 4 — quiz needs more time
       const insertFrame = scenes[pos]?.startFrame ?? currentFrame;
       const checkpointScene: Scene = {
-        type: 'text',
+        type: 'review',  // was 'text' — triggers ReviewQuestion visual with game-show layout
         content: checkpointQuestions[ci],
         narration: checkpointQuestions[ci],
         duration: checkpointDuration,
         startFrame: insertFrame,
         endFrame: insertFrame + TIMING.secondsToFrames(checkpointDuration),
-        heading: ci === 1 ? 'Halfway Check' : ci === 0 ? 'Quick Check' : 'Final Check',
+        heading: ci === 1 ? 'Halfway Challenge' : ci === 0 ? 'Quick Check' : 'Final Challenge',
         bullets: [],
       };
       scenes.splice(pos, 0, checkpointScene);
@@ -1703,6 +1861,32 @@ export function generateScript(session: SessionInput, options: ScriptOptions = {
       // Store the clean visual answer in heading field so it can be displayed on screen
       // (narration is for TTS only, not for visual display)
       heading: cleanAnswer,
+    });
+  }
+
+  // ── 9b. COMPLETE INTERVIEW ANSWER — the payoff moment ────────────────
+  // Blueprint: structured framework the viewer memorizes and takes to interviews
+  if (scenes.length < maxScenes) {
+    const ex = getTopicExample(session.topic);
+    const topObjectives = session.objectives.slice(0, 3);
+    const steps = topObjectives.map((obj, i) =>
+      `Step ${i + 1}: ${obj.replace(/^(understand|learn|know|explain)\s+/i, 'Explain ')}`
+    );
+    const completeAnswerNarration = `Here's exactly how you answer a ${session.topic} question in an interview. ${steps.join('. ')}. Then you seal it with a real-world example: "${ex.company} uses this to handle ${ex.scale}." That's a 45 LPA answer. Practice saying it out loud right now. Seriously. Pause and say it.`;
+    const completeAnswerDuration = 15;
+    scenes.push({
+      type: 'text' as SceneType,
+      content: completeAnswerNarration,
+      narration: completeAnswerNarration,
+      duration: completeAnswerDuration,
+      startFrame: currentFrame,
+      endFrame: (currentFrame += TIMING.secondsToFrames(completeAnswerDuration)),
+      heading: 'The Complete Interview Answer',
+      bullets: [
+        `1. Start with WHY ${session.topic} exists`,
+        ...topObjectives.slice(0, 2).map((obj, i) => `${i + 2}. ${obj}`),
+        `${Math.min(topObjectives.length, 2) + 2}. Close with ${ex.company} real-world example`,
+      ],
     });
   }
 
@@ -1833,6 +2017,13 @@ const CONVERSATIONAL_OPENERS = [
   'But wait. ',
   'The trick? ',
   'Real talk. ',
+  // Hindi-English code-switching openers (Edge TTS PrabhatNeural handles these naturally)
+  'Dekho, ',           // "Look,"
+  'Suno, yeh important hai. ', // "Listen, this is important."
+  'Ab samjho. ',       // "Now understand."
+  'Dhyan se. ',        // "Pay attention."
+  'Ek second. ',       // "One second."
+  'Yeh wala concept? Game changer. ', // "This concept? Game changer."
 ];
 
 /** Punchy closers — tension builders, not filler */
@@ -2125,7 +2316,7 @@ const SESSION_1_HOOKS = [
   (topic: string) => `I'm going to explain ${topic} so clearly that you will NEVER forget it. That's not a promise. That's a guarantee. Let's go.`,
   (topic: string) => `Give me 5 minutes. Just 5 minutes. And I'll teach you ${topic} better than any textbook, any course, any bootcamp ever could.`,
   (topic: string) => `By the end of this video, you'll understand ${topic} better than 90 percent of working developers. That sounds crazy, but stick with me.`,
-  (topic: string) => `I challenge you to watch this entire video and NOT understand ${topic}. Seriously. Try. You can't. Let's begin.`,
+  (topic: string) => `I challenge you to watch this entire video and NOT understand ${topic}. Seriously. Try. You can't. Let's go.`,
 
   // ── Pain point hooks (5) ──
   (topic: string) => `If your interviewer asks about ${topic} and you start with the textbook definition... you've already lost. Let me show you what to say instead.`,
@@ -2167,7 +2358,7 @@ const SESSION_1_HOOKS = [
 const SESSION_2_HOOKS = [
   (topic: string) => `Last time we learned WHY ${topic} matters and what problems it solves. Today we're going DEEP into the algorithms and implementations that make it actually work.`,
   (topic: string) => `In session 1, I showed you the big picture of ${topic}. You know the "what" and the "why." Now it's time for the "how." And this is where it gets really fun.`,
-  (topic: string) => `Welcome back. If you watched session 1, you already understand ${topic} better than most junior developers. Today we level up to intermediate. Let's build on that foundation.`,
+  (topic: string) => `If you watched session 1, you already understand ${topic} better than most junior developers. Today we level up to intermediate. Building on that foundation.`,
   (topic: string) => `Remember when I said ${topic} isn't complicated? I stand by that. But today's session goes deeper. We're moving from understanding to IMPLEMENTING. Big difference.`,
   (topic: string) => `You learned the fundamentals of ${topic} last time. Great start. But fundamentals alone don't get you hired. Today we cover the implementation details that interviewers actually ask about.`,
   (topic: string) => `Session 1 was the warm-up. You now know what ${topic} is and why every big tech company relies on it. Today? We roll up our sleeves and write the actual code.`,
@@ -2184,7 +2375,7 @@ const SESSION_3_HOOKS = [
   (topic: string) => `You've built the foundation. You've written the code. Now comes the part that actually matters in senior-level interviews: the trade-offs, the edge cases, the real-world gotchas of ${topic}.`,
   (topic: string) => `Let me ask you something. You can now explain ${topic} and implement it from scratch. But can you debug it at scale? Can you design it for a billion users? That's what session 3 is about.`,
   (topic: string) => `This is the session that turns knowledge into expertise. We've covered what ${topic} is and how to build it. Now we learn how to make it bulletproof. This is senior engineer territory.`,
-  (topic: string) => `A junior knows WHAT ${topic} is. A mid-level knows HOW to implement it. A senior knows WHEN it fails and WHAT to do about it. Welcome to session 3.`,
+  (topic: string) => `A junior knows WHAT ${topic} is. A mid-level knows HOW to implement it. A senior knows WHEN it fails and WHAT to do about it. That's what session 3 is about.`,
 ];
 
 /** Session 4+ hooks — expert level, production reality */
@@ -2416,17 +2607,26 @@ function generateSceneSfxTriggers(
 // Long Scene Splitter — breaks text scenes >200 chars into 2 sub-scenes
 // to increase cuts/min from ~2.3 to 6-8 (reduces avg scene duration)
 // ---------------------------------------------------------------------------
+/** Extract readable bullet points from a narration chunk */
+function bulletsFromText(text: string, max: number = 4): string[] {
+  return text
+    .split(/(?<=[.!?])\s+/)
+    .map(s => s.trim())
+    .filter(s => s.length > 15 && s.length < 120) // skip tiny fragments and huge blocks
+    .slice(0, max);
+}
+
 function splitLongScene(scene: Scene, _currentFrame: number): Scene[] {
-  // Split ANY text scene that is >150 chars OR >15 seconds
+  // Split text scenes exceeding max duration or narration length
   const tooLong = scene.narration && scene.narration.length > 150;
-  const tooSlow = scene.duration > 15;
+  const tooSlow = scene.duration > 10; // aggressive: 10s max for any text scene
   if (scene.type !== 'text' || !scene.narration || (!tooLong && !tooSlow)) return [scene];
 
   const sentences = scene.narration.split(/(?<=[.!?])\s+/);
   if (sentences.length < 2) return [scene];
 
-  // For very long scenes (>25s or >300 chars), split into 3 parts
-  if ((scene.duration > 25 || scene.narration.length > 400) && sentences.length >= 3) {
+  // For very long scenes (>20s or >300 chars), split into 3 parts
+  if ((scene.duration > 20 || scene.narration.length > 400) && sentences.length >= 3) {
     const third = Math.ceil(sentences.length / 3);
     const parts = [
       sentences.slice(0, third).join(' '),
@@ -2441,7 +2641,11 @@ function splitLongScene(scene: Scene, _currentFrame: number): Scene[] {
       const end = start + TIMING.secondsToFrames(dur);
       frame = end;
       const suffix = i === 0 ? '' : i === 1 ? ' — Deep Dive' : ' — Key Insight';
-      return { ...scene, narration: part, duration: dur, startFrame: start, endFrame: end, heading: (scene.heading || '') + suffix, bullets: i === 0 ? (scene.bullets || []).slice(0, 2) : [] };
+      // KEY FIX: each sub-scene gets its OWN content + bullets derived from its narration chunk
+      const partBullets = i === 0 && scene.bullets && scene.bullets.length > 0
+        ? scene.bullets.slice(0, 3)
+        : bulletsFromText(part);
+      return { ...scene, narration: part, content: part, duration: dur, startFrame: start, endFrame: end, heading: (scene.heading || '') + suffix, bullets: partBullets };
     });
   }
 
@@ -2452,9 +2656,16 @@ function splitLongScene(scene: Scene, _currentFrame: number): Scene[] {
   const firstDuration = Math.max(4, Math.round((firstHalf.length / scene.narration.length) * scene.duration));
   const secondDuration = Math.max(4, scene.duration - firstDuration);
 
+  const firstBullets = scene.bullets && scene.bullets.length > 0
+    ? scene.bullets.slice(0, Math.ceil(scene.bullets.length / 2))
+    : bulletsFromText(firstHalf);
+  const secondBullets = scene.bullets && scene.bullets.length > 2
+    ? scene.bullets.slice(Math.ceil(scene.bullets.length / 2))
+    : bulletsFromText(secondHalf);
+
   return [
-    { ...scene, narration: firstHalf, duration: firstDuration, endFrame: scene.startFrame + TIMING.secondsToFrames(firstDuration), bullets: (scene.bullets || []).slice(0, 2) },
-    { ...scene, narration: secondHalf, duration: secondDuration, startFrame: scene.startFrame + TIMING.secondsToFrames(firstDuration), endFrame: scene.endFrame, heading: (scene.heading || '') + ' — Key Insight', bullets: (scene.bullets || []).slice(2) },
+    { ...scene, narration: firstHalf, content: firstHalf, duration: firstDuration, endFrame: scene.startFrame + TIMING.secondsToFrames(firstDuration), bullets: firstBullets },
+    { ...scene, narration: secondHalf, content: secondHalf, duration: secondDuration, startFrame: scene.startFrame + TIMING.secondsToFrames(firstDuration), endFrame: scene.endFrame, heading: (scene.heading || '') + ' — Key Insight', bullets: secondBullets },
   ];
 }
 
