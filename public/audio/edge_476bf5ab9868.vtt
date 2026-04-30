@@ -1,0 +1,20 @@
+1
+00:00:00,100 --> 00:00:05,128
+So basically, bhai, this is INSANE once you see it.
+
+2
+00:00:05,078 --> 00:00:11,592
+KStream joins require co-partitioning (same number of partitions, same key).
+
+3
+00:00:11,592 --> 00:00:18,039
+Kafka Streams uses changelog topics and RocksDB for fault-tolerant state.
+
+4
+00:00:18,039 --> 00:00:25,736
+APPLICATIONIDCONFIG acts as the consumer group ID and is used for changelog topic naming.
+
+5
+00:00:25,736 --> 00:00:32,276
+Prefer suppress() to emit only final windowed results rather than every update.
+

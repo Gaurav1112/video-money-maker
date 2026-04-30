@@ -1,0 +1,32 @@
+1
+00:00:00,100 --> 00:00:03,523
+Starting with the Python implementation.
+
+2
+00:00:03,473 --> 00:00:06,986
+This demonstrate function in python.
+
+3
+00:00:06,986 --> 00:00:12,394
+First, we import Dict, List, Any from the typing module.
+
+4
+00:00:12,394 --> 00:00:16,486
+Now we print the output to verify it works.
+
+5
+00:00:16,486 --> 00:00:20,223
+Here we call O() to handle the operation.
+
+6
+00:00:20,223 --> 00:00:26,236
+At this point, we print f'{k}: {v}' to verify our result.
+
+7
+00:00:26,236 --> 00:00:32,855
+This is where we print f'Size: {len(data)}' to verify our result.
+
+8
+00:00:32,855 --> 00:00:36,894
+we call demonstrate() to handle the operation.
+

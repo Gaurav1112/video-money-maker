@@ -1,6 +1,11 @@
+import * as path from 'path';
 import { Scene, Storyboard, TTSResult } from '../types';
-import { TIMING, INTRO_DURATION, OUTRO_DURATION, TRANSITION_DURATION } from '../lib/constants';
+import { TIMING, INTRO_DURATION, OUTRO_DURATION } from '../lib/constants';
 import { stitchAudio } from './audio-stitcher';
+import { assignVizVariants } from './script-generator';
+import { generateSfxTriggers } from '../lib/sfx-triggers';
+import { getStyleForFormat, getTransitionDuration } from '../lib/video-styles';
+import type { SfxDensity } from '../lib/video-styles';
 
 interface StoryboardOptions {
   topic: string;
@@ -8,6 +13,8 @@ interface StoryboardOptions {
   fps?: number;
   width?: number;
   height?: number;
+  sfxDensity?: SfxDensity;
+  format?: 'long' | 'short' | 'vertical';
 }
 
 // Type-based fallback durations (seconds) used when a scene has no audio offset.
@@ -27,27 +34,57 @@ export function generateStoryboard(
   audioResults: TTSResult[],
   options: StoryboardOptions
 ): Storyboard {
-  const { topic, sessionNumber, fps = 30, width = 1920, height = 1080 } = options;
+  const { topic, sessionNumber, fps = 30, width = 1920, height = 1080, format = 'long' } = options;
+  const style = getStyleForFormat(format);
 
   // ── Stitch all scene audio into ONE master track ──
   // This eliminates audio overlap during TransitionSeries crossfades.
   const { masterPath, sceneOffsets, allSfxTriggers } = stitchAudio(
     audioResults,
-    0.8, // 0.8s silence gap between scenes
+    format === 'vertical' ? 0.35 : 0.8, // shorter gap for vertical pacing
     `master-${topic.replace(/[^a-z0-9]/gi, '-')}-s${sessionNumber}.mp3`
   ) as ReturnType<typeof stitchAudio> & { allSfxTriggers?: Storyboard['allSfxTriggers'] };
 
-  // Prepend branded intro scene
+  // Auto-generate SFX triggers from scene content
+  const autoSfxTriggers = generateSfxTriggers(scenes, options.sfxDensity);
+  const mergedSfxTriggers = [...(allSfxTriggers || []), ...autoSfxTriggers];
+
+  // Minimal branded intro — 2 seconds (60 frames) watermark, NOT a 25s title card.
+  // The HOOK must play at second 0. Branding is a small visual, not narration.
+  const TITLE_DURATION_FRAMES = 60;
   const introScene: Scene = {
     type: 'title' as const,
     content: 'Guru Sishya',
-    narration: 'Welcome to Guru Sishya... Your path to mastering technical interviews.',
-    duration: 3,
+    narration: '', // NO narration on intro — hook starts immediately after
+    duration: 2,
     startFrame: 0,
-    endFrame: INTRO_DURATION,
+    endFrame: TITLE_DURATION_FRAMES,
   };
 
-  let currentFrame = INTRO_DURATION;
+  // ── SYNC MATH — aligning visual scene timing to audio offsets ──
+  //
+  // The master audio track has each scene's audio at sceneOffsets[i] seconds.
+  // The visual content is rendered inside a TransitionSeries where crossfade
+  // transitions of TRANSITION_DURATION frames overlap adjacent scenes.
+  //
+  // In TransitionSeries, scene[i] starts at:
+  //   sum(D0..D(i-1)) - i * TRANSITION_DURATION   (in frames)
+  //
+  // We want this to equal sceneOffsets[i] * fps so audio and visuals align.
+  // Solving: D(i) = (sceneOffsets[i+1] - sceneOffsets[i]) * fps + TRANSITION_DURATION
+  //
+  // For the last scene (no next offset), we use audio.duration + breathing room.
+  //
+  // This ensures that inside each TransitionSeries.Sequence, frame 0 corresponds
+  // to the start of that scene's audio in the master track. Without this, the
+  // visual breathing room (+1.0s) and audio gap (+0.8s) diverge by 0.2s per scene,
+  // plus the TRANSITION_DURATION adds another 0.5s drift — totalling ~0.7s per scene.
+  // By scene 10, captions would be 7 seconds out of sync with the audio.
+  //
+  // Content scenes are 0-based; the intro offset is applied in LongVideo.tsx
+  // via <Sequence from={INTRO_DURATION}>. Starting at INTRO_DURATION here would
+  // cause a double-offset (BUG 6).
+  let currentFrame = 0;
   const timedScenes: Scene[] = [introScene];
 
   for (let i = 0; i < scenes.length; i++) {
@@ -55,33 +92,34 @@ export function generateStoryboard(
     const audio = audioResults[i];
     const offset = sceneOffsets[i]; // seconds, or -1 if no audio
 
-    let durationSeconds: number;
+    let durationFrames: number;
 
-    if (offset !== -1) {
-      // Audio-driven timing: derive duration from the gap between this offset
-      // and the next scene's offset (or the last word end time for the final scene).
-      const nextOffset = sceneOffsets.find((o, idx) => idx > i && o !== -1);
-
-      if (nextOffset !== undefined) {
-        // Duration = gap to the next scene's audio start
-        durationSeconds = nextOffset - offset;
-      } else {
-        // Last scene with audio: use last word's end time + 1.5s
-        const words = audio?.wordTimestamps;
-        if (words && words.length > 0) {
-          durationSeconds = words[words.length - 1].end + 1.5;
-        } else {
-          // Fallback: audio duration + 1.5s
-          durationSeconds = (audio?.duration ?? FALLBACK_SCENE_DURATION[scene.type] ?? 5) + 1.5;
+    if (offset !== -1 && audio?.duration > 0) {
+      // Find the next valid scene offset to determine how long this scene should last
+      let nextOffset = -1;
+      for (let j = i + 1; j < scenes.length; j++) {
+        if (sceneOffsets[j] !== -1) {
+          nextOffset = sceneOffsets[j];
+          break;
         }
       }
+
+      if (nextOffset !== -1) {
+        // Duration = time until next scene's audio starts + transition overlap compensation.
+        // This ensures TransitionSeries places the next scene exactly when its audio starts.
+        const prevType = i > 0 ? scenes[i - 1].type : 'title';
+        const transDuration = getTransitionDuration(prevType, scene.type, style);
+        durationFrames = TIMING.secondsToFrames(nextOffset - offset) + transDuration;
+      } else {
+        // Last scene with audio: use actual audio duration + 1s breathing room + transition
+        durationFrames = TIMING.secondsToFrames(audio.duration + 1.0) + style.transitionDuration;
+      }
     } else {
-      // No audio for this scene — use type-based default
-      durationSeconds = FALLBACK_SCENE_DURATION[scene.type] ?? 5;
+      // No audio for this scene — use type-based default + transition compensation
+      const durationSeconds = FALLBACK_SCENE_DURATION[scene.type] ?? 5;
+      durationFrames = TIMING.secondsToFrames(durationSeconds) + style.transitionDuration;
     }
 
-    // + TRANSITION_DURATION compensates for crossfade overlap in TransitionSeries
-    const durationFrames = TIMING.secondsToFrames(durationSeconds) + TRANSITION_DURATION;
     const startFrame = currentFrame;
     const endFrame = startFrame + durationFrames;
 
@@ -89,19 +127,22 @@ export function generateStoryboard(
       ...scene,
       startFrame,
       endFrame,
-      duration: durationSeconds,
+      duration: durationFrames / TIMING.fps,
       audioFile: undefined, // cleared: master audio handles all narration
       wordTimestamps: audio?.wordTimestamps ?? scene.wordTimestamps,
+      audioOffsetSeconds: offset, // -1 if no audio; seconds into master track
     });
 
     currentFrame = endFrame;
   }
 
   // Append branded outro scene
+  // RETENTION FIX: The outro is the LAST thing viewers hear. Generic "thanks for watching"
+  // gives zero reason to click the next video. Instead, end with urgency + specific next step.
   const outroScene: Scene = {
     type: 'summary' as const,
-    content: 'Thanks for watching',
-    narration: 'Thanks for watching. Practice this topic on guru-sishya.in... Subscribe for daily lessons. Your dream job is one interview away.',
+    content: 'Next video',
+    narration: `The next video in this ${topic} series covers the part that actually breaks in production. Subscribe and hit the bell so you don't miss it. See you there.`,
     duration: 5,
     startFrame: currentFrame,
     endFrame: currentFrame + OUTRO_DURATION,
@@ -109,17 +150,99 @@ export function generateStoryboard(
   timedScenes.push(outroScene);
   currentFrame = outroScene.endFrame;
 
+  // ── Assign transitions from the style's transition pool ──
+  const transitionPool = style.transitionPool;
+  for (let i = 0; i < timedScenes.length; i++) {
+    (timedScenes[i] as any).transition = transitionPool[i % transitionPool.length];
+  }
+
+  // ── Assign per-scene visualization variants ──
+  // This enriches text/interview scenes with vizVariant so each scene
+  // shows a UNIQUE animation state instead of repeating the same viz.
+  const enrichedScenes = assignVizVariants(timedScenes, topic);
+
+  // ── Compute visual beats AFTER word timestamps are populated ──
+  // This must happen here (not in script-generator) because wordTimestamps
+  // are populated by TTS, which runs AFTER script generation.
+  try {
+    const { computeVisualBeats } = require('../lib/visual-beats');
+    const { getVisualTemplate } = require('../lib/visual-templates');
+    for (const scene of enrichedScenes) {
+      if (scene.narration && scene.wordTimestamps && scene.wordTimestamps.length > 0) {
+        scene.visualBeats = computeVisualBeats(scene.narration, scene.wordTimestamps);
+      }
+      if (scene.type !== 'title' && !scene.templateId) {
+        const tmpl = getVisualTemplate(topic, sessionNumber, scene.heading || '', scene.type, scene.vizVariant);
+        scene.templateId = tmpl.templateId;
+        scene.templateVariant = tmpl.variant;
+      }
+    }
+  } catch {
+    // Visual beats not available — non-critical, scenes render without them
+  }
+
+  // ── Pre-render D2 diagrams (Node.js only, execSync) ──
+  // D2 CLI renders SVGs during storyboard generation so that the browser
+  // rendering phase (Remotion) only needs to embed the SVG string.
+  try {
+    const { getD2Diagram } = require('../lib/d2-diagrams');
+    const { renderD2Diagram } = require('../lib/d2-renderer');
+    // Try scene heading first, then topic — so each scene gets a RELEVANT diagram
+    for (const scene of enrichedScenes) {
+      if (scene.type === 'text' || scene.type === 'diagram') {
+        // Try matching scene heading first (more specific), then topic (fallback)
+        const diagramDef = getD2Diagram(scene.heading || '') || getD2Diagram(topic);
+        if (diagramDef) {
+          const svg = renderD2Diagram(diagramDef.nodes, diagramDef.edges, {
+            direction: diagramDef.direction,
+          });
+          if (svg) {
+            scene.d2Svg = svg;
+          }
+        }
+      }
+    }
+  } catch {
+    // D2 not available — non-critical, scenes render with TemplateFactory fallback
+  }
+
+  // ── Generate Rhubarb lip sync cues from master audio ──
+  // Skipped by default — AvatarBubble has sine-wave fallback that looks equivalent
+  // for the art_0 character. Enable with RHUBARB=1 for photorealistic avatars.
+  let mouthCues: Array<{ start: number; end: number; value: string }> = [];
+  if (process.env.RHUBARB === '1') {
+    try {
+      const { execSync } = require('child_process');
+      const rhubarbBin = path.join(process.cwd(), 'tools', 'Rhubarb-Lip-Sync-1.13.0-macOS', 'rhubarb');
+      const fs = require('fs');
+      if (fs.existsSync(rhubarbBin) && fs.existsSync(masterPath)) {
+        const wavPath = masterPath.replace(/\.mp3$/, '_lip.wav');
+        execSync(`ffmpeg -y -i "${masterPath}" "${wavPath}"`, { timeout: 30000 });
+        const output = execSync(`"${rhubarbBin}" "${wavPath}" -f json`, { timeout: 300000 }).toString();
+        const parsed = JSON.parse(output);
+        mouthCues = parsed.mouthCues || [];
+        try { fs.unlinkSync(wavPath); } catch {}
+        console.log(`  ✓ Rhubarb lip sync: ${mouthCues.length} mouth cues`);
+      }
+    } catch (err) {
+      console.warn('  ⚠ Rhubarb lip sync skipped:', (err as Error).message?.slice(0, 80));
+    }
+  } else {
+    console.log('  ⏭ Rhubarb skipped (use RHUBARB=1 to enable)');
+  }
+
   return {
     fps,
     width,
     height,
     durationInFrames: currentFrame,
-    scenes: timedScenes,
+    scenes: enrichedScenes,
     audioFile: masterPath,
     topic,
     sessionNumber,
     sceneOffsets,
-    ...(allSfxTriggers ? { allSfxTriggers } : {}),
+    ...(mergedSfxTriggers.length > 0 ? { allSfxTriggers: mergedSfxTriggers } : {}),
+    ...(mouthCues.length > 0 ? { mouthCues } : {}),
   };
 }
 

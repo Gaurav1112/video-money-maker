@@ -1,0 +1,60 @@
+1
+00:00:00,100 --> 00:00:02,732
+Alright, here's what you just learned.
+
+2
+00:00:02,682 --> 00:00:06,403
+Explain the consumer group protocol and partition assignment.
+
+3
+00:00:06,403 --> 00:00:09,586
+Implement the poll loop with a ConsumerRebalanceListener.
+
+4
+00:00:09,586 --> 00:00:13,423
+Compare auto-commit, sync commit, and async commit strategies.
+
+5
+00:00:13,423 --> 00:00:15,000
+Stick with me here.
+
+6
+00:00:15,000 --> 00:00:18,211
+This is the part where real understanding happens.
+
+7
+00:00:18,211 --> 00:00:20,519
+Don't just watch and forget.
+
+8
+00:00:20,519 --> 00:00:21,807
+Go practice.
+
+9
+00:00:21,807 --> 00:00:23,384
+Build it in code.
+
+10
+00:00:23,384 --> 00:00:25,115
+Explain it to someone.
+
+11
+00:00:25,115 --> 00:00:26,769
+That's how it sticks.
+
+12
+00:00:26,769 --> 00:00:33,211
+The complete Apache Kafka course with cheatsheets and mock interviews is at guru-sishya.in slash apache-kafka.
+
+13
+00:00:33,211 --> 00:00:35,201
+Drop a like if this helped.
+
+14
+00:00:35,201 --> 00:00:44,596
+You now know how to explain the consumer group protocol and partition assignment, implement the poll loop with a consumerrebalancelistener, and explain the trade-offs in an interview.
+
+15
+00:00:44,596 --> 00:00:46,586
+Ab interview mein dhoom machao!
+

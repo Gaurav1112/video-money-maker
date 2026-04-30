@@ -1,0 +1,40 @@
+1
+00:00:00,100 --> 00:00:01,886
+Let me show you the code.
+
+2
+00:00:01,836 --> 00:00:06,000
+Here is the hidden catch about The Cluster that interviewers love to ask.
+
+3
+00:00:06,000 --> 00:00:08,182
+Most people miss this completely.
+
+4
+00:00:08,182 --> 00:00:13,221
+Most people miss this completely,  Here's the typescript implementation in 8 lines.
+
+5
+00:00:13,221 --> 00:00:15,480
+First, we handle the ┌───────────────────────────── operation.
+
+6
+00:00:15,480 --> 00:00:18,317
+Now we handle the │ Kafka Cluster operation.
+
+7
+00:00:18,317 --> 00:00:21,500
+Here we handle the │ │ Broker 1 │ │ Broker 2 │ │ operation.
+
+8
+00:00:21,500 --> 00:00:24,182
+At this point, we handle the │ │ operation.
+
+9
+00:00:24,182 --> 00:00:26,673
+This is where we handle the │ └──────────┘ └──────────┘ └ operation.
+
+10
+00:00:26,673 --> 00:00:28,509
+we handle the └───────────────────────────── operation.
+

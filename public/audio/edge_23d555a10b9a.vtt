@@ -1,0 +1,8 @@
+1
+00:00:00,100 --> 00:00:04,569
+So basically, The Kafka producer is far more than a simple send() call.
+
+2
+00:00:04,519 --> 00:00:16,326
+Understanding its internal pipeline — from serialization through batching, network I/O, acknowledgment, and retry — is essential for building reliable, high-throughput systems and for answering advanced interview questions.
+

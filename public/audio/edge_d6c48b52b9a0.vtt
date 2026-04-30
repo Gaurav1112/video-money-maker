@@ -1,0 +1,40 @@
+1
+00:00:00,100 --> 00:00:02,588
+Starting with the Python implementation.
+
+2
+00:00:02,538 --> 00:00:05,355
+Let me walk you through the ConsistentHash class.
+
+3
+00:00:05,355 --> 00:00:07,673
+The key method here is init.
+
+4
+00:00:07,673 --> 00:00:10,432
+First, we import the hashlib module.
+
+5
+00:00:10,432 --> 00:00:15,259
+Now we store ring on our instance — for O of 1 constant time lookups.
+
+6
+00:00:15,259 --> 00:00:18,221
+This is why hash maps are interview gold.
+
+7
+00:00:18,221 --> 00:00:21,884
+Here we define the add_node function that takes node.
+
+8
+00:00:21,884 --> 00:00:26,144
+At this point, we define the get_node function that takes key.
+
+9
+00:00:26,144 --> 00:00:34,471
+This is where we check if k greater than or equal to h: return self dot ring[k] — and that's our answer, clean and efficient.
+
+10
+00:00:34,471 --> 00:00:37,221
+we print the output to verify it works.
+

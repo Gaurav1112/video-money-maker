@@ -21,9 +21,9 @@ const SCENE_LABELS: Record<string, { icon: string; label: string; color: string 
 };
 
 const TopicHeader: React.FC<TopicHeaderProps> = ({
-  topic,
-  sessionNumber,
-  language,
+  topic = '',
+  sessionNumber = 1,
+  language = '',
   sceneType,
 }) => {
   const frame = useCurrentFrame();
@@ -42,17 +42,17 @@ const TopicHeader: React.FC<TopicHeaderProps> = ({
       <div
         style={{
           position: 'absolute',
-          top: 0,
+          top: 44,
           left: 0,
           right: 0,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          padding: '12px 32px',
-          backgroundColor: `${COLORS.dark}DD`,
+          padding: '8px 32px',
+          backgroundColor: `${COLORS.dark}CC`,
           backdropFilter: 'blur(8px)',
           fontFamily: FONTS.text,
-          borderBottom: `1px solid ${COLORS.gray}10`,
+          zIndex: 50,
         }}
       >
         {/* Left side: topic + scene type */}

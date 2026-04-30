@@ -1,0 +1,24 @@
+1
+00:00:00,100 --> 00:00:03,786
+Comment 'UNDERSTOOD' if you made it this far.
+
+2
+00:00:03,736 --> 00:00:06,684
+I read every single comment.
+
+3
+00:00:06,684 --> 00:00:12,750
+Okay so,  kafka's durability story rests entirely on replication.
+
+4
+00:00:12,750 --> 00:00:29,078
+Understanding how replicas stay synchronized, what happens during broker failures, and how to configure the right trade-off between availability and durability is critical for production operations and senior-level interviews.
+
+5
+00:00:29,078 --> 00:00:34,618
+What your textbook says about Configuring Durability is outdated.
+
+6
+00:00:34,618 --> 00:00:39,697
+The real approach that companies like Google use is coming up.
+

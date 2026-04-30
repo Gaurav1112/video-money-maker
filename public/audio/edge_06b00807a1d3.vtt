@@ -1,0 +1,12 @@
+1
+00:00:00,100 --> 00:00:10,773
+Now pay attention here,  exactly-once semantics (EOS) is one of Kafka's most powerful and most misunderstood features.
+
+2
+00:00:10,723 --> 00:00:22,092
+it's not a single setting — it's the combination of three coordinated mechanisms: idempotent producers, transactional writes, and read-committed consumers.
+
+3
+00:00:22,092 --> 00:00:34,815
+Together they guarantee that each message's effect appears exactly once in the system, even in the presence of producer retries, broker failures, and consumer crashes.
+

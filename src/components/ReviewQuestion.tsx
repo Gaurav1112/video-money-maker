@@ -1,280 +1,456 @@
 import React from 'react';
-import { useCurrentFrame, AbsoluteFill, interpolate, Easing } from 'remotion';
+import { useCurrentFrame, AbsoluteFill, interpolate, spring } from 'remotion';
 import { COLORS, FONTS, SIZES } from '../lib/theme';
-import { fadeIn, slideUp, springIn, springScale } from '../lib/animations';
+import { fadeIn, slideUp, springIn, springScale, pulseGlow } from '../lib/animations';
 
 interface ReviewQuestionProps {
   question: string;
   answer: string;
+  /** Frame this scene starts at (absolute). Default: 0 */
   startFrame?: number;
+  /** Frame this scene ends at (absolute). Used to auto-derive phase timing. */
+  endFrame?: number;
+  /** Override: explicit delay (in frames) before answer reveals. Ignored when endFrame is provided. */
   revealDelay?: number;
+  /** Optional quiz options. If not provided, auto-generated from the answer. */
+  quizOptions?: string[];
+}
+
+const OPTION_LETTERS = ['A', 'B', 'C', 'D'] as const;
+
+/**
+ * Shuffle an array deterministically based on the question string.
+ */
+function shuffleOptions(options: string[], seed: string): string[] {
+  const arr = [...options];
+  let hash = 0;
+  for (let i = 0; i < seed.length; i++) {
+    hash = ((hash << 5) - hash + seed.charCodeAt(i)) | 0;
+  }
+  for (let i = arr.length - 1; i > 0; i--) {
+    hash = ((hash << 5) - hash + i) | 0;
+    const j = Math.abs(hash) % (i + 1);
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
 }
 
 /**
- * ReviewQuestion — Quiz-show style scene.
- * Question appears with spotlight focus, countdown timer (3, 2, 1),
- * then answer slides up with a green checkmark "ding" effect.
+ * Build 4 quiz options. If quizOptions provided, use those (pad/trim to 4).
+ * Otherwise generate from answer + fillers.
+ */
+function buildOptions(answer: string, quizOptions?: string[]): string[] {
+  if (quizOptions && quizOptions.length >= 4) {
+    return quizOptions.slice(0, 4);
+  }
+  if (quizOptions && quizOptions.length > 0) {
+    const fillers = ['None of the above', 'All of the above', 'It depends', 'Not enough info'];
+    const result = [...quizOptions];
+    let fi = 0;
+    while (result.length < 4 && fi < fillers.length) {
+      if (!result.includes(fillers[fi])) result.push(fillers[fi]);
+      fi++;
+    }
+    return result.slice(0, 4);
+  }
+  // Auto-generate: answer + 3 fillers
+  const fillers = ['None of the above', 'All of the above', 'It depends'];
+  return [answer, ...fillers];
+}
+
+/**
+ * Truncate text to max length with ellipsis.
+ */
+function truncate(text: string, max: number): string {
+  if (text.length <= max) return text;
+  return text.slice(0, max - 1) + '\u2026';
+}
+
+/**
+ * Corner origins for staggered fly-in: top-left, top-right, bottom-left, bottom-right
+ */
+const CORNER_OFFSETS: Array<{ x: number; y: number }> = [
+  { x: -120, y: -80 },
+  { x: 120, y: -80 },
+  { x: -120, y: 80 },
+  { x: 120, y: 80 },
+];
+
+/**
+ * ReviewQuestion — Game show quiz scene.
+ *
+ * Phases:
+ *   1 (0-15%):   "POP QUIZ!" slams in with spring scale
+ *   2 (15-30%):  Question text fades in at top
+ *   3 (30-60%):  4 option cards fly in from corners (2x2 grid)
+ *   4 (60-75%):  Countdown timer (SVG circle drains, 3-2-1)
+ *   5 (75-100%): Correct answer highlighted green, wrong dim, explanation fades in
  */
 const ReviewQuestion: React.FC<ReviewQuestionProps> = ({
-  question,
-  answer,
+  question = 'What is the time complexity of binary search?',
+  answer = 'O(log n) -- each step halves the search space.',
   startFrame = 0,
-  revealDelay = 90,
+  endFrame,
+  revealDelay: _revealDelayProp,
+  quizOptions,
 }) => {
   const frame = useCurrentFrame();
+  const fps = 30;
 
-  // === QUESTION PHASE ===
-  const questionOpacity = fadeIn(frame, startFrame, 20);
-  const questionY = slideUp(frame, startFrame, 50, 30);
-  const questionScale = interpolate(
-    frame,
-    [startFrame, startFrame + 20, startFrame + 35],
-    [0.95, 1.02, 1],
-    { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
+  const sceneDuration = endFrame != null ? endFrame - startFrame : 180;
+
+  // Phase boundaries (in frames relative to startFrame)
+  const phase1End = Math.round(sceneDuration * 0.15);
+  const phase2End = Math.round(sceneDuration * 0.30);
+  const phase3End = Math.round(sceneDuration * 0.60);
+  const phase4End = Math.round(sceneDuration * 0.75);
+  // phase5 = 75-100%
+
+  // Build and shuffle options
+  const rawOptions = buildOptions(answer, quizOptions);
+  const options = shuffleOptions(rawOptions, question);
+  const correctIndex = options.findIndex(
+    (o) => o.trim().toLowerCase() === answer.trim().toLowerCase(),
   );
 
-  // === SPOTLIGHT OVERLAY ===
-  // Darkens edges, focuses attention on question area
-  const spotlightOpacity = interpolate(
+  // ─── PHASE 1: "POP QUIZ!" ───────────────────────────────────────────────
+  const popQuizStart = startFrame;
+  const popQuizScale = spring({
+    frame: Math.max(0, frame - popQuizStart),
+    fps,
+    from: 0.5,
+    to: 1.0,
+    config: { damping: 8, stiffness: 200, mass: 0.6 },
+  });
+  const popQuizOpacity = interpolate(
     frame,
-    [startFrame + 5, startFrame + 25],
-    [0, 0.5],
+    [popQuizStart, popQuizStart + 8],
+    [0, 1],
     { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
   );
-
-  // === THINK ABOUT IT ===
-  const thinkStart = startFrame + 25;
-  const thinkOpacity = fadeIn(frame, thinkStart, 15);
-
-  // === COUNTDOWN: 3, 2, 1 ===
-  const countdownStart = startFrame + 40;
-  const countdownDuration = revealDelay - 40; // total countdown time
-  const countPerNumber = countdownDuration / 3;
-
-  const getCountdownNumber = (): number | null => {
-    if (frame < countdownStart) return null;
-    const elapsed = frame - countdownStart;
-    if (elapsed < countPerNumber) return 3;
-    if (elapsed < countPerNumber * 2) return 2;
-    if (elapsed < countPerNumber * 3) return 1;
-    return null;
-  };
-
-  const countdownNumber = getCountdownNumber();
-  const countdownVisible = countdownNumber !== null;
-
-  // Each number gets its own spring animation
-  const getCountdownScale = () => {
-    if (!countdownNumber) return 0;
-    const numberIndex = 3 - countdownNumber;
-    const numberStart = countdownStart + numberIndex * countPerNumber;
-    return springIn(frame, numberStart);
-  };
-
-  const countdownScale = getCountdownScale();
-
-  // Countdown ring progress (shrinks from full circle to empty)
-  const ringProgress = interpolate(
+  // Fade out pop quiz after phase 1
+  const popQuizFade = interpolate(
     frame,
-    [countdownStart, startFrame + revealDelay],
+    [startFrame + phase1End - 5, startFrame + phase1End],
     [1, 0],
     { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
   );
 
-  // === ANSWER REVEAL ===
-  const answerStart = startFrame + revealDelay;
-  const answerOpacity = fadeIn(frame, answerStart, 15);
-  const answerY = slideUp(frame, answerStart, 60, 25);
+  // ─── PHASE 2: Question text ─────────────────────────────────────────────
+  const questionStart = startFrame + phase1End;
+  const questionOpacity = fadeIn(frame, questionStart, 15);
+  const questionY = slideUp(frame, questionStart, 30, 20);
 
-  // Green checkmark "ding" effect
-  const checkmarkSpring = springIn(frame, answerStart + 5);
-  const checkmarkScale = springScale(frame, answerStart + 5);
+  // ─── PHASE 3: Option cards ──────────────────────────────────────────────
+  const optionsStart = startFrame + phase2End;
+  const optionsDuration = phase3End - phase2End;
 
-  // Flash on answer reveal
-  const revealFlash = interpolate(
+  // ─── PHASE 4: Countdown ─────────────────────────────────────────────────
+  const countdownStart = startFrame + phase3End;
+  const countdownDuration = phase4End - phase3End;
+  const countPerNumber = Math.max(1, Math.floor(countdownDuration / 3));
+
+  const getCountdownNumber = (): number | null => {
+    if (frame < countdownStart || frame >= startFrame + phase4End) return null;
+    const elapsed = frame - countdownStart;
+    if (elapsed < countPerNumber) return 3;
+    if (elapsed < countPerNumber * 2) return 2;
+    return 1;
+  };
+  const countdownNumber = getCountdownNumber();
+
+  // SVG circle timer
+  const circleRadius = 32;
+  const circumference = 2 * Math.PI * circleRadius;
+  const ringProgress = interpolate(
     frame,
-    [answerStart, answerStart + 4, answerStart + 12],
-    [0, 0.15, 0],
+    [countdownStart, startFrame + phase4End],
+    [0, circumference],
     { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
   );
 
-  // Answer glow
-  const answerGlow = interpolate(
+  const countdownOpacity = interpolate(
     frame,
-    [answerStart, answerStart + 20, answerStart + 60],
-    [0, 0.6, 0.3],
+    [countdownStart, countdownStart + 5],
+    [0, 1],
     { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
   );
 
-  // Question mark icon pulse
-  const qPulse = interpolate(
-    Math.sin(frame * 0.1),
-    [-1, 1],
-    [0.8, 1.2],
-  );
-
-  // Dismiss countdown and think text after answer
-  const preAnswerFade = frame >= answerStart
-    ? interpolate(frame, [answerStart, answerStart + 10], [1, 0], {
-        extrapolateLeft: 'clamp',
-        extrapolateRight: 'clamp',
+  const countdownScale = countdownNumber
+    ? spring({
+        frame: Math.max(0, frame - (countdownStart + (3 - countdownNumber) * countPerNumber)),
+        fps,
+        config: { damping: 10, stiffness: 180, mass: 0.5 },
       })
-    : 1;
+    : 0;
+
+  // ─── PHASE 5: Reveal ───────────────────────────────────────────────────
+  const revealStart = startFrame + phase4End;
+  const revealOpacity = fadeIn(frame, revealStart, 12);
+  const isRevealed = frame >= revealStart;
+
+  // Explanation text
+  const explanationOpacity = fadeIn(frame, revealStart + 15, 20);
+  const explanationY = slideUp(frame, revealStart + 15, 20, 15);
+
+  // CTA
+  const ctaStart = revealStart + 30;
+  const ctaOpacity = fadeIn(frame, ctaStart, 20);
+  const ctaGlow = pulseGlow(frame, 0.07, 0.4, 0.9);
 
   return (
     <AbsoluteFill
       style={{
-        backgroundColor: 'transparent', // Background layer handles this
-        justifyContent: 'center',
-        alignItems: 'center',
-        padding: '80px 100px',
+        backgroundColor: 'transparent',
         fontFamily: FONTS.text,
+        justifyContent: 'flex-start',
+        alignItems: 'center',
+        padding: '50px 80px 80px',
       }}
     >
-      {/* Spotlight overlay — dims edges */}
-      <div
-        style={{
-          position: 'absolute',
-          inset: 0,
-          background: `radial-gradient(ellipse 60% 50% at 50% 45%, transparent 0%, ${COLORS.dark}${frame > answerStart ? 'CC' : 'AA'} 100%)`,
-          opacity: spotlightOpacity,
-          pointerEvents: 'none',
-        }}
-      />
+      {/* Animated background — never plain black */}
+      <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
+        <div style={{
+          position: 'absolute', inset: 0,
+          backgroundImage: `
+            linear-gradient(rgba(232,93,38,0.02) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(232,93,38,0.02) 1px, transparent 1px)
+          `,
+          backgroundSize: '80px 80px',
+        }} />
+        <div style={{
+          position: 'absolute', inset: 0,
+          background: `radial-gradient(ellipse at 50% 50%, rgba(232,93,38,0.05) 0%, transparent 50%)`,
+        }} />
+      </div>
 
-      {/* Reveal flash */}
-      <div
-        style={{
-          position: 'absolute',
-          inset: 0,
-          backgroundColor: COLORS.teal,
-          opacity: revealFlash,
-          pointerEvents: 'none',
-          zIndex: 10,
-        }}
-      />
-
-      <div style={{ maxWidth: 950, width: '100%', position: 'relative', zIndex: 2 }}>
-        {/* Question mark icon */}
+      {/* ── Phase 1: POP QUIZ! ── */}
+      {frame < startFrame + phase2End + 10 && (
         <div
           style={{
             position: 'absolute',
-            top: -50,
-            right: -20,
-            fontSize: 80,
-            fontWeight: 900,
-            color: COLORS.saffron,
-            opacity: questionOpacity * 0.15 * preAnswerFade,
-            transform: `scale(${qPulse})`,
-            fontFamily: FONTS.heading,
-          }}
-        >
-          ?
-        </div>
-
-        {/* Question label */}
-        <div
-          style={{
-            opacity: questionOpacity,
-            fontSize: SIZES.caption,
-            fontWeight: 700,
-            color: COLORS.saffron,
-            textTransform: 'uppercase',
-            letterSpacing: 3,
-            marginBottom: 16,
+            inset: 0,
             display: 'flex',
+            justifyContent: 'center',
             alignItems: 'center',
-            gap: 10,
+            zIndex: 20,
+            opacity: popQuizOpacity * popQuizFade,
+            pointerEvents: 'none',
           }}
         >
           <div
             style={{
-              width: 24,
-              height: 3,
-              backgroundColor: COLORS.saffron,
-              borderRadius: 2,
+              fontSize: 72,
+              fontWeight: 900,
+              color: COLORS.saffron,
+              fontFamily: FONTS.heading,
+              transform: `scale(${popQuizScale})`,
+              textShadow: `0 0 40px ${COLORS.saffron}88, 0 4px 20px ${COLORS.dark}`,
+              letterSpacing: 6,
             }}
-          />
-          REVIEW QUESTION
+          >
+            POP QUIZ!
+          </div>
         </div>
+      )}
 
-        {/* Question text with focus effect */}
+      {/* ── Main content area ── */}
+      <div style={{ maxWidth: 1000, width: '100%', position: 'relative', zIndex: 2 }}>
+        {/* ── Phase 2: Question text ── */}
         <div
           style={{
             opacity: questionOpacity,
-            transform: `translateY(${questionY}px) scale(${questionScale})`,
-            fontSize: SIZES.heading3 + 2,
-            fontWeight: 600,
-            color: COLORS.white,
+            transform: `translateY(${questionY}px)`,
+            fontSize: 28,
+            fontWeight: 700,
+            color: COLORS.textOnDark,
             lineHeight: 1.5,
-            marginBottom: 40,
-            textShadow: `0 0 40px ${COLORS.saffron}11`,
+            marginBottom: 32,
+            marginTop: 20,
+            textShadow: `0 2px 16px ${COLORS.dark}`,
           }}
         >
           {question}
         </div>
 
-        {/* Think about it + Countdown timer */}
+        {/* ── Phase 3: 2x2 option grid ── */}
         <div
           style={{
-            opacity: thinkOpacity * preAnswerFade,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 24,
-            marginBottom: 40,
-            height: 80,
+            display: 'grid',
+            gridTemplateColumns: '1fr 1fr',
+            gap: 20,
+            marginBottom: 30,
           }}
         >
-          {/* Think text */}
+          {options.map((option, idx) => {
+            const staggerDelay = idx * 6;
+            const cardStart = optionsStart + staggerDelay;
+
+            // Fly-in from corner
+            const flyProgress = spring({
+              frame: Math.max(0, frame - cardStart),
+              fps,
+              config: { damping: 12, stiffness: 120, mass: 0.7 },
+            });
+            const corner = CORNER_OFFSETS[idx];
+            const cardX = interpolate(flyProgress, [0, 1], [corner.x, 0]);
+            const cardY = interpolate(flyProgress, [0, 1], [corner.y, 0]);
+            const cardOpacity = interpolate(flyProgress, [0, 0.3], [0, 1], {
+              extrapolateRight: 'clamp',
+            });
+
+            // Reveal state
+            const isCorrect = idx === correctIndex;
+            const revealBg = isRevealed
+              ? isCorrect
+                ? `${COLORS.teal}30`
+                : `${COLORS.darkAlt}`
+              : `${COLORS.darkAlt}`;
+            const revealBorder = isRevealed
+              ? isCorrect
+                ? `2px solid ${COLORS.teal}`
+                : `1px solid ${COLORS.gray}20`
+              : `1px solid ${COLORS.gray}30`;
+            const revealTextOpacity = isRevealed && !isCorrect ? 0.3 : 1;
+            const revealFilter = isRevealed && !isCorrect ? 'grayscale(80%)' : 'none';
+
+            // Letter badge color
+            const letterBg = isRevealed && isCorrect ? COLORS.teal : COLORS.saffron;
+
+            return (
+              <div
+                key={idx}
+                style={{
+                  opacity: cardOpacity,
+                  transform: `translate(${cardX}px, ${cardY}px)`,
+                  backgroundColor: revealBg,
+                  border: revealBorder,
+                  borderRadius: 14,
+                  padding: '18px 22px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 16,
+                  filter: revealFilter,
+                  transition: 'none',
+                  boxShadow: isRevealed && isCorrect
+                    ? `0 0 24px ${COLORS.teal}44`
+                    : `0 2px 12px ${COLORS.dark}40`,
+                }}
+              >
+                {/* Letter badge */}
+                <div
+                  style={{
+                    width: 38,
+                    height: 38,
+                    borderRadius: 10,
+                    backgroundColor: `${letterBg}22`,
+                    border: `2px solid ${letterBg}66`,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                  }}
+                >
+                  <span
+                    style={{
+                      color: letterBg,
+                      fontSize: 20,
+                      fontWeight: 800,
+                      fontFamily: FONTS.code,
+                    }}
+                  >
+                    {OPTION_LETTERS[idx]}
+                  </span>
+                </div>
+
+                {/* Option text */}
+                <span
+                  style={{
+                    fontSize: SIZES.bodySmall,
+                    fontWeight: 600,
+                    color: COLORS.textOnDark,
+                    lineHeight: 1.4,
+                    opacity: revealTextOpacity,
+                  }}
+                >
+                  {truncate(option, 60)}
+                </span>
+
+                {/* Checkmark on correct answer */}
+                {isRevealed && isCorrect && (
+                  <div
+                    style={{
+                      marginLeft: 'auto',
+                      flexShrink: 0,
+                      opacity: revealOpacity,
+                      transform: `scale(${springScale(frame, revealStart + 5)})`,
+                    }}
+                  >
+                    <svg width={28} height={28} viewBox="0 0 28 28">
+                      <circle cx={14} cy={14} r={13} fill={`${COLORS.teal}33`} stroke={COLORS.teal} strokeWidth={2} />
+                      <path
+                        d="M8 14.5 L12 18.5 L20 10"
+                        fill="none"
+                        stroke={COLORS.teal}
+                        strokeWidth={2.5}
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        {/* ── Phase 4: Countdown timer ── */}
+        {frame >= countdownStart && frame < startFrame + phase4End + 5 && (
           <div
             style={{
-              fontSize: SIZES.body,
-              color: COLORS.gray,
-              fontStyle: 'italic',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              marginBottom: 24,
+              opacity: countdownOpacity * (isRevealed ? 0 : 1),
             }}
           >
-            Think about it...
-          </div>
-
-          {/* Countdown circle */}
-          {countdownVisible && (
             <div
               style={{
                 position: 'relative',
-                width: 64,
-                height: 64,
+                width: 80,
+                height: 80,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
               }}
             >
-              {/* Background ring */}
               <svg
-                width={64}
-                height={64}
+                width={80}
+                height={80}
                 style={{ position: 'absolute', transform: 'rotate(-90deg)' }}
               >
+                {/* Track */}
                 <circle
-                  cx={32}
-                  cy={32}
-                  r={28}
+                  cx={40}
+                  cy={40}
+                  r={circleRadius}
                   fill="none"
-                  stroke={`${COLORS.gray}22`}
-                  strokeWidth={3}
+                  stroke={`${COLORS.saffron}22`}
+                  strokeWidth={4}
                 />
+                {/* Depleting arc */}
                 <circle
-                  cx={32}
-                  cy={32}
-                  r={28}
+                  cx={40}
+                  cy={40}
+                  r={circleRadius}
                   fill="none"
                   stroke={COLORS.saffron}
-                  strokeWidth={3}
-                  strokeDasharray={`${ringProgress * 176} 176`}
+                  strokeWidth={4}
+                  strokeDasharray={`${circumference}`}
+                  strokeDashoffset={ringProgress}
                   strokeLinecap="round"
-                  style={{
-                    filter: `drop-shadow(0 0 4px ${COLORS.saffron}66)`,
-                  }}
+                  style={{ filter: `drop-shadow(0 0 8px ${COLORS.saffron}88)` }}
                 />
               </svg>
 
@@ -282,98 +458,111 @@ const ReviewQuestion: React.FC<ReviewQuestionProps> = ({
               <div
                 style={{
                   fontSize: SIZES.heading3,
-                  fontWeight: 800,
+                  fontWeight: 900,
                   color: COLORS.saffron,
                   fontFamily: FONTS.code,
-                  opacity: countdownScale,
                   transform: `scale(${countdownScale})`,
-                  textShadow: `0 0 12px ${COLORS.saffron}44`,
+                  textShadow: `0 0 16px ${COLORS.saffron}66`,
+                  lineHeight: 1,
                 }}
               >
                 {countdownNumber}
               </div>
             </div>
-          )}
-        </div>
+          </div>
+        )}
 
-        {/* === ANSWER SECTION === */}
-        <div
-          style={{
-            opacity: answerOpacity,
-            transform: `translateY(${answerY}px)`,
-          }}
-        >
-          {/* Divider with glow */}
+        {/* ── Phase 5: Answer explanation ── */}
+        {isRevealed && (
           <div
             style={{
-              height: 2,
-              background: `linear-gradient(90deg, transparent, ${COLORS.teal}66, transparent)`,
-              marginBottom: 28,
-              boxShadow: `0 0 ${20 * answerGlow}px ${COLORS.teal}44`,
-            }}
-          />
-
-          {/* Answer header with checkmark ding */}
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 14,
-              marginBottom: 16,
+              opacity: explanationOpacity,
+              transform: `translateY(${explanationY}px)`,
+              marginTop: 8,
             }}
           >
-            {/* Animated checkmark */}
             <div
               style={{
-                width: 36,
-                height: 36,
-                borderRadius: 10,
-                backgroundColor: `${COLORS.teal}20`,
+                height: 2,
+                background: `linear-gradient(90deg, transparent, ${COLORS.teal}77, transparent)`,
+                marginBottom: 18,
+              }}
+            />
+            <div
+              style={{
                 display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                opacity: checkmarkSpring,
-                transform: `scale(${checkmarkScale})`,
-                boxShadow: `0 0 ${16 * answerGlow}px ${COLORS.teal}44`,
+                alignItems: 'flex-start',
+                gap: 14,
               }}
             >
-              <span
+              <div
                 style={{
-                  color: COLORS.teal,
-                  fontSize: 22,
-                  fontWeight: 700,
+                  width: 32,
+                  height: 32,
+                  borderRadius: 8,
+                  backgroundColor: `${COLORS.teal}22`,
+                  border: `2px solid ${COLORS.teal}55`,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                  marginTop: 2,
                 }}
               >
-                &#10003;
-              </span>
-            </div>
-
-            <div
-              style={{
-                fontSize: SIZES.bodySmall,
-                fontWeight: 700,
-                color: COLORS.teal,
-                textTransform: 'uppercase',
-                letterSpacing: 2,
-              }}
-            >
-              Answer
+                <span style={{ color: COLORS.teal, fontSize: 18, fontWeight: 800 }}>
+                  {'\u2713'}
+                </span>
+              </div>
+              <div
+                style={{
+                  fontSize: SIZES.bodySmall,
+                  fontWeight: 500,
+                  color: COLORS.teal,
+                  lineHeight: 1.55,
+                }}
+              >
+                {answer}
+              </div>
             </div>
           </div>
+        )}
+      </div>
 
-          {/* Answer text */}
-          <div
-            style={{
-              fontSize: SIZES.body,
-              color: COLORS.teal,
-              lineHeight: 1.7,
-              paddingLeft: 50,
-              borderLeft: `3px solid ${COLORS.teal}44`,
-            }}
-          >
-            {answer}
-          </div>
-        </div>
+      {/* ── CTA: guru-sishya.in ── pinned to bottom ── */}
+      <div
+        style={{
+          position: 'absolute',
+          bottom: 36,
+          left: 0,
+          right: 0,
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          gap: 10,
+          opacity: ctaOpacity,
+          zIndex: 5,
+        }}
+      >
+        <span
+          style={{
+            fontSize: SIZES.bodySmall,
+            color: COLORS.gray,
+            fontWeight: 500,
+          }}
+        >
+          Practice more {'\u2192'}
+        </span>
+        <span
+          style={{
+            fontSize: SIZES.bodySmall,
+            fontWeight: 800,
+            color: COLORS.gold,
+            letterSpacing: 0.8,
+            textShadow: `0 0 ${Math.round(12 * ctaGlow)}px ${COLORS.gold}88`,
+          }}
+        >
+          guru-sishya.in
+        </span>
       </div>
     </AbsoluteFill>
   );

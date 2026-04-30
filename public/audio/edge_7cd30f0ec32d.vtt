@@ -1,0 +1,8 @@
+1
+00:00:00,100 --> 00:00:04,415
+Now pay attention here,  quick quick quick — let me rapid-fire through this.
+
+2
+00:00:04,365 --> 00:00:18,634
+But here's where it gets really interesting,  Key KRaft benefits: - Simpler operations (one system instead of two) - Faster controller failover (milliseconds vs. seconds) - Supports larger clusters (millions of partitions) - Unified security model
+

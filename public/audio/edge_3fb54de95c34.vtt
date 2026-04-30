@@ -1,0 +1,20 @@
+1
+00:00:00,100 --> 00:00:09,721
+Now here is where it gets spicy,  "What's the difference between replication factor and min.insync.replicas?
+
+2
+00:00:09,671 --> 00:00:18,065
+RF determines how many copies exist; min ISR determines how many must actively confirm a write.
+
+3
+00:00:18,065 --> 00:00:36,934
+RF=3 with min ISR=1 gives you fault tolerance for reads (data survives 2 broker failures) , but only requires 1 ack for writes — a surviving out-of-sync replica could become leader after a crash and miss recent writes.
+
+4
+00:00:36,934 --> 00:00:46,631
+RF=3 + min ISR=2 + acks=all together form a complete durability guarantee.
+
+5
+00:00:46,631 --> 00:00:54,500
+For everyone who's been told 'you need a CS degree to crack FAANG',  watch me prove them wrong.
+

@@ -1,0 +1,40 @@
+1
+00:00:00,100 --> 00:00:05,273
+Here is why more ACLs — Authorization can backfire.
+
+2
+00:00:05,223 --> 00:00:16,263
+Quick reminder, try 1.five times speed if you haven't already This is what separates junior from senior answers in interviews.
+
+3
+00:00:16,263 --> 00:00:22,684
+Quick reminder, try 1.five times speed if you haven't already.
+
+4
+00:00:22,684 --> 00:00:27,250
+Here's the bash implementation in 21 lines.
+
+5
+00:00:27,250 --> 00:00:33,513
+First, we handle the kafka-acls.sh decrementbootstrap-serv operation.
+
+6
+00:00:33,513 --> 00:00:43,381
+Now we handle the decrementallow-principal User:order-s operation — because the order matters for our algorithm to work correctly.
+
+7
+00:00:43,381 --> 00:00:49,368
+Here we handle the kafka-acls.sh decrementbootstrap-serv operation.
+
+8
+00:00:49,368 --> 00:00:55,868
+At this point, we handle the decrementallow-principal User:analyti operation.
+
+9
+00:00:55,868 --> 00:01:00,868
+This is where we execute decrementgroup analytics-cg.
+
+10
+00:01:00,868 --> 00:01:03,684
+we execute decrementlist.
+

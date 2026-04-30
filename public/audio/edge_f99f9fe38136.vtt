@@ -1,0 +1,28 @@
+1
+00:00:00,100 --> 00:00:02,365
+Okay so,  stop.
+
+2
+00:00:02,315 --> 00:00:05,157
+Re-read that last sentence.
+
+3
+00:00:05,157 --> 00:00:07,460
+It's THAT important.
+
+4
+00:00:07,460 --> 00:00:17,223
+Mitigation strategies: 1. Better key choice: Use a more evenly distributed key (e.g., userId + sessionId).
+
+5
+00:00:17,223 --> 00:00:24,210
+2. Salting: Append a random suffix to hot keys for writes, aggregate during reads.
+
+6
+00:00:24,210 --> 00:00:31,197
+3. Repartitioning in Kafka Streams: Use a through() or repartition() step.
+
+7
+00:00:31,197 --> 00:00:36,302
+4. Monitoring: Alert on per-partition message rate skew.
+

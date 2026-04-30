@@ -1,0 +1,60 @@
+1
+00:00:00,100 --> 00:00:03,721
+Alright, here's what you just learned.
+
+2
+00:00:03,671 --> 00:00:09,368
+Explain how the default partitioner routes messages with and without keys.
+
+3
+00:00:09,368 --> 00:00:13,276
+Describe the ordering guarantee scope in Kafka.
+
+4
+00:00:13,276 --> 00:00:17,473
+Identify and mitigate hot partition issues.
+
+5
+00:00:17,473 --> 00:00:19,631
+Stick with me here.
+
+6
+00:00:19,631 --> 00:00:24,026
+This is the part where real understanding happens.
+
+7
+00:00:24,026 --> 00:00:27,184
+Don't just watch and forget.
+
+8
+00:00:27,184 --> 00:00:28,947
+Go practice.
+
+9
+00:00:28,947 --> 00:00:31,105
+Build it in code.
+
+10
+00:00:31,105 --> 00:00:33,473
+Explain it to someone.
+
+11
+00:00:33,473 --> 00:00:35,736
+That's how it sticks.
+
+12
+00:00:35,736 --> 00:00:44,552
+The complete Apache Kafka course with cheatsheets and mock interviews is at guru-sishya.in slash apache-kafka.
+
+13
+00:00:44,552 --> 00:00:47,276
+Drop a like if this helped.
+
+14
+00:00:47,276 --> 00:01:00,473
+You now know how to explain how the default partitioner routes messages with and without keys, describe the ordering guarantee scope in kafka, and explain the trade-offs in an interview.
+
+15
+00:01:00,473 --> 00:01:03,197
+Ab interview mein dhoom machao!
+

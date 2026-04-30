@@ -1,0 +1,8 @@
+1
+00:00:00,100 --> 00:00:14,839
+This next idea changes everything,  min.insync.replicas (min ISR) defines the minimum number of ISR members that must acknowledge a write when acks=all.
+
+2
+00:00:14,789 --> 00:00:22,723
+If the ISR shrinks below this threshold, the broker rejects writes with NotEnoughReplicasException.
+

@@ -1,4 +1,4 @@
-import { execFileSync } from 'child_process';
+import { execFileSync, spawnSync } from 'child_process';
 import fs from 'fs';
 import path from 'path';
 import { TTSResult } from '../types';
@@ -99,7 +99,7 @@ export function stitchAudio(
     execFileSync('ffmpeg', [
       '-y', '-f', 'lavfi', '-i', `anullsrc=r=24000:cl=mono`,
       '-t', String(gapSeconds),
-      '-codec:a', 'libmp3lame', '-b:a', '128k',
+      '-codec:a', 'libmp3lame', '-b:a', '192k',
       silencePath,
     ], { timeout: 10000, stdio: 'pipe' });
   }
@@ -129,16 +129,67 @@ export function stitchAudio(
 
   fs.writeFileSync(listPath, lines.join('\n'));
 
-  // Concatenate with ffmpeg
+  // Concatenate with ffmpeg (raw concat first, then normalize)
+  const rawMasterPath = path.join(AUDIO_DIR, `_raw_${outputName}`);
   execFileSync('ffmpeg', [
     '-y', '-f', 'concat', '-safe', '0',
     '-i', listPath,
-    '-codec:a', 'libmp3lame', '-b:a', '128k',
+    '-codec:a', 'libmp3lame', '-b:a', '192k',
+    rawMasterPath,
+  ], { timeout: 120000, stdio: 'pipe' });
+
+  // Loudness normalization — target -14 LUFS (YouTube standard).
+  // True two-pass loudnorm: first pass measures actual loudness stats,
+  // second pass applies precise correction. This is critical because
+  // single-pass linear mode often under-corrects TTS audio (e.g. -18.8 dB).
+  //
+  // Pass 1: Measure loudness stats
+  // ffmpeg outputs loudnorm JSON stats to stderr, so we need to capture it.
+  // With stdio: 'pipe', execFileSync returns stdout; stderr goes to the error object on failure
+  // or is swallowed on success. We use spawnSync to capture stderr directly.
+  let measuredI = '-30';
+  let measuredTP = '-15';
+  let measuredLRA = '11';
+  let measuredThresh = '-40';
+  let offset = '0';
+  try {
+    const measureResult = spawnSync('ffmpeg', [
+      '-i', rawMasterPath,
+      '-af', 'loudnorm=I=-14:LRA=11:TP=-1.5:print_format=json',
+      '-f', 'null', '-',
+    ], { timeout: 120000, encoding: 'utf-8' });
+
+    const stderrStr = (measureResult.stderr || '') as string;
+    // ffmpeg prints the JSON block at the end of stderr
+    const jsonMatch = stderrStr.match(/\{[\s\S]*"input_i"[\s\S]*?\}/);
+    if (jsonMatch) {
+      const stats = JSON.parse(jsonMatch[0]);
+      measuredI = stats.input_i || measuredI;
+      measuredTP = stats.input_tp || measuredTP;
+      measuredLRA = stats.input_lra || measuredLRA;
+      measuredThresh = stats.input_thresh || measuredThresh;
+      offset = stats.target_offset || offset;
+    }
+  } catch {
+    // If parsing fails, fall back to aggressive settings below
+    console.warn('⚠ Could not parse loudnorm measurement — using aggressive normalization');
+  }
+
+  // Pass 2: Apply measured values for precise normalization + volume boost
+  execFileSync('ffmpeg', [
+    '-y',
+    '-i', rawMasterPath,
+    '-af', [
+      `loudnorm=I=-14:LRA=11:TP=-1.5:measured_I=${measuredI}:measured_TP=${measuredTP}:measured_LRA=${measuredLRA}:measured_thresh=${measuredThresh}:offset=${offset}:linear=true`,
+      'volume=3dB',  // slight boost to ensure we hit YouTube standard
+    ].join(','),
+    '-codec:a', 'libmp3lame', '-b:a', '192k',
     masterPath,
   ], { timeout: 120000, stdio: 'pipe' });
 
-  // Cleanup temp file
+  // Cleanup temp files
   try { fs.unlinkSync(listPath); } catch { /* ignore */ }
+  try { fs.unlinkSync(rawMasterPath); } catch { /* ignore */ }
 
   // Get actual total duration from the output file
   const totalDuration = probeDuration(masterPath);

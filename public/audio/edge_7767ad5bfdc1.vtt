@@ -1,0 +1,40 @@
+1
+00:00:00,100 --> 00:00:03,312
+Remember that 3 AM crash?
+
+2
+00:00:03,262 --> 00:00:07,644
+Here is exactly what went wrong with Windowing.
+
+3
+00:00:07,644 --> 00:00:11,184
+And in Java, it looks like this.
+
+4
+00:00:11,184 --> 00:00:18,157
+Here's the java implementation in 5 lines And in Java, it looks like this.
+
+5
+00:00:18,157 --> 00:00:22,355
+Here's the java implementation in 5 lines.
+
+6
+00:00:22,355 --> 00:00:27,763
+First, we handle the KTable<Windowed<String>, Long> operation.
+
+7
+00:00:27,763 --> 00:00:32,394
+Now we call flatMapValues() to handle the operation.
+
+8
+00:00:32,394 --> 00:00:36,552
+Here we call groupBy() to handle the operation.
+
+9
+00:00:36,552 --> 00:00:41,763
+At this point, we call windowedBy() to handle the operation.
+
+10
+00:00:41,763 --> 00:00:45,302
+we call count() to handle the operation.
+

@@ -1,0 +1,24 @@
+1
+00:00:00,100 --> 00:00:05,471
+Now here is where it gets spicy,  slow down for a second.
+
+2
+00:00:05,421 --> 00:00:07,763
+Let this sink in.
+
+3
+00:00:07,763 --> 00:00:20,223
+A follower is considered in-sync if it has fetched all messages from the leader within replica.lag.time.max.ms (default thirty thousand ms).
+
+4
+00:00:20,223 --> 00:00:29,776
+If a follower falls behind (due to network slowness, GC pauses, or disk I/O), it's removed from the ISR.
+
+5
+00:00:29,776 --> 00:00:33,434
+When it catches up again, it rejoins.
+
+6
+00:00:33,434 --> 00:00:40,342
+This is the concept that made me go from 'maybe I'll crack it' to 'I KNOW I'll crack it.
+

@@ -1,0 +1,44 @@
+1
+00:00:00,100 --> 00:00:03,418
+I know you're tempted to skip ahead.
+
+2
+00:00:03,368 --> 00:00:04,750
+Don't.
+
+3
+00:00:04,750 --> 00:00:09,000
+This is the part that gets asked in interviews.
+
+4
+00:00:09,000 --> 00:00:13,671
+Enabled with enable.idempotence=true.
+
+5
+00:00:13,671 --> 00:00:19,605
+The broker assigns each producer instance a Producer ID (PID).
+
+6
+00:00:19,605 --> 00:00:28,078
+The producer assigns a sequence number to every batch per partition, starting at 0 and incrementing.
+
+7
+00:00:28,078 --> 00:00:37,473
+When a retry arrives, the broker checks: have I already written a batch with this PID + partition + sequence number?
+
+8
+00:00:37,473 --> 00:00:46,315
+If yes, it silently discards the duplicate without returning an error , which is pretty wild if you think about it.
+
+9
+00:00:46,315 --> 00:00:52,894
+Interviewers have a favorite trap question about Mechanism 2: Transactional Producer.
+
+10
+00:00:52,894 --> 00:00:56,605
+90 percent of candidates fall for it.
+
+11
+00:00:56,605 --> 00:01:00,486
+I will show you the trap and how to avoid it.
+

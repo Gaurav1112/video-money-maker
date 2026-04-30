@@ -1,0 +1,16 @@
+1
+00:00:00,100 --> 00:00:05,707
+Kafka allows increasing partition count , but never decreasing it.
+
+2
+00:00:05,657 --> 00:00:15,092
+When partition count changes, the key-to-partition mapping changes for new messages (murmur2(key) % newCount).
+
+3
+00:00:15,092 --> 00:00:24,894
+This breaks ordering for existing keys — events for the same key may land in different partitions before and after the change.
+
+4
+00:00:24,894 --> 00:00:32,644
+Plan partition count carefully upfront based on peak throughput targets and expected consumer count.
+

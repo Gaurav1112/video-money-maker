@@ -1,0 +1,28 @@
+1
+00:00:00,100 --> 00:00:02,602
+Okay, Guru mode ON.
+
+2
+00:00:02,552 --> 00:00:04,013
+Focus.
+
+3
+00:00:04,013 --> 00:00:11,592
+So basically, quick reminder, try 1.five times speed if you haven't already.
+
+4
+00:00:11,592 --> 00:00:21,197
+I saved the best insight for right here,  Safe changes: Add optional fields with defaults, rename via aliases.
+
+5
+00:00:21,197 --> 00:00:29,250
+Breaking changes: Remove required fields, change field types — these fail registry validation.
+
+6
+00:00:29,250 --> 00:00:34,184
+Wild stat: Uber processes one billion events per day.
+
+7
+00:00:34,184 --> 00:00:38,013
+And it all depends on concepts like this.
+

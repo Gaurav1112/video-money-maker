@@ -1,0 +1,4 @@
+1
+00:00:00,100 --> 00:00:12,675
+Before writing a single line of producer or consumer code, you must internalize the physical and logical layout of a Kafka cluster — because every configuration decision flows from this mental model , let that sink in for a second.
+

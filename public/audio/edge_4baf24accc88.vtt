@@ -1,0 +1,20 @@
+1
+00:00:00,100 --> 00:00:06,290
+Each record in a partition receives a monotonically increasing integer called an offset, starting at 0.
+
+2
+00:00:06,240 --> 00:00:09,730
+Offsets uniquely identify a record within a partition.
+
+3
+00:00:09,730 --> 00:00:13,750
+Consumers track their position by storing the last processed offset.
+
+4
+00:00:13,750 --> 00:00:18,615
+Real talk: I've seen senior engineers at Uber get this wrong in interviews.
+
+5
+00:00:18,615 --> 00:00:20,365
+Don't be that person.
+

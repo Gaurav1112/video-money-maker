@@ -1,0 +1,24 @@
+1
+00:00:00,100 --> 00:00:02,146
+Predict what happens next.
+
+2
+00:00:02,096 --> 00:00:06,019
+If you get it right, you're already thinking like a senior engineer.
+
+3
+00:00:06,019 --> 00:00:10,067
+Each partition has a configurable replication factor (typically 3).
+
+4
+00:00:10,067 --> 00:00:15,076
+One replica is the Leader — it handles all producer writes and consumer reads.
+
+5
+00:00:15,076 --> 00:00:19,971
+The other replicas are Followers — they replicate data from the leader asynchronously.
+
+6
+00:00:19,971 --> 00:00:24,701
+The set of followers that are fully caught up is called the ISR (In-Sync Replicas).
+

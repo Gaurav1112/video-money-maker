@@ -1,0 +1,48 @@
+1
+00:00:00,100 --> 00:00:10,550
+Now here is where it gets spicy,  by the way, this video works great at 1.five times speed for better listening.
+
+2
+00:00:10,500 --> 00:00:14,513
+Now, here's where most people go wrong.
+
+3
+00:00:14,513 --> 00:00:22,118
+When someone asks about Apache Kafka, the typical answer is just the textbook definition.
+
+4
+00:00:22,118 --> 00:00:24,881
+They recite it like a parrot.
+
+5
+00:00:24,881 --> 00:00:30,328
+But that tells the interviewer NOTHING about your actual understanding.
+
+6
+00:00:30,328 --> 00:00:34,881
+It's like saying a car is "a vehicle with four wheels.
+
+7
+00:00:34,881 --> 00:00:36,868
+Technically correct.
+
+8
+00:00:36,868 --> 00:00:39,171
+Completely useless.
+
+9
+00:00:39,171 --> 00:00:45,855
+Fun fact: Uber's solution was distributed event streaming with guaranteed delivery.
+
+10
+00:00:45,855 --> 00:00:49,289
+That's exactly what we're learning.
+
+11
+00:00:49,289 --> 00:00:59,013
+There is one thing about Connect Architecture that nobody mentions in tutorials, and it is exactly what interviewers test.
+
+12
+00:00:59,013 --> 00:01:01,763
+I will reveal it shortly.
+

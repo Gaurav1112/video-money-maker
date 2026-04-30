@@ -1,0 +1,580 @@
+{
+  "meta": {
+    "title": "YouTube SEO & Viral Strategy Guide 2026",
+    "created": "2026-03-28",
+    "purpose": "Comprehensive guide for educational/coding content optimization on YouTube",
+    "target_channels": ["GuruSishya-India", "@guru_sishya.in"],
+    "niche": "Software engineering interview prep, coding tutorials, system design"
+  },
+
+  "A_title_formulas": {
+    "overview": "Titles are the #1 driver of CTR. Optimal length is 55-60 characters. Front-load keywords in the first 3-5 words. Numbers increase CTR by 20-30%. Odd numbers (5, 7) outperform round ones.",
+    "golden_rules": [
+      "Keep under 60 characters to avoid truncation on mobile",
+      "Front-load the primary keyword in the first 3-5 words",
+      "Use ONE capitalized word for emphasis (not ALL CAPS)",
+      "Include the year (2026) for evergreen/tutorial content",
+      "Numbers in titles get 36% more clicks",
+      "Title + thumbnail must tell a cohesive story"
+    ],
+    "formulas": {
+      "curiosity_gap": {
+        "pattern": "[Topic] — [Unexpected Twist/Revelation]",
+        "examples": [
+          "System Design Secrets FAANG Won't Tell You",
+          "The Data Structure Nobody Teaches (But Should)",
+          "Why 90% of Developers Get Load Balancing Wrong"
+        ],
+        "ctr_boost": "+30-47%"
+      },
+      "i_tested_everything": {
+        "pattern": "I [Did X]. ONLY [Y] [Worked/Are Worth It].",
+        "examples": [
+          "I Solved 500 LeetCode Problems. ONLY 3 Patterns Matter.",
+          "I Tested Every System Design Course. Here's the BEST.",
+          "I Studied 50 FAANG Interviews. THIS Gets You Hired."
+        ],
+        "ctr_boost": "+47%"
+      },
+      "personal_challenge": {
+        "pattern": "I [Challenge] in [Time]. [Surprising Result].",
+        "examples": [
+          "I Learned System Design in 7 Days. Got into Google.",
+          "I Built a Full-Stack App in 24 Hours. Here's How.",
+          "I Replaced My DSA Book with AI. NEVER Going Back."
+        ],
+        "ctr_boost": "+63%"
+      },
+      "loss_aversion": {
+        "pattern": "[N] [Mistakes/Things] That [Negative Outcome]",
+        "examples": [
+          "7 DSA Mistakes That FAIL Your Interview",
+          "Stop Making These System Design Errors",
+          "Why Your LeetCode Practice is WASTING Your Time"
+        ],
+        "ctr_boost": "+40% (loss aversion is 2x stronger than gain motivation)"
+      },
+      "step_by_step": {
+        "pattern": "How to [Skill] in 2026 (Step-by-Step)",
+        "examples": [
+          "How to Crack FAANG in 2026 (Complete Roadmap)",
+          "System Design Interview: Step-by-Step Guide (2026)",
+          "Master Binary Trees in 30 Minutes (Beginner to Pro)"
+        ],
+        "ctr_boost": "+25%"
+      },
+      "blueprint_framework": {
+        "pattern": "The [Topic] Blueprint/Framework/Formula",
+        "examples": [
+          "The FAANG Interview Blueprint (8-Week Plan)",
+          "My System Design Framework That Always Works",
+          "The LeetCode Formula: 150 Problems, Infinite Patterns"
+        ],
+        "ctr_boost": "+35%"
+      },
+      "number_listicle": {
+        "pattern": "[N] [Things] Every [Developer] Should Know",
+        "examples": [
+          "7 Data Structures Every Developer Must Master",
+          "5 System Design Concepts for Every Interview",
+          "3 Algorithms That Solve 80% of LeetCode"
+        ],
+        "ctr_boost": "+20-30%"
+      },
+      "x_in_y_minutes": {
+        "pattern": "[Topic] in [Time] (Fireship-style)",
+        "examples": [
+          "Load Balancing in 100 Seconds",
+          "Microservices Explained in 5 Minutes",
+          "Binary Search in 60 Seconds"
+        ],
+        "ctr_boost": "+30% (builds binge-watching behavior)"
+      }
+    },
+    "power_words": {
+      "curiosity": ["Secret", "Hidden", "Shocking", "Nobody Tells You", "Actually"],
+      "urgency": ["Now", "Fast", "Today", "Stop", "Before It's Too Late"],
+      "authority": ["Expert", "Best", "Proven", "Complete", "Ultimate"],
+      "outcome": ["Get Hired", "Ace", "Crack", "Master", "Dominate"]
+    },
+    "shorts_titles": {
+      "rules": [
+        "Keep under 40 characters",
+        "Use declarative statements, not questions",
+        "Echo the hook from the video's opening line",
+        "No year needed (Shorts are more timeless)"
+      ],
+      "examples": [
+        "This algorithm trick is insane",
+        "Stop using for loops",
+        "Most devs get this wrong",
+        "3 lines of code, 10x faster"
+      ]
+    },
+    "competitor_patterns": {
+      "fireship": {
+        "format": "[Topic] in 100 Seconds",
+        "why_it_works": "Extreme brevity promise + curiosity. Creates binge-watching chains.",
+        "examples": ["React in 100 Seconds", "God-Tier Developer Roadmap"]
+      },
+      "neetcode": {
+        "format": "[Platform/Problem] — [Approach/Insight]",
+        "why_it_works": "Direct, authoritative, targets exact search queries from interview preppers.",
+        "examples": ["Blind 75 LeetCode Problems", "How I Got Good at Coding Interviews"]
+      },
+      "tech_with_tim": {
+        "format": "Learn [Language/Topic] — [Level] Tutorial",
+        "why_it_works": "Clear skill + level targeting. Great for search discovery.",
+        "examples": ["Python Full Course for Beginners", "Learn React in 1 Hour"]
+      }
+    }
+  },
+
+  "B_description_template": {
+    "overview": "Descriptions are the most overlooked optimization element. Optimal length is 200-300 words (1000-1500 characters). Max allowed is 5000 characters. First 125 characters appear above the fold and are critical for search.",
+    "template": {
+      "line_1_hook": "[Primary keyword] explained simply. [Value proposition in 1 sentence].",
+      "line_2_context": "[Secondary keyword context]. Whether you're preparing for [target audience scenario], this video covers [specific promise].",
+      "line_3_blank": "",
+      "chapters_section": [
+        "0:00 Introduction / Hook",
+        "0:30 [Chapter 2 - keyword-rich title]",
+        "2:15 [Chapter 3 - keyword-rich title]",
+        "5:00 [Chapter 4 - keyword-rich title]",
+        "8:00 [Chapter 5 - keyword-rich title]",
+        "10:00 Key Takeaways / Summary"
+      ],
+      "body_paragraph": "[200-word natural language summary incorporating primary + 3-5 secondary keywords. Explain what the viewer will learn. Include specific technologies, concepts, and outcomes mentioned in the video.]",
+      "resources_section": [
+        "Resources & Links:",
+        "Practice Problems: [link]",
+        "Cheat Sheet: [link]",
+        "Full Course: [link]",
+        "Join our community: [link]"
+      ],
+      "cta_section": [
+        "",
+        "If this helped you, SUBSCRIBE for daily coding content.",
+        "Drop a comment: [specific engagement question related to topic]",
+        ""
+      ],
+      "social_links": [
+        "Follow Guru Sishya:",
+        "Website: https://guru-sishya.com",
+        "Instagram: @guru_sishya.in",
+        "Twitter: @guru_sishya"
+      ],
+      "hashtags": "#coding #programming #interviewprep #systemdesign #faang #leetcode"
+    },
+    "keyword_rules": {
+      "density": "1-2% keyword density — prioritize readability over stuffing",
+      "primary_keyword_placement": [
+        "First 125 characters of description",
+        "Title",
+        "First chapter marker",
+        "Spoken in first 30 seconds of video"
+      ],
+      "secondary_keywords": "3-5 related terms woven naturally into the body paragraph",
+      "avoid": "Never stuff keywords — triggers YouTube spam detection"
+    },
+    "chapters_best_practices": [
+      "Start first chapter at 0:00 (required for YouTube to recognize chapters)",
+      "Use keyword-rich chapter titles, not vague labels like 'Part 1'",
+      "Each chapter can rank separately in Google search",
+      "Videos with chapters increase average watch time by 11%",
+      "Add manually — don't rely on auto-generated chapters"
+    ],
+    "example_description": "System Design Interview: Load Balancing Explained (2026)\n\nLearn everything about load balancing for your system design interview. This complete guide covers Round Robin, Consistent Hashing, Least Connections, and real-world examples from Netflix, Google, and Amazon.\n\n0:00 Why Load Balancing Matters\n1:30 Round Robin Explained\n3:45 Consistent Hashing Deep Dive\n6:00 Least Connections Algorithm\n8:30 Real-World Architecture (Netflix)\n10:00 Interview Tips & Common Questions\n12:00 Quick Recap\n\nLoad balancing is one of the most frequently asked system design topics in FAANG interviews. In this video, you'll understand how modern distributed systems handle millions of requests per second using different load balancing strategies. We cover horizontal scaling, health checks, sticky sessions, and the trade-offs between each approach. Perfect for software engineers preparing for Google, Amazon, Meta, Microsoft, and Apple interviews.\n\nResources:\nPractice: https://guru-sishya.com/topic/load-balancing\nCheat Sheet: [link]\nFull System Design Course: [link]\n\nSUBSCRIBE for daily interview prep content!\nComment: Which load balancing algorithm does YOUR company use?\n\n#systemdesign #loadbalancing #faanginterview #coding #interviewprep"
+  },
+
+  "C_tags_strategy": {
+    "overview": "Tags are a minor ranking signal in 2026 — the algorithm now uses AI to understand video content from title, description, and transcript. Tags still help with misspellings and niche discovery. Use 5-8 highly relevant tags.",
+    "optimal_count": "5-8 tags (stay under 200 characters total)",
+    "structure": {
+      "primary_tags": {
+        "count": "1-3",
+        "description": "Exact video topic and main keyword",
+        "examples": ["system design interview", "load balancing explained"]
+      },
+      "secondary_tags": {
+        "count": "3-5",
+        "description": "Related subtopics and themes",
+        "examples": ["FAANG interview prep", "distributed systems", "software engineering"]
+      },
+      "long_tail_tags": {
+        "count": "2-3",
+        "description": "Realistic search phrases viewers would type",
+        "examples": ["how to prepare for system design interview", "load balancing for beginners"]
+      },
+      "misspelling_tags": {
+        "count": "0-2",
+        "description": "Common misspellings or abbreviations",
+        "examples": ["loadbalancing", "sys design", "leet code"]
+      }
+    },
+    "rules": [
+      "Place most important tag FIRST (YouTube weighs early tags more)",
+      "Never use misleading or unrelated tags",
+      "Don't fill the entire 500-character limit — quality over quantity",
+      "Include your brand name as a tag (Guru Sishya)",
+      "Use competitor channel names sparingly and only if relevant"
+    ],
+    "priority_message": "Tags are the LEAST important metadata. Invest 80% of optimization effort into title and thumbnail, 15% into description, and 5% into tags.",
+    "example_tag_sets": {
+      "system_design_video": [
+        "system design interview",
+        "load balancing",
+        "FAANG interview prep",
+        "distributed systems tutorial",
+        "software engineering interview",
+        "Guru Sishya",
+        "system design for beginners"
+      ],
+      "dsa_video": [
+        "data structures and algorithms",
+        "leetcode",
+        "binary tree tutorial",
+        "coding interview",
+        "DSA in Java",
+        "Guru Sishya",
+        "neetcode"
+      ],
+      "short_video": [
+        "coding tips",
+        "programming shorts",
+        "developer tips",
+        "interview hack",
+        "Guru Sishya"
+      ]
+    }
+  },
+
+  "D_thumbnail_best_practices": {
+    "overview": "Custom thumbnails boost CTR by 60-70% vs auto-generated. The thumbnail is as important as the title. Design for mobile first (70%+ of YouTube views). In 2026, neo-minimalism and human authenticity win.",
+    "technical_specs": {
+      "resolution": "3840x2160 (4K) — minimum 1920x1080",
+      "aspect_ratio": "16:9",
+      "file_size": "Under 2MB",
+      "format": "JPG or PNG"
+    },
+    "design_rules": {
+      "color_rule": {
+        "name": "60-30-10 Rule",
+        "breakdown": {
+          "60_percent": "Dominant background color (dark for tech content)",
+          "30_percent": "Secondary color (subject/overlay)",
+          "10_percent": "Accent color (text/highlight — use brand saffron #E85D26 or gold #FDB813)"
+        }
+      },
+      "text_rules": [
+        "Maximum 3-5 words on thumbnail",
+        "Text size must be readable at 120x68px (mobile search results)",
+        "Use bold, high-contrast fonts (white on dark, or brand colors)",
+        "Text should COMPLEMENT the title, not repeat it",
+        "Position text on left side (right side gets obscured by video duration)"
+      ],
+      "face_rules_for_coding": {
+        "with_face": "Expressive faces boost CTR by 20-30% — use when sharing opinions, reactions, or personal stories",
+        "without_face": "Code screenshots, architecture diagrams, or tech logos work for tutorials and explainers",
+        "hybrid": "Best approach: face + code/diagram combo. Shows personality + content preview.",
+        "emotion_match": "Facial expression MUST match video content tone — no clickbait shock faces on calm tutorials"
+      },
+      "neo_minimalism": [
+        "ONE focal point per thumbnail",
+        "Clean, uncluttered design",
+        "Dark backgrounds work exceptionally well for tech/coding",
+        "Avoid busy patterns or gradients"
+      ]
+    },
+    "what_top_channels_do": {
+      "fireship": {
+        "style": "Bold text + tech logos + dark background + meme-inspired elements",
+        "colors": "High contrast — often neon on dark",
+        "text": "1-3 provocative words",
+        "face": "Rarely uses face — relies on brand recognition and bold graphics",
+        "key_insight": "Consistent visual brand — viewers recognize Fireship thumbnails instantly"
+      },
+      "neetcode": {
+        "style": "Clean, minimal + whiteboard/diagram aesthetic",
+        "colors": "White/light backgrounds with clear text",
+        "text": "Problem name or concept + difficulty indicator",
+        "face": "Occasionally uses face, mostly diagram-focused",
+        "key_insight": "Consistency and clarity over flashiness — matches the 'teacher' brand"
+      }
+    },
+    "guru_sishya_thumbnail_formula": {
+      "brand_colors": {
+        "background": "#0C0A15 (Dark Scholar)",
+        "primary_accent": "#E85D26 (Saffron)",
+        "secondary_accent": "#FDB813 (Gold)",
+        "highlight": "#1DD1A1 (Teal)"
+      },
+      "layout": "Dark background + bold saffron/gold text (3-5 words) + code snippet or architecture diagram + brand watermark",
+      "consistency": "Same font family, same color palette, same text position across all videos"
+    },
+    "testing": {
+      "youtube_native": "Use YouTube's 'Test & Compare' A/B testing feature",
+      "manual_method": "Swap thumbnail after 7 days, compare CTR in analytics",
+      "rule": "Change ONE element at a time when testing"
+    }
+  },
+
+  "E_shorts_strategy": {
+    "overview": "Shorts are now fully decoupled from long-form recommendations. The algorithm prioritizes watch-through rate above all else. 85% of Shorts are watched without sound initially — captions are mandatory.",
+    "optimal_length": {
+      "sweet_spot": "20-30 seconds",
+      "by_content_type": {
+        "quick_tips": "15-20 seconds",
+        "code_explanations": "25-35 seconds",
+        "concept_explainers": "30-45 seconds",
+        "mini_tutorials": "45-60 seconds"
+      },
+      "why": "Algorithm measures % watched, not total time. A 20-second Short with 90% retention (18s watched) beats a 2-minute Short with 30% retention.",
+      "viral_sweet_spot": "25-35 seconds (most viral Shorts fall here)"
+    },
+    "hook_strategy": {
+      "window": "First 1-3 seconds determine if viewer swipes away",
+      "techniques": [
+        "Start with the payoff/transformation, NOT the setup",
+        "Bold text overlay with provocative statement",
+        "Pattern interrupt: unexpected visual or sound",
+        "Direct challenge: 'Most developers get this wrong'",
+        "Counter-intuitive claim: 'Stop using for loops'"
+      ],
+      "examples": [
+        "This one line of code changes EVERYTHING",
+        "You're using HashMap wrong",
+        "3 seconds to understand recursion",
+        "The algorithm trick interviewers love"
+      ],
+      "never_do": [
+        "Never start with 'Hey guys' or an intro",
+        "Never start with setup/context",
+        "Never use a static opening frame"
+      ]
+    },
+    "loop_effect": {
+      "description": "The last frame should seamlessly transition back to the first frame, encouraging unconscious replays",
+      "techniques": [
+        "End with a question that the beginning answers",
+        "Visual continuity between last and first frame",
+        "End mid-sentence that continues from the start",
+        "Use a 'wait, what?' ending that makes viewers rewatch"
+      ],
+      "impact": "High replay rate is a top signal for the Shorts algorithm"
+    },
+    "hashtags": {
+      "optimal_count": "3-5 hashtags",
+      "mandatory": ["#Shorts"],
+      "strategy": [
+        "1 broad hashtag: #coding or #programming",
+        "1-2 topic hashtags: #systemdesign #leetcode",
+        "1 brand hashtag: #GuruSishya",
+        "1 trending hashtag (if relevant)"
+      ],
+      "placement": "In the description, not the title",
+      "examples": ["#Shorts #coding #interviewprep #GuruSishya #python"]
+    },
+    "captions": {
+      "mandatory": true,
+      "style": "Bold, centered, 2-3 words at a time (TikTok style)",
+      "colors": "White with dark outline or brand colors",
+      "reason": "85% of Shorts watched without sound initially"
+    },
+    "posting_frequency": {
+      "ideal": "1-3 Shorts per day",
+      "minimum": "3-5 Shorts per week",
+      "rationale": "Daily posting generates 3-5x more algorithmic distribution than weekly",
+      "ratio_to_longform": "4-5 Shorts per long-form video"
+    },
+    "content_ideas_for_guru_sishya": [
+      "DSA concept in 30 seconds",
+      "Interview question speed round",
+      "Code refactoring before/after",
+      "Common interview mistakes",
+      "One algorithm trick",
+      "System design in 60 seconds",
+      "Java vs Python comparison",
+      "FAANG interview fact",
+      "Code puzzle / 'What does this print?'",
+      "Daily coding challenge teaser"
+    ]
+  },
+
+  "F_upload_timing": {
+    "overview": "Publish 2-3 hours BEFORE peak viewing time, not at peak. Perfect timing on mediocre content won't work, but great content at optimal timing is the winning formula.",
+    "india_tech_audience": {
+      "long_form": {
+        "best_days": ["Tuesday", "Wednesday", "Thursday"],
+        "best_upload_time_ist": "10:00 AM - 11:00 AM",
+        "peak_viewing_time_ist": "12:00 PM - 3:00 PM (lunch breaks)",
+        "alt_window_ist": "6:00 PM - 8:00 PM (after work)"
+      },
+      "shorts": {
+        "best_days": "Daily (consistency matters more than day)",
+        "best_upload_time_ist": "3:00 PM - 6:00 PM",
+        "peak_viewing_time_ist": "4:00 PM - 7:00 PM (commute + evening scroll)"
+      },
+      "weekend": {
+        "best_upload_time_ist": "8:00 AM - 10:00 AM",
+        "peak_viewing_time_ist": "10:00 AM - 12:00 PM"
+      }
+    },
+    "frequency_recommendations": {
+      "long_form": {
+        "ideal": "2-3 per week",
+        "minimum": "1 per week",
+        "note": "YouTube says frequency doesn't directly affect per-video views, but consistency builds audience habits"
+      },
+      "shorts": {
+        "ideal": "1-3 per day",
+        "minimum": "3-5 per week"
+      }
+    },
+    "pro_tips": [
+      "Use YouTube Analytics 'When your viewers are on YouTube' heat map",
+      "A/B test upload times with similar content",
+      "Schedule uploads — don't rely on manual publishing",
+      "The first 1-2 hours after publishing are critical for Shorts performance"
+    ]
+  },
+
+  "G_algorithm_hacks": {
+    "watch_time_optimization": {
+      "benchmarks": {
+        "average_view_duration_target": "50%+ of video length",
+        "first_30_seconds": "Retain 70%+ of viewers past the 30-second mark",
+        "educational_content_avg": "40-60% retention is good for tutorials"
+      },
+      "techniques": [
+        "Open with a hook/preview of the best part (pattern interrupt)",
+        "Use open loops: tease upcoming content to keep viewers watching",
+        "Change visual pattern every 30-60 seconds (new angle, graphic, animation)",
+        "Break long tutorials into digestible segments with clear transitions",
+        "End each section with a 'but here's the thing...' bridge",
+        "Remove all dead air and filler — Fireship's fast-pace is the gold standard",
+        "Add visual variety: code demos, diagrams, animations, real-world examples"
+      ],
+      "satisfaction_signals_2026": [
+        "Viewer watches 100% of 8-min video + likes > viewer watches 40% of 25-min video",
+        "Session continuation: does the viewer watch more videos after yours?",
+        "Repeat viewing signals high value",
+        "Survey responses and 'Not Interested' clicks now tracked"
+      ]
+    },
+    "ctr_benchmarks": {
+      "average_youtube": "2-5%",
+      "educational_content": "2-4%",
+      "good_for_small_channel": "4-8%",
+      "top_creators": "8-15%",
+      "suggested_feed_average": "9.5% (with strong topical adjacency)",
+      "warning": "Below 2% = title/thumbnail needs immediate improvement",
+      "quality_ctr_note": "In 2026, high CTR + low retention (first 15-30s) gets DEMOTED. YouTube now tracks 'Quality CTR'."
+    },
+    "end_screen_strategy": {
+      "rules": [
+        "Always add end screen in last 20 seconds",
+        "Feature 2 elements: 'Best for viewer' + specific video recommendation",
+        "The 'Best for viewer' option lets YouTube's algorithm choose — often outperforms manual picks",
+        "Link to a playlist, not just a single video (increases session time)",
+        "Verbally call out the end screen: 'Watch this next if you want to learn X'"
+      ]
+    },
+    "comment_engagement": {
+      "techniques": [
+        "Ask a specific question in the video AND description (not generic 'what do you think?')",
+        "Pin a comment with a controversial take or additional tip",
+        "Reply to comments within the first hour (signals active creator to algorithm)",
+        "Heart top comments to encourage more engagement",
+        "Create 'comment bait': 'Drop your answer in the comments — I'll tell you if you're right'",
+        "Use polls in community tab to drive subscribers back to channel"
+      ],
+      "examples": [
+        "Which load balancer does YOUR company use? Comment below!",
+        "Can you solve this in O(n)? Drop your solution.",
+        "Agree or disagree: microservices are overused. Fight me in the comments."
+      ]
+    },
+    "playlist_strategy": {
+      "description": "Playlists are one of the most underused tools in YouTube SEO. They directly impact session watch time.",
+      "rules": [
+        "Group videos into clear thematic playlists with keyword-rich titles",
+        "Create 'Series Playlists' for structured learning paths",
+        "Order videos strategically — put your best-performing video first",
+        "Add new videos to relevant playlists immediately on upload",
+        "Use playlist descriptions for additional keyword targeting"
+      ],
+      "guru_sishya_playlists": [
+        "System Design Interview Complete Guide",
+        "DSA in Java — Beginner to Advanced",
+        "FAANG Interview Prep Roadmap",
+        "LeetCode Solutions Explained",
+        "Quick Concepts in 100 Seconds",
+        "Daily Coding Challenge"
+      ]
+    },
+    "generative_engine_optimization": {
+      "description": "In 2026, YouTube videos appear in Google AI Overviews, ChatGPT, and Perplexity. Optimize for AI citation.",
+      "techniques": [
+        "Upload accurate transcripts/captions (every spoken word becomes searchable)",
+        "Use chapter markers so AI can cite specific sections",
+        "Include structured data in descriptions",
+        "Yearly keyword refreshes (AI platforms prioritize up-to-date content)",
+        "Speak keywords naturally in the video — YouTube now indexes audio"
+      ]
+    },
+    "shorts_to_longform_funnel": {
+      "strategy": "Use Shorts as discovery hooks that funnel viewers to long-form content",
+      "ratio": "4-5 Shorts per long-form video",
+      "technique": [
+        "End Short with 'Full explanation on my channel'",
+        "Pin comment with link to full video",
+        "Create Shorts from highlights of long-form videos",
+        "Use consistent branding so Short viewers recognize your long-form content"
+      ]
+    },
+    "advanced_2026_tactics": [
+      "Shorts and long-form algorithms are now FULLY DECOUPLED — poor Shorts won't hurt long-form and vice versa",
+      "Voice search optimization is critical as Smart TV viewing grows — use natural language in titles",
+      "Repurpose old content: add fresh chapters, update descriptions, link from new uploads",
+      "YouTube weighs original content higher due to AI-generated content flood",
+      "Shoot in 1080p minimum (most first-page results are HD)",
+      "Start niche (like Fireship with Angular+Firebase), expand gradually as audience grows",
+      "Create bingeable series — YouTube rewards session time heavily",
+      "Inject personality and humor — inside jokes build community and repeat viewership"
+    ]
+  },
+
+  "implementation_checklist": {
+    "per_video": [
+      "Write 5-10 title variations, pick the strongest emotional pull",
+      "Design thumbnail BEFORE filming",
+      "A/B test title with YouTube Test & Compare if available",
+      "Write 200+ word description with keywords in first 125 chars",
+      "Add chapter markers starting at 0:00",
+      "Upload accurate captions/transcript",
+      "Add 5-8 relevant tags (primary keyword first)",
+      "Add end screen with 'Best for viewer' + playlist link",
+      "Add cards at retention drop-off points",
+      "Pin a comment with engagement question or bonus tip",
+      "Add to relevant playlist immediately",
+      "Schedule upload 2-3 hours before peak time",
+      "Create 4-5 Shorts from video highlights",
+      "Reply to comments in first hour after upload"
+    ],
+    "weekly": [
+      "Review YouTube Analytics heat map for optimal upload times",
+      "Check CTR — below 4% means title/thumbnail needs work",
+      "Monitor average view duration — below 40% needs content pacing improvement",
+      "Update old video descriptions with trending keywords",
+      "Post 2-3 community tab polls or updates"
+    ],
+    "monthly": [
+      "A/B test thumbnails on underperforming videos",
+      "Refresh evergreen content with updated year in title",
+      "Analyze competitor titles and thumbnails",
+      "Review and optimize playlist structure",
+      "Check Generative Engine visibility (Google AI Overviews)"
+    ]
+  }
+}

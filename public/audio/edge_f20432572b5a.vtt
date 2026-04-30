@@ -1,0 +1,32 @@
+1
+00:00:00,100 --> 00:00:05,348
+When you call producer.send(record), Kafka doesn't immediately write to the network.
+
+2
+00:00:05,298 --> 00:00:10,009
+Instead: 1. Serialize key and value using configured serializers 2.
+
+3
+00:00:10,009 --> 00:00:14,596
+Determine partition via key hash, round-robin, or custom Partitioner 3.
+
+4
+00:00:14,596 --> 00:00:20,105
+Add to RecordAccumulator — an in-memory buffer organized by (topic, partition) 4.
+
+5
+00:00:20,105 --> 00:00:24,682
+Batch sender thread drains the accumulator and sends batches to brokers 5.
+
+6
+00:00:24,682 --> 00:00:28,163
+Await acknowledgment from the broker(s) per acks config 6.
+
+7
+00:00:28,163 --> 00:00:37,153
+Callback is invoked with metadata (offset, partition, time Fun fact: Uber processes ride data in real-time — handling one billion events per day.
+
+8
+00:00:37,153 --> 00:00:38,788
+Let that sink in.
+

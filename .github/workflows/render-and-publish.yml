@@ -1,0 +1,324 @@
+name: Render & Publish Video
+
+on:
+  schedule:
+    # Daily at 6 AM IST (00:30 UTC)
+    - cron: '30 0 * * *'
+  workflow_dispatch:
+    inputs:
+      topic:
+        description: 'Topic slug (e.g., load-balancing)'
+        required: true
+      session:
+        description: 'Session number'
+        required: true
+        default: '1'
+      skip_publish:
+        description: 'Skip publishing (render only)'
+        required: false
+        default: 'false'
+        type: boolean
+
+env:
+  NODE_VERSION: '20'
+  PYTHON_VERSION: '3.11'
+  OUTPUT_DIR: output/videos
+  SHORTS_COUNT: 3
+  KOKORO_URL: http://localhost:8880
+
+jobs:
+  render:
+    runs-on: self-hosted
+    timeout-minutes: 120
+
+    services:
+      kokoro:
+        image: ghcr.io/remsky/kokoro-fastapi-cpu:v0.2.2
+        ports:
+          - 8880:8880
+        env:
+          KOKORO_VOICE: af
+
+    steps:
+      # ── Setup ──────────────────────────────────────────────
+      - name: Checkout video-pipeline
+        uses: actions/checkout@v4
+
+      - name: Checkout guru-sishya content
+        uses: actions/checkout@v4
+        with:
+          repository: Gaurav1112/guru-sishya
+          path: guru-sishya
+          sparse-checkout: |
+            public/content
+          sparse-checkout-cone-mode: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install Node dependencies
+        run: npm ci
+
+      - name: Install faster-whisper
+        run: |
+          pip install faster-whisper
+
+      - name: Install Chrome for Remotion
+        run: |
+          npx remotion browser ensure
+
+      - name: Wait for Kokoro TTS to be ready
+        run: |
+          echo "Waiting for Kokoro TTS service..."
+          for i in $(seq 1 30); do
+            if curl -sf "${{ env.KOKORO_URL }}/v1/models" > /dev/null 2>&1; then
+              echo "Kokoro TTS is ready."
+              exit 0
+            fi
+            echo "  Attempt $i/30 — waiting 5s..."
+            sleep 5
+          done
+          echo "ERROR: Kokoro TTS did not start within 150s"
+          exit 1
+
+      # ── Pick Topic ─────────────────────────────────────────
+      - name: Determine topic and session
+        id: pick
+        run: |
+          if [ -n "${{ github.event.inputs.topic }}" ]; then
+            echo "topic=${{ github.event.inputs.topic }}" >> "$GITHUB_OUTPUT"
+            echo "session=${{ github.event.inputs.session }}" >> "$GITHUB_OUTPUT"
+            echo "source=manual" >> "$GITHUB_OUTPUT"
+          else
+            RESULT=$(npx tsx scripts/pick-next-topic.ts)
+            TOPIC=$(echo "$RESULT" | grep '^TOPIC=' | cut -d= -f2)
+            SESSION=$(echo "$RESULT" | grep '^SESSION=' | cut -d= -f2)
+            if [ -z "$TOPIC" ] || [ -z "$SESSION" ]; then
+              echo "No unrendered topics found in queue. All done!"
+              echo "skip=true" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+            echo "topic=$TOPIC" >> "$GITHUB_OUTPUT"
+            echo "session=$SESSION" >> "$GITHUB_OUTPUT"
+            echo "source=queue" >> "$GITHUB_OUTPUT"
+          fi
+          echo "skip=false" >> "$GITHUB_OUTPUT"
+
+      - name: Log selected topic
+        if: steps.pick.outputs.skip != 'true'
+        run: |
+          echo "=== Rendering ==="
+          echo "Topic:   ${{ steps.pick.outputs.topic }}"
+          echo "Session: ${{ steps.pick.outputs.session }}"
+          echo "Source:  ${{ steps.pick.outputs.source }}"
+
+      # ── Generate Storyboard + TTS ──────────────────────────
+      - name: Generate storyboard and TTS audio
+        if: steps.pick.outputs.skip != 'true'
+        run: |
+          npx tsx scripts/render-session.ts \
+            "${{ steps.pick.outputs.topic }}" \
+            "${{ steps.pick.outputs.session }}"
+
+      # ── Render Long Video (16:9) ───────────────────────────
+      - name: Render long video (16:9)
+        if: steps.pick.outputs.skip != 'true'
+        run: |
+          mkdir -p ${{ env.OUTPUT_DIR }}
+          TOPIC="${{ steps.pick.outputs.topic }}"
+          SESSION="${{ steps.pick.outputs.session }}"
+          PROPS_FILE="output/test-props-s${SESSION}.json"
+
+          npx remotion render \
+            src/compositions/index.tsx \
+            LongVideo \
+            "${{ env.OUTPUT_DIR }}/${TOPIC}-s${SESSION}-long.mp4" \
+            --props="$PROPS_FILE" \
+            --concurrency=2 \
+            --timeout=120000
+
+      # ── Render Shorts (9:16) ───────────────────────────────
+      - name: Render shorts (9:16)
+        if: steps.pick.outputs.skip != 'true'
+        run: |
+          TOPIC="${{ steps.pick.outputs.topic }}"
+          SESSION="${{ steps.pick.outputs.session }}"
+          PROPS_FILE="output/test-props-s${SESSION}.json"
+
+          for i in $(seq 1 ${{ env.SHORTS_COUNT }}); do
+            echo "--- Rendering Short $i/${{ env.SHORTS_COUNT }} ---"
+            npx remotion render \
+              src/compositions/index.tsx \
+              ShortVideo \
+              "${{ env.OUTPUT_DIR }}/${TOPIC}-s${SESSION}-short-${i}.mp4" \
+              --props="$PROPS_FILE" \
+              --concurrency=2 \
+              --timeout=60000 \
+              --frame-range=$(( (i - 1) * 900 ))-$(( i * 900 )) || true
+          done
+
+      # ── Generate Thumbnail ─────────────────────────────────
+      - name: Generate thumbnail
+        if: steps.pick.outputs.skip != 'true'
+        run: |
+          TOPIC="${{ steps.pick.outputs.topic }}"
+          SESSION="${{ steps.pick.outputs.session }}"
+          PROPS_FILE="output/test-props-s${SESSION}.json"
+
+          npx remotion still \
+            src/compositions/index.tsx \
+            Thumbnail \
+            "${{ env.OUTPUT_DIR }}/${TOPIC}-s${SESSION}-thumb.png" \
+            --props="$PROPS_FILE" || echo "Thumbnail generation failed (non-fatal)"
+
+      # ── Upload Artifacts ───────────────────────────────────
+      - name: Upload render artifacts
+        if: steps.pick.outputs.skip != 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: rendered-videos-${{ steps.pick.outputs.topic }}-s${{ steps.pick.outputs.session }}
+          path: ${{ env.OUTPUT_DIR }}/
+          retention-days: 7
+
+  publish:
+    needs: render
+    runs-on: self-hosted
+    if: ${{ needs.render.result == 'success' && github.event.inputs.skip_publish != 'true' }}
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Download render artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: rendered-videos-${{ needs.render.outputs.topic }}-s${{ needs.render.outputs.session }}
+          path: ${{ env.OUTPUT_DIR }}/
+
+      # ── YouTube Upload ─────────────────────────────────────
+      - name: Upload long video to YouTube
+        env:
+          YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
+          YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
+          YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
+        run: |
+          TOPIC="${{ needs.render.outputs.topic }}"
+          SESSION="${{ needs.render.outputs.session }}"
+
+          npx tsx scripts/upload-youtube.ts \
+            --file "${{ env.OUTPUT_DIR }}/${TOPIC}-s${SESSION}-long.mp4" \
+            --thumbnail "${{ env.OUTPUT_DIR }}/${TOPIC}-s${SESSION}-thumb.png" \
+            --topic "$TOPIC" \
+            --session "$SESSION" \
+            --type long
+
+      - name: Upload shorts to YouTube
+        env:
+          YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
+          YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
+          YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
+        run: |
+          TOPIC="${{ needs.render.outputs.topic }}"
+          SESSION="${{ needs.render.outputs.session }}"
+
+          for i in $(seq 1 ${{ env.SHORTS_COUNT }}); do
+            SHORT_FILE="${{ env.OUTPUT_DIR }}/${TOPIC}-s${SESSION}-short-${i}.mp4"
+            if [ -f "$SHORT_FILE" ]; then
+              npx tsx scripts/upload-youtube.ts \
+                --file "$SHORT_FILE" \
+                --topic "$TOPIC" \
+                --session "$SESSION" \
+                --type short \
+                --part "$i" || echo "Short $i upload failed (non-fatal)"
+            fi
+          done
+
+      # ── Instagram Upload ───────────────────────────────────
+      - name: Upload shorts to Instagram
+        env:
+          INSTAGRAM_ACCESS_TOKEN: ${{ secrets.INSTAGRAM_ACCESS_TOKEN }}
+          INSTAGRAM_BUSINESS_ID: ${{ secrets.INSTAGRAM_BUSINESS_ID }}
+        run: |
+          TOPIC="${{ needs.render.outputs.topic }}"
+          SESSION="${{ needs.render.outputs.session }}"
+
+          for i in $(seq 1 ${{ env.SHORTS_COUNT }}); do
+            SHORT_FILE="${{ env.OUTPUT_DIR }}/${TOPIC}-s${SESSION}-short-${i}.mp4"
+            if [ -f "$SHORT_FILE" ]; then
+              npx tsx scripts/upload-instagram.ts \
+                --file "$SHORT_FILE" \
+                --topic "$TOPIC" \
+                --session "$SESSION" \
+                --part "$i" || echo "Instagram short $i upload failed (non-fatal)"
+            fi
+          done
+
+      # ── Update Queue ───────────────────────────────────────
+      - name: Update topic queue status
+        run: |
+          TOPIC="${{ needs.render.outputs.topic }}"
+          SESSION="${{ needs.render.outputs.session }}"
+
+          npx tsx scripts/update-queue-status.ts \
+            --topic "$TOPIC" \
+            --session "$SESSION" \
+            --status published
+
+      - name: Commit queue update
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add config/topic-queue.json
+          git diff --cached --quiet || git commit -m "chore: mark ${{ needs.render.outputs.topic }} s${{ needs.render.outputs.session }} as published"
+          git push
+
+      # ── Notify ─────────────────────────────────────────────
+      - name: Notify Slack on completion
+        if: always()
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          TOPIC="${{ needs.render.outputs.topic }}"
+          SESSION="${{ needs.render.outputs.session }}"
+          STATUS="${{ job.status }}"
+
+          if [ "$STATUS" = "success" ]; then
+            EMOJI=":white_check_mark:"
+            MSG="Published *${TOPIC}* session ${SESSION}"
+          else
+            EMOJI=":x:"
+            MSG="Failed to publish *${TOPIC}* session ${SESSION}"
+          fi
+
+          curl -sf -X POST "$SLACK_WEBHOOK_URL" \
+            -H 'Content-Type: application/json' \
+            -d "{\"text\": \"${EMOJI} Video Pipeline: ${MSG}\"}" \
+            || echo "Slack notification failed (non-fatal)"
+
+      - name: Notify Slack on skip
+        if: needs.render.outputs.skip == 'true'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          curl -sf -X POST "$SLACK_WEBHOOK_URL" \
+            -H 'Content-Type: application/json' \
+            -d '{"text": ":information_source: Video Pipeline: All topics in queue are rendered. Nothing to do."}' \
+            || echo "Slack notification failed (non-fatal)"

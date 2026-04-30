@@ -18,6 +18,6 @@
       "@/*": ["src/*"]
     }
   },
-  "include": ["src/**/*", "remotion.config.ts"],
+  "include": ["src/**/*", "scripts/**/*", "remotion.config.ts"],
   "exclude": ["node_modules", "dist", "output"]
 }

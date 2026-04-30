@@ -1,0 +1,52 @@
+1
+00:00:00,100 --> 00:00:02,563
+Let me show you the code.
+
+2
+00:00:02,513 --> 00:00:09,223
+Here is that interview trap about Mechanism 2: Transactional Producer I mentioned.
+
+3
+00:00:09,223 --> 00:00:12,565
+And here's the same logic in Java.
+
+4
+00:00:12,565 --> 00:00:21,171
+Here's a TransactionalProducer class in java that handles data serialization Now you will never fall for it.
+
+5
+00:00:21,171 --> 00:00:24,513
+And here's the same logic in Java.
+
+6
+00:00:24,513 --> 00:00:31,092
+Here's a TransactionalProducer class in java that handles data serialization.
+
+7
+00:00:31,092 --> 00:00:35,934
+The TransactionalProducer method is where the action happens.
+
+8
+00:00:35,934 --> 00:00:43,973
+First, we import the org.apache.kafka.clients.producer.* module.
+
+9
+00:00:43,973 --> 00:00:48,394
+Now we insert the key-value pair into our map.
+
+10
+00:00:48,394 --> 00:00:52,789
+Here we insert the key-value pair into our map.
+
+11
+00:00:52,789 --> 00:00:59,342
+At this point, we call producer.beginTransaction() to process our data.
+
+12
+00:00:59,342 --> 00:01:04,460
+This is where we call err.println() to process our data.
+
+13
+00:01:04,460 --> 00:01:09,026
+we call producer.close() to process our data.
+

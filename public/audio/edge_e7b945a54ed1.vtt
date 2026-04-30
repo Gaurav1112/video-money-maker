@@ -1,0 +1,12 @@
+1
+00:00:00,100 --> 00:00:09,665
+Now here is where it gets spicy,  a topic is a named, durable, ordered log of records — conceptually similar to a database table, but append-only and replayable.
+
+2
+00:00:09,615 --> 00:00:13,096
+Every topic is divided into one or more partitions.
+
+3
+00:00:13,096 --> 00:00:17,509
+A partition is the fundamental unit of parallelism and ordering in Kafka.
+

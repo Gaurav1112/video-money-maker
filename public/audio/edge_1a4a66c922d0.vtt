@@ -1,0 +1,40 @@
+1
+00:00:00,100 --> 00:00:02,563
+Let me show you the code.
+
+2
+00:00:02,513 --> 00:00:07,355
+Here is why more Replication Architecture can backfire.
+
+3
+00:00:07,355 --> 00:00:10,342
+Most people miss this completely.
+
+4
+00:00:10,342 --> 00:00:16,118
+This is what separates junior from senior answers in interviews.
+
+5
+00:00:16,118 --> 00:00:23,052
+Most people miss this completely,  Here's the typescript implementation in 5 lines.
+
+6
+00:00:23,052 --> 00:00:27,315
+First, we call 0() to handle the operation.
+
+7
+00:00:27,315 --> 00:00:31,144
+Now we call 1() to handle the operation.
+
+8
+00:00:31,144 --> 00:00:34,907
+Here we call 2() to handle the operation.
+
+9
+00:00:34,907 --> 00:00:39,710
+At this point, we call 3() to handle the operation.
+
+10
+00:00:39,710 --> 00:00:42,921
+we initialize the ISR list.
+

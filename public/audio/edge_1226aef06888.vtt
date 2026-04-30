@@ -1,0 +1,16 @@
+1
+00:00:00,100 --> 00:00:12,194
+Auto-commit (enable.auto.commit=true): Kafka commits the last polled offset every auto.commit.interval.ms (default 5 s).
+
+2
+00:00:12,144 --> 00:00:21,157
+Risk: if the consumer crashes between the auto-commit and finishing processing, those messages are skipped (at-most-once).
+
+3
+00:00:21,157 --> 00:00:28,684
+The last 5 people I mentored who understood this concept ALL cleared their system design rounds.
+
+4
+00:00:28,684 --> 00:00:30,223
+All five.
+

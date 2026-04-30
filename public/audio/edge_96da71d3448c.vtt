@@ -1,0 +1,20 @@
+1
+00:00:00,100 --> 00:00:12,425
+Compression is applied per batch: snappy (low C P U, good ratio), lz4 (fastest), gzip (best ratio, highest C P U), zstd (best ratio + speed balance, Kafka 2.1+).
+
+2
+00:00:12,375 --> 00:00:20,221
+Compressed batches are written to disk and decompressed by the consumer — not by the broker — making this effectively free from the broker's perspective.
+
+3
+00:00:20,221 --> 00:00:23,326
+Master this, and you're not just interview-ready.
+
+4
+00:00:23,326 --> 00:00:24,932
+You're production-ready.
+
+5
+00:00:24,932 --> 00:00:26,211
+That's rare.
+

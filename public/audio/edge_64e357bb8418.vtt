@@ -1,0 +1,8 @@
+1
+00:00:00,100 --> 00:00:16,721
+So basically, Kafka Connect is a scalable, fault-tolerant framework for streaming data between Kafka and external systems (databases, object stores, search engines) without writing custom producer/consumer code.
+
+2
+00:00:16,671 --> 00:00:22,671
+Schema Registry manages and enforces schemas for Kafka messages.
+

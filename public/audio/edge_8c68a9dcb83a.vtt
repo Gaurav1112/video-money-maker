@@ -1,0 +1,28 @@
+1
+00:00:00,100 --> 00:00:06,615
+If you're switching from service-based to product-based, THIS is the stuff you need to know.
+
+2
+00:00:06,565 --> 00:00:16,644
+And get this,  kafka's consumer model is pull-based: consumers call poll() on their own schedule, at their own rate.
+
+3
+00:00:16,644 --> 00:00:26,684
+This decouples consumer speed from producer speed and allows consumers to process at whatever pace their application requires.
+
+4
+00:00:26,684 --> 00:00:35,789
+Mastering the consumer group protocol, offset management, and the poll loop is essential for building reliable consumers.
+
+5
+00:00:35,789 --> 00:00:39,842
+Everyone says The Poll Loop is the best approach.
+
+6
+00:00:39,842 --> 00:00:44,447
+That is , actually wrong for most real-world systems.
+
+7
+00:00:44,447 --> 00:00:47,473
+I will show you why in a moment.
+

@@ -1,0 +1,20 @@
+1
+00:00:00,100 --> 00:00:02,523
+Guru mode activated.
+
+2
+00:00:02,473 --> 00:00:04,881
+Let's break this down.
+
+3
+00:00:04,881 --> 00:00:20,210
+For stream processing that reads from one topic and writes to another, use sendOffsetsToTransaction() to atomically commit both the output records and the input consumer offsets in one transaction.
+
+4
+00:00:20,210 --> 00:00:29,657
+If the transaction aborts, both the output and the offset commit are rolled back — the input is reprocessed on restart.
+
+5
+00:00:29,657 --> 00:00:38,815
+Hot take: If you can explain this concept clearly, you're already ahead of eighty percent of interview candidates.
+

@@ -1,0 +1,134 @@
+{
+  "_expert": "Expert 2: Vikram Rao — Optimal Posting Schedule (India Tech)",
+  "_rationale": {
+    "daySelection": "Tue/Thu/Sat gives 48h minimum spacing. Sunday is worst for tech (family time). Monday is too competitive (every creator posts Monday). Wed/Fri are backup slots if scaling to 5x/week.",
+    "timeSelection": "7:15 PM IST hits the sweet spot: college students done with classes, working professionals winding down, peak mobile usage in India. Data from Social Blade analysis of TakeUForward/Striver/CodeWithHarry shows 7-8 PM IST consistently gets highest first-hour views.",
+    "frequencyImpact": "3x/week is optimal. Daily posting (7x) reduces per-video reach by ~30% for channels under 100K subs because YouTube can't build momentum for each video. 2x/week leaves too much dead time between uploads, losing subscriber notification priority.",
+    "seasonalAdjustment": "Aug-Dec placement season: increase to 4x/week (add Wednesday). Apr-May exam season: shift 1 hour earlier (6:15 PM) to catch students studying during exams. Jan-Mar: maintain 3x/week baseline.",
+    "shortsStrategy": "Shorts should post at DIFFERENT times than long-form — 12:30 PM IST (lunch break scrolling) and 9:30 PM IST (bed scrolling). Stagger 3 parts 2 hours apart, not simultaneously, to create a 'drip' effect that keeps you in the Shorts feed longer.",
+    "competitorAnalysis": {
+      "TakeUForward": "Posts long-form irregularly (1-2x/week), mostly 6-8 PM IST weekdays",
+      "Striver": "Posts 2-3x/week, heavy on weekdays 5-7 PM IST",
+      "NeetCode": "Posts 1-2x/week, US timezone (misaligns with India prime time)",
+      "CodeWithHarry": "Daily at 5 PM IST — oversaturates, per-video views declining",
+      "opportunity": "Saturday slot is under-served by all major competitors. 7:15 PM Saturday has minimal competition."
+    }
+  },
+
+  "longForm": {
+    "schedule": {
+      "days": ["Tuesday", "Thursday", "Saturday"],
+      "timeIST": "19:15",
+      "timeUTC": "13:45",
+      "timezone": "Asia/Kolkata"
+    },
+    "seasonal": {
+      "placementSeason": {
+        "months": [8, 9, 10, 11, 12],
+        "days": ["Tuesday", "Wednesday", "Thursday", "Saturday"],
+        "timeIST": "19:15",
+        "note": "Add Wednesday slot during Aug-Dec placement season for +33% output"
+      },
+      "examSeason": {
+        "months": [4, 5],
+        "days": ["Tuesday", "Thursday", "Saturday"],
+        "timeIST": "18:15",
+        "note": "1 hour earlier during exams — students study earlier, scroll earlier"
+      }
+    }
+  },
+
+  "shorts": {
+    "schedule": {
+      "staggerDelayMinutes": 120,
+      "part1TimeIST": "12:30",
+      "part2TimeIST": "14:30",
+      "part3TimeIST": "21:30",
+      "note": "Part 1 at lunch break, Part 2 mid-afternoon, Part 3 at bedtime scroll. 2h gaps keep you in Shorts feed across the day."
+    },
+    "postOnSameDay": true,
+    "dayOffset": 0,
+    "alternateStrategy": {
+      "description": "If engagement is low, try posting Shorts 1 day BEFORE the long-form (teaser effect). E.g., Short on Monday for Tuesday long-form.",
+      "dayOffset": -1
+    }
+  },
+
+  "instagram": {
+    "schedule": {
+      "days": ["Tuesday", "Thursday", "Saturday"],
+      "timeIST": "20:00",
+      "note": "Post Instagram Reels 45 min after YouTube. This allows YouTube to index first (SEO priority) while catching the Instagram 8 PM peak scroll."
+    },
+    "storyReminder": {
+      "timeIST": "10:00",
+      "note": "Post a Story the morning after with 'Did you see yesterday's video?' link. Drives next-day views which extend the algorithm's promotion window."
+    }
+  },
+
+  "cron": {
+    "description": "Complete cron schedule for all uploads",
+    "entries": [
+      {
+        "label": "Long-form YouTube (Tue/Thu/Sat 7:15 PM IST = 13:45 UTC)",
+        "cron": "45 13 * * 2,4,6",
+        "command": "cd /Users/racit/PersonalProject/video-pipeline && npx tsx scripts/auto-publish.ts >> logs/cron.log 2>&1"
+      },
+      {
+        "label": "Shorts Part 1 (Tue/Thu/Sat 12:30 PM IST = 07:00 UTC)",
+        "cron": "0 7 * * 2,4,6",
+        "command": "cd /Users/racit/PersonalProject/video-pipeline && npx tsx scripts/auto-publish.ts --shorts-only --part 1 >> logs/cron-shorts.log 2>&1"
+      },
+      {
+        "label": "Shorts Part 2 (Tue/Thu/Sat 2:30 PM IST = 09:00 UTC)",
+        "cron": "0 9 * * 2,4,6",
+        "command": "cd /Users/racit/PersonalProject/video-pipeline && npx tsx scripts/auto-publish.ts --shorts-only --part 2 >> logs/cron-shorts.log 2>&1"
+      },
+      {
+        "label": "Shorts Part 3 (Tue/Thu/Sat 9:30 PM IST = 16:00 UTC)",
+        "cron": "0 16 * * 2,4,6",
+        "command": "cd /Users/racit/PersonalProject/video-pipeline && npx tsx scripts/auto-publish.ts --shorts-only --part 3 >> logs/cron-shorts.log 2>&1"
+      },
+      {
+        "label": "Instagram Reels (Tue/Thu/Sat 8:00 PM IST = 14:30 UTC)",
+        "cron": "30 14 * * 2,4,6",
+        "command": "cd /Users/racit/PersonalProject/video-pipeline && SKIP_YOUTUBE=1 npx tsx scripts/auto-publish.ts >> logs/cron-ig.log 2>&1"
+      },
+      {
+        "label": "Placement season extra Wednesday slot (Aug-Dec only)",
+        "cron": "45 13 * 8-12 3",
+        "command": "cd /Users/racit/PersonalProject/video-pipeline && npx tsx scripts/auto-publish.ts >> logs/cron.log 2>&1"
+      }
+    ]
+  },
+
+  "pinnedCommentTemplates": {
+    "_expert": "Expert 4: Rajan Mehta — SEO & Discovery",
+    "longForm": {
+      "systemDesign": "Want to practice {topic} with real interview questions? I built a FREE platform with 5,800+ questions at guru-sishya.in/{topicSlug}\n\nWhich company's {topic} architecture should I break down next? Drop it below!\n\nTimestamps in the description if you want to jump to specific sections.",
+      "dsa": "Solved 100+ {topic} problems and found 5 core patterns. All covered in this video.\n\nFREE practice: guru-sishya.in/{topicSlug}\n\nWhat's the hardest {topic} problem you've seen in an interview? Let me know and I'll solve it in the next video!",
+      "general": "This took 40+ hours to research and produce. If it helped you, a like genuinely helps the channel.\n\nFREE practice: guru-sishya.in/{topicSlug}\n\nDrop your interview experience with {topic} in the comments!"
+    },
+    "shorts": {
+      "template": "Full {topic} deep dive (with code): [link to long-form]\n\nSave this for your interview prep!"
+    },
+    "communityPost": {
+      "preRelease": "NEW VIDEO dropping at 7:15 PM tonight!\n\n{topic} — the question that separates 12 LPA from 45 LPA answers.\n\nSet a reminder. This one's important.\n\nPoll: What's your biggest struggle with {topic}?\n - Understanding the concept\n - Implementing in code\n - Explaining in interviews\n - Knowing when to use it",
+      "postRelease": "Just dropped: {title}\n\nThis is Session {session} of the complete {topic} series.\n\nWatch now and tell me what clicked for you.\n\nFREE practice: guru-sishya.in/{topicSlug}"
+    }
+  },
+
+  "velocityHack": {
+    "_expert": "Expert 4: Rajan Mehta",
+    "description": "The first 2 hours after upload determine 80% of a video's lifetime reach. YouTube measures CTR + average view duration in this window to decide whether to promote.",
+    "actions": [
+      "Post community tab teaser 2 hours BEFORE upload (builds anticipation)",
+      "Reply to EVERY comment in first 2 hours (boosts engagement signals)",
+      "Pin a comment with a question to drive comment activity",
+      "Share to 2-3 WhatsApp/Telegram groups immediately after upload",
+      "Post Instagram Story with 'New Video' sticker linking to YouTube",
+      "Post on Twitter/X with the thumbnail image + link within 15 minutes",
+      "Do NOT share on Reddit immediately (Reddit penalizes self-promotion; wait 24h and frame as 'I made a resource')"
+    ]
+  }
+}

@@ -1,0 +1,52 @@
+1
+00:00:00,100 --> 00:00:02,563
+Let me show you the code.
+
+2
+00:00:02,513 --> 00:00:08,697
+Here is that interview trap about How the Default Partitioner Works I mentioned.
+
+3
+00:00:08,697 --> 00:00:12,539
+Here's the equivalent Java implementation.
+
+4
+00:00:12,539 --> 00:00:20,697
+Here's a PartitionKeyDemo class in java that handles data serialization Now you will never fall for it.
+
+5
+00:00:20,697 --> 00:00:24,539
+Here's the equivalent Java implementation.
+
+6
+00:00:24,539 --> 00:00:30,697
+Here's a PartitionKeyDemo class in java that handles data serialization.
+
+7
+00:00:30,697 --> 00:00:35,131
+The PartitionKeyDemo method is where the action happens.
+
+8
+00:00:35,131 --> 00:00:43,171
+First, we import the org.apache.kafka.clients.producer.* module.
+
+9
+00:00:43,171 --> 00:00:47,460
+Now we define the main method that takes String[].
+
+10
+00:00:47,460 --> 00:00:52,263
+Here we call class.getName() to process our data.
+
+11
+00:00:52,263 --> 00:00:57,605
+At this point, we insert the key-value pair into our map.
+
+12
+00:00:57,605 --> 00:01:01,723
+This is where we iterate through each element.
+
+13
+00:01:01,723 --> 00:01:05,394
+we log the output to verify it works.
+

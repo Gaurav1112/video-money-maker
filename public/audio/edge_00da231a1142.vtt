@@ -1,0 +1,12 @@
+1
+00:00:00,100 --> 00:00:11,984
+So basically, kafka 2.8+ introduced KRaft (Kafka Raft) — a built-in consensus mechanism that eliminates the ZooKeeper dependency entirely.
+
+2
+00:00:11,934 --> 00:00:20,052
+In KRaft mode, a quorum of broker nodes use the Raft protocol to manage cluster metadata directly.
+
+3
+00:00:20,052 --> 00:00:27,776
+As of Kafka 3.3, KRaft is production-ready, and ZooKeeper mode is deprecated.
+

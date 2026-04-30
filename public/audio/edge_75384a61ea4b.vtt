@@ -1,0 +1,36 @@
+1
+00:00:00,100 --> 00:00:05,984
+Here is why more Running a JDBC Source Connector can backfire.
+
+2
+00:00:05,934 --> 00:00:10,223
+Here's the json implementation in 15 lines.
+
+3
+00:00:10,223 --> 00:00:24,223
+First, we execute "name": "jdbc-source-orders", — because the order matters for our algorithm to work correctly This is what separates junior from senior answers in interviews.
+
+4
+00:00:24,223 --> 00:00:28,513
+Here's the json implementation in 15 lines.
+
+5
+00:00:28,513 --> 00:00:37,855
+First, we execute "name": "jdbc-source-orders", — because the order matters for our algorithm to work correctly.
+
+6
+00:00:37,855 --> 00:00:44,131
+Now we handle the "connector.class": "io.conflue operation.
+
+7
+00:00:44,131 --> 00:00:49,171
+Here we execute "connection.user": "kafka",.
+
+8
+00:00:49,171 --> 00:00:55,131
+At this point, we execute "mode": "timestamp+incrementing",.
+
+9
+00:00:55,131 --> 00:01:06,013
+This is where we execute "incrementing.column.name": "id",. , we execute "poll.interval.ms": "one thousand".
+

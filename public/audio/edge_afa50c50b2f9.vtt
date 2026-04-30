@@ -1,0 +1,8 @@
+1
+00:00:00,100 --> 00:00:04,418
+Kafka Streams implements this pattern internally.
+
+2
+00:00:04,368 --> 00:00:18,605
+Set processing.guarantee=exactlyoncev2 (Kafka 2.5+) and Streams handles producer transactions, offset commits, and consumer isolation automatically.
+

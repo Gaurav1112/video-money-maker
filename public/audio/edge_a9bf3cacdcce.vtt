@@ -1,0 +1,20 @@
+1
+00:00:00,100 --> 00:00:06,365
+A company lost fourteen million dollars because they got Apache Kafka wrong.
+
+2
+00:00:06,315 --> 00:00:08,368
+fourteen million.
+
+3
+00:00:08,368 --> 00:00:13,381
+In this video, I'll make sure that never happens to you.
+
+4
+00:00:13,381 --> 00:00:17,934
+This is session 8 of our Apache Kafka series.
+
+5
+00:00:17,934 --> 00:00:22,394
+Today's topic: Kafka Connect & Schema Registry.
+

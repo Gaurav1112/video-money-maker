@@ -36,7 +36,7 @@ const NarratorIndicator: React.FC<NarratorIndicatorProps> = ({
       <div
         style={{
           position: 'absolute',
-          bottom: 100,
+          bottom: 180,
           left: 32,
           display: 'flex',
           alignItems: 'center',

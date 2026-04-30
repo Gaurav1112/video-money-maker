@@ -1,0 +1,4 @@
+1
+00:00:00,100 --> 00:00:10,319
+This is a critical design constraint: if you need all events for a given entity (e.g., a user) to be processed in order, all those events must land in the same partition.
+

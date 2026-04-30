@@ -1,0 +1,44 @@
+1
+00:00:00,100 --> 00:00:04,892
+Here is why more Python Implementation can backfire.
+
+2
+00:00:04,842 --> 00:00:08,592
+I saved the best insight for right here.
+
+3
+00:00:08,592 --> 00:00:14,368
+This is what separates junior from senior answers in interviews.
+
+4
+00:00:14,368 --> 00:00:20,434
+I saved the best insight for right here,  First up, the Python version.
+
+5
+00:00:20,434 --> 00:00:23,947
+This demonstrate function in python.
+
+6
+00:00:23,947 --> 00:00:29,355
+First, we import Dict, List, Any from the typing module.
+
+7
+00:00:29,355 --> 00:00:37,486
+Now we print f"equals= Performance Tuning equals=" to verify our result.
+
+8
+00:00:37,486 --> 00:00:41,223
+Here we call O() to handle the operation.
+
+9
+00:00:41,223 --> 00:00:47,236
+At this point, we print f'{k}: {v}' to verify our result.
+
+10
+00:00:47,236 --> 00:00:53,855
+This is where we print f'Size: {len(data)}' to verify our result.
+
+11
+00:00:53,855 --> 00:00:57,894
+we call demonstrate() to handle the operation.
+

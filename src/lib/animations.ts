@@ -114,3 +114,36 @@ export const kenBurns = (frame: number, startFrame: number, duration: number = 3
 // Pulse glow effect — oscillates between two opacity values
 export const pulseGlow = (frame: number, speed: number = 0.08, min: number = 0.3, max: number = 0.8) =>
   interpolate(Math.sin(frame * speed), [-1, 1], [min, max]);
+
+// Zoom pulse — subtle oscillation 1.0 -> maxScale -> 1.0 with phase offset
+export const zoomPulse = (
+  frame: number,
+  cycleDurationFrames: number = 120,
+  maxScale: number = 1.02,
+  phaseOffset: number = 0,
+) => {
+  const progress = ((frame + phaseOffset) % cycleDurationFrames) / cycleDurationFrames;
+  const wave = Math.sin(progress * Math.PI * 2);
+  return interpolate(wave, [-1, 1], [1.0, maxScale]);
+};
+
+// Slide from left with fade — for bullet point entrances
+export const slideFromLeft = (frame: number, startFrame: number, distance: number = 40, duration: number = 20) => ({
+  x: interpolate(frame, [startFrame, startFrame + duration], [-distance, 0], {
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
+    easing: Easing.out(Easing.cubic),
+  }),
+  opacity: interpolate(frame, [startFrame, startFrame + duration * 0.7], [0, 1], {
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
+  }),
+});
+
+// Sweep underline — grows width from 0 to target with glow
+export const sweepUnderline = (frame: number, startFrame: number, maxWidth: number = 300, duration: number = 25) =>
+  interpolate(frame, [startFrame, startFrame + duration], [0, maxWidth], {
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
+    easing: Easing.out(Easing.cubic),
+  });

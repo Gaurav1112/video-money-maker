@@ -1,0 +1,56 @@
+1
+00:00:00,100 --> 00:00:04,665
+Dekho, samjho yeh carefully,  chalo, pehle kuch facts sunte hain.
+
+2
+00:00:04,615 --> 00:00:08,961
+Fact number 1: Kafka is just a message queue, like RabbitMQ.
+
+3
+00:00:08,961 --> 00:00:13,673
+Fact number 2: Kafka guarantees exactly-once delivery out of the box.
+
+4
+00:00:13,673 --> 00:00:18,086
+Fact number 3: More partitions always means better performance.
+
+5
+00:00:18,086 --> 00:00:19,259
+Sab suna?
+
+6
+00:00:19,259 --> 00:00:20,269
+Accha.
+
+7
+00:00:20,269 --> 00:00:22,971
+Ab dhyan se suno,  YEH SAB GALAT HAI.
+
+8
+00:00:22,971 --> 00:00:24,230
+Haan, galat.
+
+9
+00:00:24,230 --> 00:00:26,942
+Aur main tumhe exactly bataunga ki kyun.
+
+10
+00:00:26,942 --> 00:00:29,144
+Kafka is NOT a message queue.
+
+11
+00:00:29,144 --> 00:00:31,288
+It's a distributed commit log.
+
+12
+00:00:31,288 --> 00:00:35,980
+Exactly-once requires idempotent producers AND transactional consumers.
+
+13
+00:00:35,980 --> 00:00:39,346
+And too many partitions , actually HURT performance.
+
+14
+00:00:39,346 --> 00:00:41,480
+Let me explain each one.
+

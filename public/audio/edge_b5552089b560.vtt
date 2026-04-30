@@ -1,0 +1,52 @@
+1
+00:00:00,100 --> 00:00:02,563
+Let me show you the code.
+
+2
+00:00:02,513 --> 00:00:05,723
+Remember that 3 AM crash?
+
+3
+00:00:05,723 --> 00:00:10,907
+Here is exactly what went wrong with Producer Internals.
+
+4
+00:00:10,907 --> 00:00:13,894
+Most people miss this completely.
+
+5
+00:00:13,894 --> 00:00:19,500
+Most people miss this completely,  And here's the same logic in Java.
+
+6
+00:00:19,500 --> 00:00:25,644
+Here's a DurableProducer class in java that handles data serialization.
+
+7
+00:00:25,644 --> 00:00:30,131
+The DurableProducer method is where the action happens.
+
+8
+00:00:30,131 --> 00:00:38,171
+First, we import the org.apache.kafka.clients.producer.* module.
+
+9
+00:00:38,171 --> 00:00:42,421
+Now we call Properties() to handle the operation.
+
+10
+00:00:42,421 --> 00:00:46,815
+Here we insert the key-value pair into our map.
+
+11
+00:00:46,815 --> 00:00:58,473
+At this point, we wrap this in a try block to handle errors gracefully — because in production, things WILL fail, and we need to handle it gracefully.
+
+12
+00:00:58,473 --> 00:01:07,131
+This is where we check if exception not equal to null — to handle the edge case that trips up most developers.
+
+13
+00:01:07,131 --> 00:01:11,644
+we call producer.flush() to process our data.
+

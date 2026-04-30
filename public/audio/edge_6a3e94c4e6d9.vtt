@@ -1,0 +1,36 @@
+1
+00:00:00,100 --> 00:00:03,247
+This is where Sishya becomes Guru.
+
+2
+00:00:03,197 --> 00:00:11,736
+Look, - SASLSSL is the recommended protocol: SASL provides authentication, SSL provides encryption.
+
+3
+00:00:11,736 --> 00:00:23,500
+ssl.endpoint.identification.algorithm=https enables hostname verification — never disable this in production.
+
+4
+00:00:23,500 --> 00:00:32,328
+super.users in server.properties bypasses ACLs — restrict to ops accounts only.
+
+5
+00:00:32,328 --> 00:00:38,960
+Kafka doesn't support row-level security; ACLs operate at the topic level.
+
+6
+00:00:38,960 --> 00:00:45,644
+Fun fact: Uber's solution was distributed event streaming with guaranteed delivery.
+
+7
+00:00:45,644 --> 00:00:49,078
+That's exactly what we're learning.
+
+8
+00:00:49,078 --> 00:00:58,565
+I watched a candidate explain this perfectly and get a 45 LPA offer at a top product company in Bangalore.
+
+9
+00:00:58,565 --> 00:01:03,184
+Same concept, same interview room, same question.
+

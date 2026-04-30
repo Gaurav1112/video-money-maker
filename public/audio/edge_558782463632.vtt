@@ -1,0 +1,48 @@
+1
+00:00:00,100 --> 00:00:03,642
+And in Java, it looks like this.
+
+2
+00:00:03,592 --> 00:00:07,973
+Here's the java implementation in 11 lines.
+
+3
+00:00:07,973 --> 00:00:13,460
+First, we handle the KTable<String, String> userPro operation.
+
+4
+00:00:13,460 --> 00:00:18,013
+Now we call builder.table() to process our data.
+
+5
+00:00:18,013 --> 00:00:22,723
+Here we call builder.stream() to process our data.
+
+6
+00:00:22,723 --> 00:00:28,894
+At this point, we handle the KStream<String, String> enrich operation.
+
+7
+00:00:28,894 --> 00:00:32,368
+This is where we handle the operation.
+
+8
+00:00:32,368 --> 00:00:36,723
+we call enriched.to() to process our data.
+
+9
+00:00:36,723 --> 00:00:41,868
+Let me show you the end result of Python Implementation first.
+
+10
+00:00:41,868 --> 00:00:45,684
+This is what a production system looks like.
+
+11
+00:00:45,684 --> 00:00:49,171
+Now the question is: HOW do we get here?
+
+12
+00:00:49,171 --> 00:00:50,881
+Stay tuned.
+

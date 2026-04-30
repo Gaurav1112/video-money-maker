@@ -1,0 +1,32 @@
+1
+00:00:00,100 --> 00:00:01,963
+Ab samjho kya sach hai.
+
+2
+00:00:01,913 --> 00:00:05,317
+Okay, so what's the right way to think about Apache Kafka?
+
+3
+00:00:05,317 --> 00:00:07,596
+Forget everything you've memorized.
+
+4
+00:00:07,596 --> 00:00:10,432
+Let me rebuild this from first principles.
+
+5
+00:00:10,432 --> 00:00:15,884
+And I promise, by the end, it will click so hard you'll wonder why it ever seemed confusing.
+
+6
+00:00:15,884 --> 00:00:18,769
+Everyone says The Cluster is the best approach.
+
+7
+00:00:18,769 --> 00:00:22,134
+That is , actually wrong for most real-world systems.
+
+8
+00:00:22,134 --> 00:00:24,346
+I will show you why in a moment.
+

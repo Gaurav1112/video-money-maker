@@ -3,7 +3,8 @@ import { useCurrentFrame, AbsoluteFill, interpolate, spring, useVideoConfig } fr
 import { COLORS, FONTS, SIZES } from '../lib/theme';
 import { fadeIn, scaleIn } from '../lib/animations';
 import { useSync } from '../hooks/useSync';
-import type { AnimationCue } from '../types';
+import type { AnimationCue, VisualBeat } from '../types';
+import { TemplateFactory } from './templates/TemplateFactory';
 
 interface DiagramSlideProps {
   svgContent: string;
@@ -13,16 +14,26 @@ interface DiagramSlideProps {
   sceneIndex?: number;
   sceneStartFrame?: number;
   animationCues?: AnimationCue[];
+  templateId?: string;
+  templateVariant?: string;
+  visualBeats?: VisualBeat[];
+  accentColor?: string;
+  topic?: string;
 }
 
 const DiagramSlide: React.FC<DiagramSlideProps> = ({
-  svgContent,
-  title,
+  svgContent = '',
+  title = '',
   startFrame = 0,
   endFrame,
   sceneIndex,
   sceneStartFrame,
   animationCues,
+  templateId,
+  templateVariant,
+  visualBeats,
+  accentColor = '#E85D26',
+  topic,
 }) => {
   const frame = useCurrentFrame();
   const { durationInFrames, fps } = useVideoConfig();
@@ -49,6 +60,29 @@ const DiagramSlide: React.FC<DiagramSlideProps> = ({
 
   const clipPercent = Math.min(100, revealProgress * 120);
 
+  // If a visual template is available, render via TemplateFactory instead of raw SVG
+  if (templateId) {
+    return (
+      <AbsoluteFill
+        style={{
+          backgroundColor: COLORS.dark,
+          fontFamily: FONTS.text,
+        }}
+      >
+        <TemplateFactory
+          templateId={templateId}
+          variant={templateVariant || 'overview'}
+          beats={visualBeats || []}
+          accentColor={accentColor}
+          fps={fps}
+          sceneHeading={title}
+          content={svgContent}
+        />
+      </AbsoluteFill>
+    );
+  }
+
+  // Fallback: render raw SVG diagram
   return (
     <AbsoluteFill
       style={{

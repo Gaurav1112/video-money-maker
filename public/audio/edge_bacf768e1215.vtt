@@ -1,0 +1,60 @@
+1
+00:00:00,100 --> 00:00:03,721
+Alright, here's what you just learned.
+
+2
+00:00:03,671 --> 00:00:11,618
+Explain the interaction between batch.size, linger.ms, and buffer.memory.
+
+3
+00:00:11,618 --> 00:00:17,026
+Choose the right compression codec for a given throughput/latency tradeoff.
+
+4
+00:00:17,026 --> 00:00:21,868
+Tune consumer fetch parameters to maximize poll throughput.
+
+5
+00:00:21,868 --> 00:00:24,026
+Stick with me here.
+
+6
+00:00:24,026 --> 00:00:28,421
+This is the part where real understanding happens.
+
+7
+00:00:28,421 --> 00:00:31,578
+Don't just watch and forget.
+
+8
+00:00:31,578 --> 00:00:33,342
+Go practice.
+
+9
+00:00:33,342 --> 00:00:35,500
+Build it in code.
+
+10
+00:00:35,500 --> 00:00:37,868
+Explain it to someone.
+
+11
+00:00:37,868 --> 00:00:40,131
+That's how it sticks.
+
+12
+00:00:40,131 --> 00:00:48,947
+The complete Apache Kafka course with cheatsheets and mock interviews is at guru-sishya.in slash apache-kafka.
+
+13
+00:00:48,947 --> 00:00:51,671
+Drop a like if this helped.
+
+14
+00:00:51,671 --> 00:01:08,671
+You now know how to explain the interaction between batch.size, linger.ms, and buffer.memory, choose the right compression codec for a given throughput/latency tradeoff, and explain the trade-offs in an interview.
+
+15
+00:01:08,671 --> 00:01:11,394
+Ab interview mein dhoom machao!
+

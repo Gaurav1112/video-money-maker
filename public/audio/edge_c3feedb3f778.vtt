@@ -1,0 +1,44 @@
+1
+00:00:00,100 --> 00:00:05,773
+Remember when I said Python Implementation is wrong for most systems?
+
+2
+00:00:05,723 --> 00:00:07,815
+Here is the proof.
+
+3
+00:00:07,815 --> 00:00:10,921
+Here's how this looks in Python.
+
+4
+00:00:10,921 --> 00:00:19,210
+This producer function in python — it iterates to find the optimal value Here's how this looks in Python.
+
+5
+00:00:19,210 --> 00:00:25,328
+This producer function in python — it iterates to find the optimal value.
+
+6
+00:00:25,328 --> 00:00:28,815
+First, we import the queue module.
+
+7
+00:00:28,815 --> 00:00:32,052
+Now we define the producer function.
+
+8
+00:00:32,052 --> 00:00:37,881
+Here we print f'Produced: msg-{i}' to verify our result.
+
+9
+00:00:37,881 --> 00:00:44,513
+At this point, we call q.get and store the result in msg.
+
+10
+00:00:44,513 --> 00:00:50,631
+This is where we call threading.Thread and store the result in t1.
+
+11
+00:00:50,631 --> 00:00:55,026
+we call t1.join() to process our data.
+

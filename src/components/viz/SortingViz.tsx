@@ -6,6 +6,7 @@ interface SortingVizProps {
   sync: SyncState;
   frame: number;
   keywords: string[];
+  variant?: string;
 }
 
 const THEME = {
@@ -23,23 +24,19 @@ const THEME = {
 const INITIAL_HEIGHTS = [0.65, 0.30, 0.85, 0.45, 0.70, 0.20];
 
 // Bubble sort steps: each step is [i, j] — the pair being compared/swapped
-// We'll do simplified bubble sort steps for 6 elements
-// Array: [0.65, 0.30, 0.85, 0.45, 0.70, 0.20]
-// Step-by-step comparison pairs and whether a swap happens
 interface SortStep {
   comparing: [number, number];
   swaps: boolean;
-  // After this step, which indices are in their final sorted position
   sortedIndices: number[];
 }
 
 const SORT_STEPS: SortStep[] = [
-  { comparing: [0, 1], swaps: true,  sortedIndices: [] },          // 0.65 > 0.30 → swap
-  { comparing: [1, 2], swaps: false, sortedIndices: [] },          // 0.65 < 0.85 → no swap
-  { comparing: [2, 3], swaps: true,  sortedIndices: [] },          // 0.85 > 0.45 → swap
-  { comparing: [3, 4], swaps: true,  sortedIndices: [] },          // 0.85 > 0.70 → swap
-  { comparing: [4, 5], swaps: true,  sortedIndices: [5] },         // 0.85 > 0.20 → swap; 0.85 sorted at end
-  { comparing: [0, 1], swaps: false, sortedIndices: [5] },         // pass 2 start
+  { comparing: [0, 1], swaps: true,  sortedIndices: [] },
+  { comparing: [1, 2], swaps: false, sortedIndices: [] },
+  { comparing: [2, 3], swaps: true,  sortedIndices: [] },
+  { comparing: [3, 4], swaps: true,  sortedIndices: [] },
+  { comparing: [4, 5], swaps: true,  sortedIndices: [5] },
+  { comparing: [0, 1], swaps: false, sortedIndices: [5] },
   { comparing: [1, 2], swaps: true,  sortedIndices: [5] },
   { comparing: [2, 3], swaps: false, sortedIndices: [5] },
   { comparing: [3, 4], swaps: true,  sortedIndices: [4, 5] },
@@ -53,7 +50,7 @@ const SORT_STEPS: SortStep[] = [
 
 // Apply all swaps up to (not including) stepIndex to get current order
 function getOrderAtStep(stepIndex: number): number[] {
-  const order = [0, 1, 2, 3, 4, 5]; // indices into INITIAL_HEIGHTS
+  const order = [0, 1, 2, 3, 4, 5];
   for (let s = 0; s < stepIndex; s++) {
     const step = SORT_STEPS[s];
     if (step.swaps) {
@@ -91,14 +88,19 @@ export const SortingViz: React.FC<SortingVizProps> = ({ sync, frame }) => {
   const BAR_BOTTOM_Y = 340;
   const BAR_START_X = (SVG_W - TOTAL_W) / 2;
 
-  // Compute X positions for each slot (0..5)
   function slotX(slot: number) {
     return BAR_START_X + slot * (BAR_W + GAP);
   }
 
-  // Determine whether this step is swapping and animate bar positions
   const isSwapStep = step?.swaps ?? false;
-  const [swapA, swapB] = step?.comparing ?? [0, 0];
+
+  // Pulsing glow intensity for comparing bars
+  const glowPulse = 0.4 + 0.6 * ((Math.sin(frame * 0.15) + 1) / 2);
+
+  const titleOpacity = interpolate(progress, [0, 0.08], [0, 1], {
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
+  });
 
   return (
     <div
@@ -111,8 +113,51 @@ export const SortingViz: React.FC<SortingVizProps> = ({ sync, frame }) => {
         alignItems: 'center',
         justifyContent: 'center',
         fontFamily: 'Inter, system-ui, sans-serif',
+        position: 'relative',
       }}
     >
+      {/* Complexity badge — top-left */}
+      <div
+        style={{
+          position: 'absolute',
+          top: 16,
+          left: 20,
+          background: `${THEME.saffron}18`,
+          border: `1.5px solid ${THEME.saffron}55`,
+          borderRadius: 8,
+          padding: '4px 12px',
+          opacity: titleOpacity,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 6,
+        }}
+      >
+        <span style={{ fontSize: 11, fontWeight: 700, color: THEME.saffron, letterSpacing: 0.5 }}>
+          O(n{'\u00B2'})
+        </span>
+        <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.4)' }}>
+          worst case
+        </span>
+      </div>
+
+      {/* Step counter — top-right */}
+      <div
+        style={{
+          position: 'absolute',
+          top: 16,
+          right: 20,
+          background: `${THEME.indigo}18`,
+          border: `1.5px solid ${THEME.indigo}44`,
+          borderRadius: 8,
+          padding: '4px 12px',
+          opacity: titleOpacity,
+        }}
+      >
+        <span style={{ fontSize: 11, fontWeight: 700, color: THEME.indigo }}>
+          Step {Math.min(currentStep + 1, totalSteps)} of {totalSteps}
+        </span>
+      </div>
+
       {/* Title */}
       <div
         style={{
@@ -121,28 +166,37 @@ export const SortingViz: React.FC<SortingVizProps> = ({ sync, frame }) => {
           fontWeight: 700,
           letterSpacing: 2,
           marginBottom: 4,
-          opacity: interpolate(progress, [0, 0.08], [0, 1], {
-            extrapolateLeft: 'clamp',
-            extrapolateRight: 'clamp',
-          }),
+          opacity: titleOpacity,
         }}
       >
         BUBBLE SORT
       </div>
 
-      {/* Step counter */}
+      {/* Swap/Compare indicator */}
       <div
         style={{
-          color: 'rgba(255,255,255,0.3)',
+          color: isSwapStep ? THEME.saffron : 'rgba(255,255,255,0.3)',
           fontSize: 12,
           letterSpacing: 1,
           marginBottom: 8,
+          fontWeight: isSwapStep ? 700 : 400,
         }}
       >
-        Step {Math.min(currentStep + 1, totalSteps)} / {totalSteps}
+        {isSwapStep ? 'SWAPPING' : 'COMPARING'}
       </div>
 
       <svg width={SVG_W} height={SVG_H} viewBox={`0 0 ${SVG_W} ${SVG_H}`}>
+        {/* SVG defs for glow filter */}
+        <defs>
+          <filter id="comparing-glow" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation={3 * glowPulse} result="blur" />
+            <feMerge>
+              <feMergeNode in="blur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+        </defs>
+
         {/* Baseline */}
         <line
           x1={BAR_START_X - 10}
@@ -153,12 +207,58 @@ export const SortingViz: React.FC<SortingVizProps> = ({ sync, frame }) => {
           strokeWidth={1.5}
         />
 
+        {/* Curved comparison arrow between the two bars being compared */}
+        {step && (() => {
+          const slotA = step.comparing[0];
+          const slotB = step.comparing[1];
+          const xA = slotX(slotA) + BAR_W / 2;
+          const xB = slotX(slotB) + BAR_W / 2;
+          const idxA = prevOrder[slotA];
+          const idxB = prevOrder[slotB];
+          const hA = INITIAL_HEIGHTS[idxA] * BAR_MAX_H;
+          const hB = INITIAL_HEIGHTS[idxB] * BAR_MAX_H;
+          const minTop = BAR_BOTTOM_Y - Math.max(hA, hB);
+          const arcY = minTop - 44;
+          const midX = (xA + xB) / 2;
+
+          return (
+            <g opacity={0.5 + 0.4 * Math.sin(frame * 0.18)}>
+              <path
+                d={`M ${xA} ${minTop - 10} Q ${midX} ${arcY} ${xB} ${minTop - 10}`}
+                fill="none"
+                stroke={isSwapStep ? THEME.saffron : THEME.comparing}
+                strokeWidth={2}
+                strokeDasharray={isSwapStep ? 'none' : '4 3'}
+              />
+              {/* Arrowheads at both ends */}
+              <polygon
+                points={`${xB},${minTop - 10} ${xB - 5},${minTop - 18} ${xB + 5},${minTop - 18}`}
+                fill={isSwapStep ? THEME.saffron : THEME.comparing}
+              />
+              <polygon
+                points={`${xA},${minTop - 10} ${xA - 5},${minTop - 18} ${xA + 5},${minTop - 18}`}
+                fill={isSwapStep ? THEME.saffron : THEME.comparing}
+              />
+              {/* Label on arc */}
+              <text
+                x={midX}
+                y={arcY - 4}
+                textAnchor="middle"
+                fill={isSwapStep ? THEME.saffron : 'rgba(255,255,255,0.5)'}
+                fontSize={10}
+                fontWeight={700}
+                fontFamily="Inter, system-ui, sans-serif"
+              >
+                {isSwapStep ? 'SWAP' : 'compare'}
+              </text>
+            </g>
+          );
+        })()}
+
         {INITIAL_HEIGHTS.map((_, barIndexInOrder) => {
-          // Where is this bar's value currently sitting?
           const currentSlot = prevOrder.indexOf(barIndexInOrder);
           const nextSlot = nextOrder.indexOf(barIndexInOrder);
 
-          // Animate X position if this bar is one of the swapped pair
           const isComparing =
             step &&
             (step.comparing[0] === currentSlot || step.comparing[1] === currentSlot);
@@ -175,8 +275,13 @@ export const SortingViz: React.FC<SortingVizProps> = ({ sync, frame }) => {
             barX = slotX(currentSlot);
           }
 
+          // Spring arc Y offset during swap — bars arc up/down via parabolic path
+          const isMovingRight = isSwapping && nextSlot > currentSlot;
+          const isMovingLeft = isSwapping && nextSlot < currentSlot;
+          const arcAmount = isSwapping ? Math.sin(stepProgress * Math.PI) : 0;
+          const arcYOffset = isMovingRight ? -arcAmount * 24 : isMovingLeft ? arcAmount * 16 : 0;
+
           const h = INITIAL_HEIGHTS[barIndexInOrder] * BAR_MAX_H;
-          const barY = BAR_BOTTOM_Y - h;
 
           const isSorted = step && step.sortedIndices.includes(currentSlot);
           const barColor = isSorted
@@ -185,17 +290,16 @@ export const SortingViz: React.FC<SortingVizProps> = ({ sync, frame }) => {
             ? THEME.comparing
             : THEME.default;
 
-          // Entrance: bars slide up from bottom
           const entranceSpring = spring({
             frame: frame - barIndexInOrder * 5,
             fps,
             config: { damping: 14, stiffness: 100 },
           });
           const displayH = h * entranceSpring;
-          const displayY = BAR_BOTTOM_Y - displayH;
+          const displayY = BAR_BOTTOM_Y - displayH + arcYOffset;
 
           return (
-            <g key={`bar-${barIndexInOrder}`}>
+            <g key={`bar-${barIndexInOrder}`} filter={isComparing ? 'url(#comparing-glow)' : undefined}>
               {/* Bar body */}
               <rect
                 x={barX}
@@ -208,19 +312,45 @@ export const SortingViz: React.FC<SortingVizProps> = ({ sync, frame }) => {
                 strokeWidth={isComparing ? 2.5 : 1.5}
                 opacity={entranceSpring}
               />
-              {/* Glow on comparing bars */}
+              {/* Pulsing glow rings on comparing bars */}
               {isComparing && (
-                <rect
-                  x={barX - 2}
-                  y={displayY - 2}
-                  width={BAR_W + 4}
-                  height={displayH + 4}
-                  rx={8}
-                  fill="none"
-                  stroke={barColor}
-                  strokeWidth={1}
-                  opacity={0.3 + 0.2 * Math.sin(frame * 0.2)}
-                />
+                <>
+                  <rect
+                    x={barX - 3}
+                    y={displayY - 3}
+                    width={BAR_W + 6}
+                    height={displayH + 6}
+                    rx={9}
+                    fill="none"
+                    stroke={barColor}
+                    strokeWidth={1.5}
+                    opacity={glowPulse * 0.5}
+                  />
+                  <rect
+                    x={barX - 6}
+                    y={displayY - 6}
+                    width={BAR_W + 12}
+                    height={displayH + 12}
+                    rx={12}
+                    fill="none"
+                    stroke={barColor}
+                    strokeWidth={1}
+                    opacity={glowPulse * 0.2}
+                  />
+                </>
+              )}
+              {/* Sorted checkmark */}
+              {isSorted && entranceSpring > 0.8 && (
+                <text
+                  x={barX + BAR_W / 2}
+                  y={BAR_BOTTOM_Y + 18}
+                  textAnchor="middle"
+                  fill={THEME.sorted}
+                  fontSize={14}
+                  fontFamily="Inter, system-ui, sans-serif"
+                >
+                  {'\u2713'}
+                </text>
               )}
               {/* Height label at top */}
               <text
@@ -235,16 +365,13 @@ export const SortingViz: React.FC<SortingVizProps> = ({ sync, frame }) => {
               >
                 {Math.round(INITIAL_HEIGHTS[barIndexInOrder] * 100)}
               </text>
-              {/* Comparison arrows */}
+              {/* Down chevron indicator */}
               {isComparing && entranceSpring > 0.8 && (
-                <>
-                  {/* Down chevron */}
-                  <polygon
-                    points={`${barX + BAR_W / 2 - 6},${displayY - 22} ${barX + BAR_W / 2 + 6},${displayY - 22} ${barX + BAR_W / 2},${displayY - 14}`}
-                    fill={barColor}
-                    opacity={0.7 + 0.2 * Math.sin(frame * 0.25)}
-                  />
-                </>
+                <polygon
+                  points={`${barX + BAR_W / 2 - 6},${displayY - 22} ${barX + BAR_W / 2 + 6},${displayY - 22} ${barX + BAR_W / 2},${displayY - 14}`}
+                  fill={barColor}
+                  opacity={0.7 + 0.2 * Math.sin(frame * 0.25)}
+                />
               )}
             </g>
           );
@@ -261,7 +388,7 @@ export const SortingViz: React.FC<SortingVizProps> = ({ sync, frame }) => {
             fontFamily="Inter, system-ui, sans-serif"
           >
             Comparing positions {step.comparing[0]} and {step.comparing[1]}
-            {step.swaps ? ' → SWAP' : ' → no swap'}
+            {step.swaps ? ' \u2192 SWAP' : ' \u2192 no swap'}
           </text>
         )}
 

@@ -1,0 +1,28 @@
+1
+00:00:00,100 --> 00:00:04,760
+Okay, so what's the right way to think about Apache Kafka?
+
+2
+00:00:04,710 --> 00:00:07,828
+Forget everything you've memorized.
+
+3
+00:00:07,828 --> 00:00:11,710
+Let me rebuild this from first principles.
+
+4
+00:00:11,710 --> 00:00:21,210
+And I promise, by the end, it will click so hard you'll wonder why it ever seemed confusing , and that changes everything.
+
+5
+00:00:21,210 --> 00:00:27,539
+Most developers think more Replication Architecture means better performance.
+
+6
+00:00:27,539 --> 00:00:30,986
+It can , actually make things worse.
+
+7
+00:00:30,986 --> 00:00:33,381
+Stay tuned to see why.
+

@@ -1,0 +1,20 @@
+1
+00:00:00,100 --> 00:00:04,115
+Night owls watching at 2 AM — I see you.
+
+2
+00:00:04,065 --> 00:00:07,486
+Let's make this study session count.
+
+3
+00:00:07,486 --> 00:00:17,881
+Without EOS, you face a dilemma: - At-most-once: commit offset before processing → crash between commit and processing → message skipped.
+
+4
+00:00:17,881 --> 00:00:27,000
+At-least-once: commit offset after processing → crash between processing and commit → message reprocessed → duplicate effect.
+
+5
+00:00:27,000 --> 00:00:36,052
+Plot twist: ChatGPT uses the exact same concepts we're learning here to handle millions of concurrent users.
+

@@ -1,0 +1,48 @@
+1
+00:00:00,100 --> 00:00:01,886
+Let me show you the code.
+
+2
+00:00:01,836 --> 00:00:05,339
+Remember when I said The Cluster is wrong for most systems?
+
+3
+00:00:05,339 --> 00:00:06,865
+Here is the proof.
+
+4
+00:00:06,865 --> 00:00:09,740
+Here is the implementation in 8 lines.
+
+5
+00:00:09,740 --> 00:00:15,134
+This is how apache kafka works under the hood Here is the implementation in 8 lines.
+
+6
+00:00:15,134 --> 00:00:18,288
+This is how apache kafka works under the hood.
+
+7
+00:00:18,288 --> 00:00:20,548
+First, we handle the ┌───────────────────────────── operation.
+
+8
+00:00:20,548 --> 00:00:23,384
+Now we handle the │ Kafka Cluster operation.
+
+9
+00:00:23,384 --> 00:00:26,567
+Here we handle the │ │ Broker 1 │ │ Broker 2 │ │ operation.
+
+10
+00:00:26,567 --> 00:00:29,250
+At this point, we handle the │ │ operation.
+
+11
+00:00:29,250 --> 00:00:31,740
+This is where we handle the │ └──────────┘ └──────────┘ └ operation.
+
+12
+00:00:31,740 --> 00:00:33,576
+we handle the └───────────────────────────── operation.
+

@@ -1,0 +1,52 @@
+1
+00:00:00,100 --> 00:00:03,876
+Here is that interview trap about Custom Partitioner I mentioned.
+
+2
+00:00:03,826 --> 00:00:06,634
+Here's the equivalent Java implementation.
+
+3
+00:00:06,634 --> 00:00:10,778
+Here's a RegionPartitioner class in java Now you will never fall for it.
+
+4
+00:00:10,778 --> 00:00:13,586
+Here's the equivalent Java implementation.
+
+5
+00:00:13,586 --> 00:00:16,298
+Here's a RegionPartitioner class in java.
+
+6
+00:00:16,298 --> 00:00:19,451
+The RegionPartitioner method is where the action happens.
+
+7
+00:00:19,451 --> 00:00:25,423
+First, we import the org.apache.kafka.clients.producer.Partitioner module.
+
+8
+00:00:25,423 --> 00:00:32,740
+Now we define our RegionPartitioner class implementing Partitioner — this encapsulates all the complexity in one clean interface.
+
+9
+00:00:32,740 --> 00:00:36,701
+Here we handle the Object value, byte[] valueByte operation.
+
+10
+00:00:36,701 --> 00:00:42,567
+At this point, we check if the values match — to handle the edge case that trips up most developers.
+
+11
+00:00:42,567 --> 00:00:48,990
+This is where we apply the @Override public void close decorator — for O of 1 constant time lookups.
+
+12
+00:00:48,990 --> 00:00:51,951
+This is why hash maps are interview gold.
+
+13
+00:00:51,951 --> 00:00:54,634
+we log the output to verify it works.
+

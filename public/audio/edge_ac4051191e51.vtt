@@ -1,0 +1,8 @@
+1
+00:00:00,100 --> 00:00:10,865
+SMTs modify records in-flight inside Connect without custom code: This separates the developers who GET callbacks from the ones who don't.
+
+2
+00:00:10,815 --> 00:00:12,947
+Simple as that.
+

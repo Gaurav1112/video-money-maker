@@ -1,0 +1,28 @@
+1
+00:00:00,100 --> 00:00:01,915
+Okay, Guru mode ON.
+
+2
+00:00:01,865 --> 00:00:02,932
+Focus.
+
+3
+00:00:02,932 --> 00:00:12,673
+Suno, yeh important hai,  this next idea changes everything,  batch.size (default 16 kilobytes) controls the maximum size of a batch per partition.
+
+4
+00:00:12,673 --> 00:00:18,298
+linger.ms (default 0) adds a deliberate delay to allow more records to accumulate.
+
+5
+00:00:18,298 --> 00:00:26,384
+Setting linger.ms=10 can increase batch fill rate dramatically, boosting throughput at the cost of a small latency increase.
+
+6
+00:00:26,384 --> 00:00:31,250
+Real talk: I've seen senior engineers at Uber get this wrong in interviews.
+
+7
+00:00:31,250 --> 00:00:33,000
+Don't be that person.
+

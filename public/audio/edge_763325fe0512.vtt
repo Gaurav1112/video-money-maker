@@ -1,0 +1,40 @@
+1
+00:00:00,100 --> 00:00:09,457
+Now pay attention here,  by the way, this video works great at 1.five times speed for better listening.
+
+2
+00:00:09,407 --> 00:00:13,421
+Now, here's where most people go wrong.
+
+3
+00:00:13,421 --> 00:00:21,026
+When someone asks about Apache Kafka, the typical answer is just the textbook definition.
+
+4
+00:00:21,026 --> 00:00:23,789
+They recite it like a parrot.
+
+5
+00:00:23,789 --> 00:00:29,236
+But that tells the interviewer NOTHING about your actual understanding.
+
+6
+00:00:29,236 --> 00:00:33,789
+It's like saying a car is "a vehicle with four wheels.
+
+7
+00:00:33,789 --> 00:00:35,776
+Technically correct.
+
+8
+00:00:35,776 --> 00:00:38,078
+Completely useless.
+
+9
+00:00:38,078 --> 00:00:45,921
+Here's something wild: Uber once had a major outage because their apache kafka system failed.
+
+10
+00:00:45,921 --> 00:00:48,144
+Cost them millions.
+

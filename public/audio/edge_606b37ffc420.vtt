@@ -1,0 +1,16 @@
+1
+00:00:00,100 --> 00:00:06,431
+Each partition is stored as a directory of segment files on the broker's disk.
+
+2
+00:00:06,381 --> 00:00:19,960
+A segment is a .log file (binary data) paired with an .index file (sparse offset index for fast seeks) and a .timeindex file (timestamp index).
+
+3
+00:00:19,960 --> 00:00:32,039
+When a segment reaches log.segment.bytes (default 1 gigabytes) or log.roll.hours, a new segment is opened.
+
+4
+00:00:32,039 --> 00:00:37,763
+Old segments are deleted or compacted based on the retention policy.
+

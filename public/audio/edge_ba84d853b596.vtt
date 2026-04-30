@@ -1,0 +1,28 @@
+1
+00:00:00,100 --> 00:00:07,867
+Kafka 2.8+ introduced KRaft (Kafka Raft) — a built-in consensus mechanism that eliminates the ZooKeeper dependency entirely.
+
+2
+00:00:07,817 --> 00:00:13,750
+In KRaft mode, a quorum of broker nodes use the Raft protocol to manage cluster metadata directly.
+
+3
+00:00:13,750 --> 00:00:19,528
+Real talk: Flipkart's Big Billion Day crashed their servers THREE times before they got this right.
+
+4
+00:00:19,528 --> 00:00:22,269
+Product companies pay 30+ LPA.
+
+5
+00:00:22,269 --> 00:00:25,346
+Service companies pay 3.3 LPA.
+
+6
+00:00:25,346 --> 00:00:26,528
+The difference?
+
+7
+00:00:26,528 --> 00:00:28,682
+Exactly what we're learning.
+

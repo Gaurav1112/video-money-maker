@@ -1,0 +1,16 @@
+1
+00:00:00,100 --> 00:00:06,707
+Look, kafka's default configuration optimizes for safety, not throughput.
+
+2
+00:00:06,657 --> 00:00:16,197
+Production systems often need explicit tuning across three dimensions: throughput, latency, and resource utilization.
+
+3
+00:00:16,197 --> 00:00:21,315
+What your textbook says about Producer Tuning is outdated.
+
+4
+00:00:21,315 --> 00:00:26,394
+The real approach that companies like Google use is coming up.
+

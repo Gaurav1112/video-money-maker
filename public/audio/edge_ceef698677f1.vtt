@@ -1,0 +1,24 @@
+1
+00:00:00,100 --> 00:00:07,098
+Ek second ruko,  a Kafka cluster is a group of brokers — individual server processes, each with a unique integer ID.
+
+2
+00:00:07,048 --> 00:00:16,807
+One broker is elected the Controller, responsible for administrative duties: partition leader elections, topic creation and deletion, and cluster metadata propagation.
+
+3
+00:00:16,807 --> 00:00:22,548
+Plot twist: Most production implementations of this,  are , actually FREE and open source.
+
+4
+00:00:22,548 --> 00:00:26,403
+Most developers think more The Cluster means better performance.
+
+5
+00:00:26,403 --> 00:00:28,923
+It can , actually make things WORSE.
+
+6
+00:00:28,923 --> 00:00:33,019
+And if you get this wrong in an interview, it is an instant reject.
+

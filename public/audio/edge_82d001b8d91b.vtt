@@ -1,0 +1,44 @@
+1
+00:00:00,100 --> 00:00:05,646
+By the way, this video works great at 1.five times speed for better listening.
+
+2
+00:00:05,596 --> 00:00:06,951
+Imagine this.
+
+3
+00:00:06,951 --> 00:00:09,105
+You've built an amazing app.
+
+4
+00:00:09,105 --> 00:00:10,625
+Users love it.
+
+5
+00:00:10,625 --> 00:00:15,375
+Then one morning you wake up and your app is on the front page of Hacker News.
+
+6
+00:00:15,375 --> 00:00:19,653
+Suddenly ten million people are trying to use your app at the same time.
+
+7
+00:00:19,653 --> 00:00:21,394
+Your server crashes.
+
+8
+00:00:21,394 --> 00:00:23,701
+Your users see error pages.
+
+9
+00:00:23,701 --> 00:00:25,480
+Your boss is calling.
+
+10
+00:00:25,480 --> 00:00:28,903
+This is the exact problem that Apache Kafka solves.
+
+11
+00:00:28,903 --> 00:00:32,500
+And if you don't understand it, you WILL face this nightmare.
+

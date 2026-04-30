@@ -6,6 +6,7 @@ interface KeywordCloudProps {
   sync: SyncState;
   keywords: string[];
   frame: number;
+  variant?: string;
 }
 
 export const KeywordCloud: React.FC<KeywordCloudProps> = ({ sync, keywords, frame }) => {

@@ -1,0 +1,16 @@
+1
+00:00:00,100 --> 00:00:07,892
+Here's the thing,  in a healthy cluster, partition leaders should be evenly distributed across brokers.
+
+2
+00:00:07,842 --> 00:00:15,157
+If one broker holds most leaders, it handles disproportionate write and read load.
+
+3
+00:00:15,157 --> 00:00:25,736
+auto.leader.rebalance.enable=true (default) triggers periodic rebalancing to restore even leader distribution.
+
+4
+00:00:25,736 --> 00:00:33,105
+Monitor with kafka.server:type=ReplicaManager,name=LeaderCount.
+

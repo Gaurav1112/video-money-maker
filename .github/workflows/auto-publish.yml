@@ -1,0 +1,394 @@
+name: Auto-Publish Video
+
+# Publishes pre-rendered videos to YouTube and Instagram on a schedule.
+# Videos are stored locally on the self-hosted runner at ~/Documents/guru-sishya/
+# Schedule: Tue (long-form), Thu (vertical part 1), Sat (vertical parts 2+3) at 7:15 PM IST
+
+on:
+  schedule:
+    # Staggered schedule for maximum per-video reach (IST → UTC)
+    - cron: '45 13 * * 2'   # Tuesday   7:15 PM IST — Long-form YouTube
+    - cron: '0 7 * * 4'     # Thursday 12:30 PM IST — Short Part 1
+    - cron: '0 9 * * 4'     # Thursday  2:30 PM IST — Short Part 2
+    - cron: '45 13 * * 6'   # Saturday  7:15 PM IST — Short Part 3
+
+  workflow_dispatch:
+    inputs:
+      publish_id:
+        description: 'Specific queue entry ID (e.g., load-balancing/s1/long). Leave empty for auto.'
+        required: false
+        default: ''
+      force:
+        description: 'Force publish regardless of day-of-week schedule'
+        required: false
+        default: 'false'
+        type: boolean
+      skip_youtube:
+        description: 'Skip YouTube upload'
+        required: false
+        default: 'false'
+        type: boolean
+      skip_instagram:
+        description: 'Skip Instagram upload'
+        required: false
+        default: 'false'
+        type: boolean
+      dry_run:
+        description: 'Dry run: determine next video but do not upload'
+        required: false
+        default: 'false'
+        type: boolean
+
+env:
+  NODE_VERSION: '20'
+  GURU_SISHYA_BASE: ~/Documents/guru-sishya
+
+jobs:
+  publish:
+    runs-on: self-hosted
+    timeout-minutes: 45
+
+    outputs:
+      publish_id: ${{ steps.pick.outputs.publish_id }}
+      topic: ${{ steps.pick.outputs.topic }}
+      session: ${{ steps.pick.outputs.session }}
+      slot_type: ${{ steps.pick.outputs.slot_type }}
+      youtube_video_id: ${{ steps.youtube.outputs.youtube_video_id }}
+      instagram_media_id: ${{ steps.instagram.outputs.instagram_media_id }}
+      skipped: ${{ steps.pick.outputs.no_publish }}
+
+    steps:
+      # ── Setup ────────────────────────────────────────────────
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      # ── Determine Next Video ──────────────────────────────────
+      - name: Pick next video from publish queue
+        id: pick
+        run: |
+          ARGS=""
+          if [ -n "${{ github.event.inputs.publish_id }}" ]; then
+            ARGS="--id ${{ github.event.inputs.publish_id }}"
+          fi
+          if [ "${{ github.event.inputs.force }}" = "true" ]; then
+            ARGS="$ARGS --force"
+          fi
+
+          RESULT=$(npx tsx scripts/get-next-publish.ts $ARGS)
+
+          echo "$RESULT"
+
+          # Parse key=value pairs into GitHub outputs
+          while IFS='=' read -r key value; do
+            key_lower=$(echo "$key" | tr '[:upper:]' '[:lower:]')
+            echo "${key_lower}=${value}" >> "$GITHUB_OUTPUT"
+          done <<< "$RESULT"
+
+      - name: Check if there is something to publish
+        if: steps.pick.outputs.no_publish == 'true'
+        run: |
+          echo "No videos to publish today."
+          echo "Queue status:"
+          npx tsx scripts/get-next-publish.ts --status
+
+      # ── Validate Video Files Exist ──────────────────────────
+      - name: Validate video files
+        if: steps.pick.outputs.no_publish != 'true'
+        id: validate
+        run: |
+          BASE="${GURU_SISHYA_BASE/#\~/$HOME}"
+          VIDEO_PATH="$BASE/${{ steps.pick.outputs.video_path }}"
+          METADATA_PATH="$BASE/${{ steps.pick.outputs.metadata_path }}"
+
+          echo "Checking video: $VIDEO_PATH"
+          echo "Checking metadata: $METADATA_PATH"
+
+          if [ ! -f "$VIDEO_PATH" ]; then
+            echo "ERROR: Video file not found: $VIDEO_PATH"
+            echo "video_exists=false" >> "$GITHUB_OUTPUT"
+
+            # Mark as skipped in queue
+            npx tsx scripts/update-publish-queue.ts \
+              --id "${{ steps.pick.outputs.publish_id }}" \
+              --status skipped \
+              --error "Video file not found: $VIDEO_PATH"
+            exit 1
+          fi
+
+          if [ ! -f "$METADATA_PATH" ]; then
+            echo "WARNING: Metadata file not found: $METADATA_PATH"
+            echo "metadata_exists=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "metadata_exists=true" >> "$GITHUB_OUTPUT"
+          fi
+
+          echo "video_exists=true" >> "$GITHUB_OUTPUT"
+          echo "video_full_path=$VIDEO_PATH" >> "$GITHUB_OUTPUT"
+          echo "metadata_full_path=$METADATA_PATH" >> "$GITHUB_OUTPUT"
+
+          # Resolve thumbnail path
+          THUMB_PATH="${{ steps.pick.outputs.thumbnail_path }}"
+          if [ -n "$THUMB_PATH" ]; then
+            FULL_THUMB="$BASE/$THUMB_PATH"
+            if [ -f "$FULL_THUMB" ]; then
+              echo "thumbnail_full_path=$FULL_THUMB" >> "$GITHUB_OUTPUT"
+            fi
+          fi
+
+          # Resolve additional videos (for vertical-23 slot)
+          ADDITIONAL="${{ steps.pick.outputs.additional_videos }}"
+          if [ -n "$ADDITIONAL" ]; then
+            RESOLVED=""
+            IFS=',' read -ra PARTS <<< "$ADDITIONAL"
+            for p in "${PARTS[@]}"; do
+              FULL="$BASE/$p"
+              if [ -f "$FULL" ]; then
+                if [ -n "$RESOLVED" ]; then RESOLVED="$RESOLVED,"; fi
+                RESOLVED="$RESOLVED$FULL"
+              else
+                echo "WARNING: Additional video not found: $FULL"
+              fi
+            done
+            echo "additional_full_paths=$RESOLVED" >> "$GITHUB_OUTPUT"
+          fi
+
+          # Log file sizes
+          VIDEO_SIZE=$(du -h "$VIDEO_PATH" | cut -f1)
+          echo "Video size: $VIDEO_SIZE"
+          echo ""
+          echo "=== Publish Plan ==="
+          echo "ID:        ${{ steps.pick.outputs.publish_id }}"
+          echo "Topic:     ${{ steps.pick.outputs.topic_name }}"
+          echo "Session:   ${{ steps.pick.outputs.session }}"
+          echo "Slot:      ${{ steps.pick.outputs.slot_type }}"
+          echo "Day:       ${{ steps.pick.outputs.day_of_week }}"
+          echo "Video:     $VIDEO_PATH ($VIDEO_SIZE)"
+
+      # ── Dry Run Exit ──────────────────────────────────────────
+      - name: Dry run summary
+        if: |
+          steps.pick.outputs.no_publish != 'true' &&
+          github.event.inputs.dry_run == 'true'
+        run: |
+          echo "DRY RUN: Would publish ${{ steps.pick.outputs.publish_id }}"
+          echo "Exiting without uploading."
+
+      # ── YouTube Upload ──────────────────────────────────────
+      - name: Upload to YouTube
+        if: |
+          steps.pick.outputs.no_publish != 'true' &&
+          github.event.inputs.dry_run != 'true' &&
+          github.event.inputs.skip_youtube != 'true' &&
+          steps.validate.outputs.video_exists == 'true'
+        id: youtube
+        env:
+          YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
+          YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
+          YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
+        run: |
+          SLOT_TYPE="${{ steps.pick.outputs.slot_type }}"
+          VIDEO_PATH="${{ steps.validate.outputs.video_full_path }}"
+          METADATA_PATH="${{ steps.validate.outputs.metadata_full_path }}"
+          THUMBNAIL="${{ steps.validate.outputs.thumbnail_full_path }}"
+          ADDITIONAL="${{ steps.validate.outputs.additional_full_paths }}"
+
+          # Determine upload type
+          if [ "$SLOT_TYPE" = "long" ]; then
+            TYPE="long"
+          else
+            TYPE="short"
+          fi
+
+          # Build command
+          CMD="npx tsx scripts/publish-to-youtube.ts"
+          CMD="$CMD --video \"$VIDEO_PATH\""
+          CMD="$CMD --metadata \"$METADATA_PATH\""
+          CMD="$CMD --type $TYPE"
+          CMD="$CMD --topic ${{ steps.pick.outputs.topic }}"
+          CMD="$CMD --session ${{ steps.pick.outputs.session }}"
+
+          if [ -n "$THUMBNAIL" ]; then
+            CMD="$CMD --thumbnail \"$THUMBNAIL\""
+          fi
+
+          if [ "$SLOT_TYPE" = "vertical-1" ]; then
+            CMD="$CMD --part 1"
+          elif [ "$SLOT_TYPE" = "vertical-23" ]; then
+            CMD="$CMD --part 2"
+            if [ -n "$ADDITIONAL" ]; then
+              CMD="$CMD --additional \"$ADDITIONAL\""
+            fi
+          fi
+
+          echo "Running: $CMD"
+          eval $CMD
+
+      # ── Instagram Upload ────────────────────────────────────
+      - name: Upload to Instagram
+        if: |
+          steps.pick.outputs.no_publish != 'true' &&
+          github.event.inputs.dry_run != 'true' &&
+          github.event.inputs.skip_instagram != 'true' &&
+          steps.validate.outputs.video_exists == 'true' &&
+          steps.pick.outputs.slot_type != 'long'
+        id: instagram
+        env:
+          INSTAGRAM_ACCESS_TOKEN: ${{ secrets.INSTAGRAM_ACCESS_TOKEN }}
+          INSTAGRAM_BUSINESS_ID: ${{ secrets.INSTAGRAM_BUSINESS_ID }}
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }}
+          R2_PUBLIC_URL: ${{ secrets.R2_PUBLIC_URL }}
+        run: |
+          SLOT_TYPE="${{ steps.pick.outputs.slot_type }}"
+          VIDEO_PATH="${{ steps.validate.outputs.video_full_path }}"
+          METADATA_PATH="${{ steps.validate.outputs.metadata_full_path }}"
+          ADDITIONAL="${{ steps.validate.outputs.additional_full_paths }}"
+
+          CMD="npx tsx scripts/publish-to-instagram.ts"
+          CMD="$CMD --video \"$VIDEO_PATH\""
+          CMD="$CMD --metadata \"$METADATA_PATH\""
+          CMD="$CMD --topic ${{ steps.pick.outputs.topic }}"
+          CMD="$CMD --session ${{ steps.pick.outputs.session }}"
+
+          if [ "$SLOT_TYPE" = "vertical-1" ]; then
+            CMD="$CMD --part 1"
+          elif [ "$SLOT_TYPE" = "vertical-23" ]; then
+            CMD="$CMD --part 2"
+            if [ -n "$ADDITIONAL" ]; then
+              CMD="$CMD --additional \"$ADDITIONAL\""
+            fi
+          fi
+
+          echo "Running: $CMD"
+          eval $CMD
+
+      # ── Update Queue ─────────────────────────────────────────
+      - name: Mark as published
+        if: |
+          steps.pick.outputs.no_publish != 'true' &&
+          github.event.inputs.dry_run != 'true' &&
+          steps.validate.outputs.video_exists == 'true'
+        run: |
+          YOUTUBE_ID="${{ steps.youtube.outputs.youtube_video_id }}"
+          INSTAGRAM_ID="${{ steps.instagram.outputs.instagram_media_id }}"
+
+          CMD="npx tsx scripts/update-publish-queue.ts"
+          CMD="$CMD --id \"${{ steps.pick.outputs.publish_id }}\""
+          CMD="$CMD --status published"
+
+          if [ -n "$YOUTUBE_ID" ]; then
+            CMD="$CMD --youtube-id \"$YOUTUBE_ID\""
+          fi
+          if [ -n "$INSTAGRAM_ID" ]; then
+            CMD="$CMD --instagram-id \"$INSTAGRAM_ID\""
+          fi
+
+          eval $CMD
+
+      - name: Commit queue updates
+        if: |
+          steps.pick.outputs.no_publish != 'true' &&
+          github.event.inputs.dry_run != 'true' &&
+          steps.validate.outputs.video_exists == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add config/publish-queue.json config/publish-history.json config/topic-queue.json
+          git diff --cached --quiet || \
+            git commit -m "chore(publish): mark ${{ steps.pick.outputs.publish_id }} as published"
+          git push
+
+  # ── Failure Handling ────────────────────────────────────────
+  on-failure:
+    needs: publish
+    runs-on: self-hosted
+    if: failure() && needs.publish.outputs.skipped != 'true'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Mark as failed in queue
+        if: needs.publish.outputs.publish_id != ''
+        run: |
+          npx tsx scripts/update-publish-queue.ts \
+            --id "${{ needs.publish.outputs.publish_id }}" \
+            --status failed \
+            --error "GitHub Actions workflow failed"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add config/publish-queue.json
+          git diff --cached --quiet || \
+            git commit -m "chore(publish): mark ${{ needs.publish.outputs.publish_id }} as failed"
+          git push
+
+  # ── Notifications ───────────────────────────────────────────
+  notify:
+    needs: [publish, on-failure]
+    runs-on: self-hosted
+    if: always() && needs.publish.outputs.skipped != 'true'
+    steps:
+      - name: Send Slack notification
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          if [ -z "$SLACK_WEBHOOK_URL" ]; then
+            echo "No Slack webhook configured. Skipping notification."
+            exit 0
+          fi
+
+          PUBLISH_ID="${{ needs.publish.outputs.publish_id }}"
+          TOPIC="${{ needs.publish.outputs.topic }}"
+          SESSION="${{ needs.publish.outputs.session }}"
+          SLOT="${{ needs.publish.outputs.slot_type }}"
+          YT_ID="${{ needs.publish.outputs.youtube_video_id }}"
+          IG_ID="${{ needs.publish.outputs.instagram_media_id }}"
+          STATUS="${{ needs.publish.result }}"
+
+          if [ "$STATUS" = "success" ]; then
+            EMOJI=":white_check_mark:"
+            COLOR="#36a64f"
+            TITLE="Published Successfully"
+            YT_LINK=""
+            if [ -n "$YT_ID" ]; then
+              YT_LINK="\n:youtube: https://youtu.be/$YT_ID"
+            fi
+            TEXT="${EMOJI} *${TITLE}*\n*Topic:* ${TOPIC} S${SESSION}\n*Slot:* ${SLOT}${YT_LINK}"
+          else
+            EMOJI=":x:"
+            COLOR="#ff0000"
+            TITLE="Publish Failed"
+            TEXT="${EMOJI} *${TITLE}*\n*Topic:* ${TOPIC} S${SESSION}\n*Slot:* ${SLOT}\n*ID:* ${PUBLISH_ID}\n\nCheck: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          fi
+
+          curl -sf -X POST "$SLACK_WEBHOOK_URL" \
+            -H 'Content-Type: application/json' \
+            -d "{
+              \"attachments\": [{
+                \"color\": \"${COLOR}\",
+                \"text\": \"${TEXT}\",
+                \"footer\": \"Guru Sishya Video Pipeline\"
+              }]
+            }" || echo "Slack notification failed (non-fatal)"

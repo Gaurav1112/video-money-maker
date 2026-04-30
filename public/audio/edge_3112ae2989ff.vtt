@@ -1,0 +1,52 @@
+1
+00:00:00,100 --> 00:00:02,563
+Let me show you the code.
+
+2
+00:00:02,513 --> 00:00:07,907
+Here is what replaced the textbook version of Security Layers.
+
+3
+00:00:07,907 --> 00:00:12,355
+Here's the typescript implementation in 4 lines.
+
+4
+00:00:12,355 --> 00:00:20,157
+This code handles encryption and decryption Here's the typescript implementation in 4 lines.
+
+5
+00:00:20,157 --> 00:00:24,131
+This code handles encryption and decryption.
+
+6
+00:00:24,131 --> 00:00:27,078
+First, we execute 1.
+
+7
+00:00:27,078 --> 00:00:30,868
+Encryption in transit — SSL/TLS.
+
+8
+00:00:30,868 --> 00:00:34,894
+Now we call SASL() to handle the operation.
+
+9
+00:00:34,894 --> 00:00:39,157
+Here we call ACLs() to handle the operation.
+
+10
+00:00:39,157 --> 00:00:43,078
+we call encryption() to handle the operation.
+
+11
+00:00:43,078 --> 00:00:49,697
+Most developers think more ACLs — Authorization means better performance.
+
+12
+00:00:49,697 --> 00:00:53,144
+It can , actually make things worse.
+
+13
+00:00:53,144 --> 00:00:55,539
+Stay tuned to see why.
+

@@ -1,0 +1,16 @@
+1
+00:00:00,100 --> 00:00:03,492
+Okay, so what's the right way to think about Apache Kafka?
+
+2
+00:00:03,442 --> 00:00:05,721
+Forget everything you've memorized.
+
+3
+00:00:05,721 --> 00:00:08,557
+Let me rebuild this from first principles.
+
+4
+00:00:08,557 --> 00:00:16,028
+And I promise, by the end, it will click so hard you'll wonder why it ever seemed confusing , which is pretty wild if you think about it.
+

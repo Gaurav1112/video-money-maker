@@ -1,0 +1,44 @@
+1
+00:00:00,100 --> 00:00:04,970
+Remember when I said Replication is wrong for most systems?
+
+2
+00:00:04,920 --> 00:00:07,013
+Here is the proof.
+
+3
+00:00:07,013 --> 00:00:10,763
+I saved the best insight for right here.
+
+4
+00:00:10,763 --> 00:00:17,092
+I saved the best insight for right here,  And here's the same logic in Java.
+
+5
+00:00:17,092 --> 00:00:21,526
+Here's the java implementation in 13 lines.
+
+6
+00:00:21,526 --> 00:00:30,210
+First, we import the org.apache.kafka.clients.admin.AdminClient module.
+
+7
+00:00:30,210 --> 00:00:35,276
+Now we import the java.util.Collections module.
+
+8
+00:00:35,276 --> 00:00:39,526
+Here we call Properties() to handle the operation.
+
+9
+00:00:39,526 --> 00:00:44,868
+At this point, we insert the key-value pair into our map.
+
+10
+00:00:44,868 --> 00:00:49,710
+This is where we call NewTopic() to handle the operation.
+
+11
+00:00:49,710 --> 00:00:53,381
+we log the output to verify it works.
+

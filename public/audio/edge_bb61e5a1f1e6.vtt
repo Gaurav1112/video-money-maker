@@ -1,0 +1,36 @@
+1
+00:00:00,100 --> 00:00:08,905
+And get this,  by the way, this video works great at 1.five times speed for better listening.
+
+2
+00:00:08,855 --> 00:00:13,513
+Okay, so what's the right way to think about Apache Kafka?
+
+3
+00:00:13,513 --> 00:00:16,631
+Forget everything you've memorized.
+
+4
+00:00:16,631 --> 00:00:20,513
+Let me rebuild this from first principles.
+
+5
+00:00:20,513 --> 00:00:27,973
+And I promise, by the end, it will click so hard you'll wonder why it ever seemed confusing.
+
+6
+00:00:27,973 --> 00:00:35,723
+Fun fact: Uber processes ride data in real-time — handling one billion events per day.
+
+7
+00:00:35,723 --> 00:00:37,960
+Let that sink in.
+
+8
+00:00:37,960 --> 00:00:46,934
+There is one thing about The Cluster that nobody mentions in tutorials, and it is exactly what interviewers test.
+
+9
+00:00:46,934 --> 00:00:49,684
+I will reveal it shortly.
+

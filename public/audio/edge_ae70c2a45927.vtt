@@ -1,0 +1,36 @@
+1
+00:00:00,100 --> 00:00:03,030
+Yeh video dekh liya toh interview mein dhoom machao!
+
+2
+00:00:02,980 --> 00:00:04,817
+Ab aage badhte hain.
+
+3
+00:00:04,817 --> 00:00:08,221
+Okay, so what's the right way to think about Apache Kafka?
+
+4
+00:00:08,221 --> 00:00:10,500
+Forget everything you've memorized.
+
+5
+00:00:10,500 --> 00:00:13,336
+Let me rebuild this from first principles.
+
+6
+00:00:13,336 --> 00:00:20,451
+And I promise, by the end, it will click so hard you'll wonder why it ever seemed confusing , let that sink in for a second.
+
+7
+00:00:20,451 --> 00:00:25,028
+At 3 AM, a production server crashed because of Producer Internals.
+
+8
+00:00:25,028 --> 00:00:27,355
+The entire team was scrambling.
+
+9
+00:00:27,355 --> 00:00:30,163
+I will show you what went wrong in a minute.
+

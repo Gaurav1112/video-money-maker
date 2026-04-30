@@ -1,0 +1,20 @@
+1
+00:00:00,100 --> 00:00:10,878
+Now pay attention here,  this next idea changes everything,  Manual sync commit (commitSync()): Blocks until the broker confirms the commit.
+
+2
+00:00:10,828 --> 00:00:16,552
+Guarantees at-least-once — if processing succeeds, commit succeeds.
+
+3
+00:00:16,552 --> 00:00:23,065
+If the consumer crashes before committing, messages are reprocessed on restart.
+
+4
+00:00:23,065 --> 00:00:30,815
+Fun fact: Uber processes ride data in real-time — handling one billion events per day.
+
+5
+00:00:30,815 --> 00:00:33,052
+Let that sink in.
+

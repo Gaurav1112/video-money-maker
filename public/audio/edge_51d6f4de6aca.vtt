@@ -1,0 +1,44 @@
+1
+00:00:00,100 --> 00:00:02,588
+Starting with the Python implementation.
+
+2
+00:00:02,538 --> 00:00:05,355
+Let me walk you through the ConsistentHash class.
+
+3
+00:00:05,355 --> 00:00:08,509
+This is how apache kafka works under the hood.
+
+4
+00:00:08,509 --> 00:00:10,826
+The key method here is init.
+
+5
+00:00:10,826 --> 00:00:13,586
+First, we import the hashlib module.
+
+6
+00:00:13,586 --> 00:00:18,413
+Now we store ring on our instance — for O of 1 constant time lookups.
+
+7
+00:00:18,413 --> 00:00:21,375
+This is why hash maps are interview gold.
+
+8
+00:00:21,375 --> 00:00:25,038
+Here we define the add_node function that takes node.
+
+9
+00:00:25,038 --> 00:00:29,298
+At this point, we define the get_node function that takes key.
+
+10
+00:00:29,298 --> 00:00:37,625
+This is where we check if k greater than or equal to h: return self dot ring[k] — and that's our answer, clean and efficient.
+
+11
+00:00:37,625 --> 00:00:40,375
+we print the output to verify it works.
+

@@ -42,7 +42,7 @@ const HookSlide: React.FC<HookSlideProps> = ({
   return (
     <AbsoluteFill
       style={{
-        backgroundColor: COLORS.dark,
+        backgroundColor: '#0C0A15',
         justifyContent: 'center',
         alignItems: 'center',
         padding: '80px',

@@ -1,0 +1,32 @@
+1
+00:00:00,100 --> 00:00:01,934
+Alright, theory done.
+
+2
+00:00:01,884 --> 00:00:07,057
+Now the question every interviewer asks: "How would you , actually implement Apache Kafka?
+
+3
+00:00:07,057 --> 00:00:08,538
+Let me show you.
+
+4
+00:00:08,538 --> 00:00:26,730
+When asked "walk me through what happens when a producer sends a message to Kafka," trace the full path: producer serializes the record → determines partition → sends to partition leader's broker → leader writes to local log → leader replicates to followers → once ISR acknowledges (based on acks setting) → leader sends acknowledgment back to producer.
+
+5
+00:00:26,730 --> 00:00:29,471
+Product companies pay 30+ LPA.
+
+6
+00:00:29,471 --> 00:00:32,548
+Service companies pay 3.3 LPA.
+
+7
+00:00:32,548 --> 00:00:33,730
+The difference?
+
+8
+00:00:33,730 --> 00:00:35,884
+Exactly what we're learning.
+

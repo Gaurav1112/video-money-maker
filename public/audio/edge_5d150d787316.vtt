@@ -1,0 +1,4 @@
+1
+00:00:00,100 --> 00:00:12,826
+If your key space is skewed — e.g., one customer generates eighty percent of all events — the partition that key maps to will be overwhelmed while others sit idle.
+

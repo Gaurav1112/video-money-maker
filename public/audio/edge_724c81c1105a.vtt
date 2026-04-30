@@ -1,0 +1,60 @@
+1
+00:00:00,100 --> 00:00:03,721
+Alright, here's what you just learned.
+
+2
+00:00:03,671 --> 00:00:09,065
+Explain the three components of Kafka exactly-once semantics.
+
+3
+00:00:09,065 --> 00:00:18,223
+Implement a transactional producer with initTransactions, beginTransaction, commitTransaction, and abortTransaction.
+
+4
+00:00:18,223 --> 00:00:24,750
+Configure a consumer with isolation.level=read_committed.
+
+5
+00:00:24,750 --> 00:00:26,907
+Stick with me here.
+
+6
+00:00:26,907 --> 00:00:31,302
+This is the part where real understanding happens.
+
+7
+00:00:31,302 --> 00:00:34,460
+Don't just watch and forget.
+
+8
+00:00:34,460 --> 00:00:36,223
+Go practice.
+
+9
+00:00:36,223 --> 00:00:38,381
+Build it in code.
+
+10
+00:00:38,381 --> 00:00:40,750
+Explain it to someone.
+
+11
+00:00:40,750 --> 00:00:43,013
+That's how it sticks.
+
+12
+00:00:43,013 --> 00:00:51,828
+The complete Apache Kafka course with cheatsheets and mock interviews is at guru-sishya.in slash apache-kafka.
+
+13
+00:00:51,828 --> 00:00:54,552
+Drop a like if this helped.
+
+14
+00:00:54,552 --> 00:01:12,355
+You now know how to explain the three components of kafka exactly-once semantics, implement a transactional producer with inittransactions, begintransaction, committransaction, and aborttransaction, and explain the trade-offs in an interview.
+
+15
+00:01:12,355 --> 00:01:15,078
+Ab interview mein dhoom machao!
+

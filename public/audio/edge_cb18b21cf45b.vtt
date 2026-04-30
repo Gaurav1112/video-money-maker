@@ -1,0 +1,48 @@
+1
+00:00:00,100 --> 00:00:06,523
+Quick reminder, try 1.five times speed if you haven't already.
+
+2
+00:00:06,473 --> 00:00:10,013
+And in Java, it looks like this.
+
+3
+00:00:10,013 --> 00:00:16,381
+Here's a HighThroughputConsumer class in java that handles data serialization.
+
+4
+00:00:16,381 --> 00:00:21,065
+The HighThroughputConsumer method is where the action happens.
+
+5
+00:00:21,065 --> 00:00:29,144
+First, we import the org.apache.kafka.clients.consumer.* module.
+
+6
+00:00:29,144 --> 00:00:32,250
+Now we define the config method.
+
+7
+00:00:32,250 --> 00:00:36,644
+Here we insert the key-value pair into our map.
+
+8
+00:00:36,644 --> 00:00:44,552
+At this point, we handle the "org.apache.kafka.common.seria operation.
+
+9
+00:00:44,552 --> 00:00:52,565
+This is where we insert the key-value pair into our map. , we log the output to verify it works.
+
+10
+00:00:52,565 --> 00:00:58,789
+Most developers think more Python Implementation means better performance.
+
+11
+00:00:58,789 --> 00:01:02,236
+It can , actually make things worse.
+
+12
+00:01:02,236 --> 00:01:04,631
+Stay tuned to see why.
+

@@ -1,0 +1,32 @@
+1
+00:00:00,100 --> 00:00:04,221
+And get this,  predict what happens next.
+
+2
+00:00:04,171 --> 00:00:09,539
+If you get it right, you're already thinking like a senior engineer.
+
+3
+00:00:09,539 --> 00:00:15,078
+Each partition has a configurable replication factor (typically 3).
+
+4
+00:00:15,078 --> 00:00:21,934
+One replica is the Leader — it handles all producer writes and consumer reads.
+
+5
+00:00:21,934 --> 00:00:28,631
+The other replicas are Followers — they replicate data from the leader asynchronously.
+
+6
+00:00:28,631 --> 00:00:35,105
+The set of followers that are fully caught up is called the ISR (In-Sync Replicas).
+
+7
+00:00:35,105 --> 00:00:42,065
+Here's something nobody tells you: most production bugs at FAANG aren't code bugs.
+
+8
+00:00:42,065 --> 00:00:44,815
+They're system design bugs.
+

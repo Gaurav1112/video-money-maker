@@ -1,0 +1,20 @@
+1
+00:00:00,100 --> 00:00:04,905
+I've interviewed hundreds of developers on Apache Kafka.
+
+2
+00:00:04,855 --> 00:00:09,197
+ninety seven percent make the same critical mistake.
+
+3
+00:00:09,197 --> 00:00:13,065
+After this video, you won't be one of them.
+
+4
+00:00:13,065 --> 00:00:17,539
+This is session 4 of our Apache Kafka series.
+
+5
+00:00:17,539 --> 00:00:24,684
+Today's topic: Partitioning & Message Ordering — Keys, Custom Partitioners, Guarantees.
+

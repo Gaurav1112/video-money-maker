@@ -1,0 +1,12 @@
+1
+00:00:00,100 --> 00:00:05,098
+One replica is the Leader — it handles all producer writes and consumer reads.
+
+2
+00:00:05,048 --> 00:00:09,942
+The other replicas are Followers — they replicate data from the leader asynchronously.
+
+3
+00:00:09,942 --> 00:00:14,673
+The set of followers that are fully caught up is called the ISR (In-Sync Replicas).
+

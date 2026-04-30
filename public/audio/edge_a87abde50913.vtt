@@ -1,0 +1,40 @@
+1
+00:00:00,100 --> 00:00:06,089
+And THAT is how we built Python Implementation from scratch to production-ready.
+
+2
+00:00:06,039 --> 00:00:09,789
+I saved the best insight for right here.
+
+3
+00:00:09,789 --> 00:00:16,197
+I saved the best insight for right here,  Let's see this in Python first.
+
+4
+00:00:16,197 --> 00:00:19,710
+This demonstrate function in python.
+
+5
+00:00:19,710 --> 00:00:25,118
+First, we import Dict, List, Any from the typing module.
+
+6
+00:00:25,118 --> 00:00:33,078
+Now we print f"equals= Kafka Streams equals=" to verify our result.
+
+7
+00:00:33,078 --> 00:00:36,815
+Here we call O() to handle the operation.
+
+8
+00:00:36,815 --> 00:00:42,828
+At this point, we print f'{k}: {v}' to verify our result.
+
+9
+00:00:42,828 --> 00:00:49,447
+This is where we print f'Size: {len(data)}' to verify our result.
+
+10
+00:00:49,447 --> 00:00:53,486
+we call demonstrate() to handle the operation.
+

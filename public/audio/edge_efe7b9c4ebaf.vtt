@@ -1,0 +1,16 @@
+1
+00:00:00,100 --> 00:00:10,076
+Now here is where it gets spicy,  i saved the best insight for right here,  "What's the difference between retries and idempotence?
+
+2
+00:00:10,026 --> 00:00:17,210
+Retries alone can cause duplicates if the original write succeeded , but the ack was lost.
+
+3
+00:00:17,210 --> 00:00:23,697
+Idempotence makes retries safe by using sequence numbers to deduplicate.
+
+4
+00:00:23,697 --> 00:00:27,434
+Always use both together in production.
+

@@ -1,8 +1,14 @@
 import express from 'express';
+import cors from 'cors';
 import path from 'path';
 import { initDatabase } from './db';
 import queueRoutes from './routes/queue';
 import renderRoutes from './routes/render';
+import topicsRouter from './routes/topics';
+import batchRenderRouter from './routes/batch-render';
+import metadataRouter from './routes/metadata';
+import scheduleRouter from './routes/schedule';
+import contentMetadataRouter from './routes/content-metadata';
 import { listAvailableTopics, loadTopicContent, extractSession, getDemoSession } from '../pipeline/content-loader';
 import { generateFromPrompt, generateFromContent } from '../pipeline/content-generator';
 import { generateScript } from '../pipeline/script-generator';
@@ -11,22 +17,46 @@ import { SessionInput } from '../types';
 const app = express();
 const PORT = process.env.API_PORT || 3000;
 
+app.use(cors());
 app.use(express.json({ limit: '2mb' }));
+
+// Studio frontend (served from src/studio/)
+app.use('/studio', express.static(path.join(__dirname, '../studio')));
 
 // API Routes (must come BEFORE static file serving)
 app.use('/api/queue', queueRoutes);
 app.use('/api/render', renderRoutes);
+app.use('/api/topics', topicsRouter);
+app.use('/api/batch-render', batchRenderRouter);
+app.use('/api/metadata', metadataRouter);
+app.use('/api/schedule', scheduleRouter);
+app.use('/api/content-metadata', contentMetadataRouter);
 
 // Health check
 app.get('/api/status', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// GET /api/topics — List all available topics
-app.get('/api/topics', (_req, res) => {
-  const topics = listAvailableTopics();
-  res.json({ topics, count: topics.length });
+// POST /api/convert-shorts — render viral shorts/reels from a storyboard
+app.post('/api/convert-shorts', async (req, res) => {
+  const { topic, session } = req.body;
+  if (!topic || !session) {
+    return res.status(400).json({ error: 'topic and session required' });
+  }
+
+  const { exec } = require('child_process');
+  const cmd = `npx tsx scripts/render-viral-shorts.ts --topic "${topic}" --session ${session}`;
+
+  exec(cmd, { cwd: path.resolve(__dirname, '../..'), timeout: 300000 }, (error: any, stdout: string, stderr: string) => {
+    if (error) {
+      return res.json({ success: false, error: error.message.slice(0, 500), output: stderr.slice(0, 500) });
+    }
+    res.json({ success: true, output: stdout });
+  });
 });
+
+// Note: /api/topics is now handled by topicsRouter (routes/topics.ts)
+// with full session counts, render status, and slug info.
 
 // POST /api/preview — Generate scene preview without rendering
 // Accepts three input modes (same as /api/render):
@@ -79,7 +109,7 @@ app.post('/api/preview', (req, res) => {
     session = getDemoSession();
   }
 
-  const script = generateScript(session, { language });
+  const script = generateScript(session, { language, sessionNumber: session.sessionNumber });
   const totalDuration = script.reduce((sum, s) => sum + s.duration, 0);
 
   res.json({

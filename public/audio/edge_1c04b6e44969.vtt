@@ -1,0 +1,48 @@
+1
+00:00:00,100 --> 00:00:03,312
+Remember that 3 AM crash?
+
+2
+00:00:03,262 --> 00:00:09,855
+Here is exactly what went wrong with Mechanism 3: Read-Committed Consumer.
+
+3
+00:00:09,855 --> 00:00:21,684
+Quick reminder, try 1.five times speed if you haven't already Quick reminder, try 1.five times speed if you haven't already.
+
+4
+00:00:21,684 --> 00:00:28,776
+I saved the best insight for right here,  Here's the equivalent Java implementation.
+
+5
+00:00:28,776 --> 00:00:35,381
+Here's a TransactionalConsumer class in java that handles data serialization.
+
+6
+00:00:35,381 --> 00:00:40,236
+The TransactionalConsumer method is where the action happens.
+
+7
+00:00:40,236 --> 00:00:48,315
+First, we import the org.apache.kafka.clients.consumer.* module.
+
+8
+00:00:48,315 --> 00:00:52,605
+Now we define the main method that takes String[].
+
+9
+00:00:52,605 --> 00:00:57,000
+Here we insert the key-value pair into our map.
+
+10
+00:00:57,000 --> 00:01:02,342
+At this point, we insert the key-value pair into our map.
+
+11
+00:01:02,342 --> 00:01:08,302
+This is where we handle the ConsumerRecords<String, String operation.
+
+12
+00:01:08,302 --> 00:01:13,026
+we call consumer.commitSync() to process our data.
+

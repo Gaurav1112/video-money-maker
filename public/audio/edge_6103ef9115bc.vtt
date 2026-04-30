@@ -1,0 +1,44 @@
+1
+00:00:00,100 --> 00:00:03,963
+And THAT is how we built Replication from scratch to production-ready.
+
+2
+00:00:03,913 --> 00:00:06,355
+And here's the same logic in Java.
+
+3
+00:00:06,355 --> 00:00:11,250
+Here is the implementation in 13 lines And here's the same logic in Java.
+
+4
+00:00:11,250 --> 00:00:14,269
+Here is the implementation in 13 lines.
+
+5
+00:00:14,269 --> 00:00:17,423
+This is how apache kafka works under the hood.
+
+6
+00:00:17,423 --> 00:00:23,769
+First, we import the org.apache.kafka.clients.admin.AdminClient module.
+
+7
+00:00:23,769 --> 00:00:27,471
+Now we import the java.util.Collections module.
+
+8
+00:00:27,471 --> 00:00:30,576
+Here we call Properties() to handle the operation.
+
+9
+00:00:30,576 --> 00:00:34,480
+At this point, we insert the key-value pair into our map.
+
+10
+00:00:34,480 --> 00:00:38,019
+This is where we call NewTopic() to handle the operation.
+
+11
+00:00:38,019 --> 00:00:40,701
+we log the output to verify it works.
+

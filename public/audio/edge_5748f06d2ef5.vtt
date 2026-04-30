@@ -1,0 +1,16 @@
+1
+00:00:00,100 --> 00:00:06,760
+Now here is where it gets spicy,  most people miss this completely,  1.
+
+2
+00:00:06,710 --> 00:00:24,750
+Key is null: Records are distributed in a round-robin fashion across available partitions — optimized in newer Kafka versions to be sticky per batch (stick to one partition until the batch is full, then switch) to improve batching efficiency.
+
+3
+00:00:24,750 --> 00:00:32,118
+2. Key is present: Partition = murmur2(keyBytes) % numPartitions.
+
+4
+00:00:32,118 --> 00:00:39,513
+The same key always maps to the same partition, as long as the partition count doesn't change.
+

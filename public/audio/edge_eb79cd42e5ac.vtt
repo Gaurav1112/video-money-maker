@@ -1,0 +1,16 @@
+1
+00:00:00,100 --> 00:00:02,063
+Stop scrolling.
+
+2
+00:00:02,013 --> 00:00:11,750
+If you've an interview coming up and you don't know Apache Kafka inside out, this is the most important video you'll watch today.
+
+3
+00:00:11,750 --> 00:00:16,500
+This is session 5 of our Apache Kafka series.
+
+4
+00:00:16,500 --> 00:00:25,960
+Today's topic: Replication & Fault Tolerance — ISR, Leader Election, min.insync.replicas.
+

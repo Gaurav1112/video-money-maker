@@ -1,0 +1,32 @@
+1
+00:00:00,100 --> 00:00:05,839
+So basically, Before I show the answer, pause and try to guess.
+
+2
+00:00:05,789 --> 00:00:14,105
+But here's where it gets really interesting,  "How do you ensure global ordering of all messages in a topic?
+
+3
+00:00:14,105 --> 00:00:17,197
+Set the topic to 1 partition.
+
+4
+00:00:17,197 --> 00:00:22,197
+This is the only way to achieve global ordering in Kafka.
+
+5
+00:00:22,197 --> 00:00:29,302
+The trade-off is zero parallelism: only one consumer can process the topic at a time.
+
+6
+00:00:29,302 --> 00:00:36,434
+Global ordering + high throughput are fundamentally in tension in Kafka's architecture.
+
+7
+00:00:36,434 --> 00:00:43,092
+Real talk: I've seen senior engineers at Uber get this wrong in interviews.
+
+8
+00:00:43,092 --> 00:00:45,486
+Don't be that person.
+

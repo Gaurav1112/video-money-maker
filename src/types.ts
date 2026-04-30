@@ -1,5 +1,5 @@
 export type SceneType = 'title' | 'text' | 'code' | 'diagram' | 'table' | 'interview' | 'review' | 'summary';
-export type VideoFormat = 'long' | 'short' | 'thumb';
+export type VideoFormat = 'long' | 'short' | 'thumb' | 'vertical';
 
 export interface Scene {
   type: SceneType;
@@ -16,6 +16,25 @@ export interface Scene {
   wordTimestamps?: WordTimestamp[];
   animationCues?: AnimationCue[];
   sfxTriggers?: SfxTrigger[];
+  /** Per-scene visualization variant — drives unique animation states per scene */
+  vizVariant?: string;
+  /** Visual beats computed from narration — each beat = one sentence = one visual element */
+  visualBeats?: VisualBeat[];
+  /** Quiz options for review scenes (correct answer + 3 distractors) */
+  quizOptions?: string[];
+  /** Visual template ID selected by VisualMapper */
+  templateId?: string;
+  /** Template variant selected by content keywords */
+  templateVariant?: string;
+  /** Pre-rendered D2 SVG string (generated during storyboard phase, rendered in browser) */
+  d2Svg?: string;
+  /**
+   * Offset (in seconds) where this scene's audio begins in the master audio track.
+   * Used by CaptionOverlay to sync subtitles to the actual audio position rather than
+   * the visual scene startFrame (which includes breathing room + transition padding).
+   * -1 means no audio for this scene.
+   */
+  audioOffsetSeconds?: number;
 }
 
 export interface Storyboard {
@@ -33,6 +52,15 @@ export interface Storyboard {
   nextTopic?: string;
   sceneOffsets?: number[];
   allSfxTriggers?: SfxTrigger[];
+  /** Rhubarb lip sync mouth cues for avatar animation */
+  mouthCues?: Array<{ start: number; end: number; value: string }>;
+  /** Total sessions in the topic (for series progress display) */
+  totalSessions?: number;
+  /** Part metadata — set by createPartStoryboard for multi-part renders */
+  partHookText?: string;
+  partCtaText?: string;
+  partNumber?: number;
+  totalParts?: number;
 }
 
 export interface SessionInput {
@@ -86,4 +114,13 @@ export interface RenderJob {
   progress: number;
   outputPath?: string;
   error?: string;
+}
+
+export interface VisualBeat {
+  startTime: number;
+  endTime: number;
+  text: string;
+  beatIndex: number;
+  totalBeats: number;
+  keywords: string[];
 }

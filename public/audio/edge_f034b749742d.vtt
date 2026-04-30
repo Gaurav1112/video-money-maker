@@ -1,0 +1,12 @@
+1
+00:00:00,100 --> 00:00:12,010
+Alright, real talk,  this next idea changes everything,  This means: - If order-42 events all go to partition 2, they arrive in order.
+
+2
+00:00:11,960 --> 00:00:26,118
+If order-43 events go to partition 5, they also arrive in order — , but relative ordering between order-42 and order-43 events is undefined.
+
+3
+00:00:26,118 --> 00:00:34,026
+Real talk: Flipkart's Big Billion Day crashed their servers THREE times before they got this right.
+

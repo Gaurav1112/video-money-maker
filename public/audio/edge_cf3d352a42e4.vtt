@@ -1,0 +1,24 @@
+1
+00:00:00,100 --> 00:00:10,168
+With enable.idempotence=true, each producer instance receives a Producer ID (PID) from the broker.
+
+2
+00:00:10,118 --> 00:00:16,631
+Every batch is tagged with a monotonically increasing sequence number per partition.
+
+3
+00:00:16,631 --> 00:00:31,671
+If the producer retries a failed send, the broker compares the incoming sequence number against what it last wrote and silently discards duplicates — exactly-once at the producer level within a session.
+
+4
+00:00:31,671 --> 00:00:36,500
+Everyone says Python Implementation is the best approach.
+
+5
+00:00:36,500 --> 00:00:41,105
+That is , actually wrong for most real-world systems.
+
+6
+00:00:41,105 --> 00:00:44,131
+I will show you why in a moment.
+

@@ -1,0 +1,40 @@
+1
+00:00:00,100 --> 00:00:07,155
+Here is the hidden catch about SSL/TLS Configuration that interviewers love to ask.
+
+2
+00:00:07,105 --> 00:00:10,644
+And in Java, it looks like this.
+
+3
+00:00:10,644 --> 00:00:19,684
+Here's a SecureProducer class in java that handles encryption and decryption And in Java, it looks like this.
+
+4
+00:00:19,684 --> 00:00:26,131
+Here's a SecureProducer class in java that handles encryption and decryption.
+
+5
+00:00:26,131 --> 00:00:30,539
+The SecureProducer method is where the action happens.
+
+6
+00:00:30,539 --> 00:00:38,578
+First, we import the org.apache.kafka.clients.producer.* module.
+
+7
+00:00:38,578 --> 00:00:45,526
+Now we handle the "org.apache.kafka.common.seria operation.
+
+8
+00:00:45,526 --> 00:00:51,368
+Here we execute "/var/ssl/client.keystore.jks").
+
+9
+00:00:51,368 --> 00:00:56,710
+At this point, we insert the key-value pair into our map.
+
+10
+00:00:56,710 --> 00:01:07,065
+This is where we handle the "org.apache.kafka.common.secur operation. , we log the output to verify it works.
+

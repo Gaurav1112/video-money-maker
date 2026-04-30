@@ -1,0 +1,24 @@
+1
+00:00:00,100 --> 00:00:04,713
+Each partition is stored as a directory of segment files on the broker's disk.
+
+2
+00:00:04,663 --> 00:00:14,586
+A segment is a .log file (binary data) paired with an .index file (sparse offset index for fast seeks) and a .timeindex file (timestamp index).
+
+3
+00:00:14,586 --> 00:00:23,413
+When a segment reaches log.segment.bytes (default 1 gigabytes) or log.roll.hours, a new segment is opened.
+
+4
+00:00:23,413 --> 00:00:27,596
+Old segments are deleted or compacted based on the retention policy.
+
+5
+00:00:27,596 --> 00:00:32,480
+Fun fact: Uber's solution was distributed event streaming with guaranteed delivery.
+
+6
+00:00:32,480 --> 00:00:34,990
+That's exactly what we're learning.
+

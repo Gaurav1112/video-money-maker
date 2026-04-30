@@ -1,0 +1,20 @@
+1
+00:00:00,100 --> 00:00:02,386
+This is where Sishya becomes Guru.
+
+2
+00:00:02,336 --> 00:00:13,221
+Now here is where it gets spicy,  historically, Kafka depended on Apache ZooKeeper for cluster coordination — storing broker registrations, topic metadata, and controller election state.
+
+3
+00:00:13,221 --> 00:00:17,730
+ZooKeeper is a separate distributed system with its own operational overhead.
+
+4
+00:00:17,730 --> 00:00:22,817
+Here's something nobody tells you: most production bugs at FAANG aren't code bugs.
+
+5
+00:00:22,817 --> 00:00:24,826
+They're system design bugs.
+

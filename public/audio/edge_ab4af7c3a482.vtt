@@ -1,0 +1,32 @@
+1
+00:00:00,100 --> 00:00:03,963
+Here's the thing,  now, here's where most people go wrong.
+
+2
+00:00:03,913 --> 00:00:09,471
+When someone asks about Apache Kafka, the typical answer is just the textbook definition.
+
+3
+00:00:09,471 --> 00:00:11,490
+They recite it like a parrot.
+
+4
+00:00:11,490 --> 00:00:15,471
+But that tells the interviewer NOTHING about your actual understanding.
+
+5
+00:00:15,471 --> 00:00:18,798
+It's like saying a car is "a vehicle with four wheels.
+
+6
+00:00:18,798 --> 00:00:20,250
+Technically correct.
+
+7
+00:00:20,250 --> 00:00:21,932
+Completely useless.
+
+8
+00:00:21,932 --> 00:00:27,711
+Real talk: Flipkart's Big Billion Day crashed their servers THREE times before they got this right.
+

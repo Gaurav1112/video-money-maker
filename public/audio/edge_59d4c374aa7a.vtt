@@ -1,0 +1,20 @@
+1
+00:00:00,100 --> 00:00:04,550
+Alright, real talk,  predict what happens next.
+
+2
+00:00:04,500 --> 00:00:09,868
+If you get it right, you're already thinking like a senior engineer.
+
+3
+00:00:09,868 --> 00:00:24,921
+Records written inside an open transaction are written to the partition log immediately , but are invisible to consumers with isolation.level=readcommitted until the transaction commits.
+
+4
+00:00:24,921 --> 00:00:29,250
+Aborted transaction records are also skipped.
+
+5
+00:00:29,250 --> 00:00:39,500
+The consumer's effective read position is bounded by the Last Stable Offset (LSO) — the offset up to which all transactions are resolved.
+

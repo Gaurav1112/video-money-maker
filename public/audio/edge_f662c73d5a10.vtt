@@ -1,0 +1,12 @@
+1
+00:00:00,100 --> 00:00:10,136
+Now pay attention here,  when a segment reaches log.segment.bytes (default 1 gigabytes) or log.roll.hours, a new segment is opened.
+
+2
+00:00:10,086 --> 00:00:14,269
+Old segments are deleted or compacted based on the retention policy.
+
+3
+00:00:14,269 --> 00:00:20,009
+Plot twist: Most production implementations of this,  are , actually FREE and open source.
+

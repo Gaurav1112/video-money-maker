@@ -1,0 +1,20 @@
+1
+00:00:00,100 --> 00:00:21,655
+This next idea changes everything,  - Tumbling — fixed, non-overlapping windows (every 1 min) - Hopping — fixed size, overlapping (1 min window, advance 30 sec) - Session — gap-based, groups activity bursts Wild stat: Uber processes one billion events per day.
+
+2
+00:00:21,605 --> 00:00:25,434
+And it all depends on concepts like this.
+
+3
+00:00:25,434 --> 00:00:30,315
+The interviewer has seen 500 candidates this month.
+
+4
+00:00:30,315 --> 00:00:34,605
+490 of them couldn't explain this.
+
+5
+00:00:34,605 --> 00:00:36,736
+Be the other 10.
+
