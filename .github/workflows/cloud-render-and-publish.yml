@@ -6,16 +6,18 @@ name: Cloud Render & Publish
 
 on:
   schedule:
-    # 7-day active channel — long-form Tue/Thu/Sat, Shorts Mon/Wed/Fri/Sun
-    # Long-form: 7:15 PM IST = 1:45 PM UTC
-    - cron: '45 13 * * 2'   # Tuesday   7:15 PM — Long-form Session A
-    - cron: '45 13 * * 4'   # Thursday  7:15 PM — Long-form Session B
-    - cron: '45 13 * * 6'   # Saturday  7:15 PM — Long-form Session C
-    # Shorts: 12:30 PM IST = 7:00 AM UTC (lunch break scrolling)
-    - cron: '0 7 * * 1'     # Monday   12:30 PM — Short Part 1 (Session A)
-    - cron: '0 7 * * 3'     # Wednesday 12:30 PM — Short Part 2 (Session A)
-    - cron: '0 7 * * 5'     # Friday   12:30 PM — Short Part 3 (Session A)
-    - cron: '0 7 * * 0'     # Sunday   12:30 PM — Teaser Short (next week)
+    # 2 long-form + 6 shorts per week = 8 uploads, channel active daily
+    # Long-form: Tue + Sat at 6:15 PM IST (12:45 UTC)
+    - cron: '45 12 * * 2'   # Tuesday   6:15 PM — Long-form A
+    - cron: '45 12 * * 6'   # Saturday  6:15 PM — Long-form B
+    # Shorts from Tue's long-form: Wed/Thu/Fri at 1:15 PM IST (7:45 UTC)
+    - cron: '45 7 * * 3'    # Wednesday 1:15 PM — Short Part 1 (Tue's topic)
+    - cron: '45 7 * * 4'    # Thursday  1:15 PM — Short Part 2 (Tue's topic)
+    - cron: '45 7 * * 5'    # Friday    1:15 PM — Short Part 3 (Tue's topic)
+    # Shorts from Sat's long-form: Sun/Mon/Tue-morning
+    - cron: '45 7 * * 0'    # Sunday    1:15 PM — Short Part 1 (Sat's topic)
+    - cron: '45 7 * * 1'    # Monday    1:15 PM — Short Part 2 (Sat's topic)
+    - cron: '0 16 * * 2'    # Tuesday   9:30 PM — Short Part 3 (Sat's topic) (next week)
 
   workflow_dispatch:
     inputs:
