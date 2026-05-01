@@ -7335,7 +7335,7 @@
       "slotType": "long",
       "dayOfWeek": "Tuesday",
       "scheduledDate": "2028-08-22",
-      "status": "pending",
+      "status": "published",
       "attempts": 0,
       "youtubeVideoId": null,
       "instagramMediaId": null,
@@ -7345,7 +7345,8 @@
         "video": "apache-kafka/session-2/long/apache-kafka-s2.mp4",
         "metadata": "apache-kafka/session-2/metadata.json",
         "thumbnail": "apache-kafka/session-2/long/apache-kafka-s2-thumb.png"
-      }
+      },
+      "youtubeId": "BhUnmvTCigU"
     },
     {
       "id": "apache-kafka/s2/vertical-1",
@@ -7355,7 +7356,7 @@
       "slotType": "vertical-1",
       "dayOfWeek": "Thursday",
       "scheduledDate": "2028-08-24",
-      "status": "pending",
+      "status": "published",
       "attempts": 0,
       "youtubeVideoId": null,
       "instagramMediaId": null,
@@ -7364,7 +7365,8 @@
       "files": {
         "video": "apache-kafka/session-2/vertical-parts/apache-kafka-s2-part1of3.mp4",
         "metadata": "apache-kafka/session-2/metadata.json"
-      }
+      },
+      "youtubeId": "iTzM_c9SqKE"
     },
     {
       "id": "apache-kafka/s2/vertical-23",
@@ -7374,7 +7376,7 @@
       "slotType": "vertical-23",
       "dayOfWeek": "Saturday",
       "scheduledDate": "2028-08-26",
-      "status": "pending",
+      "status": "published",
       "attempts": 0,
       "youtubeVideoId": null,
       "instagramMediaId": null,
@@ -7386,7 +7388,8 @@
           "apache-kafka/session-2/vertical-parts/apache-kafka-s2-part3of3.mp4"
         ],
         "metadata": "apache-kafka/session-2/metadata.json"
-      }
+      },
+      "youtubeId": "35i1D9ab6AE"
     },
     {
       "id": "kubernetes-docker/s2/long",
