@@ -78,10 +78,38 @@ jobs:
             echo "session=$SESSION" >> $GITHUB_OUTPUT
           fi
 
+      - name: Check if already rendered (skip render if artifacts exist)
+        id: check
+        run: |
+          TOPIC="${{ steps.pick.outputs.topic }}"
+          SESSION="${{ steps.pick.outputs.session }}"
+          PROPS="output/test-props-s${SESSION}.json"
+
+          # Check if props file exists (means storyboard was already generated)
+          if [ -f "$PROPS" ]; then
+            echo "Props exist — checking for rendered videos..."
+            echo "props_exist=true" >> $GITHUB_OUTPUT
+          else
+            echo "No props — need full render"
+            echo "props_exist=false" >> $GITHUB_OUTPUT
+          fi
+
+          # Check if videos already exist in staging
+          STAGING="$HOME/guru-sishya-uploads/${TOPIC}/session-${SESSION}"
+          if [ -f "$STAGING/long.mp4" ] && [ -f "$STAGING/part1.mp4" ]; then
+            echo "Videos already staged — skip render, go straight to upload"
+            echo "videos_exist=true" >> $GITHUB_OUTPUT
+          else
+            echo "Videos not found — will render"
+            echo "videos_exist=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Generate storyboard + TTS audio
+        if: steps.check.outputs.videos_exist != 'true'
         run: npx tsx scripts/render-session.ts ${{ steps.pick.outputs.topic }} ${{ steps.pick.outputs.session }}
 
       - name: Render long-form video
+        if: steps.check.outputs.videos_exist != 'true'
         run: |
           mkdir -p output/videos
           npx remotion render src/compositions/index.tsx LongVideo \
@@ -90,6 +118,7 @@ jobs:
             --codec=h264 --crf=18 --audio-bitrate=192K --concurrency=2
 
       - name: Render vertical video
+        if: steps.check.outputs.videos_exist != 'true'
         run: |
           npx remotion render src/compositions/index.tsx VerticalLong \
             output/videos/vertical.mp4 \
@@ -97,6 +126,7 @@ jobs:
             --codec=h264 --crf=18 --audio-bitrate=192K --concurrency=2
 
       - name: Split vertical into parts
+        if: steps.check.outputs.videos_exist != 'true'
         run: |
           npx tsx scripts/render-vertical-parts.ts ${{ steps.pick.outputs.topic }} ${{ steps.pick.outputs.session }} || true
           # Copy parts to output
