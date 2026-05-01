@@ -5,19 +5,19 @@ name: Cloud Render & Publish
 # Videos are stored as GitHub Artifacts for backup.
 
 on:
-  schedule:
+  # schedule: DISABLED — use upload-scheduled.yml instead
     # 2 long-form + 6 shorts per week = 8 uploads, channel active daily
     # Long-form: Tue + Sat at 6:15 PM IST (12:45 UTC)
-    - cron: '45 12 * * 2'   # Tuesday   6:15 PM — Long-form A
-    - cron: '45 12 * * 6'   # Saturday  6:15 PM — Long-form B
+    # - cron: '45 12 * * 2'   # Tuesday   6:15 PM — Long-form A
+    # - cron: '45 12 * * 6'   # Saturday  6:15 PM — Long-form B
     # Shorts from Tue's long-form: Wed/Thu/Fri at 1:15 PM IST (7:45 UTC)
-    - cron: '45 7 * * 3'    # Wednesday 1:15 PM — Short Part 1 (Tue's topic)
-    - cron: '45 7 * * 4'    # Thursday  1:15 PM — Short Part 2 (Tue's topic)
-    - cron: '45 7 * * 5'    # Friday    1:15 PM — Short Part 3 (Tue's topic)
+    # - cron: '45 7 * * 3'    # Wednesday 1:15 PM — Short Part 1 (Tue's topic)
+    # - cron: '45 7 * * 4'    # Thursday  1:15 PM — Short Part 2 (Tue's topic)
+    # - cron: '45 7 * * 5'    # Friday    1:15 PM — Short Part 3 (Tue's topic)
     # Shorts from Sat's long-form: Sun/Mon/Tue-morning
-    - cron: '45 7 * * 0'    # Sunday    1:15 PM — Short Part 1 (Sat's topic)
-    - cron: '45 7 * * 1'    # Monday    1:15 PM — Short Part 2 (Sat's topic)
-    - cron: '0 16 * * 2'    # Tuesday   9:30 PM — Short Part 3 (Sat's topic) (next week)
+    # - cron: '45 7 * * 0'    # Sunday    1:15 PM — Short Part 1 (Sat's topic)
+    # - cron: '45 7 * * 1'    # Monday    1:15 PM — Short Part 2 (Sat's topic)
+    # - cron: '0 16 * * 2'    # Tuesday   9:30 PM — Short Part 3 (Sat's topic) (next week)
 
   workflow_dispatch:
     inputs:

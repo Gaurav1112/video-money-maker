@@ -19,6 +19,7 @@ const TOKEN_PATH = path.resolve(__dirname, '..', '.youtube-token.json');
 const SCOPES = [
   'https://www.googleapis.com/auth/youtube.upload',
   'https://www.googleapis.com/auth/youtube',
+  'https://www.googleapis.com/auth/youtube.force-ssl', // needed for comments, captions
 ];
 
 async function main(): Promise<void> {

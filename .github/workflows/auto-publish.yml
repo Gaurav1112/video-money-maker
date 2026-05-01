@@ -5,12 +5,12 @@ name: Auto-Publish Video
 # Schedule: Tue (long-form), Thu (vertical part 1), Sat (vertical parts 2+3) at 7:15 PM IST
 
 on:
-  schedule:
+  # schedule: DISABLED — use upload-scheduled.yml instead
     # Staggered schedule for maximum per-video reach (IST → UTC)
-    - cron: '45 13 * * 2'   # Tuesday   7:15 PM IST — Long-form YouTube
-    - cron: '0 7 * * 4'     # Thursday 12:30 PM IST — Short Part 1
-    - cron: '0 9 * * 4'     # Thursday  2:30 PM IST — Short Part 2
-    - cron: '45 13 * * 6'   # Saturday  7:15 PM IST — Short Part 3
+    # - cron: '45 13 * * 2'   # Tuesday   7:15 PM IST — Long-form YouTube
+    # - cron: '0 7 * * 4'     # Thursday 12:30 PM IST — Short Part 1
+    # - cron: '0 9 * * 4'     # Thursday  2:30 PM IST — Short Part 2
+    # - cron: '45 13 * * 6'   # Saturday  7:15 PM IST — Short Part 3
 
   workflow_dispatch:
     inputs:

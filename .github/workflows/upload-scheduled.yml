@@ -217,4 +217,9 @@ jobs:
           git config user.email "bot@guru-sishya.in"
           git add config/ || true
           git diff --staged --quiet || git commit -m "chore: published ${{ steps.pick.outputs.topic }} S${{ steps.pick.outputs.session }} [skip ci]"
-          git push || true
+          for attempt in 1 2 3; do
+            git pull --rebase origin main 2>/dev/null || true
+            if git push; then break; fi
+            echo "Push failed (attempt $attempt/3), retrying..."
+            sleep 5
+          done
