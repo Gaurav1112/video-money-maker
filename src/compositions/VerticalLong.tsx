@@ -945,21 +945,26 @@ export const VerticalLong: React.FC<VerticalLongProps> = ({ storyboard }) => {
             const duration = scene.endFrame - scene.startFrame;
             const isFirst = idx === 0;
 
+            // Guard: transition must never exceed scene duration
+            const rawTransDur = getTransitionDuration(
+              idx > 0 ? contentScenes[idx - 1].type : 'title',
+              scene.type,
+              style,
+            );
+            const safeDuration = Math.max(rawTransDur + 1, duration); // ensure scene > transition
+            const safeTransDur = Math.min(rawTransDur, safeDuration - 1); // clamp transition
+
             return (
               <React.Fragment key={idx}>
                 {!isFirst && (
                   <TransitionSeries.Transition
                     presentation={getTransitionForScene(idx)}
                     timing={linearTiming({
-                      durationInFrames: getTransitionDuration(
-                        idx > 0 ? contentScenes[idx - 1].type : 'title',
-                        scene.type,
-                        style,
-                      ),
+                      durationInFrames: safeTransDur,
                     })}
                   />
                 )}
-                <TransitionSeries.Sequence durationInFrames={duration}>
+                <TransitionSeries.Sequence durationInFrames={safeDuration}>
                   <AbsoluteFill>
                     <VerticalSceneContent scene={scene} storyboard={storyboard} />
                   </AbsoluteFill>

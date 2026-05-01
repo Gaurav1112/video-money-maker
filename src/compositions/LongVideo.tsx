@@ -455,15 +455,18 @@ export const LongVideo: React.FC<LongVideoProps> = ({ storyboard, noOverlays = f
                   <TransitionSeries.Transition
                     presentation={getTransitionForScene(scene.type, idx)}
                     timing={linearTiming({
-                      durationInFrames: getTransitionDuration(
-                        idx > 0 ? contentScenes[idx - 1].type : 'title',
-                        scene.type,
-                        style,
+                      durationInFrames: Math.min(
+                        getTransitionDuration(
+                          idx > 0 ? contentScenes[idx - 1].type : 'title',
+                          scene.type,
+                          style,
+                        ),
+                        Math.max(1, duration - 1),
                       ),
                     })}
                   />
                 )}
-                <TransitionSeries.Sequence durationInFrames={duration}>
+                <TransitionSeries.Sequence durationInFrames={Math.max(duration, 16)}>
                   <AbsoluteFill>
                     <CameraDrift>
                       {renderedScene}
