@@ -1,0 +1,114 @@
+name: TEST — One-time upload at 5 PM IST today
+
+# This workflow fires ONCE: May 1, 2026 at 5:00 PM IST (11:30 UTC)
+# DELETE THIS FILE after the test
+
+on:
+  schedule:
+    - cron: '30 11 1 5 *'   # May 1 at 11:30 UTC = 5:00 PM IST (one-time)
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  test-upload:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Chrome for Remotion
+        run: npx remotion browser ensure
+
+      - name: Clone content repo
+        run: |
+          git clone --depth 1 https://github.com/Gaurav1112/guru-sishya.git ../guru-sishya
+          ln -sf "$(pwd)/../guru-sishya/public/content" content
+
+      - name: Generate storyboard + TTS
+        run: npx tsx scripts/render-session.ts kafka 3
+
+      - name: Render long-form video
+        run: |
+          mkdir -p output/videos
+          npx remotion render src/compositions/index.tsx LongVideo \
+            output/videos/long.mp4 \
+            --props=output/test-props-s3.json \
+            --codec=h264 --crf=18 --audio-bitrate=192K --concurrency=2
+
+      - name: Render vertical + split parts
+        run: |
+          npx remotion render src/compositions/index.tsx VerticalLong \
+            output/videos/vertical.mp4 \
+            --props=output/test-props-s3.json \
+            --codec=h264 --crf=18 --audio-bitrate=192K --concurrency=2
+          npx tsx scripts/render-vertical-parts.ts kafka 3 || true
+          cp ~/Documents/guru-sishya/kafka/session-3/vertical-parts/*.mp4 output/videos/ 2>/dev/null || true
+
+      - name: Generate thumbnail
+        run: |
+          npx remotion still src/compositions/index.tsx Thumbnail \
+            output/videos/thumbnail.png \
+            --props=output/test-props-s3.json 2>/dev/null || true
+
+      - name: Generate metadata
+        run: |
+          npx tsx scripts/generate-upload-metadata.ts kafka 3
+          cp output/kafka-s3*.json output/videos/
+
+      - name: Upload long-form to YouTube
+        env:
+          YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
+          YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
+          YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
+        run: |
+          METADATA=$(ls output/videos/kafka-s3-metadata.json 2>/dev/null | head -1)
+          if [ -f "output/videos/long.mp4" ] && [ -n "$METADATA" ]; then
+            for attempt in 1 2 3; do
+              echo "📤 Long-form upload attempt $attempt/3..."
+              if npx tsx scripts/upload-youtube.ts output/videos/long.mp4 "$METADATA"; then
+                echo "✅ Kafka S3 Long-form uploaded!"
+                break
+              fi
+              [ "$attempt" -lt 3 ] && sleep 60
+            done
+          fi
+
+      - name: Upload shorts to YouTube
+        env:
+          YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
+          YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
+          YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
+        run: |
+          for PART in 1 2 3; do
+            VIDEO=$(ls output/videos/*part${PART}of*.mp4 2>/dev/null | head -1)
+            META=$(ls output/videos/kafka-s3-part${PART}-metadata.json 2>/dev/null | head -1)
+            if [ -f "$VIDEO" ] && [ -n "$META" ]; then
+              for attempt in 1 2 3; do
+                echo "📤 Short Part $PART attempt $attempt/3..."
+                if npx tsx scripts/upload-youtube.ts "$VIDEO" "$META" --shorts; then
+                  echo "✅ Part $PART uploaded!"
+                  break
+                fi
+                [ "$attempt" -lt 3 ] && sleep 60
+              done
+            fi
+            sleep 30
+          done
+
+      - name: Test result
+        if: always()
+        run: |
+          echo "================================="
+          echo "TEST UPLOAD COMPLETE"
+          echo "Time: $(TZ=Asia/Kolkata date)"
+          echo "Videos rendered: $(ls output/videos/*.mp4 2>/dev/null | wc -l)"
+          echo "================================="
