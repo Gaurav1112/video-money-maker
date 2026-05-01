@@ -1,0 +1,220 @@
+name: Upload to YouTube (Scheduled)
+
+# Lightweight upload-only workflow. Videos SHOULD already be pre-rendered.
+# If not (pre-render failed), falls back to rendering on the spot.
+
+on:
+  schedule:
+    # IST times (UTC = IST - 5:30)
+    # Long-form: Tue + Sat at 6:15 PM IST
+    - cron: '45 12 * * 2'   # Tuesday   6:15 PM IST
+    - cron: '45 12 * * 6'   # Saturday  6:15 PM IST
+    # Shorts: 1:15 PM IST on Mon/Wed/Thu/Fri/Sun
+    - cron: '45 7 * * 0'    # Sunday    1:15 PM IST
+    - cron: '45 7 * * 1'    # Monday    1:15 PM IST
+    - cron: '45 7 * * 3'    # Wednesday 1:15 PM IST
+    - cron: '45 7 * * 4'    # Thursday  1:15 PM IST
+    - cron: '45 7 * * 5'    # Friday    1:15 PM IST
+    # Tue evening Short
+    - cron: '0 16 * * 2'    # Tuesday   9:30 PM IST
+
+  workflow_dispatch:
+    inputs:
+      topic:
+        description: 'Topic slug'
+        required: true
+      session:
+        description: 'Session number'
+        required: true
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+    timeout-minutes: 150   # Long timeout in case fallback render is needed
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Determine what to upload
+        id: pick
+        run: |
+          if [ -n "${{ inputs.topic }}" ]; then
+            echo "topic=${{ inputs.topic }}" >> $GITHUB_OUTPUT
+            echo "session=${{ inputs.session }}" >> $GITHUB_OUTPUT
+          else
+            NEXT=$(npx tsx scripts/get-next-publish.ts --json 2>/dev/null || echo '{}')
+            TOPIC=$(echo "$NEXT" | python3 -c "import json,sys; print(json.load(sys.stdin).get('topic','kafka'))" 2>/dev/null || echo "kafka")
+            SESSION=$(echo "$NEXT" | python3 -c "import json,sys; print(json.load(sys.stdin).get('session',1))" 2>/dev/null || echo "1")
+            echo "topic=$TOPIC" >> $GITHUB_OUTPUT
+            echo "session=$SESSION" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Detect upload type
+        id: daytype
+        run: |
+          DOW=$(date -u +%u)  # 1=Mon .. 7=Sun
+          HOUR=$(date -u +%H)
+          echo "dow=$DOW" >> $GITHUB_OUTPUT
+
+          # Long-form days: Tue (2) and Sat (6) at 12:45 UTC
+          if ([ "$DOW" = "2" ] && [ "$HOUR" -lt "14" ]) || [ "$DOW" = "6" ]; then
+            echo "type=long" >> $GITHUB_OUTPUT
+          else
+            echo "type=short" >> $GITHUB_OUTPUT
+          fi
+
+          # Which short part based on day
+          case $DOW in
+            3) echo "part=1" >> $GITHUB_OUTPUT ;;
+            4) echo "part=2" >> $GITHUB_OUTPUT ;;
+            5) echo "part=3" >> $GITHUB_OUTPUT ;;
+            7) echo "part=1" >> $GITHUB_OUTPUT ;;
+            1) echo "part=2" >> $GITHUB_OUTPUT ;;
+            2) echo "part=3" >> $GITHUB_OUTPUT ;;  # Tue evening
+            *) echo "part=1" >> $GITHUB_OUTPUT ;;
+          esac
+
+          # Manual trigger = upload everything
+          if [ -n "${{ inputs.topic }}" ]; then
+            echo "type=all" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Try downloading pre-rendered artifact
+        id: artifact
+        uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          name: ready-${{ steps.pick.outputs.topic }}-s${{ steps.pick.outputs.session }}
+          path: output/videos/
+
+      - name: Check if artifact was found
+        id: has_artifact
+        run: |
+          if [ -f "output/videos/long.mp4" ] || ls output/videos/*part*of*.mp4 >/dev/null 2>&1; then
+            echo "found=true" >> $GITHUB_OUTPUT
+            echo "✅ Pre-rendered videos found — skipping render"
+            ls -lh output/videos/
+          else
+            echo "found=false" >> $GITHUB_OUTPUT
+            echo "⚠️ No pre-rendered videos — will render now (fallback)"
+          fi
+
+      # ── FALLBACK: Render if pre-render didn't happen ──
+      - name: "[FALLBACK] Install Chrome for Remotion"
+        if: steps.has_artifact.outputs.found != 'true'
+        run: npx remotion browser ensure
+
+      - name: "[FALLBACK] Clone content repo"
+        if: steps.has_artifact.outputs.found != 'true'
+        run: |
+          git clone --depth 1 https://github.com/Gaurav1112/guru-sishya.git ../guru-sishya
+          ln -sf ../guru-sishya/public/content content 2>/dev/null || true
+
+      - name: "[FALLBACK] Generate storyboard + TTS"
+        if: steps.has_artifact.outputs.found != 'true'
+        run: npx tsx scripts/render-session.ts ${{ steps.pick.outputs.topic }} ${{ steps.pick.outputs.session }}
+
+      - name: "[FALLBACK] Render long-form"
+        if: steps.has_artifact.outputs.found != 'true' && (steps.daytype.outputs.type == 'long' || steps.daytype.outputs.type == 'all')
+        run: |
+          mkdir -p output/videos
+          npx remotion render src/compositions/index.tsx LongVideo \
+            output/videos/long.mp4 \
+            --props=output/test-props-s${{ steps.pick.outputs.session }}.json \
+            --codec=h264 --crf=18 --audio-bitrate=192K --concurrency=2
+
+      - name: "[FALLBACK] Render vertical + split parts"
+        if: steps.has_artifact.outputs.found != 'true'
+        run: |
+          mkdir -p output/videos
+          npx remotion render src/compositions/index.tsx VerticalLong \
+            output/videos/vertical.mp4 \
+            --props=output/test-props-s${{ steps.pick.outputs.session }}.json \
+            --codec=h264 --crf=18 --audio-bitrate=192K --concurrency=2
+          npx tsx scripts/render-vertical-parts.ts ${{ steps.pick.outputs.topic }} ${{ steps.pick.outputs.session }} || true
+          cp ~/Documents/guru-sishya/${{ steps.pick.outputs.topic }}/session-${{ steps.pick.outputs.session }}/vertical-parts/*.mp4 output/videos/ 2>/dev/null || true
+
+      - name: "[FALLBACK] Generate thumbnail + metadata"
+        if: steps.has_artifact.outputs.found != 'true'
+        run: |
+          npx remotion still src/compositions/index.tsx Thumbnail output/videos/thumbnail.png \
+            --props=output/test-props-s${{ steps.pick.outputs.session }}.json 2>/dev/null || true
+          npx tsx scripts/generate-upload-metadata.ts ${{ steps.pick.outputs.topic }} ${{ steps.pick.outputs.session }}
+          cp output/${{ steps.pick.outputs.topic }}-s${{ steps.pick.outputs.session }}*.json output/videos/
+
+      # ── UPLOAD ──
+      - name: Upload long-form to YouTube (3x retry)
+        if: steps.daytype.outputs.type == 'long' || steps.daytype.outputs.type == 'all'
+        env:
+          YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
+          YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
+          YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
+        run: |
+          TOPIC=${{ steps.pick.outputs.topic }}
+          SESSION=${{ steps.pick.outputs.session }}
+          METADATA=$(ls output/videos/${TOPIC}-s${SESSION}-metadata.json 2>/dev/null | head -1)
+          VIDEO="output/videos/long.mp4"
+          if [ -f "$VIDEO" ] && [ -n "$METADATA" ]; then
+            for attempt in 1 2 3; do
+              echo "📤 Long-form upload attempt $attempt/3..."
+              if npx tsx scripts/upload-youtube.ts "$VIDEO" "$METADATA"; then
+                echo "✅ Long-form uploaded!"
+                break
+              fi
+              [ "$attempt" -lt 3 ] && echo "Retrying in 60s..." && sleep 60
+            done
+          fi
+
+      - name: Upload Short to YouTube (3x retry)
+        if: steps.daytype.outputs.type == 'short' || steps.daytype.outputs.type == 'all'
+        env:
+          YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
+          YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
+          YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
+        run: |
+          TOPIC=${{ steps.pick.outputs.topic }}
+          SESSION=${{ steps.pick.outputs.session }}
+          PART=${{ steps.daytype.outputs.part }}
+
+          # For manual trigger, upload all parts
+          if [ "${{ steps.daytype.outputs.type }}" = "all" ]; then
+            PARTS="1 2 3"
+          else
+            PARTS="$PART"
+          fi
+
+          for P in $PARTS; do
+            VIDEO=$(ls output/videos/*part${P}of*.mp4 2>/dev/null | head -1)
+            META=$(ls output/videos/${TOPIC}-s${SESSION}-part${P}-metadata.json 2>/dev/null | head -1)
+            if [ -f "$VIDEO" ] && [ -n "$META" ]; then
+              for attempt in 1 2 3; do
+                echo "📤 Short Part $P upload attempt $attempt/3..."
+                if npx tsx scripts/upload-youtube.ts "$VIDEO" "$META" --shorts; then
+                  echo "✅ Short Part $P uploaded!"
+                  break
+                fi
+                [ "$attempt" -lt 3 ] && echo "Retrying in 60s..." && sleep 60
+              done
+            else
+              echo "⚠️ Part $P video or metadata not found"
+            fi
+          done
+
+      - name: Update queue + commit
+        if: success()
+        run: |
+          git config user.name "Guru Sishya Bot"
+          git config user.email "bot@guru-sishya.in"
+          git add config/ || true
+          git diff --staged --quiet || git commit -m "chore: published ${{ steps.pick.outputs.topic }} S${{ steps.pick.outputs.session }} [skip ci]"
+          git push || true
