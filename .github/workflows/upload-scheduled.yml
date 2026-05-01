@@ -27,6 +27,9 @@ on:
         description: 'Session number'
         required: true
 
+permissions:
+  contents: write   # needed for git push to update queue
+
 env:
   NODE_VERSION: '20'
 
@@ -110,9 +113,12 @@ jobs:
           fi
 
       # ── FALLBACK: Render if pre-render didn't happen ──
-      - name: "[FALLBACK] Install Chrome for Remotion"
+      - name: "[FALLBACK] Install Chrome + TTS + audio tools"
         if: steps.has_artifact.outputs.found != 'true'
-        run: npx remotion browser ensure
+        run: |
+          npx remotion browser ensure
+          pip install edge-tts
+          sudo apt-get update && sudo apt-get install -y ffmpeg
 
       - name: "[FALLBACK] Clone content repo"
         if: steps.has_artifact.outputs.found != 'true'

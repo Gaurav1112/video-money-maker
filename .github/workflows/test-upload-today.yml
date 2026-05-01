@@ -7,6 +7,9 @@ on:
   schedule:
     - cron: '30 11 1 5 *'   # May 1 at 11:30 UTC = 5:00 PM IST (one-time)
 
+permissions:
+  contents: write
+
 env:
   NODE_VERSION: '20'
 
@@ -27,6 +30,11 @@ jobs:
 
       - name: Install Chrome for Remotion
         run: npx remotion browser ensure
+
+      - name: Install TTS + audio tools
+        run: |
+          pip install edge-tts
+          sudo apt-get update && sudo apt-get install -y ffmpeg
 
       - name: Clone content repo
         run: |
