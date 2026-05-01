@@ -176,8 +176,26 @@ jobs:
           name: ${{ needs.render.outputs.topic }}-s${{ needs.render.outputs.session }}
           path: output/videos/
 
-      - name: Upload long-form to YouTube
-        if: contains(github.event.schedule, '45 13 * * 2') || inputs.topic != ''
+      - name: Detect upload type from day of week
+        id: daytype
+        run: |
+          DOW=$(date -u +%u)  # 1=Mon, 2=Tue, ..., 7=Sun
+          echo "dow=$DOW" >> $GITHUB_OUTPUT
+          if [ "$DOW" = "2" ] || [ "$DOW" = "6" ]; then
+            echo "type=long" >> $GITHUB_OUTPUT
+            echo "Today is long-form day (Tue/Sat)"
+          else
+            echo "type=short" >> $GITHUB_OUTPUT
+            echo "Today is Shorts day"
+          fi
+          # Manual trigger always uploads everything
+          if [ -n "${{ inputs.topic }}" ]; then
+            echo "type=all" >> $GITHUB_OUTPUT
+            echo "Manual trigger — uploading all"
+          fi
+
+      - name: Upload long-form to YouTube (with retry)
+        if: steps.daytype.outputs.type == 'long' || steps.daytype.outputs.type == 'all'
         env:
           YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
           YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
@@ -186,12 +204,30 @@ jobs:
           TOPIC=${{ needs.render.outputs.topic }}
           SESSION=${{ needs.render.outputs.session }}
           METADATA=$(ls output/videos/${TOPIC}-s${SESSION}-metadata.json 2>/dev/null || echo "")
-          if [ -n "$METADATA" ]; then
-            npx tsx scripts/upload-youtube.ts output/videos/long.mp4 "$METADATA"
+          if [ -n "$METADATA" ] && [ -f "output/videos/long.mp4" ]; then
+            # Retry up to 3 times with 60s delay
+            for attempt in 1 2 3; do
+              echo "Upload attempt $attempt/3..."
+              if npx tsx scripts/upload-youtube.ts output/videos/long.mp4 "$METADATA"; then
+                echo "✅ Long-form uploaded successfully"
+                break
+              else
+                echo "❌ Attempt $attempt failed"
+                if [ "$attempt" -lt 3 ]; then
+                  echo "Retrying in 60 seconds..."
+                  sleep 60
+                else
+                  echo "🚨 All 3 attempts failed — will retry next cycle"
+                  exit 1
+                fi
+              fi
+            done
+          else
+            echo "⚠️ No long-form video or metadata found — skipping"
           fi
 
-      - name: Upload shorts to YouTube
-        if: contains(github.event.schedule, '* * 4') || contains(github.event.schedule, '* * 6') || inputs.topic != ''
+      - name: Upload shorts to YouTube (with retry)
+        if: steps.daytype.outputs.type == 'short' || steps.daytype.outputs.type == 'all'
         env:
           YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
           YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
@@ -199,12 +235,38 @@ jobs:
         run: |
           TOPIC=${{ needs.render.outputs.topic }}
           SESSION=${{ needs.render.outputs.session }}
-          for PART in 1 2 3; do
-            VIDEO=$(ls output/videos/*part${PART}of*.mp4 2>/dev/null || echo "")
-            META=$(ls output/videos/${TOPIC}-s${SESSION}-part${PART}-metadata.json 2>/dev/null || echo "")
-            if [ -n "$VIDEO" ] && [ -n "$META" ]; then
-              npx tsx scripts/upload-youtube.ts "$VIDEO" "$META" --shorts
-              sleep 30  # Rate limit protection
+
+          # Determine which part to upload based on day of week
+          DOW=${{ steps.daytype.outputs.dow }}
+          # Tue's shorts: Wed=Part1, Thu=Part2, Fri=Part3
+          # Sat's shorts: Sun=Part1, Mon=Part2, Tue-evening=Part3
+          case $DOW in
+            3) PARTS="1" ;;    # Wednesday → Part 1 of Tue
+            4) PARTS="2" ;;    # Thursday → Part 2 of Tue
+            5) PARTS="3" ;;    # Friday → Part 3 of Tue
+            7) PARTS="1" ;;    # Sunday → Part 1 of Sat
+            1) PARTS="2" ;;    # Monday → Part 2 of Sat
+            2) PARTS="3" ;;    # Tuesday evening → Part 3 of Sat
+            *) PARTS="1 2 3" ;; # Manual trigger → all parts
+          esac
+
+          for PART in $PARTS; do
+            VIDEO=$(ls output/videos/*part${PART}of*.mp4 2>/dev/null | head -1)
+            META=$(ls output/videos/${TOPIC}-s${SESSION}-part${PART}-metadata.json 2>/dev/null | head -1)
+            if [ -n "$VIDEO" ] && [ -f "$VIDEO" ] && [ -n "$META" ]; then
+              # Retry up to 3 times
+              for attempt in 1 2 3; do
+                echo "Uploading Part $PART (attempt $attempt/3)..."
+                if npx tsx scripts/upload-youtube.ts "$VIDEO" "$META" --shorts; then
+                  echo "✅ Part $PART uploaded"
+                  break
+                else
+                  echo "❌ Attempt $attempt failed"
+                  [ "$attempt" -lt 3 ] && sleep 60
+                fi
+              done
+            else
+              echo "⚠️ Part $PART not found — skipping"
             fi
           done
 
