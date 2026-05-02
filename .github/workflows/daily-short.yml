@@ -1,13 +1,14 @@
 name: Daily Short (Render + Upload)
 
-# Standalone 45-second YouTube Shorts — one per day, fully automated.
+# Standalone 45-second YouTube Shorts -- one per day, fully automated.
 # 660 unique Shorts (66 topics x 10 formats) = ~22 months of daily content.
+# Uses VerticalLong composition (proven stable) instead of AtomicShort.
 
 on:
   schedule:
-    # Pre-render at 3:00 PM IST (9:30 UTC) — 4h buffer before upload
+    # Pre-render at 3:00 PM IST (9:30 UTC) -- 4h buffer before upload
     - cron: '30 9 * * *'
-    # Upload at 7:00 PM IST (1:30 PM UTC) — peak India viewing time
+    # Upload at 7:00 PM IST (1:30 PM UTC) -- peak India viewing time
     - cron: '30 13 * * *'
 
   workflow_dispatch:
@@ -36,7 +37,6 @@ jobs:
         id: phase
         run: |
           HOUR=$(date -u +%H)
-          MIN=$(date -u +%M)
           # 9:30 UTC = pre-render, 13:30 UTC = upload
           if [ "$HOUR" -lt "12" ]; then
             echo "phase=render" >> $GITHUB_OUTPUT
@@ -44,7 +44,7 @@ jobs:
             echo "phase=upload" >> $GITHUB_OUTPUT
           fi
           # Manual trigger: always do full pipeline
-          if [ -n "${{ inputs.short_number }}" ] || [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             echo "phase=full" >> $GITHUB_OUTPUT
           fi
 
@@ -67,13 +67,17 @@ jobs:
       - name: Install Chrome + TTS + ffmpeg
         run: |
           npx remotion browser ensure
-          pip install edge-tts
+          pip install --break-system-packages edge-tts
           sudo apt-get update && sudo apt-get install -y ffmpeg
+          # Verify
+          python3 -c "import edge_tts; print('edge_tts OK')"
+          ffmpeg -version | head -1
 
       - name: Clone content repo
         run: |
           git clone --depth 1 https://github.com/Gaurav1112/guru-sishya.git ../guru-sishya
-          ln -sf ../guru-sishya/public/content content 2>/dev/null || true
+          ln -sf "$(pwd)/../guru-sishya/public/content" content 2>/dev/null || true
+          ls content/*.json | head -3 || { echo "FATAL: content not accessible"; exit 1; }
 
       - name: Render daily Short (3x retry)
         id: render
@@ -146,25 +150,25 @@ jobs:
             ls -lh output/daily-short/
           else
             echo "found=false" >> $GITHUB_OUTPUT
-            echo "No rendered Short found — will render now"
+            echo "No rendered Short found -- will render now"
           fi
 
       # Fallback: render if artifact is missing
       - name: "[FALLBACK] Install Chrome + TTS + ffmpeg"
-        if: steps.check.outputs.found != 'true' && !inputs.dry_run
+        if: steps.check.outputs.found != 'true' && inputs.dry_run != 'true'
         run: |
           npx remotion browser ensure
-          pip install edge-tts
+          pip install --break-system-packages edge-tts
           sudo apt-get update && sudo apt-get install -y ffmpeg
 
       - name: "[FALLBACK] Clone content repo"
-        if: steps.check.outputs.found != 'true' && !inputs.dry_run
+        if: steps.check.outputs.found != 'true' && inputs.dry_run != 'true'
         run: |
           git clone --depth 1 https://github.com/Gaurav1112/guru-sishya.git ../guru-sishya
-          ln -sf ../guru-sishya/public/content content 2>/dev/null || true
+          ln -sf "$(pwd)/../guru-sishya/public/content" content 2>/dev/null || true
 
       - name: "[FALLBACK] Render daily Short"
-        if: steps.check.outputs.found != 'true' && !inputs.dry_run
+        if: steps.check.outputs.found != 'true' && inputs.dry_run != 'true'
         run: |
           ARGS=""
           if [ -n "${{ inputs.short_number }}" ]; then
@@ -173,7 +177,7 @@ jobs:
           npx tsx scripts/render-daily-short.ts $ARGS
 
       - name: Upload to YouTube (3x retry)
-        if: (!inputs.dry_run) || (inputs.dry_run != true)
+        if: inputs.dry_run != 'true'
         env:
           YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
           YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
@@ -184,6 +188,7 @@ jobs:
 
           if [ -z "$VIDEO" ] || [ -z "$META" ]; then
             echo "ERROR: No video or metadata found"
+            ls -la output/daily-short/ 2>/dev/null || echo "output/daily-short/ does not exist"
             exit 1
           fi
 
@@ -202,5 +207,5 @@ jobs:
           exit 1
 
       - name: Cleanup local files
-        if: success() && !inputs.dry_run
+        if: success() && inputs.dry_run != 'true'
         run: rm -rf output/daily-short/

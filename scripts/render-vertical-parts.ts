@@ -31,10 +31,14 @@ const parts = splitIntoParts(storyboard);
 console.log(getSplitSummary(storyboard));
 console.log('');
 
-const outputDir = path.resolve(
-  process.env.HOME || '~',
-  `Documents/guru-sishya/${topic}/session-${session}/vertical-parts`,
-);
+// On cloud runners (GitHub Actions), ~/Documents/ doesn't exist.
+// Use output/videos/ in the project root for cross-platform compatibility.
+const outputDir = process.env.CI
+  ? path.resolve(__dirname, '..', 'output', 'videos')
+  : path.resolve(
+      process.env.HOME || '~',
+      `Documents/guru-sishya/${topic}/session-${session}/vertical-parts`,
+    );
 mkdirSync(outputDir, { recursive: true });
 
 // Render each part
@@ -63,7 +67,7 @@ for (const part of parts) {
     '--codec=h264',
     '--crf=18',
     '--audio-bitrate=192K',
-    '--concurrency=4',
+    `--concurrency=${process.env.CI ? '1' : '4'}`,
   ].join(' ');
 
   try {

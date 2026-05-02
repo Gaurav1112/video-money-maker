@@ -5,17 +5,17 @@ name: Pre-Render Videos (4 hours before upload)
 
 on:
   schedule:
-    # 4 hours before each upload time (IST → UTC)
-    # Long-form uploads at 6:15 PM IST → pre-render at 2:15 PM IST (8:45 UTC)
-    - cron: '45 8 * * 2'     # Tuesday    2:15 PM IST — pre-render for Tue 6:15 PM upload
-    - cron: '45 8 * * 6'     # Saturday   2:15 PM IST — pre-render for Sat 6:15 PM upload
-    # Shorts upload at 1:15 PM IST → pre-render at 9:15 AM IST (3:45 UTC)
-    - cron: '45 3 * * 3'     # Wednesday  9:15 AM IST — pre-render for Wed 1:15 PM upload
-    - cron: '45 3 * * 4'     # Thursday   9:15 AM IST — pre-render for Thu 1:15 PM upload
-    - cron: '45 3 * * 5'     # Friday     9:15 AM IST — pre-render for Fri 1:15 PM upload
-    - cron: '45 3 * * 0'     # Sunday     9:15 AM IST — pre-render for Sun 1:15 PM upload
-    - cron: '45 3 * * 1'     # Monday     9:15 AM IST — pre-render for Mon 1:15 PM upload
-    - cron: '0 12 * * 2'     # Tuesday   5:30 PM IST — pre-render for Tue 9:30 PM Short
+    # 4 hours before each upload time (IST -> UTC)
+    # Long-form uploads at 6:15 PM IST -> pre-render at 2:15 PM IST (8:45 UTC)
+    - cron: '45 8 * * 2'     # Tuesday    2:15 PM IST -- pre-render for Tue 6:15 PM upload
+    - cron: '45 8 * * 6'     # Saturday   2:15 PM IST -- pre-render for Sat 6:15 PM upload
+    # Shorts upload at 1:15 PM IST -> pre-render at 9:15 AM IST (3:45 UTC)
+    - cron: '45 3 * * 3'     # Wednesday  9:15 AM IST -- pre-render for Wed 1:15 PM upload
+    - cron: '45 3 * * 4'     # Thursday   9:15 AM IST -- pre-render for Thu 1:15 PM upload
+    - cron: '45 3 * * 5'     # Friday     9:15 AM IST -- pre-render for Fri 1:15 PM upload
+    - cron: '45 3 * * 0'     # Sunday     9:15 AM IST -- pre-render for Sun 1:15 PM upload
+    - cron: '45 3 * * 1'     # Monday     9:15 AM IST -- pre-render for Mon 1:15 PM upload
+    - cron: '0 12 * * 2'     # Tuesday   5:30 PM IST -- pre-render for Tue 9:30 PM Short
 
   workflow_dispatch:
     inputs:
@@ -51,23 +51,29 @@ jobs:
       - name: Install Chrome + TTS + audio tools
         run: |
           npx remotion browser ensure
-          pip install edge-tts
+          pip install --break-system-packages edge-tts
           sudo apt-get update && sudo apt-get install -y ffmpeg
           # Verify installations
-          python3 -m edge_tts --version || echo "edge-tts installed"
+          edge-tts --help >/dev/null 2>&1 && echo "edge-tts OK" || echo "edge-tts WARNING: not on PATH"
+          python3 -c "import edge_tts; print('edge_tts module OK')"
           ffmpeg -version | head -1
 
       - name: Clone content repo
         run: |
           git clone --depth 1 https://github.com/Gaurav1112/guru-sishya.git ../guru-sishya
-          ln -sf ../guru-sishya/public/content content 2>/dev/null || true
+          # render-session.ts resolves CONTENT_DIR as ../../guru-sishya/public/content
+          # relative to scripts/ dir, which = ../guru-sishya/public/content from repo root.
+          # Also create symlink so 'content/' works if anything uses it directly.
+          ln -sf "$(pwd)/../guru-sishya/public/content" content 2>/dev/null || true
+          # Verify content is accessible
+          ls content/*.json | head -3 || { echo "FATAL: content not accessible"; exit 1; }
 
       - name: Determine what to render
         id: pick
         run: |
           if [ -n "${{ inputs.topic }}" ]; then
             echo "topic=${{ inputs.topic }}" >> $GITHUB_OUTPUT
-            echo "session=${{ inputs.session }}" >> $GITHUB_OUTPUT
+            echo "session=${{ inputs.session || '1' }}" >> $GITHUB_OUTPUT
           else
             NEXT=$(npx tsx scripts/get-next-publish.ts --json 2>/dev/null || echo '{}')
             TOPIC=$(echo "$NEXT" | python3 -c "import json,sys; print(json.load(sys.stdin).get('topic','kafka'))" 2>/dev/null || echo "kafka")
@@ -75,53 +81,92 @@ jobs:
             echo "topic=$TOPIC" >> $GITHUB_OUTPUT
             echo "session=$SESSION" >> $GITHUB_OUTPUT
           fi
-
-      - name: Check if already rendered
-        id: check
-        run: |
-          # Check if artifact already exists from a previous pre-render
-          echo "Checking for existing artifact..."
-          echo "needs_render=true" >> $GITHUB_OUTPUT
+          echo "Rendering: topic=${{ steps.pick.outputs.topic || 'TBD' }} session=${{ steps.pick.outputs.session || 'TBD' }}"
 
       - name: Generate storyboard + TTS audio
-        if: steps.check.outputs.needs_render == 'true'
         run: npx tsx scripts/render-session.ts ${{ steps.pick.outputs.topic }} ${{ steps.pick.outputs.session }}
 
       - name: Render long-form video
-        if: steps.check.outputs.needs_render == 'true'
         run: |
           mkdir -p output/videos
           npx remotion render src/compositions/index.tsx LongVideo \
             output/videos/long.mp4 \
             --props=output/test-props-s${{ steps.pick.outputs.session }}.json \
-            --codec=h264 --crf=18 --audio-bitrate=192K --concurrency=2
+            --codec=h264 --crf=18 --audio-bitrate=192K --concurrency=1 \
+            --timeout=180000
 
       - name: Render vertical video
-        if: steps.check.outputs.needs_render == 'true'
         run: |
           npx remotion render src/compositions/index.tsx VerticalLong \
             output/videos/vertical.mp4 \
             --props=output/test-props-s${{ steps.pick.outputs.session }}.json \
-            --codec=h264 --crf=18 --audio-bitrate=192K --concurrency=2
+            --codec=h264 --crf=18 --audio-bitrate=192K --concurrency=1 \
+            --timeout=180000
 
-      - name: Split vertical into parts
-        if: steps.check.outputs.needs_render == 'true'
+      - name: Split vertical into parts with ffmpeg
         run: |
-          npx tsx scripts/render-vertical-parts.ts ${{ steps.pick.outputs.topic }} ${{ steps.pick.outputs.session }} || true
-          cp ~/Documents/guru-sishya/${{ steps.pick.outputs.topic }}/session-${{ steps.pick.outputs.session }}/vertical-parts/*.mp4 output/videos/ 2>/dev/null || true
+          # Read storyboard to compute split points using part-splitter logic
+          # Fallback: split evenly into 3 parts using ffmpeg (works on any OS)
+          TOPIC="${{ steps.pick.outputs.topic }}"
+          SESSION="${{ steps.pick.outputs.session }}"
+          VIDEO="output/videos/vertical.mp4"
+
+          if [ ! -f "$VIDEO" ]; then
+            echo "WARNING: vertical.mp4 not found, skipping split"
+            exit 0
+          fi
+
+          # Get total duration in seconds
+          DURATION=$(ffprobe -v error -show_entries format=duration -of csv=p=0 "$VIDEO" | cut -d. -f1)
+          echo "Total duration: ${DURATION}s"
+
+          if [ -z "$DURATION" ] || [ "$DURATION" -lt 30 ]; then
+            echo "WARNING: Duration too short or unreadable, skipping split"
+            exit 0
+          fi
+
+          # Split into 3 equal parts
+          PART_DUR=$(( (DURATION + 2) / 3 ))
+          echo "Part duration: ~${PART_DUR}s"
+
+          for P in 1 2 3; do
+            START=$(( (P - 1) * PART_DUR ))
+            # Last part gets the remainder
+            if [ "$P" -eq 3 ]; then
+              ffmpeg -y -i "$VIDEO" -ss "$START" -codec copy \
+                "output/videos/${TOPIC}-s${SESSION}-part${P}of3.mp4" 2>/dev/null
+            else
+              ffmpeg -y -i "$VIDEO" -ss "$START" -t "$PART_DUR" -codec copy \
+                "output/videos/${TOPIC}-s${SESSION}-part${P}of3.mp4" 2>/dev/null
+            fi
+            echo "Part $P: start=${START}s"
+          done
+
+          ls -lh output/videos/*part* 2>/dev/null || echo "No parts created"
 
       - name: Generate thumbnail
-        if: steps.check.outputs.needs_render == 'true'
+        continue-on-error: true
         run: |
           npx remotion still src/compositions/index.tsx Thumbnail \
             output/videos/thumbnail.png \
             --props=output/test-props-s${{ steps.pick.outputs.session }}.json
 
       - name: Generate metadata
-        if: steps.check.outputs.needs_render == 'true'
         run: |
           npx tsx scripts/generate-upload-metadata.ts ${{ steps.pick.outputs.topic }} ${{ steps.pick.outputs.session }}
-          cp output/${{ steps.pick.outputs.topic }}-s${{ steps.pick.outputs.session }}*.json output/videos/
+          cp output/${{ steps.pick.outputs.topic }}-s${{ steps.pick.outputs.session }}*.json output/videos/ 2>/dev/null || true
+
+      - name: Write manifest file (so upload workflow knows what was rendered)
+        run: |
+          cat > output/videos/manifest.json << MANIFEST_EOF
+          {
+            "topic": "${{ steps.pick.outputs.topic }}",
+            "session": ${{ steps.pick.outputs.session }},
+            "renderedAt": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+            "files": $(ls output/videos/ | python3 -c "import json,sys; print(json.dumps(sys.stdin.read().strip().split('\n')))")
+          }
+          MANIFEST_EOF
+          cat output/videos/manifest.json
 
       - name: Store as artifact (ready for upload workflow)
         uses: actions/upload-artifact@v4
@@ -132,6 +177,6 @@ jobs:
 
       - name: Log success
         run: |
-          echo "✅ Pre-render complete for ${{ steps.pick.outputs.topic }} S${{ steps.pick.outputs.session }}"
+          echo "Pre-render complete for ${{ steps.pick.outputs.topic }} S${{ steps.pick.outputs.session }}"
           echo "Videos are ready for upload at the scheduled time"
           ls -lh output/videos/

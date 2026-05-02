@@ -100,31 +100,37 @@ jobs:
           name: ready-${{ steps.pick.outputs.topic }}-s${{ steps.pick.outputs.session }}
           path: output/videos/
 
-      - name: Check if artifact was found
+      - name: Check if artifact was found (read manifest)
         id: has_artifact
         run: |
-          if [ -f "output/videos/long.mp4" ] || ls output/videos/*part*of*.mp4 >/dev/null 2>&1; then
+          if [ -f "output/videos/manifest.json" ]; then
             echo "found=true" >> $GITHUB_OUTPUT
-            echo "✅ Pre-rendered videos found — skipping render"
+            echo "Pre-rendered videos found (from manifest):"
+            cat output/videos/manifest.json
+            ls -lh output/videos/
+          elif [ -f "output/videos/long.mp4" ] || ls output/videos/*part*of*.mp4 >/dev/null 2>&1; then
+            echo "found=true" >> $GITHUB_OUTPUT
+            echo "Pre-rendered videos found (no manifest, but files exist):"
             ls -lh output/videos/
           else
             echo "found=false" >> $GITHUB_OUTPUT
-            echo "⚠️ No pre-rendered videos — will render now (fallback)"
+            echo "No pre-rendered videos -- will render now (fallback)"
           fi
 
-      # ── FALLBACK: Render if pre-render didn't happen ──
+      # -- FALLBACK: Render if pre-render didn't happen --
       - name: "[FALLBACK] Install Chrome + TTS + audio tools"
         if: steps.has_artifact.outputs.found != 'true'
         run: |
           npx remotion browser ensure
-          pip install edge-tts
+          pip install --break-system-packages edge-tts
           sudo apt-get update && sudo apt-get install -y ffmpeg
 
       - name: "[FALLBACK] Clone content repo"
         if: steps.has_artifact.outputs.found != 'true'
         run: |
           git clone --depth 1 https://github.com/Gaurav1112/guru-sishya.git ../guru-sishya
-          ln -sf ../guru-sishya/public/content content 2>/dev/null || true
+          ln -sf "$(pwd)/../guru-sishya/public/content" content 2>/dev/null || true
+          ls content/*.json | head -3 || { echo "FATAL: content not accessible"; exit 1; }
 
       - name: "[FALLBACK] Generate storyboard + TTS"
         if: steps.has_artifact.outputs.found != 'true'
@@ -137,18 +143,41 @@ jobs:
           npx remotion render src/compositions/index.tsx LongVideo \
             output/videos/long.mp4 \
             --props=output/test-props-s${{ steps.pick.outputs.session }}.json \
-            --codec=h264 --crf=18 --audio-bitrate=192K --concurrency=2
+            --codec=h264 --crf=18 --audio-bitrate=192K --concurrency=1 \
+            --timeout=180000
 
-      - name: "[FALLBACK] Render vertical + split parts"
+      - name: "[FALLBACK] Render vertical + split parts via ffmpeg"
         if: steps.has_artifact.outputs.found != 'true'
         run: |
           mkdir -p output/videos
+          TOPIC="${{ steps.pick.outputs.topic }}"
+          SESSION="${{ steps.pick.outputs.session }}"
+
+          # Render vertical
           npx remotion render src/compositions/index.tsx VerticalLong \
             output/videos/vertical.mp4 \
-            --props=output/test-props-s${{ steps.pick.outputs.session }}.json \
-            --codec=h264 --crf=18 --audio-bitrate=192K --concurrency=2
-          npx tsx scripts/render-vertical-parts.ts ${{ steps.pick.outputs.topic }} ${{ steps.pick.outputs.session }} || true
-          cp ~/Documents/guru-sishya/${{ steps.pick.outputs.topic }}/session-${{ steps.pick.outputs.session }}/vertical-parts/*.mp4 output/videos/ 2>/dev/null || true
+            --props=output/test-props-s${SESSION}.json \
+            --codec=h264 --crf=18 --audio-bitrate=192K --concurrency=1 \
+            --timeout=180000
+
+          # Split into 3 parts using ffmpeg (works on any OS)
+          VIDEO="output/videos/vertical.mp4"
+          if [ -f "$VIDEO" ]; then
+            DURATION=$(ffprobe -v error -show_entries format=duration -of csv=p=0 "$VIDEO" | cut -d. -f1)
+            if [ -n "$DURATION" ] && [ "$DURATION" -gt 30 ]; then
+              PART_DUR=$(( (DURATION + 2) / 3 ))
+              for P in 1 2 3; do
+                START=$(( (P - 1) * PART_DUR ))
+                if [ "$P" -eq 3 ]; then
+                  ffmpeg -y -i "$VIDEO" -ss "$START" -codec copy \
+                    "output/videos/${TOPIC}-s${SESSION}-part${P}of3.mp4" 2>/dev/null
+                else
+                  ffmpeg -y -i "$VIDEO" -ss "$START" -t "$PART_DUR" -codec copy \
+                    "output/videos/${TOPIC}-s${SESSION}-part${P}of3.mp4" 2>/dev/null
+                fi
+              done
+            fi
+          fi
 
       - name: "[FALLBACK] Generate thumbnail + metadata"
         if: steps.has_artifact.outputs.found != 'true'
@@ -156,9 +185,9 @@ jobs:
           npx remotion still src/compositions/index.tsx Thumbnail output/videos/thumbnail.png \
             --props=output/test-props-s${{ steps.pick.outputs.session }}.json 2>/dev/null || true
           npx tsx scripts/generate-upload-metadata.ts ${{ steps.pick.outputs.topic }} ${{ steps.pick.outputs.session }}
-          cp output/${{ steps.pick.outputs.topic }}-s${{ steps.pick.outputs.session }}*.json output/videos/
+          cp output/${{ steps.pick.outputs.topic }}-s${{ steps.pick.outputs.session }}*.json output/videos/ 2>/dev/null || true
 
-      # ── UPLOAD ──
+      # -- UPLOAD --
       - name: Upload long-form to YouTube (3x retry)
         if: steps.daytype.outputs.type == 'long' || steps.daytype.outputs.type == 'all'
         env:
@@ -172,13 +201,16 @@ jobs:
           VIDEO="output/videos/long.mp4"
           if [ -f "$VIDEO" ] && [ -n "$METADATA" ]; then
             for attempt in 1 2 3; do
-              echo "📤 Long-form upload attempt $attempt/3..."
+              echo "Long-form upload attempt $attempt/3..."
               if npx tsx scripts/upload-youtube.ts "$VIDEO" "$METADATA"; then
-                echo "✅ Long-form uploaded!"
+                echo "Long-form uploaded!"
                 break
               fi
               [ "$attempt" -lt 3 ] && echo "Retrying in 60s..." && sleep 60
             done
+          else
+            echo "WARNING: Long-form video or metadata not found"
+            ls -la output/videos/ 2>/dev/null || true
           fi
 
       - name: Upload Short to YouTube (3x retry)
@@ -204,19 +236,19 @@ jobs:
             META=$(ls output/videos/${TOPIC}-s${SESSION}-part${P}-metadata.json 2>/dev/null | head -1)
             if [ -f "$VIDEO" ] && [ -n "$META" ]; then
               for attempt in 1 2 3; do
-                echo "📤 Short Part $P upload attempt $attempt/3..."
+                echo "Short Part $P upload attempt $attempt/3..."
                 if npx tsx scripts/upload-youtube.ts "$VIDEO" "$META" --shorts; then
-                  echo "✅ Short Part $P uploaded!"
+                  echo "Short Part $P uploaded!"
                   break
                 fi
                 [ "$attempt" -lt 3 ] && echo "Retrying in 60s..." && sleep 60
               done
             else
-              echo "⚠️ Part $P video or metadata not found"
+              echo "WARNING: Part $P video or metadata not found"
             fi
           done
 
-      # ── DAILY ATOMIC SHORT ──
+      # -- DAILY ATOMIC SHORT --
       # Also uploads today's standalone 45-second Short (separate from part-based Shorts)
       - name: Render + Upload daily Atomic Short
         if: steps.daytype.outputs.type == 'short' || steps.daytype.outputs.type == 'all'
@@ -228,14 +260,14 @@ jobs:
         run: |
           echo "=== Rendering + uploading daily Atomic Short ==="
           # Install TTS + ffmpeg if not already done (needed for fallback render path)
-          which edge-tts >/dev/null 2>&1 || pip install edge-tts
+          which edge-tts >/dev/null 2>&1 || pip install --break-system-packages edge-tts
           which ffmpeg >/dev/null 2>&1 || (sudo apt-get update && sudo apt-get install -y ffmpeg)
           npx remotion browser ensure 2>/dev/null || true
 
           # Ensure content symlink
-          if [ ! -d "content" ]; then
+          if [ ! -d "content" ] && [ ! -L "content" ]; then
             git clone --depth 1 https://github.com/Gaurav1112/guru-sishya.git ../guru-sishya 2>/dev/null || true
-            ln -sf ../guru-sishya/public/content content 2>/dev/null || true
+            ln -sf "$(pwd)/../guru-sishya/public/content" content 2>/dev/null || true
           fi
 
           # Render + upload with retries

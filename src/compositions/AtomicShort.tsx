@@ -139,11 +139,10 @@ export const AtomicShort: React.FC<AtomicShortProps> = ({
 
       {/* ── Audio ── */}
       {storyboard.audioFile && (
-        <Audio src={staticFile(storyboard.audioFile)} />
+        <Audio src={staticFile(`audio/${storyboard.audioFile.split('/').pop()}`)} />
       )}
-      {/* BGM via direct Audio tag — BgmLayer requires SyncTimeline which is heavy for 45s Shorts */}
       {storyboard.bgmFile && (
-        <Audio src={staticFile(storyboard.bgmFile)} volume={0.15} />
+        <Audio src={staticFile(storyboard.bgmFile.startsWith('audio/') ? storyboard.bgmFile : `audio/${storyboard.bgmFile.split('/').pop()}`)} volume={0.15} />
       )}
     </AbsoluteFill>
   );

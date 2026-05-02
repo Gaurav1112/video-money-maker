@@ -151,13 +151,15 @@ async function main() {
   const renderCmd = [
     'npx', 'remotion', 'render',
     'src/compositions/index.tsx',
-    'AtomicShort',
+    'VerticalLong',
     outputPath,
     `--props=${propsPath}`,
     '--codec=h264',
     '--crf=18',
     '--audio-bitrate=192K',
-    '--concurrency=4',
+    // Use concurrency=1 on cloud runners (7GB RAM) to avoid OOM
+    `--concurrency=${process.env.CI ? '1' : '4'}`,
+    '--timeout=180000',
   ].join(' ');
 
   execSync(renderCmd, { stdio: 'inherit', cwd: PROJECT_ROOT });
