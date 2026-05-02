@@ -1,0 +1,206 @@
+name: Daily Short (Render + Upload)
+
+# Standalone 45-second YouTube Shorts — one per day, fully automated.
+# 660 unique Shorts (66 topics x 10 formats) = ~22 months of daily content.
+
+on:
+  schedule:
+    # Pre-render at 3:00 PM IST (9:30 UTC) — 4h buffer before upload
+    - cron: '30 9 * * *'
+    # Upload at 7:00 PM IST (1:30 PM UTC) — peak India viewing time
+    - cron: '30 13 * * *'
+
+  workflow_dispatch:
+    inputs:
+      short_number:
+        description: 'Specific short number (0-659), leave empty for today'
+        required: false
+      dry_run:
+        description: 'Render only, no upload'
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  determine-phase:
+    runs-on: ubuntu-latest
+    outputs:
+      phase: ${{ steps.phase.outputs.phase }}
+    steps:
+      - name: Determine phase (pre-render or upload)
+        id: phase
+        run: |
+          HOUR=$(date -u +%H)
+          MIN=$(date -u +%M)
+          # 9:30 UTC = pre-render, 13:30 UTC = upload
+          if [ "$HOUR" -lt "12" ]; then
+            echo "phase=render" >> $GITHUB_OUTPUT
+          else
+            echo "phase=upload" >> $GITHUB_OUTPUT
+          fi
+          # Manual trigger: always do full pipeline
+          if [ -n "${{ inputs.short_number }}" ] || [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "phase=full" >> $GITHUB_OUTPUT
+          fi
+
+  render:
+    needs: determine-phase
+    if: needs.determine-phase.outputs.phase == 'render' || needs.determine-phase.outputs.phase == 'full'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Chrome + TTS + ffmpeg
+        run: |
+          npx remotion browser ensure
+          pip install edge-tts
+          sudo apt-get update && sudo apt-get install -y ffmpeg
+
+      - name: Clone content repo
+        run: |
+          git clone --depth 1 https://github.com/Gaurav1112/guru-sishya.git ../guru-sishya
+          ln -sf ../guru-sishya/public/content content 2>/dev/null || true
+
+      - name: Render daily Short (3x retry)
+        id: render
+        run: |
+          ARGS=""
+          if [ -n "${{ inputs.short_number }}" ]; then
+            ARGS="--short ${{ inputs.short_number }}"
+          fi
+
+          for attempt in 1 2 3; do
+            echo "Render attempt $attempt/3..."
+            if npx tsx scripts/render-daily-short.ts $ARGS; then
+              echo "success=true" >> $GITHUB_OUTPUT
+              echo "Render succeeded!"
+              break
+            fi
+            if [ "$attempt" -lt 3 ]; then
+              echo "Retrying in 30s..."
+              sleep 30
+            else
+              echo "success=false" >> $GITHUB_OUTPUT
+              echo "All render attempts failed"
+              exit 1
+            fi
+          done
+
+      - name: List rendered files
+        run: ls -lh output/daily-short/ 2>/dev/null || echo "No files"
+
+      - name: Upload artifact for later upload phase
+        if: needs.determine-phase.outputs.phase == 'render'
+        uses: actions/upload-artifact@v4
+        with:
+          name: daily-short-${{ github.run_number }}
+          path: output/daily-short/
+          retention-days: 1
+
+  upload:
+    needs: [determine-phase, render]
+    if: |
+      always() &&
+      (needs.determine-phase.outputs.phase == 'upload' || needs.determine-phase.outputs.phase == 'full') &&
+      (needs.render.result == 'success' || needs.render.result == 'skipped')
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Download rendered artifact
+        if: needs.determine-phase.outputs.phase == 'upload'
+        uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          name: daily-short-${{ github.run_number }}
+          path: output/daily-short/
+
+      - name: Check for rendered files
+        id: check
+        run: |
+          if ls output/daily-short/*.mp4 >/dev/null 2>&1; then
+            echo "found=true" >> $GITHUB_OUTPUT
+            ls -lh output/daily-short/
+          else
+            echo "found=false" >> $GITHUB_OUTPUT
+            echo "No rendered Short found — will render now"
+          fi
+
+      # Fallback: render if artifact is missing
+      - name: "[FALLBACK] Install Chrome + TTS + ffmpeg"
+        if: steps.check.outputs.found != 'true' && !inputs.dry_run
+        run: |
+          npx remotion browser ensure
+          pip install edge-tts
+          sudo apt-get update && sudo apt-get install -y ffmpeg
+
+      - name: "[FALLBACK] Clone content repo"
+        if: steps.check.outputs.found != 'true' && !inputs.dry_run
+        run: |
+          git clone --depth 1 https://github.com/Gaurav1112/guru-sishya.git ../guru-sishya
+          ln -sf ../guru-sishya/public/content content 2>/dev/null || true
+
+      - name: "[FALLBACK] Render daily Short"
+        if: steps.check.outputs.found != 'true' && !inputs.dry_run
+        run: |
+          ARGS=""
+          if [ -n "${{ inputs.short_number }}" ]; then
+            ARGS="--short ${{ inputs.short_number }}"
+          fi
+          npx tsx scripts/render-daily-short.ts $ARGS
+
+      - name: Upload to YouTube (3x retry)
+        if: (!inputs.dry_run) || (inputs.dry_run != true)
+        env:
+          YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
+          YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
+          YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
+        run: |
+          VIDEO=$(ls output/daily-short/*.mp4 2>/dev/null | head -1)
+          META=$(ls output/daily-short/*-metadata.json 2>/dev/null | head -1)
+
+          if [ -z "$VIDEO" ] || [ -z "$META" ]; then
+            echo "ERROR: No video or metadata found"
+            exit 1
+          fi
+
+          for attempt in 1 2 3; do
+            echo "Upload attempt $attempt/3..."
+            if npx tsx scripts/upload-youtube.ts "$VIDEO" "$META" --shorts; then
+              echo "Upload succeeded!"
+              exit 0
+            fi
+            if [ "$attempt" -lt 3 ]; then
+              echo "Retrying in 60s..."
+              sleep 60
+            fi
+          done
+          echo "All upload attempts failed"
+          exit 1
+
+      - name: Cleanup local files
+        if: success() && !inputs.dry_run
+        run: rm -rf output/daily-short/

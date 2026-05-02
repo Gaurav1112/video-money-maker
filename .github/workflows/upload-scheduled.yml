@@ -216,6 +216,38 @@ jobs:
             fi
           done
 
+      # ── DAILY ATOMIC SHORT ──
+      # Also uploads today's standalone 45-second Short (separate from part-based Shorts)
+      - name: Render + Upload daily Atomic Short
+        if: steps.daytype.outputs.type == 'short' || steps.daytype.outputs.type == 'all'
+        env:
+          YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
+          YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
+          YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
+        continue-on-error: true
+        run: |
+          echo "=== Rendering + uploading daily Atomic Short ==="
+          # Install TTS + ffmpeg if not already done (needed for fallback render path)
+          which edge-tts >/dev/null 2>&1 || pip install edge-tts
+          which ffmpeg >/dev/null 2>&1 || (sudo apt-get update && sudo apt-get install -y ffmpeg)
+          npx remotion browser ensure 2>/dev/null || true
+
+          # Ensure content symlink
+          if [ ! -d "content" ]; then
+            git clone --depth 1 https://github.com/Gaurav1112/guru-sishya.git ../guru-sishya 2>/dev/null || true
+            ln -sf ../guru-sishya/public/content content 2>/dev/null || true
+          fi
+
+          # Render + upload with retries
+          for attempt in 1 2 3; do
+            echo "Atomic Short attempt $attempt/3..."
+            if npx tsx scripts/render-and-upload-short.ts; then
+              echo "Atomic Short uploaded!"
+              break
+            fi
+            [ "$attempt" -lt 3 ] && echo "Retrying in 60s..." && sleep 60
+          done
+
       - name: Update queue + commit
         if: success()
         run: |
