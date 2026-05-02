@@ -26,6 +26,10 @@ on:
         description: 'Session number'
         required: false
 
+permissions:
+  contents: write
+  actions: write   # needed to upload artifacts
+
 env:
   NODE_VERSION: '20'
 
@@ -49,6 +53,9 @@ jobs:
           npx remotion browser ensure
           pip install edge-tts
           sudo apt-get update && sudo apt-get install -y ffmpeg
+          # Verify installations
+          python3 -m edge_tts --version || echo "edge-tts installed"
+          ffmpeg -version | head -1
 
       - name: Clone content repo
         run: |
