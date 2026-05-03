@@ -1,0 +1,60 @@
+{
+  "_comment": "Curated royalty-free clips from Mixkit (Mixkit License). All clips are free for commercial use with no attribution required. Note: Coverr changed to a subscription model in 2025; legacy 'coverr' provider entries have been replaced with verified Mixkit URLs. The picker still works — ManifestProvider('coverr', clips) returns empty, ManifestProvider('mixkit', clips) returns all clips below.",
+  "clips": [
+    {
+      "id": "mixkit-data-flow-01",
+      "provider": "mixkit",
+      "url": "https://assets.mixkit.co/videos/4748/4748-720.mp4",
+      "tags": ["data", "flow", "stream", "binary", "abstract", "tech", "futuristic"],
+      "durationSec": 12,
+      "width": 1280,
+      "height": 720,
+      "license": "Mixkit License",
+      "pageUrl": "https://mixkit.co/free-stock-video/digital-data-flowing-4748/"
+    },
+    {
+      "id": "mixkit-city-night-01",
+      "provider": "mixkit",
+      "url": "https://assets.mixkit.co/videos/27721/27721-720.mp4",
+      "tags": ["city", "night", "skyline", "lights", "urban", "business", "modern"],
+      "durationSec": 14,
+      "width": 1280,
+      "height": 720,
+      "license": "Mixkit License",
+      "pageUrl": "https://mixkit.co/free-stock-video/city-skyline-at-night-27721/"
+    },
+    {
+      "id": "mixkit-tech-screen-01",
+      "provider": "mixkit",
+      "url": "https://assets.mixkit.co/videos/4749/4749-720.mp4",
+      "tags": ["code", "programming", "developer", "screen", "laptop", "typing", "tech"],
+      "durationSec": 10,
+      "width": 1280,
+      "height": 720,
+      "license": "Mixkit License",
+      "pageUrl": "https://mixkit.co/free-stock-video/4749/"
+    },
+    {
+      "id": "mixkit-network-abstract-01",
+      "provider": "mixkit",
+      "url": "https://assets.mixkit.co/videos/47787/47787-720.mp4",
+      "tags": ["server", "network", "traffic", "load", "connection", "infrastructure", "routing"],
+      "durationSec": 15,
+      "width": 1280,
+      "height": 720,
+      "license": "Mixkit License",
+      "pageUrl": "https://mixkit.co/free-stock-video/47787/"
+    },
+    {
+      "id": "mixkit-digital-abstract-01",
+      "provider": "mixkit",
+      "url": "https://assets.mixkit.co/videos/47790/47790-720.mp4",
+      "tags": ["data", "cache", "memory", "storage", "abstract", "digital", "binary"],
+      "durationSec": 12,
+      "width": 1280,
+      "height": 720,
+      "license": "Mixkit License",
+      "pageUrl": "https://mixkit.co/free-stock-video/47790/"
+    }
+  ]
+}

@@ -45,3 +45,4 @@ data/queue.db-shm
 # (The example file is an empty DB produced by applying schema.sql;
 #  it documents the schema without containing any live state.)
 !data/queue.db.example
+assets/stock-cache/

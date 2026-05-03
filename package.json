@@ -16,6 +16,8 @@
     "test:watch": "vitest",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest run --coverage",
+    "render:stock": "tsx scripts/render-stock-short.ts",
+    "test:stock": "vitest run --reporter=verbose tests/stock",
     "test:retention": "vitest run --reporter=verbose --passWithNoTests tests/retention",
     "test:integrity": "vitest run --reporter=verbose --passWithNoTests tests/integrity",
     "test:publishing": "vitest run --reporter=verbose --passWithNoTests tests/publishing",

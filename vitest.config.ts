@@ -20,6 +20,7 @@ export default defineConfig({
       // scenes-lion-rabbit, wrapCaption export). Top-level retention-engine /
       // retention-proxy tests still run and pass.
       'tests/retention/**',
+      // tests/stock/** is intentionally NOT excluded — runs via test:stock
     ],
 
     // Per-file timeout — audio/fixture tests need more headroom
