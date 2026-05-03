@@ -37,30 +37,14 @@ echo "  ✓ master-1s.wav (sine -14 LUFS)"
 echo "  ✓ bgm-solo-1s.wav (pink noise)"
 echo "  ✓ bgm-under-narration-1s.wav (sidechain ducked)"
 
-# 4. demo-storyboard.json — generated from story engine (deterministic seed)
-echo "=== Building storyboard fixture ==="
-npx tsx -e "
-import { generateEpisode } from './src/story/story-engine.js';
-import { generateStoryboard } from './src/pipeline/storyboard.js';
-const ep = generateEpisode(1, 1);
-const sb = generateStoryboard(ep, []);
-const out = {
-  fps: 30,
-  width: 1920,
-  height: 1080,
-  topic: ep.title,
-  audioFile: 'master.mp3',
-  durationInFrames: sb.totalFrames,
-  scenes: sb.scenes.map(s => ({
-    ...s,
-    type: 'text',
-    endFrame: s.startFrame + s.durationFrames,
-    narration: '',
-  })),
-};
-process.stdout.write(JSON.stringify(out, null, 2));
-" > "$FIXTURES_DIR/demo-storyboard.json"
-
-echo "  ✓ demo-storyboard.json"
+# 4. demo-storyboard.json — checked-in fixture (post-pivot).
+#    Pre-pivot generator imported src/story/story-engine which no longer exists;
+#    we now ship a static fixture under tests/fixtures/demo-storyboard.json.
+if [ -f "$FIXTURES_DIR/demo-storyboard.json" ]; then
+  echo "  ✓ demo-storyboard.json (checked-in fixture)"
+else
+  echo "  ✗ demo-storyboard.json missing — please commit a static fixture" >&2
+  exit 1
+fi
 echo ""
 echo "=== All fixtures built → $FIXTURES_DIR ==="

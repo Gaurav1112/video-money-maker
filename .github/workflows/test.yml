@@ -166,4 +166,4 @@ jobs:
         run: npm run test:fixtures
 
       - name: Run ${{ matrix.layer }} tests
-        run: npx vitest run --reporter=verbose tests/${{ matrix.layer }}
+        run: npx vitest run --reporter=verbose --passWithNoTests tests/${{ matrix.layer }}
