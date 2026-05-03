@@ -55,10 +55,10 @@ env:
 jobs:
   render:
     name: Render (${{ inputs.mode || 'batch' }})
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     timeout-minutes: 360
     env:
-      QUEUE_DB_PATH: ${{ runner.home }}/video-money-maker-data/queue.db
+      QUEUE_DB_PATH: ${{ github.workspace }}/data/queue.db
     outputs:
       queue_ids: ${{ steps.enqueue.outputs.queue_ids }}
     steps:
@@ -91,7 +91,7 @@ jobs:
 
       - name: Ensure data + output directories
         run: |
-          mkdir -p "${{ runner.home }}/video-money-maker-data"
+          mkdir -p "${{ github.workspace }}/data"
           mkdir -p output/videos
 
       # ── Batch mode ────────────────────────────────────────────────────────────
