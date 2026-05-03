@@ -26,6 +26,7 @@ import { createHash } from 'crypto';
 import * as fs from 'fs';
 import * as path from 'path';
 import type { Storyboard } from '../src/types';
+import { buildShortsTitle } from '../src/lib/title-templates';
 
 // ── Constants (identical to make-reels.ts) ─────────────────────────────────────
 
@@ -102,15 +103,39 @@ function loadStoryboard(jsonPath: string): Storyboard {
  * YouTube title rules:
  *   • ≤ 100 characters total
  *   • #shorts trigger — must appear in title for guaranteed Shorts shelf
- *   • No clickbait caps per YT policy; we keep topic name natural-case
+ *   • SHOCK-HOOK formula proven on @GuruSishya-India (944-view best-perf
+ *     used "90% Engineers Get … WRONG" pattern from title-templates.ts).
+ *
+ * This now wraps src/lib/title-templates.ts:buildShortsTitle which:
+ *   - rotates 30+ pre-vetted templates by sessionNumber hash
+ *   - enforces shock-title ≤60 chars to avoid mid-word truncation in feed
+ *   - appends #Shorts + topic + interview-prep hashtags
+ *
+ * Falls back to the legacy vanilla template if any error occurs in
+ * template selection (defensive — never block the render on title gen).
  */
 function buildYtTitle(storyboard: Storyboard): string {
   const topic = storyboard.topic || 'System Design';
-  const base = `${topic} explained in 30 seconds`;
-  // Append #shorts — YT requires it for shelf placement
-  const withTag = `${base} #shorts`;
-  // Safety: truncate to 100 chars
-  return withTag.length <= 100 ? withTag : `${withTag.slice(0, 97)}…`;
+  try {
+    // sessionNumber drives template rotation; index 0 always picks the
+    // proven "90% … WRONG" pattern (highest CTR template).
+    const shortIndex = Math.max(0, (storyboard.sessionNumber ?? 1) - 1);
+    const title = buildShortsTitle(
+      { topic },
+      shortIndex,
+      '#SystemDesign', // typeHashtag — Shorts are System Design / interview-prep niche
+      'en',
+    );
+    // buildShortsTitle returns "<shock-title> #Shorts #SystemDesign #InterviewPrep #FAANG"
+    // already enforces ≤100. Belt-and-braces clamp:
+    return title.length <= 100 ? title : title.slice(0, 99) + '…';
+  } catch (err) {
+    console.warn(
+      `[make-shorts] title-templates fallback for "${topic}" — ${(err as Error).message}`,
+    );
+    const fallback = `${topic} explained in 30 seconds #shorts`;
+    return fallback.length <= 100 ? fallback : `${fallback.slice(0, 97)}…`;
+  }
 }
 
 /**
