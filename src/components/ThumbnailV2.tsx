@@ -23,6 +23,7 @@
 import React from 'react';
 import { AbsoluteFill, Img, staticFile } from 'remotion';
 import { djb2, hookTextFor, variantFor } from '../lib/thumbnail-text';
+import { CartoonFace, emotionFor } from './CartoonFace';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -150,11 +151,12 @@ function cap4Words(text: string): string {
 
 const LayoutA: React.FC<{
   hookText: string;
-  faceImageSrc: string;
+  faceImageSrc?: string;
   palette: Palette;
   subLabel?: string;
 }> = ({ hookText, faceImageSrc, palette, subLabel }) => {
   const words = cap4Words(hookText).split(' ');
+  const faceEmotion = emotionFor(hookText);
 
   return (
     <AbsoluteFill style={{ background: palette.bg, fontFamily: 'Inter, sans-serif', overflow: 'hidden' }}>
@@ -182,15 +184,25 @@ const LayoutA: React.FC<{
           justifyContent: 'center',
         }}
       >
-        <Img
-          src={faceImageSrc}
-          style={{
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover',
-            objectPosition: 'top center',
-          }}
-        />
+        {faceImageSrc ? (
+          <Img
+            src={faceImageSrc}
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              objectPosition: 'top center',
+            }}
+          />
+        ) : (
+          <CartoonFace
+            emotion={faceEmotion}
+            backgroundColor={palette.bg}
+            accentColor={palette.accent}
+            width={486}
+            height={720}
+          />
+        )}
         {/* Blend edge toward text side */}
         <div
           style={{
@@ -666,11 +678,12 @@ export const ThumbnailV2: React.FC<ThumbnailV2Props> = (props) => {
 
   const palette = getPalette(topic);
 
-  // Layout A requires a face image; if absent, fall through to Layout B
-  const effectiveVariant: ThumbnailVariant =
-    variant === 'A' && !faceImageSrc ? 'B' : variant;
+  // Layout A now always works: a SadTalker PNG (faceImageSrc) is preferred
+  // when present, otherwise CartoonFace renders a programmatic SVG face
+  // matched to the hook-text emotion. No more silent degradation to B.
+  const effectiveVariant: ThumbnailVariant = variant;
 
-  if (effectiveVariant === 'A' && faceImageSrc) {
+  if (effectiveVariant === 'A') {
     return (
       <LayoutA
         hookText={hookText}
