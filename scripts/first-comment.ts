@@ -1,38 +1,38 @@
 /**
- * scripts/pin-comment.ts — B1 pinned-comment automation
+ * scripts/first-comment.ts — B1 first-comment automation (channel-owner CTA)
  *
- * Why this exists
- * ───────────────
- * YouTube's recommender weights early-comment velocity heavily — a
- * pinned creator comment in the first 60 minutes after upload triples
- * the chance of replies, which itself is one of the strongest "this
- * Short is engaging" signals YouTube tracks. Manually pinning is
- * unreliable; this script automates it as part of every render.
+ * IMPORTANT — what this is and what it isn't
+ * ─────────────────────────────────────────
+ * The YouTube Data API v3 does NOT expose a programmatic "pin comment"
+ * endpoint. Pinning is a manual UI action in YouTube Studio. This
+ * script therefore does NOT pin — it auto-posts the FIRST comment as
+ * the channel owner, immediately after upload. That still delivers
+ * meaningful value:
+ *
+ *   1. The comment carries the "Creator" badge (visual prominence).
+ *   2. It seeds early-comment velocity — a documented Shorts feed
+ *      promotion signal — by being chronologically first.
+ *   3. The funnel CTA to guru-sishya.in is visible to every viewer
+ *      who opens comments.
+ *   4. The reply prompt ("drop a 🔥 / what topic next?") triggers
+ *      engagement signals YouTube's recommender weights.
+ *
+ * To get the FULL pinned-comment effect, a one-off manual step in
+ * YouTube Studio is still required (tap the three-dot menu on this
+ * comment → "Pin"). This script is the 80% automation; the manual
+ * pin is the remaining 20%.
  *
  * What it does
  * ────────────
  * 1. Authenticates against YouTube Data API v3 with the same OAuth2
- *    refresh-token credentials as upload-youtube.ts.
- * 2. Calls commentThreads.insert with the topLevelComment text (a
- *    funnel CTA pointing to guru-sishya.in plus a question to spark
- *    replies).
- * 3. Calls comments.setModerationStatus / comments.update to pin it
- *    via setPriority='pinned' on the inserted comment thread.
+ *    refresh-token credentials as upload-youtube.ts (scope
+ *    youtube.force-ssl is already granted).
+ * 2. Calls commentThreads.insert with a topic-templated CTA.
+ * 3. Returns commentId so the calling workflow can log/track it.
  *
  * CLI
  * ───
- *   npx tsx scripts/pin-comment.ts <videoId> [--metadata <path>]
- *
- * If --metadata is provided, the comment text is templated with the
- * topic from the metadata file. Otherwise a generic CTA is posted.
- *
- * Failure mode
- * ────────────
- * If the YouTube comment API rate-limits or returns a transient error,
- * we retry up to 3× with backoff. After that we exit 1 — the calling
- * workflow can decide whether to fail the run or warn. We do NOT
- * silently swallow errors; a missing pinned comment is a measurable
- * loss and should surface.
+ *   npx tsx scripts/first-comment.ts <videoId> [--metadata <path>]
  */
 
 import * as fs from 'node:fs';
@@ -70,7 +70,7 @@ function getAuthClient(): InstanceType<typeof google.auth.OAuth2> {
   return oauth2Client;
 }
 
-export function buildPinnedCommentText(meta: ShortMetadata | null): string {
+export function buildFirstCommentText(meta: ShortMetadata | null): string {
   const topic = (meta?.topic || 'this concept').trim();
   return [
     `🎯 Want the FULL ${topic} breakdown (free, with diagrams)?`,
@@ -93,7 +93,7 @@ async function withRetry<T>(
     } catch (err) {
       lastErr = err;
       const msg = (err as Error).message || String(err);
-      console.error(`[pin-comment] ${label} attempt ${i}/${attempts} failed: ${msg}`);
+      console.error(`[first-comment] ${label} attempt ${i}/${attempts} failed: ${msg}`);
       if (i < attempts) {
         await new Promise((r) => setTimeout(r, 5000 * i));
       }
@@ -102,17 +102,17 @@ async function withRetry<T>(
   throw lastErr;
 }
 
-export async function pinComment(args: {
+export async function postFirstComment(args: {
   videoId: string;
   metadata?: ShortMetadata | null;
   youtube?: youtube_v3.Youtube;
-}): Promise<{ commentId: string; pinned: boolean }> {
+}): Promise<{ commentId: string; threadId: string }> {
   const { videoId } = args;
   const youtube =
     args.youtube ?? google.youtube({ version: 'v3', auth: getAuthClient() });
-  const text = buildPinnedCommentText(args.metadata ?? null);
+  const text = buildFirstCommentText(args.metadata ?? null);
 
-  console.log(`[pin-comment] inserting comment on video ${videoId}`);
+  console.log(`[first-comment] inserting comment on video ${videoId}`);
   const insertResp = await withRetry('commentThreads.insert', () =>
     youtube.commentThreads.insert({
       part: ['snippet'],
@@ -134,29 +134,13 @@ export async function pinComment(args: {
       `comment insert returned no id (thread=${threadId} comment=${commentId})`,
     );
   }
-  console.log(`[pin-comment] comment inserted: thread=${threadId}`);
-
-  // Pin: comments.setModerationStatus expects "heldForReview"|"published"|"rejected"
-  // Pinning is via comments.markAsSpam? No — pinning is implicit when channel
-  // owner posts; the YouTube API does NOT expose a programmatic "pin" call.
-  // Workaround: the comment is auto-posted by the channel owner (us), and YT
-  // promotes channel-owner comments to top by default. We additionally call
-  // comments.setModerationStatus to ensure it's published (not held).
-  let pinned = false;
-  try {
-    await youtube.comments.setModerationStatus({
-      id: [commentId],
-      moderationStatus: 'published',
-    });
-    pinned = true;
-    console.log(`[pin-comment] comment moderation set to published`);
-  } catch (err) {
-    console.warn(
-      `[pin-comment] setModerationStatus failed (non-fatal — channel-owner comments default to top): ${(err as Error).message}`,
-    );
-  }
-
-  return { commentId, pinned };
+  console.log(
+    `[first-comment] inserted: thread=${threadId} comment=${commentId}`,
+  );
+  console.log(
+    `[first-comment] NOTE: this is NOT pinned — pin manually via YT Studio for full effect`,
+  );
+  return { commentId, threadId };
 }
 
 async function cli(): Promise<void> {
@@ -174,7 +158,7 @@ async function cli(): Promise<void> {
 
   if (!videoId) {
     console.error(
-      'usage: pin-comment.ts <videoId> [--metadata <metadata.json>]',
+      'usage: first-comment.ts <videoId> [--metadata <metadata.json>]',
     );
     process.exit(2);
   }
@@ -185,16 +169,17 @@ async function cli(): Promise<void> {
   }
 
   try {
-    const result = await pinComment({ videoId, metadata: meta });
+    const result = await postFirstComment({ videoId, metadata: meta });
     console.log(
-      `[pin-comment] done: commentId=${result.commentId} pinned=${result.pinned}`,
+      `[first-comment] done: commentId=${result.commentId}`,
     );
   } catch (err) {
-    console.error(`[pin-comment] FATAL: ${(err as Error).message}`);
+    console.error(`[first-comment] FATAL: ${(err as Error).message}`);
     process.exit(1);
   }
 }
 
-if (process.argv[1]?.endsWith('pin-comment.ts')) {
+if (process.argv[1]?.endsWith('first-comment.ts')) {
   cli();
 }
+
