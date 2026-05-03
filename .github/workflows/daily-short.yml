@@ -1,20 +1,20 @@
 name: Daily Short (Render + Upload)
 
-# Standalone 45-second YouTube Shorts -- one per day, fully automated.
-# 660 unique Shorts (66 topics x 10 formats) = ~22 months of daily content.
-# Uses VerticalLong composition (proven stable) instead of AtomicShort.
+# Renders ViralShort composition at 1080×1920 9:16, ≤55 s — one per day.
+# FIX: was calling render-daily-short.ts + make-reels.ts (landscape 5-min clips).
+# NOW: calls make-shorts.ts (vertical ≤55 s) for YT Shorts shelf placement.
 
 on:
   schedule:
-    # Pre-render at 3:00 PM IST (9:30 UTC) -- 4h buffer before upload
+    # Pre-render at 3:00 PM IST (9:30 UTC) — 4h buffer before upload
     - cron: '30 9 * * *'
-    # Upload at 7:00 PM IST (1:30 PM UTC) -- peak India viewing time
+    # Upload at 7:00 PM IST (1:30 PM UTC) — peak India viewing time
     - cron: '30 13 * * *'
 
   workflow_dispatch:
     inputs:
-      short_number:
-        description: 'Specific short number (0-659), leave empty for today'
+      storyboard:
+        description: 'Path to storyboard JSON in content/, e.g. content/load-balancing-s1.json'
         required: false
       dry_run:
         description: 'Render only, no upload'
@@ -37,7 +37,6 @@ jobs:
         id: phase
         run: |
           HOUR=$(date -u +%H)
-          # 9:30 UTC = pre-render, 13:30 UTC = upload
           if [ "$HOUR" -lt "12" ]; then
             echo "phase=render" >> $GITHUB_OUTPUT
           else
@@ -60,6 +59,15 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      # Cache Remotion bundle output — saves ~60 s on warm runs
+      - name: Cache Remotion bundle
+        uses: actions/cache@v4
+        with:
+          path: node_modules/.cache/remotion
+          key: remotion-bundle-${{ hashFiles('src/**', 'remotion.config.ts') }}
+          restore-keys: remotion-bundle-
 
       - name: Install dependencies
         run: npm ci
@@ -69,7 +77,6 @@ jobs:
           npx remotion browser ensure
           pip install --break-system-packages edge-tts
           sudo apt-get update && sudo apt-get install -y ffmpeg
-          # Verify
           python3 -c "import edge_tts; print('edge_tts OK')"
           ffmpeg -version | head -1
 
@@ -79,23 +86,39 @@ jobs:
           ln -sf "$(pwd)/../guru-sishya/public/content" content 2>/dev/null || true
           ls content/*.json | head -3 || { echo "FATAL: content not accessible"; exit 1; }
 
-      - name: Render daily Short (3x retry)
+      # FIX: was `npx tsx scripts/render-daily-short.ts` + implicit make-reels.ts
+      #      → now explicitly calls make-shorts.ts which renders ViralShort at
+      #        1080×1920, ≤55 s, with #shorts metadata for YT Shorts shelf placement.
+      - name: Render daily Short via make-shorts.ts (3× retry)
         id: render
         run: |
-          ARGS=""
-          if [ -n "${{ inputs.short_number }}" ]; then
-            ARGS="--short ${{ inputs.short_number }}"
+          # Determine which storyboard to render
+          if [ -n "${{ inputs.storyboard }}" ]; then
+            TARGET="--storyboard ${{ inputs.storyboard }}"
+          else
+            # Deterministic daily pick: day-of-year mod storyboard count
+            DOY=$(date +%j)
+            TOTAL=$(ls content/*.json 2>/dev/null | wc -l)
+            if [ "$TOTAL" -eq 0 ]; then
+              echo "FATAL: no storyboards in content/"
+              exit 1
+            fi
+            IDX=$((DOY % TOTAL))
+            # Sort files, pick IDX-th entry (0-based)
+            BOARD=$(ls content/*.json | sort | sed -n "$((IDX + 1))p")
+            echo "Daily pick: $BOARD (day=$DOY, idx=$IDX of $TOTAL)"
+            TARGET="--storyboard $BOARD"
           fi
 
           for attempt in 1 2 3; do
-            echo "Render attempt $attempt/3..."
-            if npx tsx scripts/render-daily-short.ts $ARGS; then
+            echo "Render attempt $attempt/3 — npx tsx scripts/make-shorts.ts $TARGET"
+            if npx tsx scripts/make-shorts.ts $TARGET; then
               echo "success=true" >> $GITHUB_OUTPUT
-              echo "Render succeeded!"
+              echo "Render succeeded"
               break
             fi
             if [ "$attempt" -lt 3 ]; then
-              echo "Retrying in 30s..."
+              echo "Retrying in 30 s…"
               sleep 30
             else
               echo "success=false" >> $GITHUB_OUTPUT
@@ -104,15 +127,34 @@ jobs:
             fi
           done
 
-      - name: List rendered files
-        run: ls -lh output/daily-short/ 2>/dev/null || echo "No files"
+      - name: Verify output format with ffprobe
+        run: |
+          MP4=$(ls out/shorts/*-yt.mp4 2>/dev/null | head -1)
+          if [ -z "$MP4" ]; then echo "ERROR: no mp4 in out/shorts/"; exit 1; fi
 
-      - name: Upload artifact for later upload phase
+          echo "Probing: $MP4"
+          WIDTH=$(ffprobe -v error -select_streams v:0 \
+            -show_entries stream=width -of csv=p=0 "$MP4")
+          HEIGHT=$(ffprobe -v error -select_streams v:0 \
+            -show_entries stream=height -of csv=p=0 "$MP4")
+          DURATION=$(ffprobe -v error -show_entries format=duration \
+            -of csv=p=0 "$MP4")
+
+          echo "  width    = $WIDTH   (expected 1080)"
+          echo "  height   = $HEIGHT  (expected 1920)"
+          echo "  duration = ${DURATION}s  (must be ≤55)"
+
+          [ "$WIDTH"  -eq 1080 ] || { echo "FAIL: width $WIDTH ≠ 1080";  exit 1; }
+          [ "$HEIGHT" -eq 1920 ] || { echo "FAIL: height $HEIGHT ≠ 1920"; exit 1; }
+          # bash float comparison via awk
+          awk -v d="$DURATION" 'BEGIN { if (d > 55) { print "FAIL: duration " d " > 55s"; exit 1 } else print "OK: duration " d "s" }'
+
+      - name: Upload artifact for upload phase
         if: needs.determine-phase.outputs.phase == 'render'
         uses: actions/upload-artifact@v4
         with:
           name: daily-short-${{ github.run_number }}
-          path: output/daily-short/
+          path: out/shorts/
           retention-days: 1
 
   upload:
@@ -130,6 +172,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
 
       - name: Install dependencies
         run: npm ci
@@ -140,20 +183,20 @@ jobs:
         continue-on-error: true
         with:
           name: daily-short-${{ github.run_number }}
-          path: output/daily-short/
+          path: out/shorts/
 
       - name: Check for rendered files
         id: check
         run: |
-          if ls output/daily-short/*.mp4 >/dev/null 2>&1; then
+          if ls out/shorts/*-yt.mp4 >/dev/null 2>&1; then
             echo "found=true" >> $GITHUB_OUTPUT
-            ls -lh output/daily-short/
+            ls -lh out/shorts/
           else
             echo "found=false" >> $GITHUB_OUTPUT
-            echo "No rendered Short found -- will render now"
+            echo "No rendered Short found — will render now (fallback)"
           fi
 
-      # Fallback: render if artifact is missing
+      # ── Fallback: render if artifact is missing ──────────────────────────────
       - name: "[FALLBACK] Install Chrome + TTS + ffmpeg"
         if: steps.check.outputs.found != 'true' && inputs.dry_run != 'true'
         run: |
@@ -167,39 +210,44 @@ jobs:
           git clone --depth 1 https://github.com/Gaurav1112/guru-sishya.git ../guru-sishya
           ln -sf "$(pwd)/../guru-sishya/public/content" content 2>/dev/null || true
 
-      - name: "[FALLBACK] Render daily Short"
+      - name: "[FALLBACK] Render with make-shorts.ts"
         if: steps.check.outputs.found != 'true' && inputs.dry_run != 'true'
         run: |
-          ARGS=""
-          if [ -n "${{ inputs.short_number }}" ]; then
-            ARGS="--short ${{ inputs.short_number }}"
+          if [ -n "${{ inputs.storyboard }}" ]; then
+            npx tsx scripts/make-shorts.ts --storyboard "${{ inputs.storyboard }}"
+          else
+            DOY=$(date +%j)
+            TOTAL=$(ls content/*.json 2>/dev/null | wc -l)
+            IDX=$((DOY % TOTAL))
+            BOARD=$(ls content/*.json | sort | sed -n "$((IDX + 1))p")
+            npx tsx scripts/make-shorts.ts --storyboard "$BOARD"
           fi
-          npx tsx scripts/render-daily-short.ts $ARGS
 
-      - name: Upload to YouTube (3x retry)
+      # ── Upload to YouTube ─────────────────────────────────────────────────────
+      - name: Upload to YouTube Shorts (3× retry)
         if: inputs.dry_run != 'true'
         env:
           YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
           YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
           YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
         run: |
-          VIDEO=$(ls output/daily-short/*.mp4 2>/dev/null | head -1)
-          META=$(ls output/daily-short/*-metadata.json 2>/dev/null | head -1)
+          VIDEO=$(ls out/shorts/*-yt.mp4 2>/dev/null | head -1)
+          META=$(ls out/shorts/*-yt-metadata.json 2>/dev/null | head -1)
 
           if [ -z "$VIDEO" ] || [ -z "$META" ]; then
-            echo "ERROR: No video or metadata found"
-            ls -la output/daily-short/ 2>/dev/null || echo "output/daily-short/ does not exist"
+            echo "ERROR: No YT Short video or metadata found in out/shorts/"
+            ls -la out/shorts/ 2>/dev/null || echo "(directory empty)"
             exit 1
           fi
 
           for attempt in 1 2 3; do
-            echo "Upload attempt $attempt/3..."
+            echo "Upload attempt $attempt/3…"
             if npx tsx scripts/upload-youtube.ts "$VIDEO" "$META" --shorts; then
-              echo "Upload succeeded!"
+              echo "Upload succeeded"
               exit 0
             fi
             if [ "$attempt" -lt 3 ]; then
-              echo "Retrying in 60s..."
+              echo "Retrying in 60 s…"
               sleep 60
             fi
           done
@@ -208,4 +256,4 @@ jobs:
 
       - name: Cleanup local files
         if: success() && inputs.dry_run != 'true'
-        run: rm -rf output/daily-short/
+        run: rm -rf out/shorts/
