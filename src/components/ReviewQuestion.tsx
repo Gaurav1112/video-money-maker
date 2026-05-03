@@ -245,7 +245,7 @@ const ReviewQuestion: React.FC<ReviewQuestionProps> = ({
               color: COLORS.saffron,
               fontFamily: FONTS.heading,
               transform: `scale(${popQuizScale})`,
-              textShadow: `0 0 40px ${COLORS.saffron}88, 0 4px 20px ${COLORS.dark}`,
+              textShadow: `0 0 40px ${COLORS.saffron}88, 0 4px 20px ${COLORS.bgBase}`,
               letterSpacing: 6,
             }}
           >
@@ -267,7 +267,7 @@ const ReviewQuestion: React.FC<ReviewQuestionProps> = ({
             lineHeight: 1.5,
             marginBottom: 32,
             marginTop: 20,
-            textShadow: `0 2px 16px ${COLORS.dark}`,
+            textShadow: `0 2px 16px ${COLORS.bgBase}`,
           }}
         >
           {question}
@@ -334,7 +334,7 @@ const ReviewQuestion: React.FC<ReviewQuestionProps> = ({
                   transition: 'none',
                   boxShadow: isRevealed && isCorrect
                     ? `0 0 24px ${COLORS.teal}44`
-                    : `0 2px 12px ${COLORS.dark}40`,
+                    : `0 2px 12px ${COLORS.bgBase}40`,
                 }}
               >
                 {/* Letter badge */}

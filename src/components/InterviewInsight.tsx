@@ -213,7 +213,7 @@ const InterviewInsight: React.FC<InterviewInsightProps> = ({
             borderRadius: 20,
             padding: '28px 36px',
             border: `1.5px solid ${COLORS.indigo}44`,
-            boxShadow: `0 8px 40px ${COLORS.dark}AA`,
+            boxShadow: `0 8px 40px ${COLORS.bgBase}AA`,
             position: 'relative',
           }}
         >
@@ -252,7 +252,7 @@ const InterviewInsight: React.FC<InterviewInsightProps> = ({
                 justifyContent: 'center',
                 fontSize: 18,
                 fontWeight: 900,
-                color: COLORS.dark,
+                color: COLORS.bgBase,
               }}
             >
               ?
@@ -275,7 +275,7 @@ const InterviewInsight: React.FC<InterviewInsightProps> = ({
             style={{
               fontSize: 30,
               fontWeight: 600,
-              color: COLORS.white,
+              color: COLORS.textPrimary,
               lineHeight: 1.45,
               minHeight: 44,
               fontFamily: FONTS.heading,
@@ -340,7 +340,7 @@ const InterviewInsight: React.FC<InterviewInsightProps> = ({
                   ? `linear-gradient(135deg, ${COLORS.teal}14, ${COLORS.teal}08)`
                   : isActive
                     ? `${COLORS.darkAlt}`
-                    : `${COLORS.dark}88`,
+                    : `${COLORS.bgBase}88`,
                 border: `1.5px solid ${isCurrent ? `${COLORS.teal}55` : `${COLORS.indigo}22`}`,
                 transition: 'all 0.3s',
                 opacity: isActive ? 1 : 0.35,
@@ -384,7 +384,7 @@ const InterviewInsight: React.FC<InterviewInsightProps> = ({
                       justifyContent: 'center',
                       fontSize: 14,
                       fontWeight: 800,
-                      color: isCurrent ? COLORS.dark : COLORS.gray,
+                      color: isCurrent ? COLORS.bgBase : COLORS.gray,
                       flexShrink: 0,
                     }}
                   >
@@ -407,7 +407,7 @@ const InterviewInsight: React.FC<InterviewInsightProps> = ({
                 <div
                   style={{
                     fontSize: SIZES.bodySmall,
-                    color: isCurrent ? COLORS.white : `${COLORS.gray}CC`,
+                    color: isCurrent ? COLORS.textPrimary : `${COLORS.gray}CC`,
                     lineHeight: 1.55,
                     fontWeight: isCurrent ? 500 : 400,
                     opacity: interpolate(sectionHighlight, [0, 1], [0.4, 1]),
@@ -453,7 +453,7 @@ const InterviewInsight: React.FC<InterviewInsightProps> = ({
                 padding: '6px 14px',
                 fontSize: SIZES.caption,
                 fontWeight: 900,
-                color: COLORS.dark,
+                color: COLORS.bgBase,
                 letterSpacing: '1px',
                 textTransform: 'uppercase' as const,
                 whiteSpace: 'nowrap' as const,
@@ -466,7 +466,7 @@ const InterviewInsight: React.FC<InterviewInsightProps> = ({
             <div
               style={{
                 fontSize: SIZES.bodySmall,
-                color: COLORS.white,
+                color: COLORS.textPrimary,
                 lineHeight: 1.5,
                 fontWeight: 400,
               }}
