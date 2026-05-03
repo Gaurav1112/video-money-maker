@@ -44,4 +44,24 @@ describe('playlistFor', () => {
       playlistFor('kafka consumer groups'),
     );
   });
+
+  // Regressions caught by code-review of PR #56:
+  it('does not let a 2-letter input "OS" fuzzy-match unrelated topics', () => {
+    // 'os' < 6 chars so fuzzy match is skipped; no heuristic 'os' alone.
+    expect(playlistFor('OS')).toBeNull();
+  });
+
+  it('does not miscategorize "Saga Pattern for Distributed Transactions" as db-internals', () => {
+    // Has "transaction" (DB) and "saga-pattern" (system-design). Either:
+    // direct topic-bank lookup wins, or system-design heuristic fires
+    // before db-internals. Both paths must yield system-design.
+    const result = playlistFor('Saga Pattern for Distributed Transactions');
+    expect(result).not.toContain('Database Internals');
+  });
+
+  it('does not miscategorize "GraphQL vs REST" as DSA (no bare "graph" keyword)', () => {
+    const result = playlistFor('GraphQL vs REST');
+    expect(result).not.toContain('DSA');
+    expect(result).toContain('System Design');
+  });
 });

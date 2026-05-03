@@ -43,22 +43,50 @@ const CATEGORY_TO_PLAYLIST: Record<string, string> = {
 };
 
 const SLUG_HEURISTICS: { keywords: string[]; playlist: string }[] = [
-  // Order matters: more specific categories first; DSA last because
-  // its keywords (tree/array/sort) appear in DB/system-design topics too.
+  // Order matters: most-specific categories first.
+  // system-design has the most distinctive keywords (saga-pattern,
+  // microservice, kafka, redis, graphql, grpc) so it goes first to
+  // avoid a generic DB keyword like "transaction" winning a saga
+  // topic. db-internals follows; OS networking; behavioral; DSA last.
   {
     keywords: [
-      'btree',
+      'kafka',
+      'redis',
+      'cache',
+      'caching',
+      'load-bal',
+      'consistent-hash',
+      'cdn',
+      'message-queue',
+      'rate-limit',
+      'sharding',
+      'replic',
+      'system-design',
+      'microservice',
+      'graphql',
+      'grpc',
+      'saga-pattern',
+    ],
+    playlist: CATEGORY_TO_PLAYLIST['system-design'],
+  },
+  {
+    keywords: [
       'b-tree',
+      'btree',
+      'b+tree',
       'lsm',
       'wal',
       'mvcc',
+      'isolation-level',
       'isolation',
       'transaction',
       'sql-',
-      'index',
       'postgres',
       'mysql',
       'mongo',
+      'oracle-db',
+      'db-index',
+      'database-index',
     ],
     playlist: CATEGORY_TO_PLAYLIST['db-internals'],
   },
@@ -69,43 +97,29 @@ const SLUG_HEURISTICS: { keywords: string[]; playlist: string }[] = [
       'http',
       'dns',
       'tls',
+      'ssl-',
       'os-',
-      'process',
-      'thread',
+      'process-',
+      'thread-',
       'mutex',
       'semaphore',
       'paging',
       'kernel',
       'socket',
+      'context-switch',
+      'deadlock',
+      'race-condition',
     ],
     playlist: CATEGORY_TO_PLAYLIST['os-networking'],
   },
   {
     keywords: [
-      'kafka',
-      'redis',
-      'cache',
-      'caching',
-      'load-bal',
-      'consistent-hash',
-      'cdn',
-      'queue',
-      'rate-limit',
-      'sharding',
-      'replic',
-      'system-design',
-      'microservice',
-    ],
-    playlist: CATEGORY_TO_PLAYLIST['system-design'],
-  },
-  {
-    keywords: [
-      'star',
+      'star-method',
+      'behavioral',
       'behaviour',
-      'behavior',
       'leadership',
-      'conflict',
-      'feedback',
+      'conflict-resolution',
+      'feedback-loop',
       'mentor',
     ],
     playlist: CATEGORY_TO_PLAYLIST.behavioral,
@@ -115,17 +129,21 @@ const SLUG_HEURISTICS: { keywords: string[]; playlist: string }[] = [
       'two-pointer',
       'sliding-window',
       'binary-search',
-      'dp',
+      'dp-',
+      '-dp',
       'dynamic-program',
       'recursion',
       'backtrack',
-      'graph',
-      'tree',
-      'heap',
+      'dfs',
+      'bfs',
+      'heap-',
       'trie',
-      'sort',
-      'array',
-      'string',
+      'merge-sort',
+      'quick-sort',
+      'tree-traversal',
+      'inorder',
+      'preorder',
+      'postorder',
     ],
     playlist: CATEGORY_TO_PLAYLIST.dsa,
   },
@@ -178,12 +196,15 @@ export function playlistFor(topic: string): string | null {
     if (direct?.category && CATEGORY_TO_PLAYLIST[direct.category]) {
       return CATEGORY_TO_PLAYLIST[direct.category];
     }
-    const fuzzy = bank.topics.find(
-      (t) =>
-        normalize(t.name).includes(norm) || norm.includes(normalize(t.name)),
-    );
-    if (fuzzy?.category && CATEGORY_TO_PLAYLIST[fuzzy.category]) {
-      return CATEGORY_TO_PLAYLIST[fuzzy.category];
+    // Fuzzy match: ONE-DIRECTIONAL. Only match if the input topic is a
+    // substring of a bank entry's name AND the input is at least 6 chars
+    // long. This prevents short ambiguous inputs (like "os" or "dp")
+    // from matching long entries arbitrarily by being a substring.
+    if (norm.length >= 6) {
+      const fuzzy = bank.topics.find((t) => normalize(t.name).includes(norm));
+      if (fuzzy?.category && CATEGORY_TO_PLAYLIST[fuzzy.category]) {
+        return CATEGORY_TO_PLAYLIST[fuzzy.category];
+      }
     }
   }
 
