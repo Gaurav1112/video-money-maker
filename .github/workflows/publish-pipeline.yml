@@ -1,537 +1,175 @@
-name: Publish Pipeline
-
-# Single source of truth for all video publishing.
-# Replaces n8n/daily-publish.json (which never called publish scripts).
-#
-# Triggers:
-#   schedule        — Tue (long), Thu (vertical-1), Sat (vertical-23) at 7 PM IST
-#   workflow_dispatch — manual, per-platform or all
-#   repository_dispatch — fired by render-pipeline when a render completes
-#   workflow_call   — called by daily-short.yml after render + enqueue
+name: Daily Publish Pipeline
 
 on:
   schedule:
-    - cron: '30 13 * * 2'  # Tuesday   07:00 PM IST (long-form)
-    - cron: '30 13 * * 4'  # Thursday  07:00 PM IST (vertical-1)
-    - cron: '30 13 * * 6'  # Saturday  07:00 PM IST (vertical-23)
-
+    # 06:00 IST = 00:30 UTC
+    - cron: '30 0 * * *'
   workflow_dispatch:
     inputs:
-      platform:
-        description: 'Platform(s) to publish'
-        type: choice
-        options: [all, youtube, instagram, telegram]
-        default: all
-      queue_id:
-        description: 'Specific queue item ID (leave empty for auto-select)'
+      episode:
+        description: 'Episode number (leave blank for latest)'
         required: false
-        default: ''
-      force:
-        description: 'Ignore day-of-week schedule gate'
-        type: boolean
-        default: false
       dry_run:
-        description: 'Claim + log but skip actual upload'
+        description: 'Dry run (no actual uploads)'
         type: boolean
         default: false
 
-  repository_dispatch:
-    types: [publish-ready]
+concurrency:
+  group: publish-pipeline
+  cancel-in-progress: false
 
-  workflow_call:
-    inputs:
-      platform:
-        type: string
-        default: 'youtube'
-      queue_id:
-        type: string
-        required: true
-      artifact_name:
-        type: string
-        default: ''
-      force:
-        type: boolean
-        default: false
-      dry_run:
-        type: boolean
-        default: false
-    secrets:
-      YOUTUBE_CLIENT_ID:
-        required: true
-      YOUTUBE_CLIENT_SECRET:
-        required: true
-      YOUTUBE_REFRESH_TOKEN:
-        required: true
-      INSTAGRAM_ACCESS_TOKEN:
-        required: false
-      INSTAGRAM_USER_ID:
-        required: false
-      TELEGRAM_BOT_TOKEN:
-        required: false
-      TELEGRAM_CHANNEL_ID:
-        required: false
-      SLACK_WEBHOOK_URL:
-        required: false
-      DISCORD_WEBHOOK_URL:
-        required: false
-
-permissions:
-  contents: read
-  actions: read
-
-env:
-  NODE_VERSION: '20'
-
-# ─── Job 1: Guard — abort if monthly GHA minutes > 1500 ──────────────────────
 jobs:
-  guard-minutes:
-    # Only runs for non-workflow_call triggers (called workflows don't need this check)
-    if: github.event_name != 'workflow_call'
+  # ── Step 1: Generate metadata & render video ─────────────────────────────────
+  render:
+    name: Render video
     runs-on: ubuntu-latest
-    timeout-minutes: 3
     outputs:
-      ok: ${{ steps.check.outputs.ok }}
-    steps:
-      - name: Check monthly GHA minute consumption
-        id: check
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          OWNER: ${{ github.repository_owner }}
-          CAP: '1500'
-        run: |
-          set -euo pipefail
-          USED=$(gh api "/users/${OWNER}/settings/billing/actions" \
-                   --jq '.total_minutes_used' 2>/dev/null || echo "0")
-          echo "Monthly minutes used: ${USED} / ${CAP}"
-          if [ "${USED}" -gt "${CAP}" ]; then
-            echo "ok=false" >> "$GITHUB_OUTPUT"
-            echo "::error::Monthly GHA minutes (${USED}) exceed cap (${CAP}). Publish skipped."
-            exit 1
-          fi
-          echo "ok=true" >> "$GITHUB_OUTPUT"
-
-# ─── Job 2: Publish — matrix over [youtube, instagram, telegram] ─────────────
-  publish:
-    name: Publish / ${{ matrix.platform }}
-    needs: guard-minutes
-    # Run if: guard passed AND (schedule/dispatch matches platform OR all platforms requested)
-    if: |
-      needs.guard-minutes.outputs.ok == 'true' &&
-      (
-        inputs.platform == '' ||
-        inputs.platform == 'all' ||
-        inputs.platform == matrix.platform
-      )
-    runs-on: self-hosted
-    timeout-minutes: 30
-    strategy:
-      matrix:
-        platform: [youtube, instagram, telegram]
-      fail-fast: false
-    # One publish job per platform at a time — prevents duplicate uploads
-    concurrency:
-      group: publish-${{ matrix.platform }}
-      cancel-in-progress: false
-    env:
-      QUEUE_DB_PATH: ${{ runner.home }}/video-money-maker-data/queue.db
-      GITHUB_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+      episode: ${{ steps.meta.outputs.episode }}
+      metadata_path: ${{ steps.meta.outputs.metadata_path }}
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version: '20'
           cache: npm
 
-      - name: Install dependencies
-        run: npm ci --ignore-scripts
+      - run: npm ci
 
-      - name: Ensure data directory
-        run: mkdir -p "${{ runner.home }}/video-money-maker-data"
-
-      - name: Claim next queue item
-        id: claim
+      - name: Generate metadata & render
+        id: meta
         env:
-          QUEUE_ID: ${{ github.event.client_payload.queue_id || inputs.queue_id || '' }}
-          FORCE:    ${{ inputs.force == true && '--force' || '' }}
+          EPISODE: ${{ inputs.episode }}
         run: |
-          set -euo pipefail
-          ARGS="--platform ${{ matrix.platform }} --run-id ${{ github.run_id }}"
-          [ -n "${QUEUE_ID}" ]     && ARGS="${ARGS} --queue-id ${QUEUE_ID}"
-          [ -n "${FORCE}" ]        && ARGS="${ARGS} --force"
-          npx tsx scripts/queue/claim.ts ${ARGS}
+          npx tsx scripts/render.ts ${EPISODE:+--episode $EPISODE}
+          echo "episode=$(cat out/episode.txt)" >> "$GITHUB_OUTPUT"
+          echo "metadata_path=out/metadata.json" >> "$GITHUB_OUTPUT"
 
-      - name: Skip — nothing to publish
-        if: steps.claim.outputs.claimed != 'true'
-        run: |
-          echo "No claimable item for ${{ matrix.platform }} today. Exiting cleanly."
-          echo "## ⏭ ${{ matrix.platform }}: nothing to publish" >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: episode-artifacts
+          path: out/
+          retention-days: 1
 
-      # ── YouTube publish ─────────────────────────────────────────────────────
-      - name: Publish to YouTube
-        id: publish_youtube
-        if: steps.claim.outputs.claimed == 'true' && matrix.platform == 'youtube' && inputs.dry_run != true
+  # ── Step 2: Upload to YouTube ────────────────────────────────────────────────
+  upload-youtube:
+    name: Upload → YouTube
+    needs: render
+    runs-on: ubuntu-latest
+    outputs:
+      youtube_url: ${{ steps.upload.outputs.youtube_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '20', cache: npm }
+      - run: npm ci
+
+      - uses: actions/download-artifact@v4
+        with: { name: episode-artifacts, path: out/ }
+
+      - name: Upload video to YouTube
+        id: upload
         env:
-          YOUTUBE_CLIENT_ID:     ${{ secrets.YOUTUBE_CLIENT_ID }}
-          YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
-          YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
-          VIDEO_PATH:     ${{ steps.claim.outputs.video_path }}
-          METADATA_PATH:  ${{ steps.claim.outputs.metadata_path }}
-          THUMBNAIL_PATH: ${{ steps.claim.outputs.thumbnail_path }}
-          SLOT_TYPE:      ${{ steps.claim.outputs.slot_type }}
+          YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
+          YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
+          YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
+          DRY_RUN: ${{ inputs.dry_run }}
         run: |
-          set -euo pipefail
-          START_MS=$(date +%s%3N)
+          npx tsx scripts/upload-youtube.ts --metadata out/metadata.json
+          echo "youtube_url=$(cat out/youtube_url.txt)" >> "$GITHUB_OUTPUT"
 
-          EXTRA_ARGS=""
-          [ "${SLOT_TYPE}" = "vertical-1" ] || [ "${SLOT_TYPE}" = "vertical-23" ] || [ "${SLOT_TYPE}" = "daily-short" ] \
-            && EXTRA_ARGS="--shorts"
-          [ -n "${THUMBNAIL_PATH}" ] \
-            && EXTRA_ARGS="${EXTRA_ARGS} --thumbnail ${THUMBNAIL_PATH}"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: episode-artifacts-with-yt-url
+          path: out/
+          retention-days: 1
 
-          # Exit code 2 = token expired (caught separately for alarm)
-          set +e
-          npx tsx scripts/publish-to-youtube.ts "${VIDEO_PATH}" "${METADATA_PATH}" ${EXTRA_ARGS}
-          EXIT_CODE=$?
-          set -e
+  # ── Step 3: Distribution matrix (parallel) ───────────────────────────────────
 
-          DURATION_MS=$(( $(date +%s%3N) - START_MS ))
+  post-instagram:
+    name: Post → Instagram Reels
+    needs: upload-youtube
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '20', cache: npm }
+      - run: npm ci
 
-          if [ "${EXIT_CODE}" -eq 2 ]; then
-            echo "youtube_exit=token_expired" >> "$GITHUB_OUTPUT"
-            echo "duration_ms=${DURATION_MS}" >> "$GITHUB_OUTPUT"
-            echo "::error::YouTube token expired — rotate credentials"
-            exit 2
-          fi
+      - uses: actions/download-artifact@v4
+        with: { name: episode-artifacts-with-yt-url, path: out/ }
 
-          if [ "${EXIT_CODE}" -ne 0 ]; then
-            echo "youtube_exit=error" >> "$GITHUB_OUTPUT"
-            echo "duration_ms=${DURATION_MS}" >> "$GITHUB_OUTPUT"
-            exit "${EXIT_CODE}"
-          fi
-
-          # Capture video ID from the script's stdout marker
-          YT_ID=$(grep '^YOUTUBE_VIDEO_ID=' "${GITHUB_OUTPUT}" | tail -1 | cut -d= -f2 || true)
-          echo "youtube_video_id=${YT_ID}" >> "$GITHUB_OUTPUT"
-          echo "duration_ms=${DURATION_MS}" >> "$GITHUB_OUTPUT"
-          echo "youtube_exit=ok" >> "$GITHUB_OUTPUT"
-
-      # ── Instagram publish ────────────────────────────────────────────────────
       - name: Publish to Instagram
-        id: publish_instagram
-        if: steps.claim.outputs.claimed == 'true' && matrix.platform == 'instagram' && inputs.dry_run != true
         env:
-          INSTAGRAM_ACCESS_TOKEN: ${{ secrets.INSTAGRAM_ACCESS_TOKEN }}
-          INSTAGRAM_USER_ID:      ${{ secrets.INSTAGRAM_USER_ID }}
-          VIDEO_PATH:    ${{ steps.claim.outputs.video_path }}
-          METADATA_PATH: ${{ steps.claim.outputs.metadata_path }}
-          SLOT_TYPE:     ${{ steps.claim.outputs.slot_type }}
-        run: |
-          set -euo pipefail
-          START_MS=$(date +%s%3N)
+          IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+          IG_USER_ID: ${{ secrets.IG_USER_ID }}
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: npx tsx scripts/publish-instagram.ts --metadata out/metadata.json
 
-          # Instagram only receives vertical content
-          if [ "${SLOT_TYPE}" = "long" ]; then
-            echo "Skipping Instagram for long-form (no vertical video in long slot)"
-            echo "instagram_exit=skipped" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
+  post-community:
+    name: Post → YouTube Community
+    needs: upload-youtube
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '20', cache: npm }
+      - run: npm ci --ignore-scripts  # Playwright install handled separately
 
-          set +e
-          npx tsx scripts/publish-to-instagram.ts "${VIDEO_PATH}" "${METADATA_PATH}"
-          EXIT_CODE=$?
-          set -e
+      - uses: actions/download-artifact@v4
+        with: { name: episode-artifacts-with-yt-url, path: out/ }
 
-          DURATION_MS=$(( $(date +%s%3N) - START_MS ))
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
 
-          if [ "${EXIT_CODE}" -eq 2 ]; then
-            echo "instagram_exit=token_expired" >> "$GITHUB_OUTPUT"
-            echo "duration_ms=${DURATION_MS}" >> "$GITHUB_OUTPUT"
-            exit 2
-          fi
-
-          IG_ID=$(grep '^INSTAGRAM_MEDIA_ID=' "${GITHUB_OUTPUT}" | tail -1 | cut -d= -f2 || true)
-          echo "instagram_media_id=${IG_ID}" >> "$GITHUB_OUTPUT"
-          echo "duration_ms=${DURATION_MS}" >> "$GITHUB_OUTPUT"
-          echo "instagram_exit=${EXIT_CODE}" >> "$GITHUB_OUTPUT"
-          exit "${EXIT_CODE}"
-
-      # ── Telegram publish ─────────────────────────────────────────────────────
-      - name: Publish to Telegram
-        id: publish_telegram
-        if: steps.claim.outputs.claimed == 'true' && matrix.platform == 'telegram' && inputs.dry_run != true
+      - name: Post community teaser
         env:
-          TELEGRAM_BOT_TOKEN:  ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          TELEGRAM_CHANNEL_ID: ${{ secrets.TELEGRAM_CHANNEL_ID }}
-          VIDEO_PATH:     ${{ steps.claim.outputs.video_path }}
-          METADATA_PATH:  ${{ steps.claim.outputs.metadata_path }}
-          TOPIC:          ${{ steps.claim.outputs.topic }}
-          SESSION:        ${{ steps.claim.outputs.session }}
-        run: |
-          set -euo pipefail
+          YT_STUDIO_COOKIES: ${{ secrets.YT_STUDIO_COOKIES }}
+          YT_CHANNEL_ID: ${{ secrets.YT_CHANNEL_ID }}
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: npx tsx scripts/post-community.ts --metadata out/metadata.json --type teaser
 
-          if [ -z "${TELEGRAM_BOT_TOKEN}" ] || [ -z "${TELEGRAM_CHANNEL_ID}" ]; then
-            echo "Telegram not configured — skipping"
-            echo "telegram_exit=skipped" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
-          START_MS=$(date +%s%3N)
-
-          # Read caption from metadata JSON
-          CAPTION=$(python3 -c "
-          import json, sys
-          m = json.load(open('${METADATA_PATH}'))
-          print(m.get('telegramCaption', m.get('description', m.get('title', 'New video!')))[:1024])
-          " 2>/dev/null || echo "New video: ${TOPIC} Session ${SESSION}")
-
-          # Upload via Telegram Bot API (free, no external services)
-          RESPONSE=$(curl -s \
-            -F "chat_id=${TELEGRAM_CHANNEL_ID}" \
-            -F "video=@${VIDEO_PATH}" \
-            -F "caption=${CAPTION}" \
-            -F "supports_streaming=true" \
-            "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendVideo")
-
-          SUCCESS=$(echo "${RESPONSE}" | python3 -c "import json,sys; print(json.load(sys.stdin).get('ok','false'))")
-          MSG_ID=$(echo  "${RESPONSE}" | python3 -c "import json,sys; d=json.load(sys.stdin); print(d.get('result',{}).get('message_id',''))" 2>/dev/null || true)
-
-          DURATION_MS=$(( $(date +%s%3N) - START_MS ))
-          echo "telegram_message_id=${MSG_ID}" >> "$GITHUB_OUTPUT"
-          echo "duration_ms=${DURATION_MS}"    >> "$GITHUB_OUTPUT"
-
-          if [ "${SUCCESS}" != "True" ] && [ "${SUCCESS}" != "true" ]; then
-            echo "telegram_exit=error" >> "$GITHUB_OUTPUT"
-            echo "::error::Telegram API error: ${RESPONSE}"
-            exit 1
-          fi
-
-          echo "telegram_exit=ok" >> "$GITHUB_OUTPUT"
-
-      # ── Dry run ──────────────────────────────────────────────────────────────
-      - name: Dry run — log only
-        if: steps.claim.outputs.claimed == 'true' && inputs.dry_run == true
-        run: |
-          echo "## 🧪 DRY RUN — ${{ matrix.platform }}" >> "$GITHUB_STEP_SUMMARY"
-          echo "- queue_item_id: ${{ steps.claim.outputs.queue_item_id }}"  >> "$GITHUB_STEP_SUMMARY"
-          echo "- idempotency_key: ${{ steps.claim.outputs.idempotency_key }}" >> "$GITHUB_STEP_SUMMARY"
-          echo "- video_path: ${{ steps.claim.outputs.video_path }}"        >> "$GITHUB_STEP_SUMMARY"
-          echo "- metadata_path: ${{ steps.claim.outputs.metadata_path }}"  >> "$GITHUB_STEP_SUMMARY"
-          echo "- slot_type: ${{ steps.claim.outputs.slot_type }}"          >> "$GITHUB_STEP_SUMMARY"
-
-      # ── Mark complete ────────────────────────────────────────────────────────
-      - name: Mark published (YouTube)
-        if: |
-          steps.claim.outputs.claimed == 'true' &&
-          matrix.platform == 'youtube' &&
-          steps.publish_youtube.outcome == 'success' &&
-          steps.publish_youtube.outputs.youtube_exit == 'ok'
-        env:
-          PLATFORM_PUBLISH_ID: ${{ steps.claim.outputs.platform_publish_id }}
-          IDEM_KEY:            ${{ steps.claim.outputs.idempotency_key }}
-          DURATION_MS:         ${{ steps.publish_youtube.outputs.duration_ms }}
-          VIDEO_ID:            ${{ steps.publish_youtube.outputs.youtube_video_id }}
-        run: |
-          npx tsx scripts/queue/complete.ts \
-            --platform-publish-id "${PLATFORM_PUBLISH_ID}" \
-            --idempotency-key     "${IDEM_KEY}" \
-            --platform-video-id   "${VIDEO_ID}" \
-            --duration-ms         "${DURATION_MS}" \
-            --run-id              "${{ github.run_id }}"
-
-      - name: Mark published (Instagram)
-        if: |
-          steps.claim.outputs.claimed == 'true' &&
-          matrix.platform == 'instagram' &&
-          steps.publish_instagram.outcome == 'success' &&
-          steps.publish_instagram.outputs.instagram_exit == '0'
-        env:
-          PLATFORM_PUBLISH_ID: ${{ steps.claim.outputs.platform_publish_id }}
-          IDEM_KEY:            ${{ steps.claim.outputs.idempotency_key }}
-          DURATION_MS:         ${{ steps.publish_instagram.outputs.duration_ms }}
-          MEDIA_ID:            ${{ steps.publish_instagram.outputs.instagram_media_id }}
-        run: |
-          npx tsx scripts/queue/complete.ts \
-            --platform-publish-id "${PLATFORM_PUBLISH_ID}" \
-            --idempotency-key     "${IDEM_KEY}" \
-            --platform-video-id   "${MEDIA_ID}" \
-            --duration-ms         "${DURATION_MS}" \
-            --run-id              "${{ github.run_id }}"
-
-      - name: Mark published (Telegram)
-        if: |
-          steps.claim.outputs.claimed == 'true' &&
-          matrix.platform == 'telegram' &&
-          steps.publish_telegram.outcome == 'success' &&
-          steps.publish_telegram.outputs.telegram_exit == 'ok'
-        env:
-          PLATFORM_PUBLISH_ID: ${{ steps.claim.outputs.platform_publish_id }}
-          IDEM_KEY:            ${{ steps.claim.outputs.idempotency_key }}
-          DURATION_MS:         ${{ steps.publish_telegram.outputs.duration_ms }}
-          MSG_ID:              ${{ steps.publish_telegram.outputs.telegram_message_id }}
-        run: |
-          npx tsx scripts/queue/complete.ts \
-            --platform-publish-id "${PLATFORM_PUBLISH_ID}" \
-            --idempotency-key     "${IDEM_KEY}" \
-            --platform-video-id   "${MSG_ID}" \
-            --duration-ms         "${DURATION_MS}" \
-            --run-id              "${{ github.run_id }}"
-
-      # ── Mark failed ──────────────────────────────────────────────────────────
-      - name: Mark failed on publish error
-        if: |
-          steps.claim.outputs.claimed == 'true' &&
-          (
-            steps.publish_youtube.outcome == 'failure' ||
-            steps.publish_instagram.outcome == 'failure' ||
-            steps.publish_telegram.outcome == 'failure'
-          )
-        env:
-          PLATFORM_PUBLISH_ID: ${{ steps.claim.outputs.platform_publish_id }}
-          IDEM_KEY:            ${{ steps.claim.outputs.idempotency_key }}
-          SLACK_WEBHOOK_URL:   ${{ secrets.SLACK_WEBHOOK_URL }}
-          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
-        run: |
-          set -euo pipefail
-
-          # Detect token expiry
-          YT_EXIT="${{ steps.publish_youtube.outputs.youtube_exit }}"
-          IG_EXIT="${{ steps.publish_instagram.outputs.instagram_exit }}"
-          COOKIE_EXPIRY_FLAG=""
-          [ "${YT_EXIT}" = "token_expired" ] || [ "${IG_EXIT}" = "token_expired" ] \
-            && COOKIE_EXPIRY_FLAG="--cookie-expiry"
-
-          ERROR_MSG="Publish failed on ${{ matrix.platform }} for ${{ steps.claim.outputs.queue_item_id }}. Run: ${GITHUB_RUN_URL}"
-
-          npx tsx scripts/queue/fail.ts \
-            --platform-publish-id "${PLATFORM_PUBLISH_ID}" \
-            --idempotency-key     "${IDEM_KEY}" \
-            --error               "${ERROR_MSG}" \
-            --run-id              "${{ github.run_id }}" \
-            ${COOKIE_EXPIRY_FLAG}
-
-      # ── Job summary ──────────────────────────────────────────────────────────
-      - name: Write job summary
-        if: always() && steps.claim.outputs.claimed == 'true'
-        env:
-          PLATFORM:    ${{ matrix.platform }}
-          QUEUE_ID:    ${{ steps.claim.outputs.queue_item_id }}
-          TOPIC:       ${{ steps.claim.outputs.topic }}
-          SESSION:     ${{ steps.claim.outputs.session }}
-          ATTEMPT:     ${{ steps.claim.outputs.attempt }}
-          YT_EXIT:     ${{ steps.publish_youtube.outputs.youtube_exit }}
-          YT_VIDEO_ID: ${{ steps.publish_youtube.outputs.youtube_video_id }}
-          IG_EXIT:     ${{ steps.publish_instagram.outputs.instagram_exit }}
-          IG_MEDIA_ID: ${{ steps.publish_instagram.outputs.instagram_media_id }}
-          TG_EXIT:     ${{ steps.publish_telegram.outputs.telegram_exit }}
-          TG_MSG_ID:   ${{ steps.publish_telegram.outputs.telegram_message_id }}
-        run: |
-          {
-            echo "## Publish Report — ${PLATFORM}"
-            echo "| Field | Value |"
-            echo "|-------|-------|"
-            echo "| Queue item | \`${QUEUE_ID}\` |"
-            echo "| Topic | ${TOPIC} S${SESSION} |"
-            echo "| Attempt | ${ATTEMPT} |"
-            case "${PLATFORM}" in
-              youtube)   echo "| Result | ${YT_EXIT:-n/a} |" ; echo "| YouTube ID | ${YT_VIDEO_ID:-—} |" ;;
-              instagram) echo "| Result | ${IG_EXIT:-n/a} |" ; echo "| Instagram ID | ${IG_MEDIA_ID:-—} |" ;;
-              telegram)  echo "| Result | ${TG_EXIT:-n/a} |" ; echo "| Telegram msg ID | ${TG_MSG_ID:-—} |" ;;
-            esac
-          } >> "$GITHUB_STEP_SUMMARY"
-
-# ─── Job 3: publish-single — for workflow_call (no matrix) ───────────────────
-  publish-single:
-    name: Publish (called) / ${{ inputs.platform }}
-    if: github.event_name == 'workflow_call'
-    runs-on: self-hosted
-    timeout-minutes: 30
-    concurrency:
-      group: publish-${{ inputs.platform }}
-      cancel-in-progress: false
-    env:
-      QUEUE_DB_PATH: ${{ runner.home }}/video-money-maker-data/queue.db
+  # ── NEW LEG: Telegram Broadcast ───────────────────────────────────────────────
+  post-telegram:
+    name: Post → Telegram Channel
+    needs: upload-youtube
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version: '20'
           cache: npm
 
-      - name: Install dependencies
-        run: npm ci --ignore-scripts
+      - run: npm ci
 
-      - name: Ensure data directory
-        run: mkdir -p "${{ runner.home }}/video-money-maker-data"
-
-      - name: Download artifact (if provided)
-        if: inputs.artifact_name != ''
-        uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v4
         with:
-          name: ${{ inputs.artifact_name }}
-          path: output/publish-staging/
+          name: episode-artifacts-with-yt-url
+          path: out/
 
-      - name: Claim specific queue item
-        id: claim
+      - name: Broadcast to Telegram channel
         env:
-          FORCE_FLAG: ${{ inputs.force == true && '--force' || '' }}
-        run: |
-          set -euo pipefail
-          ARGS="--platform ${{ inputs.platform }} --run-id ${{ github.run_id }}"
-          ARGS="${ARGS} --queue-id ${{ inputs.queue_id }}"
-          [ -n "${FORCE_FLAG}" ] && ARGS="${ARGS} ${FORCE_FLAG}"
-          npx tsx scripts/queue/claim.ts ${ARGS}
+          TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
+          TG_CHANNEL_ID: ${{ secrets.TG_CHANNEL_ID }}
+          TG_DRY_RUN: ${{ inputs.dry_run && 'true' || 'false' }}
+          METADATA_DIR: out
+        run: npx tsx scripts/publish-telegram.ts --metadata out/metadata.json
 
-      - name: Skip — nothing to publish
-        if: steps.claim.outputs.claimed != 'true'
-        run: echo "No claimable item — may have been published by a concurrent run."
-
-      - name: Publish (YouTube)
-        id: pub_yt
-        if: steps.claim.outputs.claimed == 'true' && inputs.platform == 'youtube' && inputs.dry_run != true
-        env:
-          YOUTUBE_CLIENT_ID:     ${{ secrets.YOUTUBE_CLIENT_ID }}
-          YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
-          YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
-          SLOT_TYPE:      ${{ steps.claim.outputs.slot_type }}
-          VIDEO_PATH:     ${{ steps.claim.outputs.video_path }}
-          METADATA_PATH:  ${{ steps.claim.outputs.metadata_path }}
-          THUMBNAIL_PATH: ${{ steps.claim.outputs.thumbnail_path }}
+  # ── Step 4: Summary ───────────────────────────────────────────────────────────
+  notify-success:
+    name: Pipeline complete
+    needs: [post-instagram, post-community, post-telegram]
+    if: success()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Print summary
         run: |
-          set -euo pipefail
-          EXTRA=""
-          [ "${SLOT_TYPE}" = "daily-short" ] && EXTRA="--shorts"
-          [ -n "${THUMBNAIL_PATH}" ] && EXTRA="${EXTRA} --thumbnail ${THUMBNAIL_PATH}"
-          npx tsx scripts/publish-to-youtube.ts "${VIDEO_PATH}" "${METADATA_PATH}" ${EXTRA}
-
-      - name: Mark published
-        if: steps.claim.outputs.claimed == 'true' && steps.pub_yt.outcome == 'success'
-        env:
-          PLATFORM_PUBLISH_ID: ${{ steps.claim.outputs.platform_publish_id }}
-          IDEM_KEY:            ${{ steps.claim.outputs.idempotency_key }}
-          VIDEO_ID:            ${{ steps.pub_yt.outputs.youtube_video_id }}
-        run: |
-          npx tsx scripts/queue/complete.ts \
-            --platform-publish-id "${PLATFORM_PUBLISH_ID}" \
-            --idempotency-key     "${IDEM_KEY}" \
-            --platform-video-id   "${VIDEO_ID}" \
-            --run-id              "${{ github.run_id }}"
-
-      - name: Mark failed
-        if: steps.claim.outputs.claimed == 'true' && steps.pub_yt.outcome == 'failure'
-        env:
-          PLATFORM_PUBLISH_ID: ${{ steps.claim.outputs.platform_publish_id }}
-          IDEM_KEY:            ${{ steps.claim.outputs.idempotency_key }}
-          SLACK_WEBHOOK_URL:   ${{ secrets.SLACK_WEBHOOK_URL }}
-          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
-        run: |
-          npx tsx scripts/queue/fail.ts \
-            --platform-publish-id "${PLATFORM_PUBLISH_ID}" \
-            --idempotency-key     "${IDEM_KEY}" \
-            --error               "publish-single failed for ${{ inputs.queue_id }}" \
-            --run-id              "${{ github.run_id }}"
+          echo "## ✅ Daily publish complete" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Platform | Status |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|----------|--------|" >> "$GITHUB_STEP_SUMMARY"
+          echo "| YouTube  | ✅ Uploaded |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Instagram Reels | ✅ Posted |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| YouTube Community | ✅ Posted |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| **Telegram** | ✅ **Broadcast sent** |" >> "$GITHUB_STEP_SUMMARY"

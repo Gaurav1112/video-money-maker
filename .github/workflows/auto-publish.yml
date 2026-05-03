@@ -1,394 +1,254 @@
-name: Auto-Publish Video
+# .github/workflows/render-episodes.yml  — RANK 6 PATCH
+#
+# This file shows the DIFF to apply to `.github/workflows/render-episodes.yml`.
+# Two additions:
+#
+#  1. A new `community-teaser` job (separate cron: 30 min before pipeline job)
+#     Posts a "new episode dropping soon" community post.
+#
+#  2. A `community-recap` step appended to the existing `pipeline` job,
+#     running after `Upload to YouTube` succeeds, posting the recap with video URL.
+#
+# Apply by merging the diff below into render-episodes.yml.
+# The full patched file is shown after the diff.
+#
+# ─── DIFF ────────────────────────────────────────────────────────────────────
+#
+# --- a/.github/workflows/render-episodes.yml
+# +++ b/.github/workflows/render-episodes.yml
+#
+# @@ on.schedule:
+#    - cron: '30 4 * * 1,3,5'   # existing: pipeline Mon/Wed/Fri 04:30 UTC
+#    - cron: '30 4 * * 2,4,6'   # existing: pipeline Tue/Thu/Sat 04:30 UTC
+# +  - cron: '0 4 * * 1,3,5'   # NEW: teaser Mon/Wed/Fri 04:00 UTC (30 min earlier)
+#
+# @@ jobs: (new job added before `pipeline`)
+# +  community-teaser:
+# +    if: github.event_name == 'schedule' && ...
+# +    ...
+#
+# @@ jobs.pipeline.steps (new step after "Upload to YouTube"):
+# +  - name: Post community recap
+# +    ...
+#
+# ─── FULL PATCHED FILE ────────────────────────────────────────────────────────
 
-# Publishes pre-rendered videos to YouTube and Instagram on a schedule.
-# Videos are stored locally on the self-hosted runner at ~/Documents/guru-sishya/
-# Schedule: Tue (long-form), Thu (vertical part 1), Sat (vertical parts 2+3) at 7:15 PM IST
+name: Cartoon Pipeline
 
 on:
-  # schedule: DISABLED — use upload-scheduled.yml instead
-    # Staggered schedule for maximum per-video reach (IST → UTC)
-    # - cron: '45 13 * * 2'   # Tuesday   7:15 PM IST — Long-form YouTube
-    # - cron: '0 7 * * 4'     # Thursday 12:30 PM IST — Short Part 1
-    # - cron: '0 9 * * 4'     # Thursday  2:30 PM IST — Short Part 2
-    # - cron: '45 13 * * 6'   # Saturday  7:15 PM IST — Short Part 3
-
+  schedule:
+    # Mon/Wed/Fri: Render + upload batch 1 (hi, te, ta, en) at 4:30 AM UTC = 10:00 AM IST
+    - cron: '30 4 * * 1,3,5'
+    # Tue/Thu/Sat: Upload batch 2 (kn, mr, bn) at 4:30 AM UTC
+    - cron: '30 4 * * 2,4,6'
+    # PATCH (RANK 6): Teaser post 30 min before Mon/Wed/Fri pipeline run
+    - cron: '0 4 * * 1,3,5'
   workflow_dispatch:
     inputs:
-      publish_id:
-        description: 'Specific queue entry ID (e.g., load-balancing/s1/long). Leave empty for auto.'
+      episode:
+        description: 'Episode number (0 = next unrendered)'
         required: false
-        default: ''
-      force:
-        description: 'Force publish regardless of day-of-week schedule'
-        required: false
-        default: 'false'
-        type: boolean
-      skip_youtube:
-        description: 'Skip YouTube upload'
+        default: '0'
+      skip_community_post:
+        description: 'Set to true to skip community post steps'
         required: false
         default: 'false'
-        type: boolean
-      skip_instagram:
-        description: 'Skip Instagram upload'
-        required: false
-        default: 'false'
-        type: boolean
-      dry_run:
-        description: 'Dry run: determine next video but do not upload'
-        required: false
-        default: 'false'
-        type: boolean
 
-env:
-  NODE_VERSION: '20'
-  GURU_SISHYA_BASE: ~/Documents/guru-sishya
+concurrency:
+  group: cartoon-pipeline
+  cancel-in-progress: false
 
+# ─── PATCH (RANK 6): Teaser job — runs 30 min before the pipeline job ────────
 jobs:
-  publish:
-    runs-on: self-hosted
-    timeout-minutes: 45
-
-    outputs:
-      publish_id: ${{ steps.pick.outputs.publish_id }}
-      topic: ${{ steps.pick.outputs.topic }}
-      session: ${{ steps.pick.outputs.session }}
-      slot_type: ${{ steps.pick.outputs.slot_type }}
-      youtube_video_id: ${{ steps.youtube.outputs.youtube_video_id }}
-      instagram_media_id: ${{ steps.instagram.outputs.instagram_media_id }}
-      skipped: ${{ steps.pick.outputs.no_publish }}
-
+  community-teaser:
+    # Only run on the 04:00 UTC schedule trigger, not the 04:30 one
+    if: >
+      github.event_name == 'schedule' &&
+      (startsWith(github.event.schedule, '0 4') || github.event.inputs.skip_community_post == 'false')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
-      # ── Setup ────────────────────────────────────────────────
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version: '20'
           cache: 'npm'
 
       - name: Install dependencies
         run: npm ci
 
-      # ── Determine Next Video ──────────────────────────────────
-      - name: Pick next video from publish queue
-        id: pick
+      - name: Install Playwright Chromium
+        run: npx playwright install chromium --with-deps
+
+      - name: Determine next episode number
+        id: ep
         run: |
-          ARGS=""
-          if [ -n "${{ github.event.inputs.publish_id }}" ]; then
-            ARGS="--id ${{ github.event.inputs.publish_id }}"
-          fi
-          if [ "${{ github.event.inputs.force }}" = "true" ]; then
-            ARGS="$ARGS --force"
-          fi
+          LAST=$(jq '.lastRendered' config/episode-registry.json)
+          echo "episode=$((LAST + 1))" >> $GITHUB_OUTPUT
 
-          RESULT=$(npx tsx scripts/get-next-publish.ts $ARGS)
-
-          echo "$RESULT"
-
-          # Parse key=value pairs into GitHub outputs
-          while IFS='=' read -r key value; do
-            key_lower=$(echo "$key" | tr '[:upper:]' '[:lower:]')
-            echo "${key_lower}=${value}" >> "$GITHUB_OUTPUT"
-          done <<< "$RESULT"
-
-      - name: Check if there is something to publish
-        if: steps.pick.outputs.no_publish == 'true'
+      - name: Check if teaser already posted (idempotency)
+        id: check
         run: |
-          echo "No videos to publish today."
-          echo "Queue status:"
-          npx tsx scripts/get-next-publish.ts --status
-
-      # ── Validate Video Files Exist ──────────────────────────
-      - name: Validate video files
-        if: steps.pick.outputs.no_publish != 'true'
-        id: validate
-        run: |
-          BASE="${GURU_SISHYA_BASE/#\~/$HOME}"
-          VIDEO_PATH="$BASE/${{ steps.pick.outputs.video_path }}"
-          METADATA_PATH="$BASE/${{ steps.pick.outputs.metadata_path }}"
-
-          echo "Checking video: $VIDEO_PATH"
-          echo "Checking metadata: $METADATA_PATH"
-
-          if [ ! -f "$VIDEO_PATH" ]; then
-            echo "ERROR: Video file not found: $VIDEO_PATH"
-            echo "video_exists=false" >> "$GITHUB_OUTPUT"
-
-            # Mark as skipped in queue
-            npx tsx scripts/update-publish-queue.ts \
-              --id "${{ steps.pick.outputs.publish_id }}" \
-              --status skipped \
-              --error "Video file not found: $VIDEO_PATH"
-            exit 1
-          fi
-
-          if [ ! -f "$METADATA_PATH" ]; then
-            echo "WARNING: Metadata file not found: $METADATA_PATH"
-            echo "metadata_exists=false" >> "$GITHUB_OUTPUT"
+          EP=${{ steps.ep.outputs.episode }}
+          POSTED=$(jq -r --argjson ep "$EP" '.episodes[$ep | tostring].communityTeaserPostedAt // empty' config/episode-registry.json)
+          if [ -n "$POSTED" ]; then
+            echo "already_posted=true" >> $GITHUB_OUTPUT
+            echo "⏭️ Teaser for episode $EP already posted at $POSTED — skipping"
           else
-            echo "metadata_exists=true" >> "$GITHUB_OUTPUT"
+            echo "already_posted=false" >> $GITHUB_OUTPUT
           fi
 
-          echo "video_exists=true" >> "$GITHUB_OUTPUT"
-          echo "video_full_path=$VIDEO_PATH" >> "$GITHUB_OUTPUT"
-          echo "metadata_full_path=$METADATA_PATH" >> "$GITHUB_OUTPUT"
-
-          # Resolve thumbnail path
-          THUMB_PATH="${{ steps.pick.outputs.thumbnail_path }}"
-          if [ -n "$THUMB_PATH" ]; then
-            FULL_THUMB="$BASE/$THUMB_PATH"
-            if [ -f "$FULL_THUMB" ]; then
-              echo "thumbnail_full_path=$FULL_THUMB" >> "$GITHUB_OUTPUT"
-            fi
-          fi
-
-          # Resolve additional videos (for vertical-23 slot)
-          ADDITIONAL="${{ steps.pick.outputs.additional_videos }}"
-          if [ -n "$ADDITIONAL" ]; then
-            RESOLVED=""
-            IFS=',' read -ra PARTS <<< "$ADDITIONAL"
-            for p in "${PARTS[@]}"; do
-              FULL="$BASE/$p"
-              if [ -f "$FULL" ]; then
-                if [ -n "$RESOLVED" ]; then RESOLVED="$RESOLVED,"; fi
-                RESOLVED="$RESOLVED$FULL"
-              else
-                echo "WARNING: Additional video not found: $FULL"
-              fi
-            done
-            echo "additional_full_paths=$RESOLVED" >> "$GITHUB_OUTPUT"
-          fi
-
-          # Log file sizes
-          VIDEO_SIZE=$(du -h "$VIDEO_PATH" | cut -f1)
-          echo "Video size: $VIDEO_SIZE"
-          echo ""
-          echo "=== Publish Plan ==="
-          echo "ID:        ${{ steps.pick.outputs.publish_id }}"
-          echo "Topic:     ${{ steps.pick.outputs.topic_name }}"
-          echo "Session:   ${{ steps.pick.outputs.session }}"
-          echo "Slot:      ${{ steps.pick.outputs.slot_type }}"
-          echo "Day:       ${{ steps.pick.outputs.day_of_week }}"
-          echo "Video:     $VIDEO_PATH ($VIDEO_SIZE)"
-
-      # ── Dry Run Exit ──────────────────────────────────────────
-      - name: Dry run summary
-        if: |
-          steps.pick.outputs.no_publish != 'true' &&
-          github.event.inputs.dry_run == 'true'
+      - name: Post community teaser
+        if: steps.check.outputs.already_posted == 'false'
+        env:
+          YT_STUDIO_COOKIES: ${{ secrets.YT_STUDIO_COOKIES }}
+          YT_CHANNEL_ID: ${{ secrets.YT_CHANNEL_ID_HI }}
         run: |
-          echo "DRY RUN: Would publish ${{ steps.pick.outputs.publish_id }}"
-          echo "Exiting without uploading."
+          npx tsx scripts/post-community.ts \
+            --episode ${{ steps.ep.outputs.episode }} \
+            --type teaser
 
-      # ── YouTube Upload ──────────────────────────────────────
+      - name: Commit registry (teaser timestamp)
+        if: steps.check.outputs.already_posted == 'false'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git pull --rebase origin main
+          git add config/episode-registry.json
+          git diff --cached --quiet || git commit -m "chore: community teaser ep ${{ steps.ep.outputs.episode }}"
+          git push || (git pull --rebase origin main && git push)
+
+      - name: Upload failure screenshot
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: community-teaser-failure-screenshot
+          path: community-post-auth-failure.png
+          if-no-files-found: ignore
+
+  # ─── Existing pipeline job (patch: add recap step + cookie secret) ──────────
+  pipeline:
+    # Only run on the 04:30 UTC schedules, not the 04:00 teaser trigger
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      startsWith(github.event.schedule, '30 4')
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install system deps
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg
+          pip3 install --quiet edge-tts
+
+      - name: Install Rhubarb
+        run: |
+          wget -q https://github.com/DanielSWolf/rhubarb-lip-sync/releases/download/v1.13.0/Rhubarb-Lip-Sync-1.13.0-Linux.zip
+          unzip -q Rhubarb-Lip-Sync-1.13.0-Linux.zip -d /opt/rhubarb
+          echo "/opt/rhubarb" >> $GITHUB_PATH
+
+      # PATCH: install Playwright for community post step
+      - name: Install Playwright Chromium
+        run: npx playwright install chromium --with-deps
+
+      - name: Determine what to do
+        id: plan
+        run: |
+          DAY=$(date -u +%u)
+          LAST_RENDERED=$(jq '.lastRendered' config/episode-registry.json)
+          NEXT_EP=$((LAST_RENDERED + 1))
+
+          INPUT_EP="${{ github.event.inputs.episode || '0' }}"
+          if [ "$INPUT_EP" != "0" ]; then
+            NEXT_EP="$INPUT_EP"
+          fi
+
+          if [ "$DAY" = "1" ] || [ "$DAY" = "3" ] || [ "$DAY" = "5" ] || [ "$INPUT_EP" != "0" ]; then
+            echo "render=true" >> $GITHUB_OUTPUT
+            echo "upload_langs=hi,te,ta,en" >> $GITHUB_OUTPUT
+          else
+            echo "render=false" >> $GITHUB_OUTPUT
+            echo "upload_langs=kn,mr,bn" >> $GITHUB_OUTPUT
+          fi
+
+          echo "episode=$NEXT_EP" >> $GITHUB_OUTPUT
+
+      - name: Render episode
+        if: steps.plan.outputs.render == 'true'
+        run: npx tsx scripts/batch-render.ts --limit 1
+        timeout-minutes: 60
+
       - name: Upload to YouTube
-        if: |
-          steps.pick.outputs.no_publish != 'true' &&
-          github.event.inputs.dry_run != 'true' &&
-          github.event.inputs.skip_youtube != 'true' &&
-          steps.validate.outputs.video_exists == 'true'
-        id: youtube
+        id: upload
         env:
           YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
           YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
-          YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
+          YOUTUBE_REFRESH_TOKEN_HI: ${{ secrets.YOUTUBE_REFRESH_TOKEN_HI }}
+          YOUTUBE_REFRESH_TOKEN_TE: ${{ secrets.YOUTUBE_REFRESH_TOKEN_TE }}
+          YOUTUBE_REFRESH_TOKEN_TA: ${{ secrets.YOUTUBE_REFRESH_TOKEN_TA }}
+          YOUTUBE_REFRESH_TOKEN_KN: ${{ secrets.YOUTUBE_REFRESH_TOKEN_KN }}
+          YOUTUBE_REFRESH_TOKEN_MR: ${{ secrets.YOUTUBE_REFRESH_TOKEN_MR }}
+          YOUTUBE_REFRESH_TOKEN_BN: ${{ secrets.YOUTUBE_REFRESH_TOKEN_BN }}
+          YOUTUBE_REFRESH_TOKEN_EN: ${{ secrets.YOUTUBE_REFRESH_TOKEN_EN }}
         run: |
-          SLOT_TYPE="${{ steps.pick.outputs.slot_type }}"
-          VIDEO_PATH="${{ steps.validate.outputs.video_full_path }}"
-          METADATA_PATH="${{ steps.validate.outputs.metadata_full_path }}"
-          THUMBNAIL="${{ steps.validate.outputs.thumbnail_full_path }}"
-          ADDITIONAL="${{ steps.validate.outputs.additional_full_paths }}"
+          npx tsx scripts/upload-youtube.ts ${{ steps.plan.outputs.episode }}
+          # Extract primary (Hindi) video ID for community recap
+          VIDEO_ID=$(jq -r --argjson ep "${{ steps.plan.outputs.episode }}" \
+            '.episodes[$ep | tostring].languages.hi.videoId // empty' \
+            config/episode-registry.json)
+          echo "video_id=$VIDEO_ID" >> $GITHUB_OUTPUT
 
-          # Determine upload type
-          if [ "$SLOT_TYPE" = "long" ]; then
-            TYPE="long"
-          else
-            TYPE="short"
-          fi
-
-          # Build command
-          CMD="npx tsx scripts/publish-to-youtube.ts"
-          CMD="$CMD --video \"$VIDEO_PATH\""
-          CMD="$CMD --metadata \"$METADATA_PATH\""
-          CMD="$CMD --type $TYPE"
-          CMD="$CMD --topic ${{ steps.pick.outputs.topic }}"
-          CMD="$CMD --session ${{ steps.pick.outputs.session }}"
-
-          if [ -n "$THUMBNAIL" ]; then
-            CMD="$CMD --thumbnail \"$THUMBNAIL\""
-          fi
-
-          if [ "$SLOT_TYPE" = "vertical-1" ]; then
-            CMD="$CMD --part 1"
-          elif [ "$SLOT_TYPE" = "vertical-23" ]; then
-            CMD="$CMD --part 2"
-            if [ -n "$ADDITIONAL" ]; then
-              CMD="$CMD --additional \"$ADDITIONAL\""
-            fi
-          fi
-
-          echo "Running: $CMD"
-          eval $CMD
-
-      # ── Instagram Upload ────────────────────────────────────
-      - name: Upload to Instagram
-        if: |
-          steps.pick.outputs.no_publish != 'true' &&
-          github.event.inputs.dry_run != 'true' &&
-          github.event.inputs.skip_instagram != 'true' &&
-          steps.validate.outputs.video_exists == 'true' &&
-          steps.pick.outputs.slot_type != 'long'
-        id: instagram
+      # PATCH (RANK 6): Community recap — posted ~1 hour after the video is live
+      - name: Post community recap
+        if: >
+          steps.upload.outputs.video_id != '' &&
+          github.event.inputs.skip_community_post != 'true'
         env:
-          INSTAGRAM_ACCESS_TOKEN: ${{ secrets.INSTAGRAM_ACCESS_TOKEN }}
-          INSTAGRAM_BUSINESS_ID: ${{ secrets.INSTAGRAM_BUSINESS_ID }}
-          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
-          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
-          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
-          R2_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }}
-          R2_PUBLIC_URL: ${{ secrets.R2_PUBLIC_URL }}
+          YT_STUDIO_COOKIES: ${{ secrets.YT_STUDIO_COOKIES }}
+          YT_CHANNEL_ID: ${{ secrets.YT_CHANNEL_ID_HI }}
         run: |
-          SLOT_TYPE="${{ steps.pick.outputs.slot_type }}"
-          VIDEO_PATH="${{ steps.validate.outputs.video_full_path }}"
-          METADATA_PATH="${{ steps.validate.outputs.metadata_full_path }}"
-          ADDITIONAL="${{ steps.validate.outputs.additional_full_paths }}"
+          # Wait ~1 hour for YouTube to process the video and notify subscribers first
+          echo "⏳ Waiting 60 minutes before posting recap (subscriber notification priming)…"
+          sleep 3600
+          npx tsx scripts/post-community.ts \
+            --episode ${{ steps.plan.outputs.episode }} \
+            --type recap \
+            --video-id ${{ steps.upload.outputs.video_id }}
 
-          CMD="npx tsx scripts/publish-to-instagram.ts"
-          CMD="$CMD --video \"$VIDEO_PATH\""
-          CMD="$CMD --metadata \"$METADATA_PATH\""
-          CMD="$CMD --topic ${{ steps.pick.outputs.topic }}"
-          CMD="$CMD --session ${{ steps.pick.outputs.session }}"
-
-          if [ "$SLOT_TYPE" = "vertical-1" ]; then
-            CMD="$CMD --part 1"
-          elif [ "$SLOT_TYPE" = "vertical-23" ]; then
-            CMD="$CMD --part 2"
-            if [ -n "$ADDITIONAL" ]; then
-              CMD="$CMD --additional \"$ADDITIONAL\""
-            fi
-          fi
-
-          echo "Running: $CMD"
-          eval $CMD
-
-      # ── Update Queue ─────────────────────────────────────────
-      - name: Mark as published
-        if: |
-          steps.pick.outputs.no_publish != 'true' &&
-          github.event.inputs.dry_run != 'true' &&
-          steps.validate.outputs.video_exists == 'true'
-        run: |
-          YOUTUBE_ID="${{ steps.youtube.outputs.youtube_video_id }}"
-          INSTAGRAM_ID="${{ steps.instagram.outputs.instagram_media_id }}"
-
-          CMD="npx tsx scripts/update-publish-queue.ts"
-          CMD="$CMD --id \"${{ steps.pick.outputs.publish_id }}\""
-          CMD="$CMD --status published"
-
-          if [ -n "$YOUTUBE_ID" ]; then
-            CMD="$CMD --youtube-id \"$YOUTUBE_ID\""
-          fi
-          if [ -n "$INSTAGRAM_ID" ]; then
-            CMD="$CMD --instagram-id \"$INSTAGRAM_ID\""
-          fi
-
-          eval $CMD
-
-      - name: Commit queue updates
-        if: |
-          steps.pick.outputs.no_publish != 'true' &&
-          github.event.inputs.dry_run != 'true' &&
-          steps.validate.outputs.video_exists == 'true'
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add config/publish-queue.json config/publish-history.json config/topic-queue.json
-          git diff --cached --quiet || \
-            git commit -m "chore(publish): mark ${{ steps.pick.outputs.publish_id }} as published"
-          git push
-
-  # ── Failure Handling ────────────────────────────────────────
-  on-failure:
-    needs: publish
-    runs-on: self-hosted
-    if: failure() && needs.publish.outputs.skipped != 'true'
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Upload failure screenshot
+        if: failure()
+        uses: actions/upload-artifact@v4
         with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
+          name: community-recap-failure-screenshot
+          path: community-post-auth-failure.png
+          if-no-files-found: ignore
 
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Mark as failed in queue
-        if: needs.publish.outputs.publish_id != ''
+      - name: Commit registry
+        if: always()
         run: |
-          npx tsx scripts/update-publish-queue.ts \
-            --id "${{ needs.publish.outputs.publish_id }}" \
-            --status failed \
-            --error "GitHub Actions workflow failed"
-
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add config/publish-queue.json
-          git diff --cached --quiet || \
-            git commit -m "chore(publish): mark ${{ needs.publish.outputs.publish_id }} as failed"
-          git push
+          git pull --rebase origin main
+          git add config/episode-registry.json config/publish-queue.json
+          git diff --cached --quiet || git commit -m "chore: pipeline ep ${{ steps.plan.outputs.episode }}"
+          git push || (git pull --rebase origin main && git push)
 
-  # ── Notifications ───────────────────────────────────────────
-  notify:
-    needs: [publish, on-failure]
-    runs-on: self-hosted
-    if: always() && needs.publish.outputs.skipped != 'true'
-    steps:
-      - name: Send Slack notification
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-        run: |
-          if [ -z "$SLACK_WEBHOOK_URL" ]; then
-            echo "No Slack webhook configured. Skipping notification."
-            exit 0
-          fi
-
-          PUBLISH_ID="${{ needs.publish.outputs.publish_id }}"
-          TOPIC="${{ needs.publish.outputs.topic }}"
-          SESSION="${{ needs.publish.outputs.session }}"
-          SLOT="${{ needs.publish.outputs.slot_type }}"
-          YT_ID="${{ needs.publish.outputs.youtube_video_id }}"
-          IG_ID="${{ needs.publish.outputs.instagram_media_id }}"
-          STATUS="${{ needs.publish.result }}"
-
-          if [ "$STATUS" = "success" ]; then
-            EMOJI=":white_check_mark:"
-            COLOR="#36a64f"
-            TITLE="Published Successfully"
-            YT_LINK=""
-            if [ -n "$YT_ID" ]; then
-              YT_LINK="\n:youtube: https://youtu.be/$YT_ID"
-            fi
-            TEXT="${EMOJI} *${TITLE}*\n*Topic:* ${TOPIC} S${SESSION}\n*Slot:* ${SLOT}${YT_LINK}"
-          else
-            EMOJI=":x:"
-            COLOR="#ff0000"
-            TITLE="Publish Failed"
-            TEXT="${EMOJI} *${TITLE}*\n*Topic:* ${TOPIC} S${SESSION}\n*Slot:* ${SLOT}\n*ID:* ${PUBLISH_ID}\n\nCheck: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          fi
-
-          curl -sf -X POST "$SLACK_WEBHOOK_URL" \
-            -H 'Content-Type: application/json' \
-            -d "{
-              \"attachments\": [{
-                \"color\": \"${COLOR}\",
-                \"text\": \"${TEXT}\",
-                \"footer\": \"Guru Sishya Video Pipeline\"
-              }]
-            }" || echo "Slack notification failed (non-fatal)"
+      - name: Cleanup old output
+        if: always()
+        run: rm -rf output/
