@@ -126,6 +126,24 @@ async function discoverDevanagariFont(): Promise<string | null> {
 const DEVANAGARI_RE = /[\u0900-\u097F]/;
 
 /**
+ * Escapes a single text line for ffmpeg drawtext `text='...'` arg.
+ * Covers the FFmpeg drawtext filter's special characters AND the filter-
+ * graph delimiters (`,`, `;`, `[`, `]`) which would otherwise terminate
+ * the filter chain mid-string and crash the render. Eng2/3 P0.
+ */
+function escapeDrawtext(line: string): string {
+  return line
+    .replace(/\\/g, '\\\\')
+    .replace(/:/g, '\\:')
+    .replace(/'/g, "\\'")
+    .replace(/%/g, '\\%')
+    .replace(/,/g, '\\,')
+    .replace(/;/g, '\\;')
+    .replace(/\[/g, '\\[')
+    .replace(/\]/g, '\\]');
+}
+
+/**
  * Wraps `text` to lines of at most `maxChars` chars (whitespace-aware).
  * Returns the wrapped string with REAL newline characters — caller is
  * expected to write to a textfile and pass via drawtext `textfile=` (the
@@ -246,11 +264,7 @@ async function processScene(
       const totalH = hookLines.length * LH;
       const startY = 260 + Math.max(0, (440 - totalH) / 2);
       hookLines.forEach((line, idx) => {
-        const escaped = line
-          .replace(/\\/g, '\\\\')
-          .replace(/:/g, '\\:')
-          .replace(/'/g, "\\'")
-          .replace(/%/g, '\\%');
+        const escaped = escapeDrawtext(line);
         filters.push(
           `drawtext=text='${escaped}'${fontArgFor(line)}:fontcolor=white:fontsize=${FS}:` +
           `borderw=6:bordercolor=black@0.95:` +
@@ -270,11 +284,7 @@ async function processScene(
       const totalH = capLines.length * LH;
       const startY = 1100 + Math.max(0, (420 - totalH) / 2);
       capLines.forEach((line, idx) => {
-        const escaped = line
-          .replace(/\\/g, '\\\\')
-          .replace(/:/g, '\\:')
-          .replace(/'/g, "\\'")
-          .replace(/%/g, '\\%');
+        const escaped = escapeDrawtext(line);
         filters.push(
           `drawtext=text='${escaped}'${fontArgFor(line)}:fontcolor=#FFEB3B:fontsize=${FS}:` +
           `borderw=4:bordercolor=black@0.95:` +
@@ -397,7 +407,12 @@ async function muxFinal(
     //   y = H - h - 200 (above the YT Shorts bottom UI strip 1570→1920)
     // Spec: bottom-right per ComposeInput.watermarkPath JSDoc — do not move
     // to top-left, that collides with the hook headline at y=240.
-    const overlayFilter = `${vf ? `[0:v]${vf}[captioned];[captioned]` : '[0:v]'}[2:v]overlay=W-w-30:H-h-200[outv]`;
+    // Watermark sits bottom-right ABOVE the YT Shorts UI strip. The like/
+    // comment/share/subscribe column starts at y≈1570 on a 1920-tall canvas
+    // (220 px UI strip). H-h-200 placed it at y≈1720 — INSIDE the UI strip,
+    // collision per Eng2 audit. Push it to H-h-380 so its bottom edge sits
+    // at y≈1540, fully above the safe-zone boundary.
+    const overlayFilter = `${vf ? `[0:v]${vf}[captioned];[captioned]` : '[0:v]'}[2:v]overlay=W-w-30:H-h-380[outv]`;
     args.push(
       '-filter_complex', overlayFilter,
       '-map', '[outv]',

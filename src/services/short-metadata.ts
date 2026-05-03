@@ -21,17 +21,28 @@ export interface MetadataInput {
   extraTags?: string[];
   /** Specific topic-bank slug for the deep-link CTA on the site. */
   siteTopicSlug?: string;
+  /**
+   * The exact 4-7 word hook headline rendered on-screen for scene 0. When
+   * present, the YT title wraps this verbatim so the first thing a viewer
+   * sees on the Shorts shelf matches what they hear in the first 3s of
+   * audio (Dist2 coherence requirement).
+   */
+  hookHeadline?: string;
 }
 
 /** YouTube hard cap is 100 chars; we leave 6 for `#Shorts` ⇒ 94 for hook copy. */
 const TITLE_MAX = 100;
 const HOOK_BUDGET = TITLE_MAX - ' #Shorts'.length;
 const SITE_BASE = 'https://guru-sishya.in';
+const UTM_BASE = 'utm_source=yt_shorts&utm_medium=description';
 
 /**
  * Power-word title templates validated across Fireship/NeetCode/ByteByteGo/
- * Striver/Aman Dhattarwal Shorts. Picked deterministically by hash(topic) so
- * every run for the same topic emits the same title (idempotent uploads).
+ * Striver/Aman Dhattarwal/Apna College Shorts. Mix of English (~60%) and
+ * Hinglish (~40%) — the Hinglish variants test substantially better on
+ * Indian audience CTR per Apna College / Anuj Bhaiya analytics. Picked
+ * deterministically by hash(topic) so every run for the same topic emits
+ * the same title (idempotent uploads).
  *
  * Each template MUST keep `${topic}` ≤ ~38 chars to stay within HOOK_BUDGET
  * even when the verb prefix is long.
@@ -40,9 +51,11 @@ const TITLE_TEMPLATES: Array<(topic: string) => string> = [
   (t) => `${t} explained in 60 seconds`,
   (t) => `Most engineers get ${t} wrong`,
   (t) => `If you don't know ${t}, you'll fail FAANG`,
-  (t) => `${t} — what no one tells you`,
+  (t) => `Bhai, ${t} ek baar dhyaan se samajh lo`,
   (t) => `3 things about ${t} you must know`,
   (t) => `Why FAANG asks ${t} in every round`,
+  (t) => `${t} ka asli concept — placement walo ke liye`,
+  (t) => `Sirf 60 seconds me ${t} clear`,
 ];
 
 function pickByHash<T>(seed: string, options: T[]): T {
@@ -51,16 +64,39 @@ function pickByHash<T>(seed: string, options: T[]): T {
   return options[idx]!;
 }
 
-function shortHook(topic: string): string {
+function shortHook(topic: string, override?: string): string {
+  // If the renderer passed the on-screen hook headline, use it verbatim so
+  // the YT title and the first 3s of on-screen text/voice all carry the
+  // same words (Dist2 coherence requirement). Falls back to template-pick
+  // when no override is provided.
+  if (override) {
+    const trimmed = override.replace(/\s+/g, ' ').trim();
+    if (trimmed) {
+      return trimmed.length <= HOOK_BUDGET
+        ? trimmed
+        : trimmed.slice(0, HOOK_BUDGET - 1).trimEnd() + '…';
+    }
+  }
   const cleaned = topic.replace(/#\S+/g, '').replace(/\s+/g, ' ').trim();
-  // Pick a deterministic template; if it overflows, fall back to plain topic
-  // (no template) which always fits.
   const template = pickByHash(cleaned, TITLE_TEMPLATES);
   const candidate = template(cleaned);
   if (candidate.length <= HOOK_BUDGET) return candidate;
-  // Fall back to short form
   if (cleaned.length <= HOOK_BUDGET) return cleaned;
   return cleaned.slice(0, HOOK_BUDGET - 1).trimEnd() + '…';
+}
+
+/**
+ * Curated brand-vocabulary niche hashtags. Replaces the previous
+ * `baseTags.slice(0,3)` word-split which emitted noise like
+ * "#load #balancer #explained" — fragmented words that have no
+ * search authority and dilute brand signal (Aud4 P0).
+ */
+const NICHE_HASHTAGS = '#SystemDesignShorts #DSAShorts #FAANGPrep #HinglishTech #CodingShorts';
+const BROAD_HASHTAGS = '#Shorts #TechShorts #FAANG #DSA #SystemDesign #GuruSishyaIndia';
+
+function withUtm(url: string, slug: string, content: string): string {
+  const sep = url.includes('?') ? '&' : '?';
+  return `${url}${sep}${UTM_BASE}&utm_campaign=${encodeURIComponent(slug)}&utm_content=${content}`;
 }
 
 function topicToTags(topic: string): string[] {
@@ -101,58 +137,65 @@ export function generateShortMetadata(
   storyboard: StockStoryboard,
   input: MetadataInput = {}
 ): ShortMetadata {
-  const { licenses = [], extraTags = [], siteTopicSlug } = input;
-  const hook = shortHook(storyboard.topic);
+  const { licenses = [], extraTags = [], siteTopicSlug, hookHeadline } = input;
+  const hook = shortHook(storyboard.topic, hookHeadline);
   const title = `${hook} #Shorts`.slice(0, TITLE_MAX);
 
-  // Tag set: topic-derived + ICP-search + brand + caller extras. ICP tags
-  // are validated against the search-volume tags Striver/NeetCode/Apna
-  // College Shorts surface under.
+  // Tag set: topic-derived + ICP-search + brand + caller extras. Expanded
+  // ICP tags target tier-1 college / campus-placement search alongside
+  // FAANG (Aud1 + Dist4 P1).
   const baseTags = topicToTags(storyboard.topic);
   const ICP_TAGS = [
     'faang', 'leetcode', 'dsa', 'systemdesign', 'placement',
     'interviewprep', 'codingshorts', 'cseducation', 'lowleveldesign',
     'softwareengineer', 'computerscience', 'gate2026',
+    'campusplacement', 'tier1college', 'apnacollege', 'strivergrind',
   ];
   const tags = Array.from(
     new Set([...baseTags, ...extraTags, ...ICP_TAGS, 'shorts', 'gurusishyaindia'])
   ).slice(0, 30);
 
   const slug = siteTopicSlug ?? slugifyTopic(storyboard.topic);
-  const ctaUrl = `${SITE_BASE}/topics/${slug}`;
-  const leadMagnetUrl = `${SITE_BASE}/free-pdf-faang-80-questions`;
+  // UTM-tag every CTA URL so we can attribute email sign-ups, deep-link
+  // taps, and session bookings to specific topic Shorts (Aud2 P0).
+  const ctaUrl = withUtm(`${SITE_BASE}/topics/${slug}`, slug, 'cta_deeplink');
+  const leadMagnetUrl = withUtm(`${SITE_BASE}/free-pdf-faang-80-questions`, slug, 'cta_leadmagnet');
+  const sessionsUrl = withUtm(`${SITE_BASE}/sessions`, slug, 'cta_sessions');
 
   const sceneSummaries = storyboard.scenes
     .slice(0, 4)
     .map((s, i) => `${i + 1}. ${(s.narration || s.type).replace(/\s+/g, ' ').trim().slice(0, 110)}`)
     .join('\n');
 
-  const niche = baseTags.slice(0, 3).map((t) => `#${t}`).join(' ');
-  const broad = '#Shorts #TechShorts #FAANG #DSA #SystemDesign';
   const credits = summariseLicenses(licenses);
 
-  // Description: front-load the two CTAs (deep link + lead magnet) so they
-  // appear above the fold on YT mobile (first ~2 lines visible before
-  // "...more" tap).
+  // Description: front-load ALL primary CTAs (deep-link + lead-magnet +
+  // subscribe) within the first 4 lines so they sit above the YT mobile
+  // "...more" fold (Aud3 P0). Body, branding, and supporting CTAs follow
+  // below. License credits last to keep them legally compliant but out of
+  // the conversion path.
   const description = [
-    `${hook} — Hinglish me, 60 seconds me.`,
+    `${hook} — Hinglish me, 60 seconds me. Isko samajhna zaroori hai agar tum FAANG mein jaana chahte ho.`,
     `🔗 Full deep-dive + practice: ${ctaUrl}`,
-    `📘 FREE 80-Q FAANG interview cheatsheet → ${leadMagnetUrl}`,
+    `📘 FREE 80-Q FAANG cheatsheet → ${leadMagnetUrl}`,
+    `👉 Subscribe @GuruSishya-India for daily 60-second tech Shorts.`,
     '',
-    `In this Short you will learn ${storyboard.topic} the way a senior engineer explains it to a junior in a code review. We cover the core idea, when to use it, the most common interview trap, and the one-line takeaway you can quote in your next FAANG / system-design round.`,
+    `In this Short you will learn ${storyboard.topic} the way a senior engineer explains it to a junior in a code review. Hum cover karenge core idea, kab use karna hai, common interview trap, aur ek-line takeaway jo tum next FAANG / system-design round me bol sakte ho.`,
     '',
     'Inside this 60-second Short:',
     sceneSummaries || '1. The hook — why this matters now\n2. The core mechanism\n3. The interview trap\n4. The takeaway',
     '',
     '🎯 Daily Hinglish dev-edu Shorts — system design, DSA, low-level design, OS/DBMS internals, behavioural — every single day. Built for Indian CSE students preparing for FAANG.',
     '',
-    `👉 Subscribe @GuruSishya-India for daily 60-second tech Shorts.`,
+    `📗 Want the full Q-bank + solutions? Pro tier ₹149/mo → ${withUtm(`${SITE_BASE}/pro`, slug, 'cta_pro')}`,
+    `👉 Mock interviews + 1:1 mentoring → ${sessionsUrl}`,
     `👉 Comment which topic to cover next — top-voted topic ships within 7 days.`,
-    `👉 Mock interviews + 1:1 mentoring → ${SITE_BASE}/sessions`,
     '',
     credits,
     '',
-    `${niche} ${broad}`.trim(),
+    `${NICHE_HASHTAGS} ${BROAD_HASHTAGS}`,
+    '',
+    '— GuruSishya-India | Empowering Indian engineers, one Short at a time.',
   ].filter((line) => line !== undefined).join('\n');
 
   return { title, description, tags };

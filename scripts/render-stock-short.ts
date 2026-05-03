@@ -164,17 +164,31 @@ async function main(): Promise<void> {
   const workDir = path.join(finalOutDir, '_work');
   fs.mkdirSync(workDir, { recursive: true });
 
+  // Hook headline is the SINGLE source of truth for scene-0 visual text,
+  // scene-0 TTS audio, and the YT title — computed once here so all three
+  // surfaces stay in lock-step. Fixes the v9 regression where scene-0 audio
+  // (synthesised from full narration) overran the 3s visual cap and bled
+  // into scene-1 visuals.
+  const hookHeadline = buildHookHeadline(
+    storyboard.topic,
+    storyboard.scenes[0]?.narration ?? '',
+  );
+
   // ── Auto-generate TTS narration if storyboard didn't ship a voice ────────
   if (!hasVoice && process.env['TTS_DISABLED'] !== '1') {
     try {
-      const ttsResult = await generateNarrationForScenes(storyboard, workDir);
+      const ttsResult = await generateNarrationForScenes(storyboard, workDir, hookHeadline);
       voicePath = ttsResult.audioPath;
       hasVoice = true;
       // Re-write each scene's duration to its narration audio length so the
       // visual cuts line up with speech beats. Audio is now the source of
       // truth — we keep the algorithm-critical 3s hook SLA (scene 0) by
       // capping it independently from body scenes.
-      const HOOK_HARD_CAP = Math.round(3.0 * storyboard.fps);  // 3.0s for scene 0
+      // Hook scene cap is sized to the natural duration of a 6-9 word hook
+      // headline at TTS rate +8% (~3.5s). 4s gives a safety buffer so the
+      // visual never gets cut short of the audio (which would cause the
+      // tail of the hook to play over scene-1 visuals).
+      const HOOK_HARD_CAP = Math.round(4.0 * storyboard.fps);  // 4.0s for scene 0
       const PER_SCENE_HARD_CAP = 8 * storyboard.fps;            // 8s body
       const TOTAL_HARD_CAP = 55 * storyboard.fps;               // YT Shorts ≤60s
       let runningTotal = 0;
@@ -210,7 +224,7 @@ async function main(): Promise<void> {
       // Hook scene: short, punchy 4-6 word hook in giant text.
       // Body scenes: narration sentence as caption strip.
       const bigText = isHook
-        ? buildHookHeadline(storyboard.topic, scene.narration)
+        ? hookHeadline
         : undefined;
       const captionText = isHook
         ? undefined // hook text already dominates the upper third
@@ -262,6 +276,7 @@ async function main(): Promise<void> {
       attribution: l.credit || l.id,
     })),
     siteTopicSlug: slug,
+    hookHeadline,
   });
   const metadataPath = path.join(finalOutDir, 'metadata.json');
   fs.writeFileSync(
@@ -269,10 +284,28 @@ async function main(): Promise<void> {
     JSON.stringify({
       slug,
       topic: storyboard.topic,
+      hook: hookHeadline,
       title: metadata.title,
       description: metadata.description,
       tags: metadata.tags,
       youtube: { title: metadata.title, description: metadata.description, tags: metadata.tags },
+      // Cross-platform contracts so adapters in CI don't have to reverse-
+      // engineer the field shape per platform. Each sub-object is a strict
+      // subset of YT metadata adapted to platform character/format limits.
+      instagram_reels: {
+        caption: `${metadata.title}\n\n${metadata.description.split('\n').slice(0, 6).join('\n')}`.slice(0, 2200),
+        hashtags: metadata.tags.slice(0, 30).map((t) => `#${t}`).join(' '),
+      },
+      x_post: {
+        text: `${hookHeadline}\n\n${metadata.tags.slice(0, 4).map((t) => `#${t}`).join(' ')}`.slice(0, 280),
+      },
+      linkedin: {
+        title: metadata.title.replace(/\s*#\w+\s*/g, '').trim(),
+        body: metadata.description.split('\n').slice(0, 8).join('\n'),
+      },
+      telegram: {
+        text: `🆕 ${metadata.title}\n\n${metadata.description.split('\n').slice(0, 4).join('\n')}`,
+      },
     }, null, 2),
     'utf8',
   );
@@ -285,7 +318,7 @@ async function main(): Promise<void> {
   const thumbnailPath = path.join(finalOutDir, 'thumbnail.png');
   await generateThumbnailPng({
     sourceVideoPath: outputPath,
-    hook: buildHookHeadline(storyboard.topic, storyboard.scenes[0]?.narration ?? ''),
+    hook: hookHeadline,
     handle: process.env['CHANNEL_HANDLE'] ?? '@GuruSishya-India',
     outPath: thumbnailPath,
   });
@@ -456,6 +489,7 @@ main().catch((err: unknown) => {
 async function generateNarrationForScenes(
   sb: StockStoryboard,
   workDir: string,
+  hookHeadline?: string,
 ): Promise<{ audioPath: string; sceneDurations: number[] }> {
   const fs = await import('node:fs');
   const path = await import('node:path');
@@ -465,7 +499,13 @@ async function generateNarrationForScenes(
 
   for (let i = 0; i < sb.scenes.length; i++) {
     const scene = sb.scenes[i]!;
-    const text = (scene.narration ?? '').trim();
+    // Scene 0 uses the on-screen hook headline as the spoken text so audio,
+    // visual hook, and title all say the same 4-7 words. That keeps audio
+    // duration inside the 3s HOOK_HARD_CAP and prevents the prior regression
+    // where 5s of narration leaked over scene-1 visuals.
+    const text = (
+      i === 0 && hookHeadline ? hookHeadline : (scene.narration ?? '')
+    ).trim();
     if (!text) {
       // Synthesize a 0.5s silent placeholder so concat math stays consistent.
       const silentPath = path.join(workDir, `voice-${i}.mp3`);
