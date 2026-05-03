@@ -1,25 +1,23 @@
 #!/usr/bin/env npx tsx
 /**
- * scripts/make-reels.ts — v2 REWRITE (2025-07)
+ * scripts/make-shorts.ts — YouTube Shorts renderer
  *
- * FIX: Was trimming a 1920×1080 horizontal clip to 300 s and calling it a Reel.
- *   • make-reels.ts line 7:  "1920x1080 horizontal clip that Instagram will display natively."
- *   • make-reels.ts line 24: const REEL_DURATION = 300; // 5 minutes in seconds
- * Both are wrong for every short-form platform.
+ * Sibling to make-reels.ts. Renders the same ViralShort composition (1080×1920,
+ * ≤55 s, deterministic) but writes YouTube-Shorts-specific metadata:
  *
- * NOW: Renders the ViralShort Remotion composition — 1080×1920 9:16, ≤55 s —
- * leaving a 5 s safety buffer under the YT Shorts 60 s hard cap.
+ *   • Title ends with " #shorts" — triggers YT Shorts shelf placement
+ *   • endScreen disabled in metadata — YT Shorts cannot have end screens
+ *   • Description includes #shorts as first tag
+ *   • Output: out/shorts/<slug>-yt.mp4 + out/shorts/<slug>-yt-metadata.json
  *
- * Key properties:
- *   • Deterministic — topic slug is SHA-256 hashed; (hash % sceneCount) picks the
- *     clipStart so the same topic always produces the same Short in CI reruns.
- *   • Zero-money — free Remotion OSS renderer + GH Actions ubuntu-latest.
- *   • Output: out/shorts/<slug>.mp4 + out/shorts/<slug>-metadata.json
+ * All other rendering behaviour (1080×1920, ≤55 s, deterministic seed, same
+ * ViralShort composition) is identical to make-reels.ts. Both scripts share
+ * the same Remotion bundle cache within a single process run.
  *
  * Usage:
- *   npx tsx scripts/make-reels.ts --topic "Load Balancing"
- *   npx tsx scripts/make-reels.ts --storyboard content/load-balancing-s1.json
- *   npx tsx scripts/make-reels.ts --all
+ *   npx tsx scripts/make-shorts.ts --topic "Load Balancing"
+ *   npx tsx scripts/make-shorts.ts --storyboard content/load-balancing-s1.json
+ *   npx tsx scripts/make-shorts.ts --all
  */
 
 import { bundle } from '@remotion/bundler';
@@ -29,55 +27,38 @@ import * as fs from 'fs';
 import * as path from 'path';
 import type { Storyboard } from '../src/types';
 
-// ── Constants ──────────────────────────────────────────────────────────────────
+// ── Constants (identical to make-reels.ts) ─────────────────────────────────────
 
-/** Output width — 9:16 vertical. FIXED from 1920 (was wrong direction). */
 const WIDTH = 1080;
-/** Output height — 9:16 vertical. */
 const HEIGHT = 1920;
 const FPS = 30;
-
-/**
- * Hard cap: 55 s × 30 fps = 1650 frames.
- * YT Shorts cap is 60 s; 5 s buffer prevents accidental over-cap on slow scenes.
- * ViralShort's own MAX_TOTAL_FRAMES = 900 (30 s) is within this — guard is a safety net.
- */
-const MAX_DURATION_FRAMES = 55 * FPS; // 1650
+/** 55 s × 30 fps — 5 s under YT Shorts 60 s hard cap */
+const MAX_DURATION_FRAMES = 55 * FPS;
 
 const COMPOSITION_ID = 'ViralShort';
-
-/** Remotion bundle entrypoint — matches remotion.config.ts in repo root */
 const ENTRY_POINT = path.resolve('src', 'index.ts');
-
-/** Content JSON storyboards (symlinked in CI: ln -sf ../guru-sishya/public/content content) */
 const CONTENT_DIR = path.resolve('content');
-
-/** Rendered Shorts land here */
 const SHORTS_DIR = path.resolve('out', 'shorts');
-
 const SITE_URL = 'https://guru-sishya.in';
 
-const INSTAGRAM_HASHTAGS = [
-  '#coding', '#programming', '#interviewprep', '#faang', '#dsa',
-  '#systemdesign', '#softwareengineering', '#learntocode', '#gurusishya',
-  '#reels', '#techreels',
+/**
+ * YT Shorts hashtags.
+ * Rule: #shorts MUST appear in title OR description for shelf eligibility.
+ * We put it in both to be safe.
+ */
+const YT_HASHTAGS = [
+  '#shorts', '#coding', '#programming', '#interviewprep', '#faang',
+  '#dsa', '#systemdesign', '#softwareengineering', '#learntocode',
+  '#gurusishya', '#youtubeshorts',
 ];
 
-// ── Deterministic seed ─────────────────────────────────────────────────────────
+// ── Deterministic seed (same algorithm as make-reels.ts) ──────────────────────
 
-/**
- * Derives a stable uint32 from the topic slug via SHA-256.
- * Identical slug → identical number → identical scene pick across all CI runs.
- */
 function topicSeed(slug: string): number {
   const hex = createHash('sha256').update(slug).digest('hex');
-  return parseInt(hex.slice(0, 8), 16); // first 32 bits → 0..4_294_967_295
+  return parseInt(hex.slice(0, 8), 16);
 }
 
-/**
- * Picks the clipStart index deterministically.
- * Only content scenes (not 'title' / 'summary') are counted.
- */
 function deterministicSceneIndex(storyboard: Storyboard, slug: string): number {
   const content = storyboard.scenes.filter(
     (s) => s.type !== 'title' && s.type !== 'summary',
@@ -117,14 +98,33 @@ function loadStoryboard(jsonPath: string): Storyboard {
   return JSON.parse(raw) as Storyboard;
 }
 
-function buildCaption(storyboard: Storyboard): string {
+/**
+ * YouTube title rules:
+ *   • ≤ 100 characters total
+ *   • #shorts trigger — must appear in title for guaranteed Shorts shelf
+ *   • No clickbait caps per YT policy; we keep topic name natural-case
+ */
+function buildYtTitle(storyboard: Storyboard): string {
+  const topic = storyboard.topic || 'System Design';
+  const base = `${topic} explained in 30 seconds`;
+  // Append #shorts — YT requires it for shelf placement
+  const withTag = `${base} #shorts`;
+  // Safety: truncate to 100 chars
+  return withTag.length <= 100 ? withTag : `${withTag.slice(0, 97)}…`;
+}
+
+/**
+ * YouTube description for Shorts.
+ * End screens are NOT supported on Shorts; we skip that section.
+ */
+function buildYtDescription(storyboard: Storyboard): string {
   const topic = storyboard.topic || 'System Design';
   return [
-    `${topic} explained in under 30 seconds 🔥`,
+    `${topic} in under 30 seconds.`,
     '',
-    `Full deep-dive FREE at ${SITE_URL}`,
+    `Full free course at ${SITE_URL}`,
     '',
-    INSTAGRAM_HASHTAGS.join(' '),
+    YT_HASHTAGS.join(' '),
   ].join('\n');
 }
 
@@ -138,8 +138,8 @@ function buildMetadata(
   return {
     slug,
     topic: storyboard.topic,
-    platform: 'instagram',
-    type: 'reel',
+    platform: 'youtube',
+    type: 'short',
     format: { width: WIDTH, height: HEIGHT, fps: FPS, aspectRatio: '9:16' },
     durationFrames,
     durationSeconds: +(durationFrames / FPS).toFixed(2),
@@ -147,10 +147,16 @@ function buildMetadata(
     clipStart: sceneIndex,
     generatedAt: new Date().toISOString(),
     outputFile: outPath,
-    instagram: {
-      caption: buildCaption(storyboard),
-      hashtags: INSTAGRAM_HASHTAGS,
-      coverText: storyboard.topic?.toUpperCase() ?? '',
+    youtube: {
+      title: buildYtTitle(storyboard),
+      description: buildYtDescription(storyboard),
+      tags: YT_HASHTAGS.map((t) => t.replace('#', '')),
+      categoryId: '28',         // Science & Technology
+      privacyStatus: 'public',
+      // End screens are not supported on YouTube Shorts — explicitly disabled
+      endScreen: false,
+      // madeForKids: false is required for monetisation eligibility
+      madeForKids: false,
     },
   };
 }
@@ -174,11 +180,12 @@ async function renderShort(jsonPath: string): Promise<void> {
   const slug = slugify(storyboard.topic || path.basename(jsonPath, '.json'));
   const sceneIndex = deterministicSceneIndex(storyboard, slug);
 
-  const outMp4 = path.join(SHORTS_DIR, `${slug}.mp4`);
-  const outMeta = path.join(SHORTS_DIR, `${slug}-metadata.json`);
+  // Separate filename from Instagram output to avoid CI collision
+  const outMp4 = path.join(SHORTS_DIR, `${slug}-yt.mp4`);
+  const outMeta = path.join(SHORTS_DIR, `${slug}-yt-metadata.json`);
   ensureDir(SHORTS_DIR);
 
-  console.log(`\n  ┌─ ${slug}`);
+  console.log(`\n  ┌─ ${slug}  [YT Shorts]`);
   console.log(`  │  clipStart    : ${sceneIndex}  (seed=${topicSeed(slug)})`);
   console.log(`  │  output       : ${outMp4}`);
 
@@ -191,7 +198,6 @@ async function renderShort(jsonPath: string): Promise<void> {
     inputProps,
   });
 
-  // Enforce ≤55 s hard cap regardless of calculateViralShortMetadata result
   const safeDuration = Math.min(composition.durationInFrames, MAX_DURATION_FRAMES);
 
   await renderMedia({
@@ -221,9 +227,9 @@ async function main(): Promise<void> {
   const runAll = process.argv.includes('--all');
 
   console.log('');
-  console.log('  INSTAGRAM REEL MAKER  v2');
-  console.log('  Renders ViralShort @ 1080×1920 (9:16), ≤55 s');
-  console.log('  ──────────────────────────────────────────────');
+  console.log('  YOUTUBE SHORTS MAKER');
+  console.log('  Renders ViralShort @ 1080×1920 (9:16), ≤55 s, #shorts metadata');
+  console.log('  ────────────────────────────────────────────────────────────────');
 
   let targets: string[] = [];
 
@@ -252,9 +258,9 @@ async function main(): Promise<void> {
     console.log(`  Found ${targets.length} storyboards`);
   } else {
     console.log('  Usage:');
-    console.log('    npx tsx scripts/make-reels.ts --topic "Load Balancing"');
-    console.log('    npx tsx scripts/make-reels.ts --storyboard content/lb-s1.json');
-    console.log('    npx tsx scripts/make-reels.ts --all');
+    console.log('    npx tsx scripts/make-shorts.ts --topic "Load Balancing"');
+    console.log('    npx tsx scripts/make-shorts.ts --storyboard content/lb-s1.json');
+    console.log('    npx tsx scripts/make-shorts.ts --all');
     process.exit(0);
   }
 
