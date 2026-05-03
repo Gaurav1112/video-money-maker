@@ -131,7 +131,7 @@ const DEVANAGARI_RE = /[\u0900-\u097F]/;
  * graph delimiters (`,`, `;`, `[`, `]`) which would otherwise terminate
  * the filter chain mid-string and crash the render. Eng2/3 P0.
  */
-function escapeDrawtext(line: string): string {
+export function escapeDrawtext(line: string): string {
   return line
     .replace(/\\/g, '\\\\')
     .replace(/:/g, '\\:')

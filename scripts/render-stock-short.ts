@@ -23,7 +23,7 @@ import { PexelsProvider } from '../src/stock/providers/pexels.js';
 import { PixabayProvider } from '../src/stock/providers/pixabay.js';
 import { pickClipsForStoryboard } from '../src/stock/picker.js';
 import { StockCache } from '../src/stock/cache.js';
-import { compose } from '../src/stock/composer.js';
+import { compose, escapeDrawtext } from '../src/stock/composer.js';
 import { FALLBACK_CLIP } from '../src/stock/fallback.js';
 import type { StockStoryboard, PickedClip, StockScene } from '../src/stock/types.js';
 import { generateAssSubtitles } from '../src/stock/captions/ass-generator.js';
@@ -347,6 +347,9 @@ const HOOK_TEMPLATES: Array<(topic: string) => string> = [
   (t) => `Why ${t} matters now`,              // H4 curiosity
   (t) => `3 things about ${t}`,               // H1 number-lead
   (t) => `Bhai, ${t} ek line me`,             // H5 Hinglish peer
+  (t) => `Sirf 60 sec me ${t}`,               // H5 Hinglish density
+  (t) => `${t} — placement walo ke liye`,     // H5 Hinglish ICP
+  (t) => `${t} ka asli concept`,              // H5 Hinglish authority
 ];
 
 /**
@@ -600,7 +603,6 @@ async function generateThumbnailPng(opts: {
     if (fs.existsSync(c)) { fontfile = `:fontfile='${c.replace(/'/g, "\\'")}'`; break; }
   }
 
-  const escape = (s: string) => s.replace(/\\/g, '\\\\').replace(/:/g, '\\:').replace(/'/g, "\\'").replace(/%/g, '\\%');
   const FS = 110;
   const LH = 140;
   const totalH = hookLines.length * LH;
@@ -613,14 +615,14 @@ async function generateThumbnailPng(opts: {
   ];
   hookLines.forEach((line, idx) => {
     filters.push(
-      `drawtext=text='${escape(line)}'${fontfile}:fontcolor=white:fontsize=${FS}:` +
+      `drawtext=text='${escapeDrawtext(line)}'${fontfile}:fontcolor=white:fontsize=${FS}:` +
       `borderw=8:bordercolor=black@0.95:` +
       `x=(w-text_w)/2:y=${Math.round(startY + idx * LH)}`
     );
   });
   // Channel handle bottom-right
   filters.push(
-    `drawtext=text='${escape(handle)}'${fontfile}:fontcolor=#FFEB3B:fontsize=44:` +
+    `drawtext=text='${escapeDrawtext(handle)}'${fontfile}:fontcolor=#FFEB3B:fontsize=44:` +
     `borderw=4:bordercolor=black@0.95:x=w-text_w-40:y=h-text_h-160`
   );
 

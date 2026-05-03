@@ -20,10 +20,10 @@ import type { StockScene } from './types.js';
 const SHORT_DEV_TERMS = new Set([
   'os', 'io', 'go', 'jvm', 'jit', 'gc',
   'api', 'sql', 'tcp', 'udp', 'ssl', 'tls', 'dns', 'cdn', 'orm', 'rpc',
-  'jwt', 'lru', 'lfu', 'mvc', 'mvp', 'mvm', 'bfs', 'dfs', 'dp', 'ml',
+  'jwt', 'lru', 'lfu', 'mvc', 'mvp', 'bfs', 'dfs', 'dp', 'ml',
   'aws', 'gcp', 'k8s', 'app', 'web', 'css', 'oop', 'cpu', 'gpu', 'ssd',
   'cap', 'acid', 'rest', 'grpc', 'http', 'https', 'kafka', 'redis',
-  'json', 'xml', 'yaml', 'sso', 'mfa', 'iam', 'vpn', 'tcp', 'arp', 'ip',
+  'json', 'xml', 'yaml', 'sso', 'mfa', 'iam', 'vpn', 'arp', 'ip',
 ]);
 
 const TEMPLATE_KEYWORDS: Record<string, string[]> = {
