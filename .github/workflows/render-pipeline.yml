@@ -1,0 +1,323 @@
+name: Render Pipeline
+
+# Consolidated render workflow — replaces:
+#   batch-render.yml, pre-render.yml, cloud-render-and-publish.yml, render-and-publish.yml
+#
+# Modes:
+#   batch   — nightly render of N sessions (driven by queue DB)
+#   single  — render one specific topic/session (manual)
+#
+# After render, the output is:
+#   1. Stored as a GHA artifact (retention: 3 days)
+#   2. Enqueued in data/queue.db (via scripts/queue/enqueue.ts)
+#   3. A repository_dispatch event fires publish-pipeline.yml
+
+on:
+  schedule:
+    # Nightly batch render at 2:00 AM IST (8:30 PM UTC)
+    - cron: '30 20 * * *'
+
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'Render mode'
+        type: choice
+        options: [batch, single]
+        default: batch
+      topic:
+        description: '[single] Topic slug (e.g., kafka)'
+        required: false
+        default: ''
+      session:
+        description: '[single] Session number'
+        required: false
+        default: '1'
+      limit:
+        description: '[batch] Number of sessions to render'
+        required: false
+        default: '3'
+      platforms:
+        description: 'Comma-separated publish platforms'
+        required: false
+        default: 'youtube,instagram,telegram'
+      skip_publish_dispatch:
+        description: 'Render only — skip publish-pipeline trigger'
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  actions: write
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  render:
+    name: Render (${{ inputs.mode || 'batch' }})
+    runs-on: self-hosted
+    timeout-minutes: 360
+    env:
+      QUEUE_DB_PATH: ${{ runner.home }}/video-money-maker-data/queue.db
+    outputs:
+      queue_ids: ${{ steps.enqueue.outputs.queue_ids }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install render toolchain (Chrome + TTS + ffmpeg)
+        run: |
+          set -euo pipefail
+          npx remotion browser ensure
+          pip install --break-system-packages edge-tts 2>/dev/null || pip install edge-tts
+          sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
+          python3 -c "import edge_tts; print('edge_tts OK')"
+          ffmpeg -version | head -1
+
+      - name: Clone content repository
+        run: |
+          set -euo pipefail
+          git clone --depth 1 https://github.com/Gaurav1112/guru-sishya.git ../guru-sishya
+          ln -sf "$(pwd)/../guru-sishya/public/content" content 2>/dev/null || true
+          ls content/*.json | head -3 || { echo "FATAL: content not accessible"; exit 1; }
+
+      - name: Ensure data + output directories
+        run: |
+          mkdir -p "${{ runner.home }}/video-money-maker-data"
+          mkdir -p output/videos
+
+      # ── Batch mode ────────────────────────────────────────────────────────────
+      - name: Batch render
+        id: batch
+        if: inputs.mode == 'batch' || github.event_name == 'schedule'
+        env:
+          LIMIT: ${{ inputs.limit || '3' }}
+        run: |
+          set -euo pipefail
+          echo "Rendering ${LIMIT} sessions…"
+          npx tsx scripts/batch-render-all.ts --limit "${LIMIT}"
+
+      # ── Single mode ───────────────────────────────────────────────────────────
+      - name: Single render — storyboard + TTS
+        id: single_prep
+        if: inputs.mode == 'single' && inputs.topic != ''
+        env:
+          TOPIC:   ${{ inputs.topic }}
+          SESSION: ${{ inputs.session || '1' }}
+        run: |
+          set -euo pipefail
+          npx tsx scripts/render-session.ts "${TOPIC}" "${SESSION}"
+
+      - name: Single render — long-form video
+        if: inputs.mode == 'single' && inputs.topic != ''
+        env:
+          TOPIC:   ${{ inputs.topic }}
+          SESSION: ${{ inputs.session || '1' }}
+        run: |
+          set -euo pipefail
+          mkdir -p "output/videos/${TOPIC}-s${SESSION}"
+          npx remotion render src/compositions/index.tsx LongVideo \
+            "output/videos/${TOPIC}-s${SESSION}/long.mp4" \
+            --props="output/test-props-s${SESSION}.json" \
+            --codec=h264 --crf=18 --audio-bitrate=192K \
+            --concurrency=1 --timeout=180000
+
+      - name: Single render — vertical video
+        if: inputs.mode == 'single' && inputs.topic != ''
+        env:
+          TOPIC:   ${{ inputs.topic }}
+          SESSION: ${{ inputs.session || '1' }}
+        run: |
+          set -euo pipefail
+          npx remotion render src/compositions/index.tsx VerticalLong \
+            "output/videos/${TOPIC}-s${SESSION}/vertical.mp4" \
+            --props="output/test-props-s${SESSION}.json" \
+            --codec=h264 --crf=18 --audio-bitrate=192K \
+            --concurrency=1 --timeout=180000
+
+      - name: Single render — split vertical into parts
+        if: inputs.mode == 'single' && inputs.topic != ''
+        env:
+          TOPIC:   ${{ inputs.topic }}
+          SESSION: ${{ inputs.session || '1' }}
+        run: |
+          set -euo pipefail
+          VIDEO="output/videos/${TOPIC}-s${SESSION}/vertical.mp4"
+          [ -f "${VIDEO}" ] || { echo "No vertical.mp4 — skipping split"; exit 0; }
+
+          DURATION=$(ffprobe -v error -show_entries format=duration \
+            -of csv=p=0 "${VIDEO}" | cut -d. -f1)
+          PART_DUR=$(( (DURATION + 2) / 3 ))
+
+          for P in 1 2 3; do
+            START=$(( (P - 1) * PART_DUR ))
+            if [ "${P}" -eq 3 ]; then
+              ffmpeg -y -i "${VIDEO}" -ss "${START}" -codec copy \
+                "output/videos/${TOPIC}-s${SESSION}/${TOPIC}-s${SESSION}-part${P}of3.mp4" 2>/dev/null
+            else
+              ffmpeg -y -i "${VIDEO}" -ss "${START}" -t "${PART_DUR}" -codec copy \
+                "output/videos/${TOPIC}-s${SESSION}/${TOPIC}-s${SESSION}-part${P}of3.mp4" 2>/dev/null
+            fi
+          done
+
+      - name: Single render — generate metadata
+        if: inputs.mode == 'single' && inputs.topic != ''
+        env:
+          TOPIC:   ${{ inputs.topic }}
+          SESSION: ${{ inputs.session || '1' }}
+        run: |
+          npx tsx scripts/generate-upload-metadata.ts "${TOPIC}" "${SESSION}"
+          cp "output/${TOPIC}-s${SESSION}"*.json \
+             "output/videos/${TOPIC}-s${SESSION}/" 2>/dev/null || true
+
+      - name: Single render — thumbnail
+        if: inputs.mode == 'single' && inputs.topic != ''
+        continue-on-error: true
+        env:
+          TOPIC:   ${{ inputs.topic }}
+          SESSION: ${{ inputs.session || '1' }}
+        run: |
+          npx remotion still src/compositions/index.tsx Thumbnail \
+            "output/videos/${TOPIC}-s${SESSION}/thumbnail.png" \
+            --props="output/test-props-s${SESSION}.json"
+
+      # ── Enqueue rendered sessions ─────────────────────────────────────────────
+      - name: Enqueue rendered sessions in queue.db
+        id: enqueue
+        env:
+          PLATFORMS: ${{ inputs.platforms || 'youtube,instagram,telegram' }}
+          TOPIC:     ${{ inputs.topic || '' }}
+          SESSION:   ${{ inputs.session || '1' }}
+          MODE:      ${{ inputs.mode || 'batch' }}
+        run: |
+          set -euo pipefail
+          QUEUE_IDS=""
+
+          if [ "${MODE}" = "single" ] && [ -n "${TOPIC}" ]; then
+            # Single mode: enqueue the one rendered session
+            SCHEDULED_DATE=$(date +%Y-%m-%d)
+            DOW=$(date +%A)
+
+            # Determine slot type from day-of-week
+            case "$(date +%u)" in
+              2) SLOT="long" ;;
+              4) SLOT="vertical-1" ;;
+              6) SLOT="vertical-23" ;;
+              *) SLOT="long" ;;
+            esac
+
+            LONG_VIDEO="output/videos/${TOPIC}-s${SESSION}/long.mp4"
+            METADATA=$(ls "output/videos/${TOPIC}-s${SESSION}"/*.json | head -1)
+
+            QUEUE_ID="${TOPIC}/s${SESSION}/long"
+            npx tsx scripts/queue/enqueue.ts \
+              --id             "${QUEUE_ID}" \
+              --topic          "${TOPIC}" \
+              --topic-name     "${TOPIC}" \
+              --session        "${SESSION}" \
+              --slot-type      "${SLOT}" \
+              --day-of-week    "${DOW}" \
+              --scheduled-date "${SCHEDULED_DATE}" \
+              --video-path     "${LONG_VIDEO}" \
+              --metadata-path  "${METADATA}" \
+              --platforms      "${PLATFORMS}" \
+              --upsert
+
+            QUEUE_IDS="${QUEUE_ID}"
+          else
+            # Batch mode: batch-render-all.ts writes a manifest JSON
+            # Parse output/batch-render-manifest.json if it exists
+            if [ -f "output/batch-render-manifest.json" ]; then
+              QUEUE_IDS=$(python3 -c "
+          import json, subprocess, sys
+          manifest = json.load(open('output/batch-render-manifest.json'))
+          ids = []
+          for item in manifest.get('rendered', []):
+              topic   = item['topic']
+              session = item['session']
+              qid     = f\"{topic}/s{session}/long\"
+              args = [
+                'npx', 'tsx', 'scripts/queue/enqueue.ts',
+                '--id',             qid,
+                '--topic',          topic,
+                '--topic-name',     item.get('topicName', topic),
+                '--session',        str(session),
+                '--slot-type',      item.get('slotType', 'long'),
+                '--day-of-week',    item.get('dayOfWeek', 'Tuesday'),
+                '--scheduled-date', item.get('scheduledDate', '$(date +%Y-%m-%d)'),
+                '--video-path',     item['videoPath'],
+                '--metadata-path',  item['metadataPath'],
+                '--platforms',      '$PLATFORMS',
+                '--upsert',
+              ]
+              if item.get('thumbnailPath'):
+                  args += ['--thumbnail-path', item['thumbnailPath']]
+              subprocess.run(args, check=False)
+              ids.append(qid)
+          print(','.join(ids))
+          ")
+            fi
+          fi
+
+          echo "queue_ids=${QUEUE_IDS}" >> "$GITHUB_OUTPUT"
+          echo "Enqueued: ${QUEUE_IDS}"
+
+      # ── Upload artifacts ──────────────────────────────────────────────────────
+      - name: Upload rendered videos as artifacts
+        if: inputs.mode == 'single' && inputs.topic != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: rendered-${{ inputs.topic }}-s${{ inputs.session || '1' }}-${{ github.run_number }}
+          path: output/videos/${{ inputs.topic }}-s${{ inputs.session || '1' }}/
+          retention-days: 3
+
+      - name: Show render summary
+        if: always()
+        run: |
+          {
+            echo "## Render Summary"
+            echo "| File | Size |"
+            echo "|------|------|"
+            find output/videos -name '*.mp4' 2>/dev/null \
+              | while read -r f; do
+                  SIZE=$(du -sh "$f" | cut -f1)
+                  echo "| \`$f\` | ${SIZE} |"
+                done || echo "| — | no videos |"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  # ── Trigger publish pipeline when renders complete ────────────────────────────
+  trigger-publish:
+    name: Trigger publish pipeline
+    needs: render
+    if: |
+      needs.render.result == 'success' &&
+      needs.render.outputs.queue_ids != '' &&
+      inputs.skip_publish_dispatch != true
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Dispatch publish-pipeline for each rendered item
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          QUEUE_IDS: ${{ needs.render.outputs.queue_ids }}
+        run: |
+          set -euo pipefail
+          IFS=',' read -ra IDS <<< "${QUEUE_IDS}"
+          for QID in "${IDS[@]}"; do
+            echo "Dispatching publish for: ${QID}"
+            gh api \
+              --method POST \
+              "/repos/${{ github.repository }}/dispatches" \
+              -f event_type=publish-ready \
+              -f "client_payload[queue_id]=${QID}" \
+              -f "client_payload[triggered_by]=render-pipeline"
+            sleep 2  # avoid rate limiting
+          done
