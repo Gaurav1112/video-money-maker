@@ -32,6 +32,9 @@ export const COLORS = {
   // Explicit colors for dark-background contexts (intros, overlays, badges)
   textOnDark: '#FFFFFF',    // actual white for dark backgrounds
   textOnLight: '#1E293B',   // charcoal for light backgrounds
+  // Aliases for component-side compatibility (light theme primary text/bg)
+  textPrimary: '#1E293B',
+  bgBase: '#F5F3EF',
 } as const;
 
 export const FONTS = {

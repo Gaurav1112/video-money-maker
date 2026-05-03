@@ -15,7 +15,7 @@
  *  6. Mock Playwright: correct selector chain and text content assertions
  */
 
-import { jest, describe, it, expect, beforeEach } from '@jest/globals';
+import { vi as jest, describe, it, expect, beforeEach } from 'vitest';
 
 // ─── Mock playwright BEFORE importing the module under test ──────────────────
 
