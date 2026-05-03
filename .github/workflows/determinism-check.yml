@@ -1,0 +1,105 @@
+name: Determinism Check
+
+# Render same storyboard twice and assert byte-identical output.
+# Fails the PR if any source of non-determinism is introduced.
+
+on:
+  pull_request:
+    branches: [main, develop]
+    paths:
+      # Only run when render-affecting files change.
+      # Metadata, scripts, and publish files don't need a determinism check.
+      - 'src/**'
+      - 'remotion.config.ts'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'tsconfig.json'
+  workflow_dispatch:
+    inputs:
+      topic:
+        description: 'Topic slug to test (default: load-balancing)'
+        required: false
+        default: 'load-balancing'
+      session:
+        description: 'Session number to test (default: 1)'
+        required: false
+        default: '1'
+      composition:
+        description: 'Remotion composition to render'
+        required: false
+        default: 'LongVideo'
+        type: choice
+        options: [LongVideo, VerticalLong, ShortVideo]
+
+concurrency:
+  group: determinism-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Pin the date so getShortForDate() is deterministic in any scripts called.
+  RENDER_DATE: '2026-05-03'
+  # Disable network TTS; we use the pre-baked fixture.
+  USE_WHISPER: 'false'
+  # Remotion uses this to decide concurrency — pin for reproducibility.
+  REMOTION_CONCURRENCY: '1'
+
+jobs:
+  determinism:
+    name: Render Determinism
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Remotion renderer system deps
+        # Remotion needs chromium + ffmpeg for headless render.
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq \
+            chromium-browser \
+            ffmpeg \
+            libgbm-dev \
+            libasound2-dev
+        env:
+          DEBIAN_FRONTEND: noninteractive
+
+      - name: Cache TTS audio fixtures
+        uses: actions/cache@v4
+        with:
+          path: tests/fixtures/determinism
+          key: determinism-fixtures-${{ hashFiles('tests/fixtures/determinism/**') }}
+          restore-keys: |
+            determinism-fixtures-
+
+      - name: Verify deterministic render
+        run: |
+          npx tsx scripts/verify-deterministic-render.ts \
+            --topic "${{ inputs.topic || 'load-balancing' }}" \
+            --session "${{ inputs.session || '1' }}" \
+            --composition "${{ inputs.composition || 'LongVideo' }}"
+        env:
+          CI: 'true'
+          RENDER_DATE: ${{ env.RENDER_DATE }}
+          USE_WHISPER: ${{ env.USE_WHISPER }}
+          REMOTION_CONCURRENCY: ${{ env.REMOTION_CONCURRENCY }}
+          # Remotion needs to know where Chrome is on Ubuntu.
+          REMOTION_CHROME_EXECUTABLE: /usr/bin/chromium-browser
+
+      - name: Upload renders on failure (for debugging)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: determinism-failure-${{ github.run_id }}
+          path: output/_determinism_check/
+          retention-days: 3

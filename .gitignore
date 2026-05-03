@@ -31,3 +31,17 @@ tools/
 # Secrets — never commit
 config/youtube-client-secret.json
 .youtube-token.json
+
+## .gitignore patch
+## Add these lines to the repository root .gitignore
+## (append to the existing file — do not replace it)
+
+# ─── SQLite queue database (runtime state, NOT committed) ────────────────────
+data/queue.db
+data/queue.db-wal
+data/queue.db-shm
+
+# ─── Keep the example schema snapshot committed ───────────────────────────────
+# (The example file is an empty DB produced by applying schema.sql;
+#  it documents the schema without containing any live state.)
+!data/queue.db.example

@@ -1,0 +1,51 @@
+version: 2
+
+updates:
+  # ── GitHub Actions ────────────────────────────────────────────────────────
+  # Keeps action SHA pins current. Dependabot opens a PR when a new release is
+  # tagged; the PR updates the SHA comment AND the pinned hash.
+  # Without this, SHA pins become stale and miss security patches.
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Asia/Kolkata"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "Gaurav1112"
+    labels:
+      - "dependencies"
+      - "security"
+    commit-message:
+      prefix: "ci(deps)"
+      include: "scope"
+    groups:
+      # Group all actions/* updates into a single PR to reduce noise
+      actions-group:
+        patterns:
+          - "actions/*"
+      # Third-party actions get their own PRs for careful review
+      third-party-actions:
+        exclude-patterns:
+          - "actions/*"
+
+  # ── npm / Node.js ─────────────────────────────────────────────────────────
+  # Separate entry for npm so security advisories on npm packages are tracked.
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Asia/Kolkata"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+    ignore:
+      # Pin major Remotion version — breaking changes require manual upgrade
+      - dependency-name: "remotion"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@remotion/*"
+        update-types: ["version-update:semver-major"]

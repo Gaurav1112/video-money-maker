@@ -1,0 +1,34 @@
+{
+  "fps": 30,
+  "width": 1920,
+  "height": 1080,
+  "topic": "The Lion and the Rabbit (demo)",
+  "audioFile": "master.mp3",
+  "durationInFrames": 900,
+  "scenes": [
+    {
+      "sceneIndex": 0,
+      "startFrame": 150,
+      "durationFrames": 120,
+      "type": "text",
+      "endFrame": 270,
+      "narration": "आज तुम मेरा खाना हो!"
+    },
+    {
+      "sceneIndex": 1,
+      "startFrame": 270,
+      "durationFrames": 180,
+      "type": "text",
+      "endFrame": 450,
+      "narration": "एक छोटा खरगोश था जो बहुत ही होशियार था।"
+    },
+    {
+      "sceneIndex": 2,
+      "startFrame": 450,
+      "durationFrames": 200,
+      "type": "text",
+      "endFrame": 650,
+      "narration": "खरगोश ने शेर को कुएं के पास ले जाकर उसे बेवकूफ बनाया।"
+    }
+  ]
+}
