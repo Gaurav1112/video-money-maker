@@ -7,6 +7,7 @@ import {
   useVideoConfig,
 } from 'remotion';
 import { COLORS, FONTS } from '../lib/theme';
+import { CAPTION_SAFE_BOTTOM } from '../lib/safe-zones';
 
 interface CaptionOverlayProps {
   /** The full narration text for the current scene */
@@ -127,6 +128,12 @@ const splitIntoLines = (groupWords: string[]): string[][] => {
  *  4. Natural phrase-boundary line breaks (max 2 lines)
  *  5. Clean dark background strip (no frosted glass)
  *  6. ALL-CAPS emphasis detection (saffron color)
+ *
+ * Safe-zone behaviour:
+ *  - Vertical video (height > width): bottom = CAPTION_SAFE_BOTTOM (420px)
+ *    — clears YouTube Shorts (420px), Instagram Reels (380px) chrome.
+ *    — TikTok requires 480px; promote CAPTION_SAFE_BOTTOM if TikTok is added.
+ *  - Landscape video (width > height): bottom = 80px (desktop player chrome is minimal).
  */
 const CaptionOverlay: React.FC<CaptionOverlayProps> = ({
   text = '',
@@ -137,9 +144,12 @@ const CaptionOverlay: React.FC<CaptionOverlayProps> = ({
   captionMode = 'fireship',
 }) => {
   const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
+  const { fps, width, height } = useVideoConfig();
 
   if (!text || text.trim() === '') return null;
+
+  // Vertical (9:16) needs full platform safe-zone clearance; landscape needs much less.
+  const safeBottom = height > width ? CAPTION_SAFE_BOTTOM : 80;
 
   const words = text.split(/\s+/).filter(Boolean);
   const totalWords = words.length;
@@ -243,9 +253,11 @@ const CaptionOverlay: React.FC<CaptionOverlayProps> = ({
         <div
           style={{
             position: 'absolute',
-            bottom: 100,
+            // FIX: was bottom: 100 — hidden by YouTube (420px) / IG (380px) chrome.
+            bottom: safeBottom,
             left: '5%',
-            right: '22%',
+            // FIX: was right: '22%' — cut off 200px of text for unnecessary avatar clearance.
+            right: '5%',
             display: 'flex',
             justifyContent: 'center',
             opacity: containerOpacity,
@@ -315,9 +327,11 @@ const CaptionOverlay: React.FC<CaptionOverlayProps> = ({
       <div
         style={{
           position: 'absolute',
-          bottom: 50,
+          // FIX: was bottom: 50 — hidden by YouTube (420px) / IG (380px) chrome.
+          bottom: safeBottom,
           left: '5%',
-          right: '22%',
+          // FIX: was right: '22%' — unnecessarily narrow; avatar clearance only needs ~5%.
+          right: '5%',
           display: 'flex',
           justifyContent: 'center',
           opacity: containerOpacity,
