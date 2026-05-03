@@ -1,0 +1,228 @@
+name: Daily Publish — Hinglish Track
+
+on:
+  schedule:
+    # 07:00 UTC = 12:30 PM IST — prime Indian content discovery window
+    # Published slightly after English track (05:00 UTC) to avoid algorithm confusion
+    - cron: "0 7 * * *"
+  workflow_dispatch:
+    inputs:
+      topic:
+        description: "Topic slug (e.g. kafka-partitioning). Leave blank to use queue."
+        required: false
+        default: ""
+      session:
+        description: "Session number (1-based). Leave blank for next unrendered."
+        required: false
+        default: ""
+      dry_run:
+        description: "Dry run — render audio but skip YouTube upload"
+        required: false
+        default: "false"
+        type: boolean
+
+concurrency:
+  # Only one Hinglish publish at a time; don't cancel in-progress runs
+  group: hinglish-publish
+  cancel-in-progress: false
+
+jobs:
+  # ── Job 1: Determine what to render/upload ──────────────────────────────
+  determine:
+    name: Determine next Hinglish session
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      topic: ${{ steps.pick.outputs.topic }}
+      session: ${{ steps.pick.outputs.session }}
+      skip: ${{ steps.pick.outputs.skip }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci --prefer-offline
+
+      - name: Pick next Hinglish session
+        id: pick
+        run: |
+          TOPIC="${{ github.event.inputs.topic }}"
+          SESSION="${{ github.event.inputs.session }}"
+
+          if [ -n "$TOPIC" ] && [ -n "$SESSION" ]; then
+            echo "topic=$TOPIC" >> $GITHUB_OUTPUT
+            echo "session=$SESSION" >> $GITHUB_OUTPUT
+            echo "skip=false" >> $GITHUB_OUTPUT
+          else
+            # Use existing queue picker — reads from publish-queue.json
+            # and filters for entries where hinglish_published != true
+            OUTPUT=$(npx tsx scripts/get-next-hinglish-session.ts 2>&1)
+            if echo "$OUTPUT" | grep -q "NO_SESSION"; then
+              echo "skip=true" >> $GITHUB_OUTPUT
+              echo "No unpublished Hinglish sessions in queue — skipping"
+            else
+              TOPIC=$(echo "$OUTPUT" | grep "^topic=" | cut -d= -f2)
+              SESSION=$(echo "$OUTPUT" | grep "^session=" | cut -d= -f2)
+              echo "topic=$TOPIC" >> $GITHUB_OUTPUT
+              echo "session=$SESSION" >> $GITHUB_OUTPUT
+              echo "skip=false" >> $GITHUB_OUTPUT
+            fi
+          fi
+
+  # ── Job 2: Render Hinglish audio ────────────────────────────────────────
+  render-hinglish:
+    name: Render Hinglish audio (${{ needs.determine.outputs.topic }} s${{ needs.determine.outputs.session }})
+    needs: determine
+    if: needs.determine.outputs.skip == 'false'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci --prefer-offline
+
+      - name: Install system deps
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg
+          pip3 install --quiet edge-tts
+
+      - name: Render Hinglish audio
+        id: render
+        env:
+          TOPIC: ${{ needs.determine.outputs.topic }}
+          SESSION: ${{ needs.determine.outputs.session }}
+        run: |
+          npx tsx scripts/render-hinglish-audio.ts \
+            --topic "$TOPIC" \
+            --session "$SESSION" \
+            --output-dir output/hinglish
+
+          # Capture output paths from the render script
+          echo "audio_path=output/hinglish/${TOPIC}/session-${SESSION}/audio-hi.mp3" >> $GITHUB_OUTPUT
+          echo "video_path=output/hinglish/${TOPIC}/session-${SESSION}/video-with-hinglish.mp4" >> $GITHUB_OUTPUT
+
+      - name: Validate audio output
+        run: |
+          AUDIO="${{ steps.render.outputs.audio_path }}"
+          if [ ! -f "$AUDIO" ]; then
+            echo "❌ Expected audio file not found: $AUDIO"
+            exit 1
+          fi
+          SIZE=$(stat -c%s "$AUDIO")
+          if [ "$SIZE" -lt 10000 ]; then
+            echo "❌ Audio file too small (${SIZE} bytes) — likely empty render"
+            exit 1
+          fi
+          echo "✅ Audio OK: $AUDIO (${SIZE} bytes)"
+          # Print duration via ffprobe
+          ffprobe -v quiet -show_entries format=duration -of csv=p=0 "$AUDIO" || true
+
+      - name: Upload audio artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: hinglish-audio-${{ needs.determine.outputs.topic }}-s${{ needs.determine.outputs.session }}
+          path: output/hinglish/
+          retention-days: 7
+
+  # ── Job 3: Upload to YouTube ─────────────────────────────────────────────
+  upload-youtube:
+    name: Upload Hinglish video to YouTube
+    needs: [determine, render-hinglish]
+    if: needs.determine.outputs.skip == 'false' && github.event.inputs.dry_run != 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci --prefer-offline
+
+      - name: Download audio artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: hinglish-audio-${{ needs.determine.outputs.topic }}-s${{ needs.determine.outputs.session }}
+          path: output/hinglish/
+
+      - name: Upload Hinglish video to YouTube
+        env:
+          TOPIC: ${{ needs.determine.outputs.topic }}
+          SESSION: ${{ needs.determine.outputs.session }}
+          # YouTube OAuth for GuruSishya-India channel (same channel, Hinglish playlist)
+          YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
+          YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
+          YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
+          # Hinglish-specific playlist ID (create one in YouTube Studio → Playlists)
+          YOUTUBE_HINGLISH_PLAYLIST_ID: ${{ secrets.YOUTUBE_HINGLISH_PLAYLIST_ID }}
+        run: |
+          npx tsx scripts/upload-hinglish-youtube.ts \
+            --topic "$TOPIC" \
+            --session "$SESSION" \
+            --audio "output/hinglish/${TOPIC}/session-${SESSION}/audio-hi.mp3" \
+            --playlist "$YOUTUBE_HINGLISH_PLAYLIST_ID"
+
+      - name: Mark session as Hinglish-published
+        env:
+          TOPIC: ${{ needs.determine.outputs.topic }}
+          SESSION: ${{ needs.determine.outputs.session }}
+        run: |
+          # Update publish-queue.json to set hinglish_published: true
+          npx tsx scripts/mark-hinglish-published.ts \
+            --topic "$TOPIC" \
+            --session "$SESSION"
+
+      - name: Commit updated publish queue
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git pull --rebase origin main
+          git add config/publish-queue.json
+          git diff --cached --quiet || \
+            git commit -m "chore: mark hinglish published — ${{ needs.determine.outputs.topic }} s${{ needs.determine.outputs.session }}"
+          git push || (git pull --rebase origin main && git push)
+
+  # ── Job 4: Notify on failure ─────────────────────────────────────────────
+  notify-failure:
+    name: Notify on failure
+    needs: [determine, render-hinglish, upload-youtube]
+    if: failure()
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Report failure
+        run: |
+          echo "::error::Hinglish publish pipeline failed"
+          echo "Topic: ${{ needs.determine.outputs.topic }}"
+          echo "Session: ${{ needs.determine.outputs.session }}"
+          echo ""
+          echo "Check the failed job logs above."
+          echo "To retry: workflow_dispatch with same topic + session values."
+          # Add Slack/Discord notification here if webhook is configured:
+          # curl -s -X POST "${{ secrets.SLACK_WEBHOOK }}" \
+          #   -H 'Content-type: application/json' \
+          #   -d '{"text":"❌ Hinglish publish failed: ${{ needs.determine.outputs.topic }} s${{ needs.determine.outputs.session }}"}'
