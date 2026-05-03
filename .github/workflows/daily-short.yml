@@ -344,6 +344,22 @@ jobs:
           fi
           npx tsx scripts/published-state.ts record "$META" "$VIDEO_ID"
 
+      # ── B1: auto-post first comment as channel owner ───────────────────────
+      # NOTE: YouTube Data API v3 does NOT support programmatic pinning.
+      # This posts the FIRST comment (Creator badge + funnel CTA + reply
+      # prompt). For full pinned effect, manually pin via YT Studio UI.
+      - name: Post first comment (channel-owner CTA)
+        if: success() && inputs.dry_run != 'true' && steps.upload.outputs.video_id != ''
+        env:
+          YOUTUBE_CLIENT_ID:     ${{ secrets.YOUTUBE_CLIENT_ID }}
+          YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
+          YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
+        continue-on-error: true
+        run: |
+          VIDEO_ID="${{ steps.upload.outputs.video_id }}"
+          META="${{ steps.upload.outputs.metadata_path }}"
+          npx tsx scripts/first-comment.ts "$VIDEO_ID" --metadata "$META"
+
       - name: Commit ledger update (fatal on failure — losing entries breaks cooldown)
         if: success() && inputs.dry_run != 'true' && steps.record.outcome == 'success'
         run: |
