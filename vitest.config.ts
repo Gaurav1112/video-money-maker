@@ -21,6 +21,28 @@ export default defineConfig({
       // retention-proxy tests still run and pass.
       'tests/retention/**',
       // tests/stock/** is intentionally NOT excluded — runs via test:stock
+
+      // Pre-pivot root-level specs against the dead "cartoon" pipeline
+      // (Remotion-only render path, broll-templates, script-generator-v2,
+      // hinglish-rewriter, audio-stitcher, queue, telegram). Stock-pipeline
+      // replaces this entire surface; re-enable individually if/when the
+      // underlying modules are revived. Note tests/stock/quality-gate.test.ts
+      // is the live one; tests/quality-gate.test.ts is the cartoon one.
+      'tests/audio-stitcher.test.ts',
+      'tests/broll-orchestrator.test.ts',
+      'tests/hinglish-rewriter.test.ts',
+      'tests/loopable-short.test.ts',
+      'tests/publish-pipeline.test.ts',
+      'tests/queue.test.ts',
+      'tests/quality-gate.test.ts',
+      'tests/script-generator-v2.test.ts',
+      'tests/script-validator.test.ts',
+      'tests/telegram.test.ts',
+      'tests/integration/end-to-end.test.ts',
+      // topic-bank.test.ts uses node:test (not vitest) — vitest sees 0 tests
+      // but node-test auto-runs at exit and writes TAP. Run via:
+      //   npx tsx --test tests/topic-bank.test.ts
+      'tests/topic-bank.test.ts',
     ],
 
     // Per-file timeout — audio/fixture tests need more headroom

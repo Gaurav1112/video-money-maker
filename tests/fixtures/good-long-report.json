@@ -3,7 +3,7 @@
   "metadataPath": "/Users/kumargaurav/oss/video-money-maker/tests/fixtures/good-long-meta.json",
   "format": "long",
   "videoSha256": "9540c6729d63f68223fe5612b6ef4d3fb2b056e3a80fe4d5d5626bf4a2eaadda",
-  "timestamp": "2026-05-03T13:22:51.551Z",
+  "timestamp": "2026-05-03T18:41:37.377Z",
   "overallPassed": false,
   "enforceMode": "enforce",
   "checks": [
@@ -308,5 +308,5 @@
     "errors": 2,
     "warnings": 1
   },
-  "durationMs": 66874
+  "durationMs": 34593
 }

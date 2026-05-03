@@ -3,7 +3,7 @@
   "metadataPath": "/Users/kumargaurav/oss/video-money-maker/tests/fixtures/bad-too-short-meta.json",
   "format": "long",
   "videoSha256": "b1dc68f7f5aa0e7d021bdefb1c731052aab9ba499239e4cf0f072127c658eda0",
-  "timestamp": "2026-05-03T13:00:56.511Z",
+  "timestamp": "2026-05-03T18:33:43.311Z",
   "overallPassed": false,
   "enforceMode": "enforce",
   "checks": [
@@ -315,5 +315,5 @@
     "errors": 2,
     "warnings": 1
   },
-  "durationMs": 24846
+  "durationMs": 24826
 }

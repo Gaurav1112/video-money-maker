@@ -56,9 +56,9 @@ describe('TOPIC_BANK_100.json', () => {
     assert.doesNotThrow(() => loadBank());
   });
 
-  it('has exactly 100 topics', () => {
+  it('has exactly 108 topics (100 SDE + 8 GATE-2026)', () => {
     const bank = loadBank();
-    assert.equal(bank.length, 100);
+    assert.equal(bank.length, 108);
   });
 
   it('has no duplicate ids', () => {
@@ -95,7 +95,7 @@ describe('TOPIC_BANK_100.json', () => {
     }
   });
 
-  it('has correct category distribution: 40 SD, 20 DSA, 20 behavioral, 10 OS, 10 DB', () => {
+  it('has correct category distribution: 40 SD, 20 DSA, 20 behavioral, 10 OS, 10 DB, 8 GATE', () => {
     const bank = loadBank();
     const counts = bank.reduce<Record<string, number>>((acc, e) => {
       acc[e.category] = (acc[e.category] ?? 0) + 1;
@@ -106,6 +106,7 @@ describe('TOPIC_BANK_100.json', () => {
     assert.equal(counts['behavioral'], 20, 'behavioral count wrong');
     assert.equal(counts['os-networking'], 10, 'os-networking count wrong');
     assert.equal(counts['db-internals'], 10, 'db-internals count wrong');
+    assert.equal(counts['gate-cs'], 8, 'gate-cs count wrong');
   });
 
   it('every outline has exactly 4 items', () => {

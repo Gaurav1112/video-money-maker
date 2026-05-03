@@ -121,6 +121,9 @@ jobs:
       - name: Run full test suite with coverage
         run: npm run test:ci
 
+      - name: Run topic-bank invariants (node:test)
+        run: npm run test:topic-bank
+
       - name: Upload coverage report
         if: always()
         uses: actions/upload-artifact@v4

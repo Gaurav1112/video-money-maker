@@ -3,7 +3,7 @@
   "metadataPath": "/Users/kumargaurav/oss/video-money-maker/tests/fixtures/bad-resolution-meta.json",
   "format": "long",
   "videoSha256": "2488fad3c3b63500cbf24f60eac85eef44ccba295fb3916af9847f97cd1fe400",
-  "timestamp": "2026-05-03T12:59:56.189Z",
+  "timestamp": "2026-05-03T18:32:43.934Z",
   "overallPassed": false,
   "enforceMode": "enforce",
   "checks": [
@@ -316,5 +316,5 @@
     "errors": 2,
     "warnings": 1
   },
-  "durationMs": 24657
+  "durationMs": 26342
 }

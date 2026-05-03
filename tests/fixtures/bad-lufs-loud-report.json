@@ -3,7 +3,7 @@
   "metadataPath": "/Users/kumargaurav/oss/video-money-maker/tests/fixtures/bad-lufs-loud-meta.json",
   "format": "long",
   "videoSha256": "c1dbe89938750f10f669c071690d6f75d5d28770af50d4f35f829954bfbfb372",
-  "timestamp": "2026-05-03T13:03:09.029Z",
+  "timestamp": "2026-05-03T18:35:50.378Z",
   "overallPassed": false,
   "enforceMode": "enforce",
   "checks": [
@@ -308,5 +308,5 @@
     "errors": 2,
     "warnings": 1
   },
-  "durationMs": 35578
+  "durationMs": 35054
 }

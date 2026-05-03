@@ -46,3 +46,8 @@ data/queue.db-shm
 #  it documents the schema without containing any live state.)
 !data/queue.db.example
 assets/stock-cache/
+
+# Quality-gate temporary test artifacts (created at runtime under timestamped dirs)
+.qg_*/
+tests/fixtures/.qg_*/
+tests/integration/.e2e-workspace/

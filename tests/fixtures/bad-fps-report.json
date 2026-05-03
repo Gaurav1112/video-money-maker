@@ -3,7 +3,7 @@
   "metadataPath": "/Users/kumargaurav/oss/video-money-maker/tests/fixtures/bad-fps-meta.json",
   "format": "long",
   "videoSha256": "9e6a08118a23e6b1974bdcdfc07531441cb16583ca5da2dd298e37ff33390e6b",
-  "timestamp": "2026-05-03T13:00:31.663Z",
+  "timestamp": "2026-05-03T18:33:18.483Z",
   "overallPassed": false,
   "enforceMode": "enforce",
   "checks": [
@@ -315,5 +315,5 @@
     "errors": 2,
     "warnings": 1
   },
-  "durationMs": 35473
+  "durationMs": 34547
 }

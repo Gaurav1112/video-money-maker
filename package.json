@@ -1,7 +1,7 @@
 {
   "name": "cartoon-pipeline",
   "version": "1.0.0",
-  "description": "Fully automated cartoon YouTube channel pipeline — 7 Indian languages",
+  "description": "Fully automated cartoon YouTube channel pipeline \u2014 7 Indian languages",
   "private": true,
   "scripts": {
     "studio": "remotion studio",
@@ -26,7 +26,8 @@
     "test:determinism": "vitest run --reporter=verbose --passWithNoTests tests/determinism",
     "test:security": "vitest run --reporter=verbose --passWithNoTests tests/security",
     "test:fixtures": "bash scripts/build-fixtures.sh",
-    "test:ci": "vitest run --reporter=verbose --coverage"
+    "test:ci": "vitest run --reporter=verbose --coverage",
+    "test:topic-bank": "tsx --test tests/topic-bank.test.ts"
   },
   "dependencies": {
     "@remotion/cli": "4.0.456",

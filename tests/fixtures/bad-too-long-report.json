@@ -3,7 +3,7 @@
   "metadataPath": "/Users/kumargaurav/oss/video-money-maker/tests/fixtures/bad-too-long-meta.json",
   "format": "long",
   "videoSha256": "b6f2d16adea0d20459e138f6ca98ec8f7f2818aa4eb996813a5e08ac7d67574b",
-  "timestamp": "2026-05-03T13:02:11.029Z",
+  "timestamp": "2026-05-03T18:34:53.324Z",
   "overallPassed": false,
   "enforceMode": "enforce",
   "checks": [
@@ -297,5 +297,5 @@
     "errors": 2,
     "warnings": 1
   },
-  "durationMs": 74517
+  "durationMs": 70012
 }
