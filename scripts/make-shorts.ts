@@ -27,6 +27,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import type { Storyboard } from '../src/types';
 import { buildShortsTitle } from '../src/lib/title-templates';
+import { playlistFor } from './lib/playlist-mapping';
 
 // ── Constants (identical to make-reels.ts) ─────────────────────────────────────
 
@@ -178,6 +179,10 @@ function buildMetadata(
       tags: YT_HASHTAGS.map((t) => t.replace('#', '')),
       categoryId: '28',         // Science & Technology
       privacyStatus: 'public',
+      // B3: deterministic playlist mapping. upload-youtube.ts will
+      // find-or-create this playlist and add the video to it. Drives
+      // the "playlist session-time" signal for Shorts-feed promotion.
+      playlistTitle: playlistFor(storyboard.topic || '') ?? undefined,
       // End screens are not supported on YouTube Shorts — explicitly disabled
       endScreen: false,
       // madeForKids: false is required for monetisation eligibility
