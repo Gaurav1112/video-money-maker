@@ -1,0 +1,81 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`orchestrateBroll - snapshot > FIXED_SEGMENTS plan with seed=42 matches snapshot 1`] = `
+[
+  {
+    "component": "BeforeAfter",
+    "conceptType": "NUMBER",
+    "seed": 23312,
+  },
+  {
+    "component": "CompareSplit",
+    "conceptType": "COMPARISON",
+    "seed": 19549,
+  },
+  {
+    "component": "WhiteboardDraw",
+    "conceptType": "DEFINITION",
+    "seed": 74657,
+  },
+  {
+    "component": "Diagram",
+    "conceptType": "PROCESS",
+    "seed": 77299,
+  },
+  {
+    "component": "MetricCard",
+    "conceptType": "EXAMPLE",
+    "seed": 18444,
+  },
+  {
+    "component": "CompareSplit",
+    "conceptType": "WARNING",
+    "seed": 72904,
+  },
+  {
+    "component": "ConceptBox",
+    "conceptType": "QUESTION",
+    "seed": 86196,
+  },
+  {
+    "component": "CodeTyper",
+    "conceptType": "CODE",
+    "seed": 90802,
+  },
+  {
+    "component": "WhiteboardDraw",
+    "conceptType": "DEFINITION",
+    "seed": 39720,
+  },
+  {
+    "component": "MetricCard",
+    "conceptType": "NUMBER",
+    "seed": 83772,
+  },
+  {
+    "component": "Diagram",
+    "conceptType": "PROCESS",
+    "seed": 89615,
+  },
+  {
+    "component": "ArrowFlow",
+    "conceptType": "COMPARISON",
+    "seed": 64300,
+  },
+  {
+    "component": "CodeTyper",
+    "conceptType": "CODE",
+    "seed": 65904,
+  },
+  {
+    "component": "MetricCard",
+    "conceptType": "EXAMPLE",
+    "seed": 38996,
+  },
+  {
+    "component": "LoadingBar",
+    "conceptType": "QUESTION",
+    "seed": 69752,
+  },
+]
+`;

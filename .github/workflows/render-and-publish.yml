@@ -45,10 +45,10 @@ jobs:
     steps:
       # ── Setup ──────────────────────────────────────────────
       - name: Checkout video-pipeline
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
 
       - name: Checkout guru-sishya content
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
         with:
           repository: Gaurav1112/guru-sishya
           path: guru-sishya
@@ -57,7 +57,7 @@ jobs:
           sparse-checkout-cone-mode: false
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
@@ -185,7 +185,7 @@ jobs:
       # ── Upload Artifacts ───────────────────────────────────
       - name: Upload render artifacts
         if: steps.pick.outputs.skip != 'true'
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v4
         with:
           name: rendered-videos-${{ steps.pick.outputs.topic }}-s${{ steps.pick.outputs.session }}
           path: ${{ env.OUTPUT_DIR }}/
@@ -199,10 +199,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
@@ -211,7 +211,7 @@ jobs:
         run: npm ci
 
       - name: Download render artifacts
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@v4
         with:
           name: rendered-videos-${{ needs.render.outputs.topic }}-s${{ needs.render.outputs.session }}
           path: ${{ env.OUTPUT_DIR }}/

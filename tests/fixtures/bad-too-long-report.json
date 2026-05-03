@@ -1,0 +1,301 @@
+{
+  "videoPath": "/Users/kumargaurav/oss/video-money-maker/tests/fixtures/bad-too-long.mp4",
+  "metadataPath": "/Users/kumargaurav/oss/video-money-maker/tests/fixtures/bad-too-long-meta.json",
+  "format": "long",
+  "videoSha256": "b6f2d16adea0d20459e138f6ca98ec8f7f2818aa4eb996813a5e08ac7d67574b",
+  "timestamp": "2026-05-03T13:02:11.029Z",
+  "overallPassed": false,
+  "enforceMode": "enforce",
+  "checks": [
+    {
+      "checkId": "F-01",
+      "name": "Resolution",
+      "category": "format",
+      "severity": "PASS",
+      "passed": true,
+      "message": "1920×1080 ✓"
+    },
+    {
+      "checkId": "F-02",
+      "name": "Frame rate",
+      "category": "format",
+      "severity": "PASS",
+      "passed": true,
+      "message": "30.000 fps ✓"
+    },
+    {
+      "checkId": "F-03",
+      "name": "Duration (long-form)",
+      "category": "format",
+      "severity": "FATAL",
+      "passed": false,
+      "message": "20.0 min — must be 5–15 min",
+      "measured": {
+        "durationSec": 1200
+      },
+      "threshold": {
+        "min": 300,
+        "max": 900
+      }
+    },
+    {
+      "checkId": "F-04",
+      "name": "Video codec",
+      "category": "format",
+      "severity": "PASS",
+      "passed": true,
+      "message": "h264 ✓"
+    },
+    {
+      "checkId": "F-04b",
+      "name": "H.264 profile",
+      "category": "format",
+      "severity": "PASS",
+      "passed": true,
+      "message": "high ✓"
+    },
+    {
+      "checkId": "F-05",
+      "name": "File size",
+      "category": "format",
+      "severity": "PASS",
+      "passed": true,
+      "message": "0.02 GB ✓"
+    },
+    {
+      "checkId": "F-06",
+      "name": "Audio codec",
+      "category": "format",
+      "severity": "PASS",
+      "passed": true,
+      "message": "aac ✓"
+    },
+    {
+      "checkId": "F-07",
+      "name": "Sample rate",
+      "category": "format",
+      "severity": "PASS",
+      "passed": true,
+      "message": "48000 Hz ✓"
+    },
+    {
+      "checkId": "F-08",
+      "name": "Audio channels",
+      "category": "format",
+      "severity": "PASS",
+      "passed": true,
+      "message": "2 ch ✓"
+    },
+    {
+      "checkId": "F-09",
+      "name": "LUFS measurement",
+      "category": "format",
+      "severity": "ERROR",
+      "passed": false,
+      "message": "Could not parse ebur128 output — ffmpeg may have crashed"
+    },
+    {
+      "checkId": "V-01",
+      "name": "First-3s text density",
+      "category": "visual",
+      "severity": "PASS",
+      "passed": true,
+      "message": "Max coverage 0.0% < 60% threshold ✓",
+      "measured": {
+        "maxCoveragePercent": 0
+      }
+    },
+    {
+      "checkId": "V-02",
+      "name": "Caption safe-zone",
+      "category": "visual",
+      "severity": "PASS",
+      "passed": true,
+      "message": "No caption violations detected in safe-zone check ✓"
+    },
+    {
+      "checkId": "V-03",
+      "name": "Solid-color frame check",
+      "category": "visual",
+      "severity": "PASS",
+      "passed": true,
+      "message": "Max consecutive solid: 0.00s ≤ 0.5s ✓",
+      "measured": {
+        "solidDurationSec": 0
+      }
+    },
+    {
+      "checkId": "V-04",
+      "name": "Histogram diversity",
+      "category": "visual",
+      "severity": "PASS",
+      "passed": true,
+      "message": "Avg entropy 8.00 bits ≥ 3.5 bits ✓",
+      "measured": {
+        "avgEntropy": 8
+      }
+    },
+    {
+      "checkId": "V-05",
+      "name": "OCR hook keyword (first 3s)",
+      "category": "visual",
+      "severity": "ERROR",
+      "passed": false,
+      "message": "No approved hook keyword visible in first 3 seconds — opener must show salary figure, FAANG name, or shock word",
+      "measured": {
+        "ocrSample": "                             "
+      }
+    },
+    {
+      "checkId": "R-01",
+      "name": "Retention proxy score",
+      "category": "retention",
+      "severity": "PASS",
+      "passed": true,
+      "message": "Score 78/100 ≥ 70 ✓",
+      "measured": {
+        "score": 78,
+        "breakdown": {
+          "hook_3s": 20,
+          "caption_density": 8,
+          "audio_ducking": 15,
+          "loop_ending": 20,
+          "scene_variety": 0,
+          "no_dead_air": 15
+        }
+      }
+    },
+    {
+      "checkId": "M-01",
+      "name": "Title length",
+      "category": "metadata",
+      "severity": "PASS",
+      "passed": true,
+      "message": "57 chars ≤ 70 ✓",
+      "measured": {
+        "length": 57
+      }
+    },
+    {
+      "checkId": "M-02",
+      "name": "Title hook keyword",
+      "category": "metadata",
+      "severity": "PASS",
+      "passed": true,
+      "message": "Hook keyword found in title ✓"
+    },
+    {
+      "checkId": "M-03",
+      "name": "Title emoji count",
+      "category": "metadata",
+      "severity": "PASS",
+      "passed": true,
+      "message": "0 emojis ≤ 3 ✓",
+      "measured": {
+        "emojiCount": 0
+      }
+    },
+    {
+      "checkId": "M-04",
+      "name": "guru-sishya.in URL in first 3 lines",
+      "category": "metadata",
+      "severity": "PASS",
+      "passed": true,
+      "message": "Primary URL present above fold ✓"
+    },
+    {
+      "checkId": "M-05",
+      "name": "Affiliate disclosure",
+      "category": "metadata",
+      "severity": "PASS",
+      "passed": true,
+      "message": "3 disclosed affiliate links ✓",
+      "measured": {
+        "count": 3
+      }
+    },
+    {
+      "checkId": "M-06",
+      "name": "Tag count",
+      "category": "metadata",
+      "severity": "PASS",
+      "passed": true,
+      "message": "11 tags (10–15) ✓",
+      "measured": {
+        "tagCount": 11
+      }
+    },
+    {
+      "checkId": "M-12",
+      "name": "Hashtag count",
+      "category": "metadata",
+      "severity": "PASS",
+      "passed": true,
+      "message": "3 hashtags ✓",
+      "measured": {
+        "hashtagCount": 3
+      }
+    },
+    {
+      "checkId": "M-07",
+      "name": "Thumbnail exists",
+      "category": "metadata",
+      "severity": "PASS",
+      "passed": true,
+      "message": "/Users/kumargaurav/oss/video-money-maker/tests/fixtures/thumbnail-good.jpg ✓"
+    },
+    {
+      "checkId": "M-08",
+      "name": "Thumbnail dimensions",
+      "category": "metadata",
+      "severity": "PASS",
+      "passed": true,
+      "message": "1280×720 ✓"
+    },
+    {
+      "checkId": "M-09",
+      "name": "Thumbnail file size",
+      "category": "metadata",
+      "severity": "PASS",
+      "passed": true,
+      "message": "5 KB ✓",
+      "measured": {
+        "sizeBytes": 5624
+      }
+    },
+    {
+      "checkId": "M-10",
+      "name": "Thumbnail text word count",
+      "category": "metadata",
+      "severity": "PASS",
+      "passed": true,
+      "message": "0 words ≤ 4 ✓",
+      "measured": {
+        "wordCount": 0
+      }
+    },
+    {
+      "checkId": "M-11",
+      "name": "Thumbnail contrast",
+      "category": "metadata",
+      "severity": "WARN",
+      "passed": false,
+      "message": "Contrast ratio 1.0:1 < WCAG AA 4.5:1 — unreadable on budget phones",
+      "measured": {
+        "contrastRatio": 1
+      },
+      "threshold": {
+        "min": 4.5
+      }
+    }
+  ],
+  "summary": {
+    "total": 28,
+    "passed": 24,
+    "failed": 4,
+    "fatal": 1,
+    "errors": 2,
+    "warnings": 1
+  },
+  "durationMs": 74517
+}

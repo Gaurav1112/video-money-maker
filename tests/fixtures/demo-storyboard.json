@@ -1,34 +1,78 @@
 {
   "fps": 30,
-  "width": 1920,
-  "height": 1080,
-  "topic": "The Lion and the Rabbit (demo)",
+  "width": 1080,
+  "height": 1920,
+  "topic": "Load Balancer Explained",
   "audioFile": "master.mp3",
   "durationInFrames": 900,
   "scenes": [
     {
       "sceneIndex": 0,
-      "startFrame": 150,
-      "durationFrames": 120,
-      "type": "text",
+      "startFrame": 0,
       "endFrame": 270,
-      "narration": "आज तुम मेरा खाना हो!"
+      "durationFrames": 270,
+      "type": "hook",
+      "narration": "What happens when millions of users hit your server at once?",
+      "templateId": "LoadBalancerArch",
+      "wordTimestamps": [
+        {"word": "What", "startMs": 0, "endMs": 120},
+        {"word": "happens", "startMs": 130, "endMs": 350},
+        {"word": "when", "startMs": 360, "endMs": 500},
+        {"word": "millions", "startMs": 510, "endMs": 780},
+        {"word": "of", "startMs": 790, "endMs": 860},
+        {"word": "users", "startMs": 870, "endMs": 1100},
+        {"word": "hit", "startMs": 1110, "endMs": 1280},
+        {"word": "your", "startMs": 1290, "endMs": 1450},
+        {"word": "server", "startMs": 1460, "endMs": 1750},
+        {"word": "at", "startMs": 1760, "endMs": 1870},
+        {"word": "once", "startMs": 1880, "endMs": 2200}
+      ]
     },
     {
       "sceneIndex": 1,
       "startFrame": 270,
-      "durationFrames": 180,
-      "type": "text",
-      "endFrame": 450,
-      "narration": "एक छोटा खरगोश था जो बहुत ही होशियार था।"
+      "endFrame": 630,
+      "durationFrames": 360,
+      "type": "body",
+      "narration": "A load balancer sits in front of your servers and distributes incoming traffic evenly so no single server gets overwhelmed.",
+      "templateId": "LoadBalancerArch",
+      "wordTimestamps": [
+        {"word": "A", "startMs": 9000, "endMs": 9080},
+        {"word": "load", "startMs": 9090, "endMs": 9280},
+        {"word": "balancer", "startMs": 9290, "endMs": 9620},
+        {"word": "sits", "startMs": 9630, "endMs": 9850},
+        {"word": "in", "startMs": 9860, "endMs": 9940},
+        {"word": "front", "startMs": 9950, "endMs": 10200},
+        {"word": "of", "startMs": 10210, "endMs": 10290},
+        {"word": "your", "startMs": 10300, "endMs": 10480},
+        {"word": "servers", "startMs": 10490, "endMs": 10820},
+        {"word": "and", "startMs": 10830, "endMs": 10940},
+        {"word": "distributes", "startMs": 10950, "endMs": 11380},
+        {"word": "incoming", "startMs": 11390, "endMs": 11720},
+        {"word": "traffic", "startMs": 11730, "endMs": 12050},
+        {"word": "evenly", "startMs": 12060, "endMs": 12400}
+      ]
     },
     {
       "sceneIndex": 2,
-      "startFrame": 450,
-      "durationFrames": 200,
-      "type": "text",
-      "endFrame": 650,
-      "narration": "खरगोश ने शेर को कुएं के पास ले जाकर उसे बेवकूफ बनाया।"
+      "startFrame": 630,
+      "endFrame": 900,
+      "durationFrames": 270,
+      "type": "outro",
+      "narration": "Round-robin, least connections, IP hash — every algorithm has a trade-off. Follow for more system design in 60 seconds.",
+      "templateId": "LoadBalancerArch",
+      "wordTimestamps": [
+        {"word": "Round-robin", "startMs": 21000, "endMs": 21480},
+        {"word": "least", "startMs": 21490, "endMs": 21720},
+        {"word": "connections", "startMs": 21730, "endMs": 22100},
+        {"word": "IP", "startMs": 22110, "endMs": 22290},
+        {"word": "hash", "startMs": 22300, "endMs": 22560},
+        {"word": "every", "startMs": 22570, "endMs": 22780},
+        {"word": "algorithm", "startMs": 22790, "endMs": 23180},
+        {"word": "has", "startMs": 23190, "endMs": 23340},
+        {"word": "a", "startMs": 23350, "endMs": 23420},
+        {"word": "trade-off", "startMs": 23430, "endMs": 23880}
+      ]
     }
   ]
 }

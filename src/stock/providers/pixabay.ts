@@ -48,12 +48,14 @@ export class PixabayProvider implements StockSearchProvider {
     if (!q) return [];
 
     const url = `https://pixabay.com/api/videos/?key=${encodeURIComponent(key)}&q=${encodeURIComponent(q)}&per_page=15`;
+    const safeUrl = `https://pixabay.com/api/videos/?key=[REDACTED]&q=${encodeURIComponent(q)}&per_page=15`;
 
     let data: PixabaySearchResponse;
     try {
+      console.warn(`[pixabay] fetching "${safeUrl}"`);
       const res = await fetch(url);
       if (!res.ok) {
-        console.warn(`[pixabay] HTTP ${res.status} for query "${q}"`);
+        console.warn(`[pixabay] HTTP ${res.status} for url "${safeUrl}"`);
         return [];
       }
       data = (await res.json()) as PixabaySearchResponse;

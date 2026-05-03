@@ -13,6 +13,7 @@
 import { createHash } from 'node:crypto';
 import { createWriteStream, existsSync, mkdirSync } from 'node:fs';
 import { rename, stat } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { Readable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
@@ -27,10 +28,20 @@ export class StockCache {
   }
 
   /** Returns the local path for a clip, downloading it if necessary. */
-  async download(clip: StockClip): Promise<string> {
+  async download(clip: StockClip, ephemeralDir?: string): Promise<string> {
     // Fallback synthetic clips are never downloaded
     if (clip.url.startsWith('synthetic://')) {
       return clip.url;
+    }
+
+    // Pexels TOS: clips must not be cached persistently
+    if (clip.provider === 'pexels') {
+      const dir = ephemeralDir ?? tmpdir();
+      mkdirSync(dir, { recursive: true });
+      const hash = createHash('sha256').update(clip.url).digest('hex').slice(0, 16);
+      const dest = join(dir, `pexels-${hash}.mp4`);
+      await this.fetchToFile(clip.url, dest);
+      return dest;
     }
 
     const hash = createHash('sha256').update(clip.url).digest('hex').slice(0, 16);

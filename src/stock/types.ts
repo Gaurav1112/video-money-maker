@@ -60,6 +60,7 @@ export interface StockScene {
   type: string;
   narration: string;
   templateId?: string;
+  wordTimestamps?: Array<{ word: string; startMs: number; endMs: number }>;
 }
 
 /** Minimal storyboard shape used by the stock pipeline (loadable from any storyboard JSON). */

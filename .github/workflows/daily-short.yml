@@ -8,8 +8,8 @@ on:
   schedule:
     # Pre-render at 3:00 PM IST (9:30 UTC) — 4h buffer before upload
     - cron: '30 9 * * *'
-    # Upload at 7:00 PM IST (1:30 PM UTC) — peak India viewing time
-    - cron: '30 13 * * *'
+    # Upload at 9:30 PM IST (4:00 PM UTC) — peak India viewing time
+    - cron: '0 16 * * *'
 
   workflow_dispatch:
     inputs:
@@ -64,21 +64,33 @@ jobs:
       needs.determine-phase.outputs.phase == 'full'
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    env:
+      PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
+      PIXABAY_API_KEY: ${{ secrets.PIXABAY_API_KEY }}
+      FREESOUND_API_KEY: ${{ secrets.FREESOUND_API_KEY }}
+      FREESOUND_CLIENT_ID: ${{ secrets.FREESOUND_CLIENT_ID }}
+      UNSPLASH_ACCESS_KEY: ${{ secrets.UNSPLASH_ACCESS_KEY }}
     outputs:
       artifact_name: daily-short-${{ github.run_number }}
       queue_item_id: ${{ steps.enqueue.outputs.queue_item_id }}
     steps:
-      - uses: actions/checkout@v6
+      - name: Mask API keys
+        run: |
+          echo "::add-mask::${PIXABAY_API_KEY}"
+        env:
+          PIXABAY_API_KEY: ${{ secrets.PIXABAY_API_KEY }}
+
+      - uses: actions/checkout@v4
 
       - name: Setup Node
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
 
       # Cache Remotion bundle output — saves ~60 s on warm runs
       - name: Cache Remotion bundle
-        uses: actions/cache@v5
+        uses: actions/cache@v4
         with:
           path: node_modules/.cache/remotion
           key: remotion-bundle-${{ hashFiles('src/**', 'remotion.config.ts') }}
@@ -111,6 +123,12 @@ jobs:
         if: ${{ inputs.storyboard == '' }}
         run: npx tsx scripts/published-state.ts pick
 
+      - name: Cache stock footage
+        uses: actions/cache@v4
+        with:
+          path: assets/stock-cache/
+          key: stock-cache-${{ hashFiles('assets/stock/manifest.json') }}
+
       - name: Render daily Short via make-shorts.ts (3× retry)
         id: render
         env:
@@ -130,8 +148,8 @@ jobs:
           fi
 
           for attempt in 1 2 3; do
-            echo "Render attempt $attempt/3 — npx tsx scripts/make-shorts.ts $TARGET"
-            if npx tsx scripts/make-shorts.ts $TARGET; then
+            echo "Render attempt $attempt/3 — npm run render:stock -- $TARGET"
+            if npm run render:stock -- $TARGET; then
               echo "success=true" >> $GITHUB_OUTPUT
               echo "Render succeeded"
               break
@@ -171,7 +189,7 @@ jobs:
       - name: Upload artifact for upload phase
         id: upload
         if: needs.determine-phase.outputs.phase == 'render'
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v4
         with:
           name: daily-short-${{ github.run_number }}
           path: out/shorts/
@@ -236,10 +254,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v4
 
       - name: Setup Node
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
@@ -248,7 +266,7 @@ jobs:
         run: npm ci --ignore-scripts
 
       - name: Download rendered artifact
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@v4
         continue-on-error: true
         with:
           name: daily-short-${{ github.run_number }}
@@ -283,13 +301,13 @@ jobs:
         if: steps.check.outputs.found != 'true' && inputs.dry_run != 'true'
         run: |
           if [ -n "${{ inputs.storyboard }}" ]; then
-            npx tsx scripts/make-shorts.ts --storyboard "${{ inputs.storyboard }}"
+            npm run render:stock -- --storyboard "${{ inputs.storyboard }}"
           else
             DOY=$(date +%j)
             TOTAL=$(ls content/*.json 2>/dev/null | wc -l)
             IDX=$((DOY % TOTAL))
             BOARD=$(ls content/*.json | sort | sed -n "$((IDX + 1))p")
-            npx tsx scripts/make-shorts.ts --storyboard "$BOARD"
+            npm run render:stock -- --storyboard "$BOARD"
           fi
 
       # ── Upload to YouTube ─────────────────────────────────────────────────────
