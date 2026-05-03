@@ -1,0 +1,306 @@
+name: retention-gate
+
+# ─── Trigger ──────────────────────────────────────────────────────────────────
+# Runs on every PR that modifies rendered video outputs or the pipeline that
+# produces them. Fails build if retention proxy < 70/100.
+#
+# Fix #26 — GuruSishya-India retention CI gate
+# Sources: Derral Eves AVD ≥ 30% threshold, MrBeast 35% 30s rule
+
+on:
+  pull_request:
+    paths:
+      - 'src/pipeline/**'
+      - 'src/lib/**'
+      - 'src/compositions/**'
+      - 'src/components/**'
+      - 'scripts/**'
+      - 'tests/retention*'
+      - '.github/workflows/retention-gate.yml'
+  workflow_dispatch:
+    inputs:
+      video_path:
+        description: 'Path to rendered MP4 to check (relative to repo root)'
+        required: false
+        default: ''
+
+concurrency:
+  group: retention-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '20'
+  RETENTION_THRESHOLD: '70'
+
+jobs:
+  # ── Job 1: Unit tests for retention engine ──────────────────────────────────
+  retention-unit:
+    name: 'Retention Engine Tests'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck retention files
+        run: |
+          npx tsc --noEmit \
+            src/lib/retention-engine.ts \
+            src/lib/retention-proxy.ts \
+            src/lib/dropoff-predictor.ts \
+            scripts/retention-cli.ts \
+            || true  # non-fatal: some repos use separate tsconfig for scripts
+
+      - name: Run retention engine tests
+        run: npx jest tests/retention-engine.test.ts --no-coverage --verbose
+
+      - name: Run retention proxy calibration tests
+        run: npx jest tests/retention-proxy.test.ts --no-coverage --verbose
+
+  # ── Job 2: Proxy check on any rendered video in the PR ──────────────────────
+  retention-proxy-check:
+    name: 'Retention Proxy Score Check'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: retention-unit
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install ffmpeg
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y ffmpeg
+
+      - name: Find rendered videos (PR artifacts or workflow_dispatch input)
+        id: find-videos
+        run: |
+          # Check for workflow_dispatch override
+          if [ -n "${{ github.event.inputs.video_path }}" ]; then
+            echo "videos=${{ github.event.inputs.video_path }}" >> "$GITHUB_OUTPUT"
+            echo "count=1" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # Look for rendered MP4s in common output locations
+          VIDEO_PATHS=$(find . \
+            -name "*.mp4" \
+            -not -path "*/node_modules/*" \
+            -not -path "*/.git/*" \
+            -not -name "*.test.mp4" \
+            2>/dev/null | head -5 | tr '\n' ',')
+
+          if [ -z "$VIDEO_PATHS" ]; then
+            echo "No rendered MP4 files found. Skipping proxy check."
+            echo "count=0" >> "$GITHUB_OUTPUT"
+          else
+            echo "videos=$VIDEO_PATHS" >> "$GITHUB_OUTPUT"
+            echo "count=$(echo "$VIDEO_PATHS" | tr ',' '\n' | grep -c .mp4)" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Download render artifact (if present)
+        if: steps.find-videos.outputs.count == '0'
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          name: rendered-video
+          path: ./renders/
+
+      - name: Re-scan after artifact download
+        id: rescan
+        if: steps.find-videos.outputs.count == '0'
+        run: |
+          VIDEO_PATHS=$(find ./renders -name "*.mp4" 2>/dev/null | head -5 | tr '\n' ',')
+          echo "videos=$VIDEO_PATHS" >> "$GITHUB_OUTPUT"
+          echo "count=$(echo "$VIDEO_PATHS" | tr ',' '\n' | grep -c .mp4 || echo 0)" >> "$GITHUB_OUTPUT"
+
+      - name: Run retention proxy on each video
+        id: proxy
+        run: |
+          VIDEOS="${{ steps.find-videos.outputs.videos || steps.rescan.outputs.videos }}"
+          COUNT="${{ steps.find-videos.outputs.count || steps.rescan.outputs.count }}"
+
+          if [ "$COUNT" = "0" ] || [ -z "$VIDEOS" ]; then
+            echo "⚠️ No rendered videos found — running retention engine unit tests only."
+            echo "score=N/A" >> "$GITHUB_OUTPUT"
+            echo "passed=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          OVERALL_PASS=true
+          SCORES=""
+
+          IFS=',' read -ra VIDEO_LIST <<< "$VIDEOS"
+          for VIDEO in "${VIDEO_LIST[@]}"; do
+            VIDEO="$(echo "$VIDEO" | xargs)"
+            [ -z "$VIDEO" ] && continue
+
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            echo "Checking: $VIDEO"
+
+            # Run retention CLI (exits 1 if score < 70)
+            if npx ts-node scripts/retention-cli.ts "$VIDEO" 2>&1; then
+              echo "✅ PASS: $VIDEO"
+            else
+              EXIT_CODE=$?
+              if [ $EXIT_CODE -eq 1 ]; then
+                echo "❌ FAIL: $VIDEO — score below ${{ env.RETENTION_THRESHOLD }}"
+                OVERALL_PASS=false
+              fi
+            fi
+
+            # Collect JSON report
+            REPORT="${VIDEO%.mp4}.retention-report.json"
+            if [ -f "$REPORT" ]; then
+              SCORE=$(node -e "const r=require('$REPORT'); console.log(r.totalScore)" 2>/dev/null || echo "?")
+              SCORES="$SCORES $VIDEO:$SCORE"
+              echo "score=$SCORE" >> "$GITHUB_OUTPUT"
+            fi
+          done
+
+          if [ "$OVERALL_PASS" = "true" ]; then
+            echo "passed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "passed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Upload retention reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: retention-reports-${{ github.run_id }}
+          path: '**/*.retention-report.json'
+          retention-days: 14
+
+      - name: Compose PR comment
+        if: github.event_name == 'pull_request' && always()
+        id: compose-comment
+        run: |
+          # Find all JSON reports and merge them into one PR comment
+          REPORTS=$(find . -name "*.retention-report.json" -not -path "*/node_modules/*" 2>/dev/null)
+
+          if [ -z "$REPORTS" ]; then
+            cat << 'EOF' > /tmp/pr-comment.md
+          ## 🎬 Retention Gate
+
+          No rendered videos found in this PR. Retention unit tests passed.
+
+          _Add a rendered MP4 or trigger `workflow_dispatch` with `video_path` to run proxy scoring._
+          EOF
+          else
+            echo "## 🎬 Retention Gate — Proxy Score Results" > /tmp/pr-comment.md
+            echo "" >> /tmp/pr-comment.md
+            echo "_Threshold: ${RETENTION_THRESHOLD}/100 · Fix #26 · [RETENTION_BIBLE.md](./RETENTION_BIBLE.md)_" >> /tmp/pr-comment.md
+            echo "" >> /tmp/pr-comment.md
+
+            for REPORT in $REPORTS; do
+              node -e "
+                const r = require('$REPORT');
+                process.stdout.write(r.prComment + '\n\n---\n\n');
+              " 2>/dev/null >> /tmp/pr-comment.md || true
+            done
+          fi
+
+          echo "comment_path=/tmp/pr-comment.md" >> "$GITHUB_OUTPUT"
+
+      - name: Post PR comment
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const commentPath = '${{ steps.compose-comment.outputs.comment_path }}';
+            if (!fs.existsSync(commentPath)) return;
+
+            const body = fs.readFileSync(commentPath, 'utf8');
+
+            // Find existing retention-gate comment and update it (avoid spam)
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const existing = comments.find(
+              c => c.user.login === 'github-actions[bot]' &&
+                   c.body.includes('Retention Gate')
+            );
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body,
+              });
+            }
+
+      - name: Fail if retention gate did not pass
+        if: steps.proxy.outputs.passed == 'false'
+        run: |
+          echo ""
+          echo "❌ RETENTION GATE FAILED"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "One or more videos scored below ${RETENTION_THRESHOLD}/100."
+          echo ""
+          echo "A 30% AVD on Shorts vs 65% AVD = 10× the algo distribution."
+          echo "This video will not distribute. Fix the hook, then re-run."
+          echo ""
+          echo "See: RETENTION_BIBLE.md for counter-tactic library"
+          echo "See: *.retention-report.json for section breakdown"
+          echo ""
+          exit 1
+
+  # ── Job 3: Summary check  ─────────────────────────────────────────────────
+  retention-summary:
+    name: 'Retention Gate Summary'
+    runs-on: ubuntu-latest
+    needs: [retention-unit, retention-proxy-check]
+    if: always()
+
+    steps:
+      - name: Report final status
+        run: |
+          UNIT_STATUS="${{ needs.retention-unit.result }}"
+          PROXY_STATUS="${{ needs.retention-proxy-check.result }}"
+
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "Retention Gate Summary"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "Unit tests:    $UNIT_STATUS"
+          echo "Proxy check:   $PROXY_STATUS"
+          echo ""
+
+          if [ "$UNIT_STATUS" != "success" ] || [ "$PROXY_STATUS" = "failure" ]; then
+            echo "❌ GATE FAILED — Do not merge until retention is ≥ 70/100"
+            exit 1
+          fi
+
+          echo "✅ All retention checks passed"

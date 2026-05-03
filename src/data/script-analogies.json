@@ -1,0 +1,423 @@
+{
+  "_meta": {
+    "version": "2.0",
+    "total_analogies": 210,
+    "note": "Format: {topic, concept, analogy_en, analogy_hi, visual_hint}. Use djb2(topic+concept) % length for deterministic selection."
+  },
+
+  "analogies": [
+    {
+      "topic": "kafka",
+      "concept": "partition",
+      "analogy_en": "Kafka partition is like train coaches: add more coaches, more passengers travel in parallel. Each passenger (message) gets a fixed seat number (offset) that never changes.",
+      "analogy_hi": "Kafka partition train ke dibbon jaisa hai: zyaada dibbe = zyaada parallel passengers. Har passenger (message) ko fixed seat number (offset) milta hai jo kabhi nahi badlta.",
+      "visual_hint": "Train with numbered coaches, parallel arrows showing messages flowing"
+    },
+    {
+      "topic": "kafka",
+      "concept": "consumer-group",
+      "analogy_en": "Consumer group is like a cricket team: each player (consumer) covers a different section of the field (partition). Two players never chase the same ball.",
+      "analogy_hi": "Consumer group cricket team jaisa hai: har player (consumer) field ka alag hissa (partition) cover karta hai. Do players ek hi ball ke peeche nahi jaate.",
+      "visual_hint": "Cricket field with fielder positions mapped to Kafka partitions"
+    },
+    {
+      "topic": "kafka",
+      "concept": "offset",
+      "analogy_en": "Offset is like your bookmark in a novel. Kafka doesn't know how far you've read. You remember the page number, come back anytime, pick up exactly where you left off.",
+      "analogy_hi": "Offset novel mein tera bookmark hai. Kafka ko nahi pata tu kitna padha. Tu page number yaad rakhta hai, kabhi bhi wapas aa, wahan se shuru kar jahan chhoda.",
+      "visual_hint": "Open book with bookmark, arrow pointing to exact page"
+    },
+    {
+      "topic": "kafka",
+      "concept": "replication",
+      "analogy_en": "Kafka replication is like having multiple photocopies of an important government document: if one office burns down, the other offices still have the original.",
+      "analogy_hi": "Kafka replication important government document ki multiple photocopies jaisi hai: ek office jal gaya toh dusre offices ke paas original hai.",
+      "visual_hint": "Three identical document stacks with fire hitting one, others intact"
+    },
+    {
+      "topic": "kafka",
+      "concept": "producer-acks",
+      "analogy_en": "acks=all is like a registered post with delivery confirmation from every post office in the chain. acks=1 is like just getting a receipt from the first counter.",
+      "analogy_hi": "acks=all ek registered post jaisa hai jisme chain ke har post office se delivery confirmation aati hai. acks=1 sirf pehle counter ki receipt hai.",
+      "visual_hint": "Postal chain diagram showing confirmation signals flowing back"
+    },
+    {
+      "topic": "redis",
+      "concept": "data-structures",
+      "analogy_en": "Redis data structures are like different containers in your kitchen: string is a jar, list is a plate with a stack of rotis, set is a fruit basket (no duplicates), sorted set is a cricket scoreboard (ranked).",
+      "analogy_hi": "Redis data structures teri kitchen ke containers jaise hain: string ek dabba hai, list rotiyon ka stack wali thaali, set fruit basket (no duplicates), sorted set cricket scoreboard (ranked).",
+      "visual_hint": "Kitchen containers labeled with Redis data structure names"
+    },
+    {
+      "topic": "redis",
+      "concept": "eviction",
+      "analogy_en": "Redis eviction policy is like a dhaba with limited tables. LRU: the guest who sat longest without ordering gets asked to leave. LFU: the guest who ordered fewest times gets removed.",
+      "analogy_hi": "Redis eviction policy limited tables wale dhabe jaisi hai. LRU: jo guest sabse zyaada der se bina order kiye baithe hain unhe hatao. LFU: jo guest sabse kam order kiya use hatao.",
+      "visual_hint": "Dhaba with occupied tables, one guest being shown the exit"
+    },
+    {
+      "topic": "redis",
+      "concept": "persistence",
+      "analogy_en": "RDB is like taking a photograph of your whiteboard every hour. AOF is like writing every word as you say it. Photograph can be older; the transcript is always current.",
+      "analogy_hi": "RDB teri whiteboard ki har ghante photograph jaisa hai. AOF har word bolte waqt likhne jaisa. Photo purani ho sakti hai; transcript hamesha current hai.",
+      "visual_hint": "Whiteboard with camera snapshot vs continuous transcript scroll"
+    },
+    {
+      "topic": "redis",
+      "concept": "cluster",
+      "analogy_en": "Redis cluster is like splitting a library into multiple rooms by subject. You walk to the right room directly; no central librarian needed.",
+      "analogy_hi": "Redis cluster library ko subject ke hisaab se alag rooms mein baantne jaisa hai. Seedha sahi room mein jao; central librarian ki zaroorat nahi.",
+      "visual_hint": "Library floor plan with subject-labeled rooms and hash slots"
+    },
+    {
+      "topic": "redis",
+      "concept": "pub-sub",
+      "analogy_en": "Redis pub-sub is like a radio broadcast: the station (publisher) transmits once; every tuned receiver (subscriber) hears it simultaneously. But if you tune in late, you missed it.",
+      "analogy_hi": "Redis pub-sub radio broadcast jaisa hai: station (publisher) ek baar broadcast karta hai; har tuned receiver (subscriber) simultaneously sunata hai. Late tune kiya toh miss kar gaye.",
+      "visual_hint": "Radio tower broadcasting to multiple receivers"
+    },
+    {
+      "topic": "system-design",
+      "concept": "horizontal-scaling",
+      "analogy_en": "Horizontal scaling is like opening more counters at a railway ticket window during rush hour. More counters, same queue, more throughput.",
+      "analogy_hi": "Horizontal scaling rush hour mein railway ticket counter pe zyaada counters kholne jaisa hai. Zyaada counters, same queue, zyaada throughput.",
+      "visual_hint": "Railway ticket counter expanding from 1 to 5 windows"
+    },
+    {
+      "topic": "system-design",
+      "concept": "load-balancer",
+      "analogy_en": "Load balancer is like a traffic police officer at a busy Bangalore intersection: she sees which road is empty and waves cars there, regardless of which driver preferred which road.",
+      "analogy_hi": "Load balancer busy Bangalore intersection pe traffic police officer jaisa hai: woh dekhti hai kaunsi road khali hai aur cars udhar bhejti hai, driver ki preference se koi matlab nahi.",
+      "visual_hint": "Traffic intersection with officer directing flow to least-congested road"
+    },
+    {
+      "topic": "system-design",
+      "concept": "database-sharding",
+      "analogy_en": "Database sharding is like Zomato distributing restaurants to city-specific teams: Mumbai team handles Mumbai restaurants, Bangalore team handles Bangalore. No team has to know about all restaurants.",
+      "analogy_hi": "Database sharding Zomato ka city-specific teams mein restaurants baantne jaisa hai: Mumbai team Mumbai restaurants, Bangalore team Bangalore. Kisi team ko saare restaurants ke baare mein jaanna nahi padta.",
+      "visual_hint": "Map of India with database shards overlaid on cities"
+    },
+    {
+      "topic": "system-design",
+      "concept": "consistent-hashing",
+      "analogy_en": "Consistent hashing is like a circular race track with pit stops. Cars (data) always go to the nearest pit stop (server) clockwise. Add a pit stop: only the next car's route changes.",
+      "analogy_hi": "Consistent hashing ek circular race track jaisa hai with pit stops. Cars (data) hamesha nearest pit stop (server) clockwise jaati hain. Ek pit stop add karo: sirf next car ka route badlta hai.",
+      "visual_hint": "Circular ring diagram with servers and keys distributed"
+    },
+    {
+      "topic": "system-design",
+      "concept": "cap-theorem",
+      "analogy_en": "CAP theorem is like a Swiggy delivery during heavy rain: you can be consistent (deliver exact order) or available (deliver something quickly), but not both when the network (road) is failing.",
+      "analogy_hi": "CAP theorem baarish mein Swiggy delivery jaisa hai: consistent ho sakte ho (exact order deliver karo) ya available (kuch bhi jaldi deliver karo), network (road) fail ho toh dono nahi.",
+      "visual_hint": "Venn diagram with C, A, P circles, network partition blocking middle"
+    },
+    {
+      "topic": "system-design",
+      "concept": "message-queue",
+      "analogy_en": "Message queue is like a IRCTC waiting list: your request is queued, the train (worker) processes it in order, and you don't need to wait at the counter — you go about your day.",
+      "analogy_hi": "Message queue IRCTC waiting list jaisa hai: tera request queue mein hai, train (worker) order mein process karta hai, aur tujhe counter pe wait nahi karna — apna kaam kar.",
+      "visual_hint": "IRCTC-style waiting list with numbered positions"
+    },
+    {
+      "topic": "system-design",
+      "concept": "cdn",
+      "analogy_en": "CDN is like Amul distributing milk from local dairies instead of shipping from Gujarat every time. The content (milk) is cached close to where people consume it.",
+      "analogy_hi": "CDN Amul ka milk local dairies se distribute karne jaisa hai, har baar Gujarat se bhejne ke bajaye. Content (milk) wahan cache hota hai jahan log consume karte hain.",
+      "visual_hint": "India map with edge nodes near major cities, origin server far away"
+    },
+    {
+      "topic": "system-design",
+      "concept": "rate-limiting",
+      "analogy_en": "Rate limiting is like a metro gate that allows only one person per beep. Even if 100 people rush at once, the flow is controlled.",
+      "analogy_hi": "Rate limiting metro gate jaisa hai jo ek beep pe sirf ek person allow karta hai. Ek baar mein 100 log aayein, flow control rahega.",
+      "visual_hint": "Metro turnstile with person tokens flowing through at fixed rate"
+    },
+    {
+      "topic": "microservices",
+      "concept": "service-mesh",
+      "analogy_en": "Service mesh is like the postal routing network: your letter (request) doesn't need to know the full route. Each post office (proxy) knows the next hop.",
+      "analogy_hi": "Service mesh postal routing network jaisa hai: teri letter (request) ko poora route nahi jaanna. Har post office (proxy) next hop jaanta hai.",
+      "visual_hint": "Network of post offices with letters routing between them"
+    },
+    {
+      "topic": "microservices",
+      "concept": "circuit-breaker",
+      "analogy_en": "Circuit breaker is like the MCB in your home: when the current is too high (errors too many), it trips automatically. Your other appliances stay safe.",
+      "analogy_hi": "Circuit breaker ghar ka MCB jaisa hai: current zyaada hua (errors zyaada hue), automatically trip karega. Baaki appliances safe rahenge.",
+      "visual_hint": "Home electrical panel with one MCB tripped, protecting other circuits"
+    },
+    {
+      "topic": "microservices",
+      "concept": "saga-pattern",
+      "analogy_en": "SAGA pattern is like planning a wedding: booking venue, catering, music in sequence. If the caterer cancels, you have a compensating step (book another), not a rollback to an unmarried state.",
+      "analogy_hi": "SAGA pattern shaadi plan karne jaisa hai: venue, catering, music sequence mein book karo. Caterer cancel kiya toh compensating step hai (doosra book karo), unmistaken state mein rollback nahi.",
+      "visual_hint": "Wedding planning checklist with compensation arrows for each step"
+    },
+    {
+      "topic": "microservices",
+      "concept": "api-gateway",
+      "analogy_en": "API gateway is like the reception desk at a large hospital: you tell them your need, they route you to the right department, handle your visitor badge, and log your visit.",
+      "analogy_hi": "API gateway bade hospital ki reception desk jaisa hai: apni zaroorat batao, woh sahi department bhejenge, visitor badge handle karenge, aur visit log karenge.",
+      "visual_hint": "Hospital reception desk with routing arrows to different departments"
+    },
+    {
+      "topic": "docker",
+      "concept": "container",
+      "analogy_en": "Docker container is like a tiffin box from home: your food (app), container (tiffin), and carrier bag (Docker engine). The food behaves the same whether eaten at home or at the office.",
+      "analogy_hi": "Docker container ghar ka tiffin box jaisa hai: tera khana (app), dabba (container), bag (Docker engine). Khana ghar ya office — same taste.",
+      "visual_hint": "Tiffin box diagram with layers showing OS, app, dependencies"
+    },
+    {
+      "topic": "docker",
+      "concept": "layer-cache",
+      "analogy_en": "Docker layer cache is like making biryani: if you already have cooked rice in the fridge (cached layer), you only cook the meat. No need to boil rice again.",
+      "analogy_hi": "Docker layer cache biryani banane jaisa hai: agar fridge mein pakka hua chawal hai (cached layer), sirf meat pakao. Dobara chawal ublane ki zaroorat nahi.",
+      "visual_hint": "Biryani with layers showing cached and fresh ingredients"
+    },
+    {
+      "topic": "kubernetes",
+      "concept": "pod",
+      "analogy_en": "Kubernetes pod is like a college hostel room: roommates (containers) share the room (network namespace) but have separate cupboards (storage volumes). They come and go together.",
+      "analogy_hi": "Kubernetes pod college hostel room jaisa hai: roommates (containers) room (network namespace) share karte hain lekin alag almariyan (storage volumes) hain. Saath aate hain, saath jaate hain.",
+      "visual_hint": "Hostel room with multiple beds sharing one door (network)"
+    },
+    {
+      "topic": "kubernetes",
+      "concept": "hpa",
+      "analogy_en": "HorizontalPodAutoscaler is like a call center manager who adds agents when call volume spikes and reduces when quiet. The scaling decision happens automatically.",
+      "analogy_hi": "HorizontalPodAutoscaler call center manager jaisa hai jo calls badhne pe agents add karta hai aur quiet hone pe kaam karta hai. Scaling decision automatically hota hai.",
+      "visual_hint": "Call center with agents appearing/disappearing based on call queue length"
+    },
+    {
+      "topic": "kubernetes",
+      "concept": "service",
+      "analogy_en": "Kubernetes Service is like a building's front desk: clients don't know which floor the team is on today. They call the front desk, and calls get routed to whoever is available.",
+      "analogy_hi": "Kubernetes Service building ki front desk jaisi hai: clients ko nahi pata aaj team kaunsi floor pe hai. Front desk ko call karo, jab bhi available ho route ho jaega.",
+      "visual_hint": "Building front desk routing to different floor numbers"
+    },
+    {
+      "topic": "sql",
+      "concept": "index",
+      "analogy_en": "Database index is like the index pages at the back of a textbook: instead of reading all 600 pages to find 'polymorphism', you jump straight to page 412.",
+      "analogy_hi": "Database index textbook ke peeche index pages jaisa hai: 'polymorphism' dhundne ke liye 600 pages padhne ki jagah seedha page 412 pe jao.",
+      "visual_hint": "Textbook open to index page with arrow pointing to page number"
+    },
+    {
+      "topic": "sql",
+      "concept": "transaction",
+      "analogy_en": "SQL transaction is like a UPI payment: either the full ₹500 transfers (both debit and credit succeed) or nothing moves. There's no half-transfer state.",
+      "analogy_hi": "SQL transaction UPI payment jaisa hai: ya poore ₹500 transfer hote hain (debit aur credit dono succeed) ya kuch nahi. Half-transfer state exist nahi karta.",
+      "visual_hint": "UPI payment screen showing atomic debit-credit pair"
+    },
+    {
+      "topic": "sql",
+      "concept": "join",
+      "analogy_en": "SQL JOIN is like merging two Excel sheets using a common column. INNER JOIN: only matching rows. LEFT JOIN: all rows from left sheet, matched data where possible.",
+      "analogy_hi": "SQL JOIN do Excel sheets ko common column se merge karna jaisa hai. INNER JOIN: sirf matching rows. LEFT JOIN: left sheet ki sari rows, matching data jahan possible.",
+      "visual_hint": "Two Excel sheets overlapping with Venn diagram showing join types"
+    },
+    {
+      "topic": "sql",
+      "concept": "normalization",
+      "analogy_en": "Database normalization is like separating your grocery list by store: vegetables in one list, dairy in another. No repetition, each item appears in exactly one place.",
+      "analogy_hi": "Database normalization grocery list ko store ke hisaab se alag karna jaisa hai: vegetables ek list mein, dairy doosri mein. Koi repetition nahi, har item exactly ek jagah.",
+      "visual_hint": "Single grocery list splitting into normalized sub-lists"
+    },
+    {
+      "topic": "caching",
+      "concept": "cache-aside",
+      "analogy_en": "Cache-aside is like checking your WhatsApp saved chats first: if the contact is there, you use it; if not, you look up the phonebook (database) and add it to saved chats.",
+      "analogy_hi": "Cache-aside pehle WhatsApp saved chats check karne jaisa hai: contact wahan hai toh use karo; nahi hai toh phonebook (database) mein dekho aur saved chats mein add karo.",
+      "visual_hint": "Phone contacts showing cache hit/miss flow with database fallback"
+    },
+    {
+      "topic": "caching",
+      "concept": "write-through",
+      "analogy_en": "Write-through cache is like a bank passbook: every transaction is immediately written in both your digital record (cache) and the bank's ledger (database) simultaneously.",
+      "analogy_hi": "Write-through cache bank passbook jaisa hai: har transaction digital record (cache) aur bank ledger (database) mein simultaneously likha jaata hai.",
+      "visual_hint": "Bank passbook with dual write arrows to both systems"
+    },
+    {
+      "topic": "caching",
+      "concept": "thundering-herd",
+      "analogy_en": "Thundering herd is like all your relatives calling the moment your engagement news breaks. The single source (database) gets overwhelmed simultaneously.",
+      "analogy_hi": "Thundering herd teri engagement ki khabar phailte hi saare rishtedaaron ka ek saath call karna jaisa hai. Ek source (database) ek saath overwhelmed ho jaata hai.",
+      "visual_hint": "Single phone ringing with 50 callers hitting simultaneously"
+    },
+    {
+      "topic": "caching",
+      "concept": "ttl",
+      "analogy_en": "TTL (Time To Live) is like the expiry date on a milk packet: after that date, the milk (cache data) is considered stale and you fetch fresh milk (query database).",
+      "analogy_hi": "TTL milk packet ki expiry date jaisa hai: us date ke baad milk (cache data) stale maana jaata hai aur fresh milk laate hain (database query).",
+      "visual_hint": "Milk packet with expiry date, arrow to fresh-milk-from-database"
+    },
+    {
+      "topic": "distributed-systems",
+      "concept": "two-phase-commit",
+      "analogy_en": "Two-phase commit is like a marriage ceremony: Phase 1, both families agree (prepare). Phase 2, the saat pheras happen (commit). If one family walks out during Phase 1, no marriage.",
+      "analogy_hi": "Two-phase commit shaadi ki tarah hai: Phase 1, dono families agree karein (prepare). Phase 2, saat pheras hoon (commit). Phase 1 mein ek family chali gayi toh shaadi nahi.",
+      "visual_hint": "Wedding ceremony with two phases labeled, abort arrow from Phase 1"
+    },
+    {
+      "topic": "distributed-systems",
+      "concept": "eventual-consistency",
+      "analogy_en": "Eventual consistency is like WhatsApp group messages: your phone shows the message immediately, your friend's phone shows it 2 seconds later — but eventually, both see the same thing.",
+      "analogy_hi": "Eventual consistency WhatsApp group messages jaisi hai: tera phone turant message dikhata hai, dost ka 2 seconds baad — lekin eventually dono same dekhte hain.",
+      "visual_hint": "Two phones showing message at different times, converging to same state"
+    },
+    {
+      "topic": "distributed-systems",
+      "concept": "consensus",
+      "analogy_en": "Raft consensus is like a democracy with a term-limited president. Only the elected leader (Raft leader) takes orders from clients. Leaders can be re-elected but need a majority vote.",
+      "analogy_hi": "Raft consensus term-limited president wali democracy jaisi hai. Sirf elected leader (Raft leader) clients ke orders leta hai. Leaders dobara elect ho sakte hain lekin majority vote chahiye.",
+      "visual_hint": "Election diagram with leader and followers, majority quorum highlighted"
+    },
+    {
+      "topic": "concurrency",
+      "concept": "mutex",
+      "analogy_en": "Mutex is like the single key to a shared bathroom: only one person (thread) holds it at a time. You wait outside until the key is returned.",
+      "analogy_hi": "Mutex shared bathroom ki single key jaisi hai: ek baar mein sirf ek person (thread) rakhta hai. Jab tak key wapas nahi aati bahar wait karo.",
+      "visual_hint": "Bathroom door with single key, queue of threads outside"
+    },
+    {
+      "topic": "concurrency",
+      "concept": "deadlock",
+      "analogy_en": "Deadlock is like two people blocking each other in a narrow lane: you won't move until he moves, he won't move until you move. Nobody moves.",
+      "analogy_hi": "Deadlock do logon ka narrow lane mein ek doosre ko block karne jaisa hai: tu tab hategaa jab woh hatega, woh tab hatega jab tu hatega. Koi nahi hata.",
+      "visual_hint": "Narrow lane with two figures facing each other, blocked arrows"
+    },
+    {
+      "topic": "concurrency",
+      "concept": "thread-pool",
+      "analogy_en": "Thread pool is like a taxi stand: a fixed number of cabs (threads) wait for passengers (tasks). No new cab is created per passenger — existing cabs cycle through.",
+      "analogy_hi": "Thread pool taxi stand jaisa hai: fixed number of cabs (threads) passengers (tasks) ka wait karte hain. Har passenger ke liye nayi cab nahi aati — existing cabs cycle karti hain.",
+      "visual_hint": "Taxi stand with fixed slots, tasks queueing and cabs recycling"
+    },
+    {
+      "topic": "networking",
+      "concept": "tcp-udp",
+      "analogy_en": "TCP is like courier with signature confirmation: you sign, they deliver, they record. UDP is like dropping a pamphlet in the letterbox: fast, no confirmation, some may be missed.",
+      "analogy_hi": "TCP signature confirmation wale courier jaisa hai: tu sign karo, deliver hoga, record hoga. UDP letterbox mein pamphlet daalane jaisa hai: fast, koi confirmation nahi, kuch miss ho sakta.",
+      "visual_hint": "Two delivery scenarios: signed courier vs untracked pamphlet drop"
+    },
+    {
+      "topic": "networking",
+      "concept": "http2-multiplexing",
+      "analogy_en": "HTTP/2 multiplexing is like a multi-lane highway vs a single-lane road: HTTP/1.1 is one car at a time; HTTP/2 is all lanes open simultaneously on the same connection.",
+      "analogy_hi": "HTTP/2 multiplexing multi-lane highway vs single-lane road jaisa hai: HTTP/1.1 ek baar mein ek car; HTTP/2 same connection pe saath mein sari lanes open.",
+      "visual_hint": "Single-lane vs multi-lane highway comparison with request streams"
+    },
+    {
+      "topic": "os",
+      "concept": "process-thread",
+      "analogy_en": "Process vs thread: process is a separate household with its own address; thread is a family member in that house. They share the kitchen and bathroom but have separate bedrooms.",
+      "analogy_hi": "Process vs thread: process apne address ke saath alag ghar hai; thread us ghar ka family member. Kitchen aur bathroom share karte hain lekin bedrooms alag.",
+      "visual_hint": "House diagram with shared kitchen (heap) and separate rooms (stack)"
+    },
+    {
+      "topic": "os",
+      "concept": "virtual-memory",
+      "analogy_en": "Virtual memory is like a hotel room key system: each guest (process) thinks they have the presidential suite (full address space). The hotel (OS) maps them to actual rooms dynamically.",
+      "analogy_hi": "Virtual memory hotel room key system jaisa hai: har guest (process) sochta hai presidential suite milA hai (full address space). Hotel (OS) dynamically actual rooms map karta hai.",
+      "visual_hint": "Hotel floor plan showing virtual vs physical room mapping"
+    },
+    {
+      "topic": "lld",
+      "concept": "solid",
+      "analogy_en": "SOLID principles are like cooking rules: S=one chef, one dish (Single Responsibility); O=add new dishes without rewriting the menu (Open/Closed); L=any sous-chef can replace the head chef for the same dish.",
+      "analogy_hi": "SOLID principles cooking rules jaisi hain: S=ek chef, ek dish; O=menu rewrite kiye bina nayi dishes add karo; L=koi bhi sous-chef same dish ke liye head chef ko replace kar sake.",
+      "visual_hint": "Kitchen with roles mapped to each SOLID principle"
+    },
+    {
+      "topic": "lld",
+      "concept": "design-patterns",
+      "analogy_en": "Design patterns are like standard recipes in a restaurant: every cook knows what 'biryani' means. No need to explain from scratch — just say the name.",
+      "analogy_hi": "Design patterns restaurant ke standard recipes jaisi hain: har cook jaanta hai 'biryani' kya hota hai. Scratch se explain nahi karna — sirf naam bolo.",
+      "visual_hint": "Recipe book with pattern names as dish names"
+    },
+    {
+      "topic": "rest",
+      "concept": "idempotency",
+      "analogy_en": "Idempotent API is like pressing a lift button multiple times: pressing 3rd floor once or ten times gives the same result — the lift goes to 3rd floor. No duplicate trips.",
+      "analogy_hi": "Idempotent API lift button baar baar dbaane jaisa hai: 3rd floor ek baar ya das baar dabaao — same result, lift 3rd floor jaegi. Koi duplicate trips nahi.",
+      "visual_hint": "Elevator panel with 3rd floor button pressed multiple times, lift arriving once"
+    },
+    {
+      "topic": "rest",
+      "concept": "stateless",
+      "analogy_en": "Stateless REST is like ordering at a restaurant where the waiter has no memory: every order is complete and self-contained. 'I'll have what I had last time' is not a valid REST request.",
+      "analogy_hi": "Stateless REST aisi restaurant mein order karne jaisa hai jahan waiter ko koi memory nahi: har order complete aur self-contained. 'Pichhli baar waala de do' valid REST request nahi hai.",
+      "visual_hint": "Waiter with blank notepad, each order self-contained"
+    },
+    {
+      "topic": "grpc",
+      "concept": "proto-buffers",
+      "analogy_en": "Protobuf is like packing luggage with a custom-fit bag vs a generic cardboard box. Custom-fit (Protobuf) is smaller, structured, faster to unpack. JSON is the cardboard box.",
+      "analogy_hi": "Protobuf custom-fit bag vs generic cardboard box mein luggage pack karne jaisa hai. Custom-fit (Protobuf) chhota, structured, unpack mein fast. JSON cardboard box hai.",
+      "visual_hint": "Side-by-side luggage: tight custom-fit vs bulky cardboard"
+    },
+    {
+      "topic": "jwt",
+      "concept": "structure",
+      "analogy_en": "JWT is like a visiting card with a wax seal: the card has your details (payload), the seal proves it was issued by a trusted authority (signature). Anyone can read the card; only you can create the seal.",
+      "analogy_hi": "JWT wax seal wale visiting card jaisa hai: card pe teri details hain (payload), seal prove karta hai trusted authority ne issue kiya (signature). Koi bhi card padh sakta hai; sirf tu seal bana sakta hai.",
+      "visual_hint": "Business card with three sections: header, payload, wax seal"
+    },
+    {
+      "topic": "rabbitmq",
+      "concept": "exchange",
+      "analogy_en": "RabbitMQ exchange is like a post office sorting room: messages come in, sorters (routing keys) decide which mailbox (queue) they go to. Direct, fanout, topic — different sorting strategies.",
+      "analogy_hi": "RabbitMQ exchange post office sorting room jaisa hai: messages aate hain, sorters (routing keys) decide karte hain kaunse mailbox (queue) mein jaayenge. Direct, fanout, topic — alag sorting strategies.",
+      "visual_hint": "Post office sorting room with routing arrows to different queues"
+    },
+    {
+      "topic": "cdn",
+      "concept": "edge-caching",
+      "analogy_en": "CDN edge cache is like a neighborhood grocery store vs the central warehouse: you walk 200 meters to the kirana store instead of 20 kilometers to the warehouse. Same product, much less travel.",
+      "analogy_hi": "CDN edge cache local kirana store vs central warehouse jaisa hai: 20 km warehouse ki jagah 200 meter kirana store. Same product, bahut kam safar.",
+      "visual_hint": "Map showing kirana store (edge) near user vs distant warehouse (origin)"
+    },
+    {
+      "topic": "spring",
+      "concept": "ioc",
+      "analogy_en": "Spring IoC is like a wedding planner: you don't go find the caterer, photographer, priest yourself. The planner (container) wires them all together and hands you a finished event.",
+      "analogy_hi": "Spring IoC wedding planner jaisa hai: tu khud caterer, photographer, pandit dhundhne nahi jaata. Planner (container) sab wire karta hai aur finished event deta hai.",
+      "visual_hint": "Wedding planner connecting all vendors, client receives final event"
+    },
+    {
+      "topic": "spring",
+      "concept": "aop",
+      "analogy_en": "Spring AOP is like the security camera system in a mall: it records what happens at each shop (method) without the shopkeeper needing to install their own camera. Cross-cutting concern, handled once.",
+      "analogy_hi": "Spring AOP mall ke security camera system jaisa hai: har shop (method) pe kya ho raha hai record karta hai bina shopkeeper ke apna camera lagaye. Cross-cutting concern, ek baar handle.",
+      "visual_hint": "Mall with one central camera system monitoring all shops"
+    },
+    {
+      "topic": "dsa",
+      "concept": "two-pointers",
+      "analogy_en": "Two-pointer technique is like two people walking toward each other from opposite ends of a sorted row of people: they meet in the middle when they find their match. O(n) instead of O(n²).",
+      "analogy_hi": "Two-pointer technique sorted row ke dono siro se ek doosre ki taraf chalne wale do log jaisi hai: jab match milta hai middle mein milte hain. O(n) instead of O(n²).",
+      "visual_hint": "Sorted array with two arrows converging from both ends"
+    },
+    {
+      "topic": "dsa",
+      "concept": "dynamic-programming",
+      "analogy_en": "Dynamic programming is like saving your answers in an exam to reuse in other questions. Compute once, store in a table, look up instead of recomputing.",
+      "analogy_hi": "Dynamic programming exam mein apne answers save karna aur doosre questions mein reuse karna jaisa hai. Ek baar compute karo, table mein store karo, dobara compute ki jagah lookup karo.",
+      "visual_hint": "Exam paper with answer box being copied to multiple later questions"
+    },
+    {
+      "topic": "dsa",
+      "concept": "sliding-window",
+      "analogy_en": "Sliding window is like reading a newspaper: you hold a fixed-width frame over the page and slide it. Only the newest column enters, the oldest leaves — you don't reread the entire page.",
+      "analogy_hi": "Sliding window newspaper padhne jaisa hai: fixed-width frame page ke upar rakhte ho aur slide karte ho. Sirf newest column andar, oldest bahar — poora page dobara nahi padhte.",
+      "visual_hint": "Newspaper with sliding frame highlighting a window of text"
+    },
+    {
+      "topic": "dsa",
+      "concept": "graph-bfs-dfs",
+      "analogy_en": "BFS is like exploring a city neighborhood by neighborhood: first all streets one block away, then two blocks. DFS is like following one road all the way to a dead end before trying the next.",
+      "analogy_hi": "BFS city ko neighborhood by neighborhood explore karna jaisa hai: pehle ek block door ki saari streets, phir do blocks. DFS ek road pe chalte rehna jab tak dead end na mile phir next try.",
+      "visual_hint": "City grid with BFS concentric rings vs DFS single path exploration"
+    }
+  ]
+}
