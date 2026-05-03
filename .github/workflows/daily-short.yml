@@ -40,12 +40,7 @@ jobs:
         id: phase
         run: |
           HOUR=$(date -u +%H)
-          if [ "$HOUR" -lt "12" ]; then
-            echo "phase=render" >> $GITHUB_OUTPUT
-          else
-            echo "phase=upload" >> $GITHUB_OUTPUT
-          fi
-          # Manual trigger: always do full pipeline
+          # Manual trigger always runs the full pipeline (render + upload).
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             echo "phase=full" >> "$GITHUB_OUTPUT"
           elif [ "${HOUR}" -lt "12" ]; then
@@ -63,7 +58,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     outputs:
-      artifact_name: ${{ steps.upload.outputs.artifact_name }}
+      artifact_name: daily-short-${{ github.run_number }}
       queue_item_id: ${{ steps.enqueue.outputs.queue_item_id }}
     steps:
       - uses: actions/checkout@v4
@@ -107,7 +102,7 @@ jobs:
       - name: Render daily Short via make-shorts.ts (3× retry)
         id: render
         env:
-          SHORT_NUM: ${{ inputs.short_number || '' }}
+          SHORT_NUM: ""
         run: |
           # Determine which storyboard to render
           if [ -n "${{ inputs.storyboard }}" ]; then
@@ -167,6 +162,7 @@ jobs:
           awk -v d="$DURATION" 'BEGIN { if (d > 55) { print "FAIL: duration " d " > 55s"; exit 1 } else print "OK: duration " d "s" }'
 
       - name: Upload artifact for upload phase
+        id: upload
         if: needs.determine-phase.outputs.phase == 'render'
         uses: actions/upload-artifact@v4
         with:
