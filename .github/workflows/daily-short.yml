@@ -108,17 +108,16 @@ jobs:
           if [ -n "${{ inputs.storyboard }}" ]; then
             TARGET="--storyboard ${{ inputs.storyboard }}"
           else
-            # Deterministic daily pick: day-of-year mod storyboard count
-            DOY=$(date +%j)
-            TOTAL=$(ls content/*.json 2>/dev/null | wc -l)
-            if [ "$TOTAL" -eq 0 ]; then
-              echo "FATAL: no storyboards in content/"
+            # B4: published-state ledger picks the next eligible storyboard,
+            # skipping any topic published within the last 30 days. Falls
+            # back to the oldest-published topic if every topic is on
+            # cooldown (rather than failing the workflow).
+            BOARD=$(npx tsx scripts/published-state.ts pick 2>&1 | tail -1)
+            if [ -z "$BOARD" ] || [ ! -f "$BOARD" ]; then
+              echo "FATAL: published-state.ts pick returned no storyboard ($BOARD)"
               exit 1
             fi
-            IDX=$((DOY % TOTAL))
-            # Sort files, pick IDX-th entry (0-based)
-            BOARD=$(ls content/*.json | sort | sed -n "$((IDX + 1))p")
-            echo "Daily pick: $BOARD (day=$DOY, idx=$IDX of $TOTAL)"
+            echo "Eligible pick: $BOARD"
             TARGET="--storyboard $BOARD"
           fi
 
@@ -287,6 +286,7 @@ jobs:
 
       # ── Upload to YouTube ─────────────────────────────────────────────────────
       - name: Upload to YouTube Shorts (3× retry)
+        id: upload
         if: inputs.dry_run != 'true'
         env:
           YOUTUBE_CLIENT_ID:     ${{ secrets.YOUTUBE_CLIENT_ID }}
@@ -304,10 +304,15 @@ jobs:
 
           for attempt in 1 2 3; do
             echo "Upload attempt $attempt/3…"
-            if npx tsx scripts/upload-youtube.ts "$VIDEO" "$META" --shorts; then
-              echo "Upload succeeded"
+            if npx tsx scripts/upload-youtube.ts "$VIDEO" "$META" --shorts > /tmp/upload.log 2>&1; then
+              cat /tmp/upload.log
+              VIDEO_ID=$(grep -oE 'video[ _]?id[":= ]+[A-Za-z0-9_-]{8,}' /tmp/upload.log | grep -oE '[A-Za-z0-9_-]{8,}$' | head -1 || true)
+              echo "video_id=$VIDEO_ID" >> $GITHUB_OUTPUT
+              echo "metadata_path=$META" >> $GITHUB_OUTPUT
+              echo "Upload succeeded (video_id=$VIDEO_ID)"
               exit 0
             fi
+            cat /tmp/upload.log
             if [ "$attempt" -lt 3 ]; then
               echo "Retrying in 60 s…"
               sleep 60
@@ -315,6 +320,33 @@ jobs:
           done
           echo "::error::All upload attempts failed"
           exit 1
+
+      # ── B4: record this publish in the ledger so we don't repeat the topic
+      #        within the 30-day cooldown window
+      - name: Record publish in ledger
+        if: success() && inputs.dry_run != 'true' && steps.upload.outputs.video_id != ''
+        id: record
+        run: |
+          META="${{ steps.upload.outputs.metadata_path }}"
+          VIDEO_ID="${{ steps.upload.outputs.video_id }}"
+          if [ -z "$META" ] || [ -z "$VIDEO_ID" ]; then
+            echo "::warning::Skipping ledger record (META=$META VIDEO_ID=$VIDEO_ID)"
+            exit 0
+          fi
+          npx tsx scripts/published-state.ts record "$META" "$VIDEO_ID"
+
+      - name: Commit ledger update
+        if: success() && inputs.dry_run != 'true' && steps.record.outcome == 'success'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet data/published-state.json 2>/dev/null; then
+            echo "No ledger changes to commit"
+            exit 0
+          fi
+          git add data/published-state.json
+          git commit -m "chore(ledger): record published video (B4 cooldown tracking)" || exit 0
+          git push origin HEAD:main || echo "::warning::Could not push ledger update (non-fatal)"
 
       - name: Cleanup local files
         if: success() && inputs.dry_run != 'true'
