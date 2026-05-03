@@ -269,7 +269,7 @@ const IntroSlide: React.FC<IntroSlideProps> = ({ topic = '', durationInFrames = 
           }}>
             <span style={{
               fontSize: 15, fontFamily: FONTS.text, fontWeight: 800,
-              color: COLORS.dark, letterSpacing: 4, textTransform: 'uppercase',
+              color: COLORS.bgBase, letterSpacing: 4, textTransform: 'uppercase',
             }}>
               {matchedCompany ? `${matchedCompany.name.toUpperCase()} INTERVIEW` : 'INTERVIEW QUESTION'}
             </span>

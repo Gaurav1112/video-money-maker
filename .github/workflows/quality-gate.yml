@@ -1,0 +1,350 @@
+name: Quality Gate
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Pre-upload quality gate — runs after render, before publish.
+#
+# Flow:
+#   1. Triggered by render workflow via workflow_run event (or manual dispatch)
+#   2. Runs quality-gate.ts on the rendered video + metadata JSON
+#   3. Uploads JSON report as artifact
+#   4. On PASS: signs the artifact SHA and sets output for publish workflow
+#   5. On FAIL: opens GitHub issue with full report, pings Slack/Discord,
+#               blocks publish workflow (publish reads gate-passed output)
+#
+# Dependencies: ffmpeg, ffprobe, tesseract-ocr (all pre-installed in ubuntu-22.04)
+# Cost: zero — all OSS tools, runs on github-hosted ubuntu runner
+# ─────────────────────────────────────────────────────────────────────────────
+
+on:
+  # Trigger after render workflow completes
+  workflow_run:
+    workflows: ["Cartoon Pipeline", "Daily Short (Render + Upload)"]
+    types: [completed]
+
+  # Manual trigger for testing gate on any video
+  workflow_dispatch:
+    inputs:
+      video_artifact_name:
+        description: 'Artifact name containing rendered video (e.g. rendered-episode-42)'
+        required: true
+      metadata_artifact_name:
+        description: 'Artifact name containing metadata.json (e.g. metadata-episode-42)'
+        required: true
+      format:
+        description: 'Video format'
+        type: choice
+        options: [long, short]
+        default: long
+      bypass_cache:
+        description: 'Bypass cache and force fresh gate run'
+        type: boolean
+        default: false
+
+# Least-privilege permissions
+permissions:
+  contents: read
+  issues: write           # open failure issues
+  pull-requests: write    # post PR comments with report
+
+concurrency:
+  group: quality-gate-${{ github.ref }}-${{ github.event.workflow_run.id || github.run_id }}
+  cancel-in-progress: false   # never cancel a gate mid-run
+
+env:
+  NODE_VERSION: '20'
+  QUALITY_GATE_ARTIFACT: quality-gate-report.json
+  QUALITY_GATE_ENFORCE: ${{ vars.QUALITY_GATE_ENFORCE || 'enforce' }}
+
+jobs:
+  # ── 1. Detect what was rendered ────────────────────────────────────────────
+  detect-artifacts:
+    name: Detect render artifacts
+    runs-on: ubuntu-22.04
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      github.event.workflow_run.conclusion == 'success'
+    outputs:
+      video_artifact: ${{ steps.detect.outputs.video_artifact }}
+      metadata_artifact: ${{ steps.detect.outputs.metadata_artifact }}
+      format: ${{ steps.detect.outputs.format }}
+      episode: ${{ steps.detect.outputs.episode }}
+    steps:
+      - name: Detect artifact names
+        id: detect
+        env:
+          MANUAL_VIDEO: ${{ github.event.inputs.video_artifact_name }}
+          MANUAL_META: ${{ github.event.inputs.metadata_artifact_name }}
+          MANUAL_FORMAT: ${{ github.event.inputs.format }}
+          RUN_ID: ${{ github.event.workflow_run.id }}
+        run: |
+          if [[ -n "$MANUAL_VIDEO" ]]; then
+            echo "video_artifact=$MANUAL_VIDEO" >> "$GITHUB_OUTPUT"
+            echo "metadata_artifact=$MANUAL_META" >> "$GITHUB_OUTPUT"
+            echo "format=$MANUAL_FORMAT" >> "$GITHUB_OUTPUT"
+            echo "episode=manual" >> "$GITHUB_OUTPUT"
+          else
+            # Auto-detect from the triggering run's artifacts
+            echo "video_artifact=rendered-video-${RUN_ID}" >> "$GITHUB_OUTPUT"
+            echo "metadata_artifact=video-metadata-${RUN_ID}" >> "$GITHUB_OUTPUT"
+            # Detect format from workflow name
+            if [[ "${{ github.event.workflow_run.name }}" == *"Short"* ]]; then
+              echo "format=short" >> "$GITHUB_OUTPUT"
+            else
+              echo "format=long" >> "$GITHUB_OUTPUT"
+            fi
+            echo "episode=${RUN_ID}" >> "$GITHUB_OUTPUT"
+          fi
+
+  # ── 2. Run the quality gate ────────────────────────────────────────────────
+  quality-gate:
+    name: Run quality gate
+    runs-on: ubuntu-22.04
+    needs: detect-artifacts
+    outputs:
+      gate_passed: ${{ steps.gate.outputs.gate_passed }}
+      artifact_sha256: ${{ steps.gate.outputs.artifact_sha256 }}
+      report_url: ${{ steps.upload.outputs.artifact-url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --prefer-offline
+
+      - name: Install system tools
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            ffmpeg \
+            tesseract-ocr \
+            tesseract-ocr-eng \
+            imagemagick
+
+      - name: Download rendered video artifact
+        uses: actions/download-artifact@fa0a91b85d4f404e444306234ca423d6a2cba17c # v4.1.8
+        with:
+          name: ${{ needs.detect-artifacts.outputs.video_artifact }}
+          path: gate-input/video
+        continue-on-error: true  # manual dispatch won't have artifact
+
+      - name: Download metadata artifact
+        uses: actions/download-artifact@fa0a91b85d4f404e444306234ca423d6a2cba17c # v4.1.8
+        with:
+          name: ${{ needs.detect-artifacts.outputs.metadata_artifact }}
+          path: gate-input/metadata
+        continue-on-error: true
+
+      - name: Find video and metadata files
+        id: find-files
+        run: |
+          VIDEO=$(find gate-input/video -name "*.mp4" | head -1)
+          METADATA=$(find gate-input/metadata -name "*.json" | head -1)
+
+          if [[ -z "$VIDEO" || -z "$METADATA" ]]; then
+            echo "::error::Could not find video (.mp4) or metadata (.json) in artifacts"
+            exit 1
+          fi
+
+          echo "video_path=$VIDEO" >> "$GITHUB_OUTPUT"
+          echo "metadata_path=$METADATA" >> "$GITHUB_OUTPUT"
+          echo "Found video: $VIDEO"
+          echo "Found metadata: $METADATA"
+
+      - name: Restore quality cache
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        with:
+          path: data/quality-cache
+          key: quality-cache-${{ hashFiles(steps.find-files.outputs.video_path) }}
+          restore-keys: quality-cache-
+
+      - name: Run quality gate
+        id: gate
+        env:
+          VIDEO_PATH: ${{ steps.find-files.outputs.video_path }}
+          METADATA_PATH: ${{ steps.find-files.outputs.metadata_path }}
+          FORMAT: ${{ needs.detect-artifacts.outputs.format }}
+          QUALITY_GATE_ENFORCE: ${{ env.QUALITY_GATE_ENFORCE }}
+          BYPASS_CACHE: ${{ github.event.inputs.bypass_cache || 'false' }}
+        run: |
+          set +e
+          npx tsx scripts/quality-gate.ts \
+            "$VIDEO_PATH" \
+            "$METADATA_PATH" \
+            --format="$FORMAT" \
+            ${BYPASS_CACHE:+--bypass-cache}
+          GATE_EXIT=$?
+          set -e
+
+          echo "gate_passed=$([ $GATE_EXIT -eq 0 ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+
+          # Sign the artifact with its SHA256
+          if [[ -f "$QUALITY_GATE_ARTIFACT" ]]; then
+            SHA=$(sha256sum "$QUALITY_GATE_ARTIFACT" | cut -d' ' -f1)
+            echo "artifact_sha256=$SHA" >> "$GITHUB_OUTPUT"
+            echo "$SHA  quality-gate-report.json" > quality-gate-report.json.sha256
+          fi
+
+          exit $GATE_EXIT
+
+      - name: Generate markdown report
+        if: always()
+        run: |
+          npx tsx scripts/quality-gate-report.ts \
+            quality-gate-report.json \
+            --output=quality-gate-report.md
+
+      - name: Upload gate report artifact
+        id: upload
+        if: always()
+        uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
+        with:
+          name: quality-gate-report-${{ github.run_id }}
+          path: |
+            quality-gate-report.json
+            quality-gate-report.json.sha256
+            quality-gate-report.md
+          retention-days: 30
+
+      - name: Save quality cache
+        if: always()
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        with:
+          path: data/quality-cache
+          key: quality-cache-${{ hashFiles(steps.find-files.outputs.video_path) }}
+
+  # ── 3. On PASS: sign and authorize publish ─────────────────────────────────
+  authorize-publish:
+    name: Authorize publish (gate passed)
+    runs-on: ubuntu-22.04
+    needs: quality-gate
+    if: needs.quality-gate.outputs.gate_passed == 'true'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Download gate report
+        uses: actions/download-artifact@fa0a91b85d4f404e444306234ca423d6a2cba17c # v4.1.8
+        with:
+          name: quality-gate-report-${{ github.run_id }}
+
+      - name: Verify report SHA256 (chain of custody)
+        env:
+          EXPECTED_SHA: ${{ needs.quality-gate.outputs.artifact_sha256 }}
+        run: |
+          ACTUAL=$(sha256sum quality-gate-report.json | cut -d' ' -f1)
+          if [[ "$ACTUAL" != "$EXPECTED_SHA" ]]; then
+            echo "::error::Report SHA256 mismatch — artifact may have been tampered with"
+            echo "  Expected: $EXPECTED_SHA"
+            echo "  Actual:   $ACTUAL"
+            exit 1
+          fi
+          echo "✅ Report integrity verified: $ACTUAL"
+
+      - name: Create gate-passed signal file
+        run: |
+          cat > gate-passed.json << EOF
+          {
+            "passed": true,
+            "reportSha256": "${{ needs.quality-gate.outputs.artifact_sha256 }}",
+            "gatRunId": "${{ github.run_id }}",
+            "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+            "episode": "${{ needs.detect-artifacts.outputs.episode }}",
+            "gateVersion": "1.0.0"
+          }
+          EOF
+
+      - name: Upload gate-passed signal
+        uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
+        with:
+          name: gate-passed-${{ needs.detect-artifacts.outputs.episode }}
+          path: gate-passed.json
+          retention-days: 1
+
+      - name: Log pass to summary
+        run: |
+          echo "## ✅ Quality Gate PASSED" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "Episode **${{ needs.detect-artifacts.outputs.episode }}** is cleared for upload." >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "Report artifact: [quality-gate-report-${{ github.run_id }}](${{ needs.quality-gate.outputs.report_url }})" >> "$GITHUB_STEP_SUMMARY"
+
+  # ── 4. On FAIL: block publish, open issue, ping Slack/Discord ─────────────
+  handle-failure:
+    name: Handle gate failure
+    runs-on: ubuntu-22.04
+    needs: quality-gate
+    if: needs.quality-gate.outputs.gate_passed == 'false'
+    permissions:
+      issues: write
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Download gate report
+        uses: actions/download-artifact@fa0a91b85d4f404e444306234ca423d6a2cba17c # v4.1.8
+        with:
+          name: quality-gate-report-${{ github.run_id }}
+
+      - name: Open GitHub issue with full report
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        with:
+          script: |
+            const fs = require('fs');
+            const report = JSON.parse(fs.readFileSync('quality-gate-report.json', 'utf-8'));
+            const md = fs.readFileSync('quality-gate-report.md', 'utf-8');
+
+            const fatal = report.summary.fatal;
+            const errors = report.summary.errors;
+            const episode = '${{ needs.detect-artifacts.outputs.episode }}';
+
+            const title = `🛑 Quality Gate FAILED — Episode ${episode} (${fatal} fatal, ${errors} errors)`;
+
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title,
+              body: md + '\n\n---\n\n**Upload blocked.** Fix the issues above and re-render.\n\n' +
+                    `Report artifact: ${{ needs.quality-gate.outputs.report_url }}`,
+              labels: ['quality-gate', 'blocked', 'priority-high'],
+            });
+
+      - name: Notify Slack
+        if: env.SLACK_WEBHOOK_URL != ''
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          EPISODE: ${{ needs.detect-artifacts.outputs.episode }}
+        run: |
+          FATAL=$(cat quality-gate-report.json | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['summary']['fatal'])")
+          ERRORS=$(cat quality-gate-report.json | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['summary']['errors'])")
+          curl -s -X POST "$SLACK_WEBHOOK_URL" \
+            -H 'Content-type: application/json' \
+            --data "{
+              \"text\": \"🛑 *Quality Gate FAILED* — Episode $EPISODE\\n*$FATAL fatal, $ERRORS errors*\\nUpload BLOCKED. Fix and re-render.\\nReport: ${{ needs.quality-gate.outputs.report_url }}\"
+            }"
+
+      - name: Notify Discord
+        if: env.DISCORD_WEBHOOK_URL != ''
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          EPISODE: ${{ needs.detect-artifacts.outputs.episode }}
+        run: |
+          FATAL=$(cat quality-gate-report.json | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['summary']['fatal'])")
+          curl -s -X POST "$DISCORD_WEBHOOK_URL" \
+            -H 'Content-Type: application/json' \
+            --data "{
+              \"content\": \"🛑 **Quality Gate FAILED** — Episode $EPISODE\\n$FATAL fatal issues. Upload BLOCKED.\\nReport: ${{ needs.quality-gate.outputs.report_url }}\"
+            }"
+
+      - name: Fail the workflow (blocks publish)
+        run: |
+          echo "## 🛑 Quality Gate FAILED" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          cat quality-gate-report.md >> "$GITHUB_STEP_SUMMARY"
+          exit 1

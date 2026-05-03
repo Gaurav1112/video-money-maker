@@ -19,9 +19,9 @@ import { computeVisualBeats } from '../lib/visual-beats';
 const WIDTH = 1080;
 const HEIGHT = 1920;
 const FPS = 30;
-const HOOK_FRAMES = 30; // 1 second
-const CTA_FRAMES = 60; // 2 seconds
-const MAX_TOTAL_FRAMES = 900; // 30 seconds
+const HOOK_FRAMES = 30;   // 1 second
+const CTA_FRAMES = 60;    // 2 seconds
+const MAX_TOTAL_FRAMES = 900; // 30 seconds — well within ≤55 s cap
 
 // ── Props ─────────────────────────────────────────────────────────────────────
 interface ViralShortProps {
@@ -40,7 +40,6 @@ function selectBestScene(scenes: Scene[]): { scene: Scene; index: number } {
       s.narration.trim().length > 0,
   );
 
-  // Prefer text, interview, review types — pick longest narration
   const preferred = contentScenes.filter(
     (s) => s.type === 'text' || s.type === 'interview' || s.type === 'review',
   );
@@ -77,7 +76,6 @@ function getAudioDuration(scene: Scene): number {
 // ── Subtle background ──────────────────────────────────────────────────────────
 const SubtleBg: React.FC = () => (
   <div style={{ position: 'absolute', inset: 0 }}>
-    {/* Very faint grid */}
     <div
       style={{
         position: 'absolute',
@@ -89,7 +87,6 @@ const SubtleBg: React.FC = () => (
         backgroundSize: '60px 60px',
       }}
     />
-    {/* Subtle radial glow */}
     <div
       style={{
         position: 'absolute',
@@ -149,6 +146,9 @@ const HookScreen: React.FC<{ text: string }> = ({ text }) => {
 };
 
 // ── Center Captions (word-by-word, saffron active word) ────────────────────────
+// PATCH (Rank #3): was `top: 850` (44 % from top; obscured by platform chrome).
+//                  Fixed to `bottom: 420` — clears like/comment/share UI on all
+//                  modern phones per TikTok/Instagram safe-zone guidelines.
 const CenterCaptions: React.FC<{
   wordTimestamps: WordTimestamp[];
   audioOffset: number;
@@ -158,10 +158,8 @@ const CenterCaptions: React.FC<{
 
   if (!wordTimestamps || wordTimestamps.length === 0) return null;
 
-  // Current time relative to scene audio start
   const currentTime = frame / fps;
 
-  // Find current word index
   let currentWordIdx = -1;
   for (let i = wordTimestamps.length - 1; i >= 0; i--) {
     if (currentTime >= wordTimestamps[i].start) {
@@ -172,7 +170,6 @@ const CenterCaptions: React.FC<{
 
   if (currentWordIdx < 0) return null;
 
-  // Show window of 4 words centered on current
   const windowStart = Math.max(0, currentWordIdx - 1);
   const windowEnd = Math.min(wordTimestamps.length, windowStart + 4);
   const visibleWords = wordTimestamps.slice(windowStart, windowEnd);
@@ -181,7 +178,9 @@ const CenterCaptions: React.FC<{
     <div
       style={{
         position: 'absolute',
-        top: 850,
+        // FIXED: bottom: 420 keeps captions above platform UI chrome.
+        // On 1920 px canvas this equals top ≈ 1460 px after wrapping.
+        bottom: 420,
         left: 40,
         right: 40,
         display: 'flex',
@@ -202,7 +201,8 @@ const CenterCaptions: React.FC<{
               fontFamily: FONTS.heading,
               fontWeight: 700,
               color: isActive ? COLORS.saffron : COLORS.white,
-              textShadow: '0 0 8px rgba(0,0,0,0.9), 0 2px 4px rgba(0,0,0,0.8), 2px 0 4px rgba(0,0,0,0.8), -2px 0 4px rgba(0,0,0,0.8)',
+              textShadow:
+                '0 0 8px rgba(0,0,0,0.9), 0 2px 4px rgba(0,0,0,0.8), 2px 0 4px rgba(0,0,0,0.8), -2px 0 4px rgba(0,0,0,0.8)',
               WebkitTextStroke: isActive ? undefined : '1px rgba(0,0,0,0.3)',
               transition: 'color 0.05s',
             }}
@@ -223,7 +223,6 @@ const TextContent: React.FC<{
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
-  // Compute visual beats for progressive diagram reveal
   const beats = React.useMemo(() => {
     if (scene.wordTimestamps && scene.wordTimestamps.length > 0) {
       return computeVisualBeats(scene.narration || '', scene.wordTimestamps);
@@ -231,17 +230,16 @@ const TextContent: React.FC<{
     return [];
   }, [scene]);
 
-  // Zoom pulse every 3 seconds
   const zoomFrame = frame % 90;
-  const zoomScale = zoomFrame < 15
-    ? interpolate(zoomFrame, [0, 7, 15], [1.0, 1.03, 1.0])
-    : 1.0;
+  const zoomScale =
+    zoomFrame < 15
+      ? interpolate(zoomFrame, [0, 7, 15], [1.0, 1.03, 1.0])
+      : 1.0;
 
   return (
     <AbsoluteFill style={{ backgroundColor: COLORS.dark }}>
       <SubtleBg />
 
-      {/* Scene heading */}
       {scene.heading && (
         <div
           style={{
@@ -277,12 +275,12 @@ const TextContent: React.FC<{
         </div>
       )}
 
-      {/* Visual template diagram — center area */}
       <div
         style={{
           position: 'absolute',
           top: 320,
-          bottom: 920,
+          // Diagram stays above safe-zone: 1920 - 420 (chrome) - 80 (caption) = 1420
+          bottom: 520,
           left: 20,
           right: 20,
           transform: `scale(${zoomScale})`,
@@ -310,16 +308,13 @@ const CodeContent: React.FC<{
 }> = ({ scene }) => {
   const frame = useCurrentFrame();
   const codeLines = (scene.content || '').split('\n').slice(0, 14);
-  const activeLineIdx = Math.min(
-    codeLines.length - 1,
-    Math.floor(frame / 8),
-  );
+  const activeLineIdx = Math.min(codeLines.length - 1, Math.floor(frame / 8));
 
-  // Zoom pulse
   const zoomFrame = frame % 90;
-  const zoomScale = zoomFrame < 15
-    ? interpolate(zoomFrame, [0, 7, 15], [1.0, 1.03, 1.0])
-    : 1.0;
+  const zoomScale =
+    zoomFrame < 15
+      ? interpolate(zoomFrame, [0, 7, 15], [1.0, 1.03, 1.0])
+      : 1.0;
 
   return (
     <AbsoluteFill style={{ backgroundColor: COLORS.dark }}>
@@ -331,7 +326,7 @@ const CodeContent: React.FC<{
           top: 280,
           left: 40,
           right: 40,
-          bottom: 920,
+          bottom: 520,
           backgroundColor: '#1E1E2E',
           borderRadius: 12,
           padding: 24,
@@ -340,12 +335,10 @@ const CodeContent: React.FC<{
         }}
       >
         {codeLines.map((line, i) => {
-          const lineOpacity = interpolate(
-            frame - i * 6,
-            [0, 10],
-            [0, 1],
-            { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
-          );
+          const lineOpacity = interpolate(frame - i * 6, [0, 10], [0, 1], {
+            extrapolateLeft: 'clamp',
+            extrapolateRight: 'clamp',
+          });
           const isActive = i === activeLineIdx;
 
           return (
@@ -381,19 +374,24 @@ const InterviewContent: React.FC<{
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
-  const bullets = scene.bullets || scene.narration?.split(/[.!?]/).filter(Boolean).slice(0, 4) || [];
+  const bullets =
+    scene.bullets ||
+    scene.narration
+      ?.split(/[.!?]/)
+      .filter(Boolean)
+      .slice(0, 4) ||
+    [];
 
-  // Zoom pulse
   const zoomFrame = frame % 90;
-  const zoomScale = zoomFrame < 15
-    ? interpolate(zoomFrame, [0, 7, 15], [1.0, 1.03, 1.0])
-    : 1.0;
+  const zoomScale =
+    zoomFrame < 15
+      ? interpolate(zoomFrame, [0, 7, 15], [1.0, 1.03, 1.0])
+      : 1.0;
 
   return (
     <AbsoluteFill style={{ backgroundColor: COLORS.dark }}>
       <SubtleBg />
 
-      {/* Question */}
       {scene.heading && (
         <div
           style={{
@@ -419,14 +417,13 @@ const InterviewContent: React.FC<{
         </div>
       )}
 
-      {/* Answer bullets */}
       <div
         style={{
           position: 'absolute',
           top: 440,
           left: 60,
           right: 60,
-          bottom: 920,
+          bottom: 520,
         }}
       >
         {bullets.map((bullet, idx) => {
@@ -462,16 +459,31 @@ const InterviewContent: React.FC<{
 };
 
 // ── End CTA (last 2 seconds) ───────────────────────────────────────────────────
-const EndCTA: React.FC = () => {
+// PATCH (Rank #7 loopable ending): added fade-out in final 8 frames so the last
+// rendered frame is fully transparent over COLORS.dark. When the platform loops
+// video (last frame → first frame), it transitions seamlessly into the HookScreen
+// which itself fades in from COLORS.dark — no jarring hard cut.
+const EndCTA: React.FC<{ totalFrames: number }> = ({ totalFrames }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
-  const s = spring({
+  const fadeInSpring = spring({
     frame,
     fps,
     config: { damping: 10, stiffness: 140, mass: 0.6 },
   });
-  const scale = interpolate(s, [0, 1], [0.6, 1]);
+  const scale = interpolate(fadeInSpring, [0, 1], [0.6, 1]);
+
+  // Fade out in last 8 frames — makes the ending frame pure COLORS.dark,
+  // matching HookScreen frame 0, which creates a seamless loop.
+  const fadeOutOpacity = interpolate(
+    frame,
+    [totalFrames - 8, totalFrames - 1],
+    [1, 0],
+    { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
+  );
+
+  const combinedOpacity = interpolate(fadeInSpring, [0, 1], [0, 1]) * fadeOutOpacity;
 
   return (
     <AbsoluteFill style={{ backgroundColor: COLORS.dark }}>
@@ -489,7 +501,7 @@ const EndCTA: React.FC = () => {
           justifyContent: 'center',
           gap: 16,
           transform: `scale(${scale})`,
-          opacity: interpolate(s, [0, 1], [0, 1]),
+          opacity: combinedOpacity,
         }}
       >
         <span
@@ -547,27 +559,23 @@ export const ViralShort: React.FC<ViralShortProps> = ({
   const audioOffsetSeconds = selectedScene.audioOffsetSeconds ?? 0;
   const sceneDurationSeconds = getAudioDuration(selectedScene);
 
-  // Trim to 25 seconds max for content
   const maxContentSeconds = 25;
   const contentSeconds = Math.min(sceneDurationSeconds, maxContentSeconds);
   const contentFrames = Math.round(contentSeconds * fps);
 
-  // Trim word timestamps to fit
   const wordTimestamps = selectedScene.wordTimestamps
     ? trimTimestamps(selectedScene.wordTimestamps, contentSeconds)
     : [];
 
-  // Total duration: hook (1s) + content + CTA (2s)
-  const totalFrames = HOOK_FRAMES + contentFrames + CTA_FRAMES;
+  // Total: hook (1 s) + content (≤25 s) + CTA (2 s) = ≤28 s — within MAX_TOTAL_FRAMES
+  const totalFrames = Math.min(HOOK_FRAMES + contentFrames + CTA_FRAMES, MAX_TOTAL_FRAMES);
+  const adjustedContentFrames = totalFrames - HOOK_FRAMES - CTA_FRAMES;
 
-  // ── Audio start in master track (frames) ──
   const audioStartFrames = Math.round(audioOffsetSeconds * fps);
 
-  // ── Hook text: rewrite heading as curiosity gap ──
   const heading = selectedScene.heading || storyboard.topic;
   const hookText = generateHookText(heading, storyboard.topic);
 
-  // ── Content renderer based on scene type ──
   const renderContent = () => {
     if (selectedScene.type === 'code') {
       return <CodeContent scene={selectedScene} />;
@@ -575,37 +583,37 @@ export const ViralShort: React.FC<ViralShortProps> = ({
     if (selectedScene.type === 'interview' || selectedScene.type === 'review') {
       return <InterviewContent scene={selectedScene} />;
     }
-    return <TextContent scene={selectedScene} contentDurationFrames={contentFrames} />;
+    return (
+      <TextContent scene={selectedScene} contentDurationFrames={adjustedContentFrames} />
+    );
   };
 
   return (
     <AbsoluteFill
       style={{ backgroundColor: COLORS.dark, width: WIDTH, height: HEIGHT }}
     >
-      {/* ── Hook: 1 second ── */}
+      {/* ── Hook: 1 s ── */}
       <Sequence from={0} durationInFrames={HOOK_FRAMES}>
         <HookScreen text={hookText} />
       </Sequence>
 
       {/* ── Content ── */}
-      <Sequence from={HOOK_FRAMES} durationInFrames={contentFrames}>
+      <Sequence from={HOOK_FRAMES} durationInFrames={adjustedContentFrames}>
         {renderContent()}
-
-        {/* Center captions */}
         <CenterCaptions
           wordTimestamps={wordTimestamps}
           audioOffset={audioOffsetSeconds}
         />
       </Sequence>
 
-      {/* ── CTA: last 2 seconds ── */}
-      <Sequence from={HOOK_FRAMES + contentFrames} durationInFrames={CTA_FRAMES}>
-        <EndCTA />
+      {/* ── CTA: 2 s, loopable fade-out ── */}
+      <Sequence from={HOOK_FRAMES + adjustedContentFrames} durationInFrames={CTA_FRAMES}>
+        <EndCTA totalFrames={CTA_FRAMES} />
       </Sequence>
 
-      {/* ── Master Audio (scene clip) ── */}
+      {/* ── Master Audio ── */}
       {storyboard.audioFile && (
-        <Sequence from={HOOK_FRAMES} durationInFrames={contentFrames}>
+        <Sequence from={HOOK_FRAMES} durationInFrames={adjustedContentFrames}>
           <Audio
             src={staticFile(`audio/${storyboard.audioFile.split('/').pop()}`)}
             startFrom={audioStartFrames}
@@ -615,7 +623,7 @@ export const ViralShort: React.FC<ViralShortProps> = ({
               });
               const fadeOut = interpolate(
                 f,
-                [contentFrames - 15, contentFrames],
+                [adjustedContentFrames - 15, adjustedContentFrames],
                 [1, 0],
                 { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
               );
@@ -626,11 +634,7 @@ export const ViralShort: React.FC<ViralShortProps> = ({
       )}
 
       {/* ── BGM: looping, very low volume ── */}
-      <Audio
-        src={staticFile('audio/bgm/warm-ambient.mp3')}
-        volume={0.08}
-        loop
-      />
+      <Audio src={staticFile('audio/bgm/warm-ambient.mp3')} volume={0.08} loop />
     </AbsoluteFill>
   );
 };
@@ -661,11 +665,10 @@ function generateHookText(heading: string, topic: string): string {
     return `${topic} changed everything`;
   }
 
-  // Default curiosity gap
   return `99% get ${topic} WRONG`;
 }
 
-// ── calculateMetadata for registration ─────────────────────────────────────────
+// ── calculateMetadata for Remotion registration ────────────────────────────────
 export function calculateViralShortMetadata({
   props,
 }: {
@@ -673,7 +676,7 @@ export function calculateViralShortMetadata({
 }) {
   const sb = props.storyboard as Storyboard;
   if (!sb || !sb.scenes || sb.scenes.length === 0) {
-    return { durationInFrames: 900, fps: 30, width: 1080, height: 1920 };
+    return { durationInFrames: 900, fps: FPS, width: WIDTH, height: HEIGHT };
   }
 
   const clipStartIdx = props.clipStart as number | undefined;
@@ -690,15 +693,13 @@ export function calculateViralShortMetadata({
 
   const duration = getAudioDuration(scene);
   const contentSeconds = Math.min(duration, 25);
-  const contentFrames = Math.round(contentSeconds * 30);
-  const total = HOOK_FRAMES + contentFrames + CTA_FRAMES;
+  const contentFrames = Math.round(contentSeconds * FPS);
+  const total = Math.min(HOOK_FRAMES + contentFrames + CTA_FRAMES, MAX_TOTAL_FRAMES);
 
   return {
-    durationInFrames: Math.min(total, MAX_TOTAL_FRAMES),
-    fps: 30,
-    width: 1080,
-    height: 1920,
+    durationInFrames: total,
+    fps: FPS,
+    width: WIDTH,
+    height: HEIGHT,
   };
 }
-
-export default ViralShort;
