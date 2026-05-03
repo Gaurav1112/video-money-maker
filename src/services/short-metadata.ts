@@ -1,6 +1,18 @@
 import type { StockStoryboard } from '../stock/types.js';
 import { createHash } from 'node:crypto';
 
+/**
+ * SINGLE source of truth for every variant of the brand identifier.
+ * Aud4 P1: previously `@GuruSishya-India` (subscribe), `#GuruSishyaIndia`
+ * (hashtag block), and `gurusishyaindia` (tag list) were three hardcoded
+ * literals in one file — any rename required a manual multi-site sed.
+ * Now derived programmatically so they cannot drift.
+ */
+export const BRAND_HANDLE_RAW = 'GuruSishya-India';
+export const BRAND_AT = `@${BRAND_HANDLE_RAW}`;
+export const BRAND_HASHTAG = `#${BRAND_HANDLE_RAW.replace(/-/g, '')}`;
+export const BRAND_TAG = BRAND_HANDLE_RAW.toLowerCase().replace(/-/g, '');
+
 export interface ShortMetadata {
   title: string;
   description: string;
@@ -56,6 +68,7 @@ const TITLE_TEMPLATES: Array<(topic: string) => string> = [
   (t) => `Why FAANG asks ${t} in every round`,
   (t) => `${t} ka asli concept — placement walo ke liye`,
   (t) => `Sirf 60 seconds me ${t} clear`,
+  (t) => `${t} samajh gaye toh placement pakka`,
 ];
 
 function pickByHash<T>(seed: string, options: T[]): T {
@@ -92,7 +105,7 @@ function shortHook(topic: string, override?: string): string {
  * search authority and dilute brand signal (Aud4 P0).
  */
 const NICHE_HASHTAGS = '#SystemDesignShorts #DSAShorts #FAANGPrep #HinglishTech #CodingShorts';
-const BROAD_HASHTAGS = '#Shorts #TechShorts #FAANG #DSA #SystemDesign #GuruSishyaIndia';
+const BROAD_HASHTAGS = `#Shorts #TechShorts #FAANG #DSA #SystemDesign ${BRAND_HASHTAG}`;
 
 function withUtm(url: string, slug: string, content: string): string {
   const sep = url.includes('?') ? '&' : '?';
@@ -152,7 +165,7 @@ export function generateShortMetadata(
     'campusplacement', 'tier1college', 'apnacollege', 'strivergrind',
   ];
   const tags = Array.from(
-    new Set([...baseTags, ...extraTags, ...ICP_TAGS, 'shorts', 'gurusishyaindia'])
+    new Set([...baseTags, ...extraTags, ...ICP_TAGS, 'shorts', BRAND_TAG])
   ).slice(0, 30);
 
   const slug = siteTopicSlug ?? slugifyTopic(storyboard.topic);
@@ -161,6 +174,7 @@ export function generateShortMetadata(
   const ctaUrl = withUtm(`${SITE_BASE}/topics/${slug}`, slug, 'cta_deeplink');
   const leadMagnetUrl = withUtm(`${SITE_BASE}/free-pdf-faang-80-questions`, slug, 'cta_leadmagnet');
   const sessionsUrl = withUtm(`${SITE_BASE}/sessions`, slug, 'cta_sessions');
+  const proUrl = withUtm(`${SITE_BASE}/pro`, slug, 'cta_pro');
 
   const sceneSummaries = storyboard.scenes
     .slice(0, 4)
@@ -174,11 +188,17 @@ export function generateShortMetadata(
   // "...more" fold (Aud3 P0). Body, branding, and supporting CTAs follow
   // below. License credits last to keep them legally compliant but out of
   // the conversion path.
+  //
+  // Aud3 P0: empty `credits` (no license) used to leak as `''` past the
+  // `line !== undefined` filter, producing a triple blank line in the
+  // published description. The conditional spread below removes it
+  // cleanly when there are no credits.
   const description = [
     `${hook} — Hinglish me, 60 seconds me. Isko samajhna zaroori hai agar tum FAANG mein jaana chahte ho.`,
     `🔗 Full deep-dive + practice: ${ctaUrl}`,
-    `📘 FREE 80-Q FAANG cheatsheet → ${leadMagnetUrl}`,
-    `👉 Subscribe @GuruSishya-India for daily 60-second tech Shorts.`,
+    `📘 Instant FREE 80-Q FAANG cheatsheet (no signup) → ${leadMagnetUrl}`,
+    `👉 Subscribe ${BRAND_AT} — daily 60-sec tech Shorts; pinned-comment links the day's deep-dive PDF.`,
+    `— ${BRAND_HANDLE_RAW} | Empowering Indian engineers, one Short at a time.`,
     '',
     `In this Short you will learn ${storyboard.topic} the way a senior engineer explains it to a junior in a code review. Hum cover karenge core idea, kab use karna hai, common interview trap, aur ek-line takeaway jo tum next FAANG / system-design round me bol sakte ho.`,
     '',
@@ -187,16 +207,13 @@ export function generateShortMetadata(
     '',
     '🎯 Daily Hinglish dev-edu Shorts — system design, DSA, low-level design, OS/DBMS internals, behavioural — every single day. Built for Indian CSE students preparing for FAANG.',
     '',
-    `📗 Want the full Q-bank + solutions? Pro tier ₹149/mo → ${withUtm(`${SITE_BASE}/pro`, slug, 'cta_pro')}`,
-    `👉 Mock interviews + 1:1 mentoring → ${sessionsUrl}`,
+    `📗 PRO tier — 500+ curated Q-bank · weekly new questions · ₹149/mo → ${proUrl}`,
+    `👉 Mock interviews + 1:1 mentoring (limited slots this week) → ${sessionsUrl}`,
     `👉 Comment which topic to cover next — top-voted topic ships within 7 days.`,
     '',
-    credits,
-    '',
+    ...(credits ? [credits, ''] : []),
     `${NICHE_HASHTAGS} ${BROAD_HASHTAGS}`,
-    '',
-    '— GuruSishya-India | Empowering Indian engineers, one Short at a time.',
-  ].filter((line) => line !== undefined).join('\n');
+  ].join('\n');
 
   return { title, description, tags };
 }

@@ -189,7 +189,7 @@ async function main(): Promise<void> {
       // visual never gets cut short of the audio (which would cause the
       // tail of the hook to play over scene-1 visuals).
       const HOOK_HARD_CAP = Math.round(4.0 * storyboard.fps);  // 4.0s for scene 0
-      const PER_SCENE_HARD_CAP = 8 * storyboard.fps;            // 8s body
+      const PER_SCENE_HARD_CAP = 5 * storyboard.fps;            // 5s body sweet-spot (Ret panel)
       const TOTAL_HARD_CAP = 55 * storyboard.fps;               // YT Shorts ≤60s
       let runningTotal = 0;
       storyboard.scenes = storyboard.scenes.map((scene, i) => {
@@ -445,7 +445,7 @@ async function buildMergedAssCaptions(sb: StockStoryboard, outPath: string): Pro
  */
 async function generateWatermarkPng(outPath: string): Promise<void> {
   const handle = process.env['CHANNEL_HANDLE'] ?? '@GuruSishya-India';
-  const safeHandle = handle.replace(/[^A-Za-z0-9@_\- ]/g, '');
+  const safeHandle = escapeDrawtext(handle.replace(/[^A-Za-z0-9@_\- ]/g, ''));
 
   // Try a few common fontfile locations; fall back to default font.
   const candidateFonts = [

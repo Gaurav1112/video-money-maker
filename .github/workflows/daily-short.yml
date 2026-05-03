@@ -33,11 +33,6 @@ env:
   EDGE_TTS_VERSION: '7.0.0'
   REMOTION_VERSION: '4.0.279'
 
-# Default to read-only at workflow level. Jobs that need write
-# (committing the published-state ledger) override locally.
-permissions:
-  contents: read
-
 # B4: prevent overlapping runs (manual + scheduled) from racing the
 # ledger commit. cancel-in-progress=false → queue the second run so
 # both videos still get published, but serially.
@@ -74,11 +69,11 @@ jobs:
       needs.determine-phase.outputs.phase == 'full'
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    # Job-scoped write permission: only this job commits the published-
-    # state ledger back to main; all other jobs inherit workflow-level
-    # `contents: read` (Eng4 P0 over-broad permissions fix).
+    # Render job is read-only; it only produces an artifact. Write
+    # permission lives on `upload` (the job that actually commits the
+    # published-state ledger back to main). Eng4 least-privilege.
     permissions:
-      contents: write
+      contents: read
     env:
       PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
       PIXABAY_API_KEY: ${{ secrets.PIXABAY_API_KEY }}
@@ -103,17 +98,17 @@ jobs:
           FREESOUND_CLIENT_ID: ${{ secrets.FREESOUND_CLIENT_ID }}
           UNSPLASH_ACCESS_KEY: ${{ secrets.UNSPLASH_ACCESS_KEY }}
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27ca5b5a06fd76d # v4.2.2
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
 
       # Cache Remotion bundle output — saves ~60 s on warm runs
       - name: Cache Remotion bundle
-        uses: actions/cache@v4
+        uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
         with:
           path: node_modules/.cache/remotion
           key: remotion-bundle-${{ hashFiles('src/**', 'remotion.config.ts') }}
@@ -147,13 +142,13 @@ jobs:
         run: npx tsx scripts/published-state.ts pick
 
       - name: Cache stock footage
-        uses: actions/cache@v4
+        uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
         with:
           path: assets/stock-cache/
           key: stock-cache-${{ hashFiles('assets/stock/manifest.json') }}
 
       - name: Cache TTS narration (deterministic re-runs)
-        uses: actions/cache@v4
+        uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
         with:
           path: assets/tts-cache/
           key: tts-cache-${{ hashFiles('content/**/*.json') }}
@@ -260,7 +255,7 @@ jobs:
       - name: Upload artifact for upload phase
         id: upload
         if: needs.determine-phase.outputs.phase == 'render'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
         with:
           name: daily-short-${{ github.run_number }}
           path: out/shorts/
@@ -324,11 +319,16 @@ jobs:
       (needs.render.result == 'success' || needs.render.result == 'skipped')
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    # Upload job commits the published-state ledger back to main
+    # (line ~490: git push origin HEAD:main). It is the ONLY job
+    # that needs write capability; everything else stays read-only.
+    permissions:
+      contents: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27ca5b5a06fd76d # v4.2.2
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
@@ -337,7 +337,7 @@ jobs:
         run: npm ci --ignore-scripts
 
       - name: Download rendered artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         continue-on-error: true
         with:
           name: daily-short-${{ github.run_number }}
