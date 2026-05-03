@@ -14,6 +14,12 @@
 import * as slotsRaw from '../data/script-slots.json';
 import * as stakesRaw from '../data/script-stakes.json';
 import * as analogiesRaw from '../data/script-analogies.json';
+import {
+  insertRetentionBeats,
+  type ScriptSegment as RetentionSegment,
+  type ScriptSegmentType as RetentionSegmentType,
+  type RetentionEngineOutput,
+} from '../lib/retention-engine';
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 
@@ -30,6 +36,15 @@ export interface ScriptInput {
   companyOverride?: string;
   /** Optional: salary anchor override e.g. "₹45LPA" */
   salaryOverride?: string;
+  /**
+   * Wire the retention-engine to inject open-loops, pattern interrupts,
+   * curiosity gaps, and CTA buybacks between teach blocks.
+   *
+   * Default: true (long-form) / false (short).
+   * Set explicitly to false to bypass (e.g. for unit tests of the raw
+   * generator without retention beats interleaved).
+   */
+  enableRetentionBeats?: boolean;
 }
 
 export interface ScriptSegment {
@@ -537,11 +552,120 @@ function scoreDensity(segments: ScriptSegment[]): number {
 
 // ─── Main entry point ─────────────────────────────────────────────────────────
 
+/**
+ * Map our SegmentType (HOOK|TENSION|TEACH|CTA) onto the retention engine's
+ * ScriptSegmentType (hook|content|code|...|cta). The retention engine cares
+ * about (a) where CTAs and hooks live (anchor points) and (b) which segments
+ * are "content" so it can interleave pattern-interrupts between them.
+ */
+function toRetentionSegmentType(t: SegmentType): RetentionSegmentType {
+  switch (t) {
+    case 'HOOK':
+      return 'hook';
+    case 'CTA':
+      return 'cta';
+    case 'TEACH':
+      return 'content';
+    case 'TENSION':
+      return 'content';
+    default:
+      return 'content';
+  }
+}
+
+/**
+ * Convert script-generator-v2 ScriptSegment[] → retention-engine ScriptSegment[]
+ * (the two libs use overlapping but distinct shapes — see comments on
+ * each file's interface).
+ */
+function adaptToRetention(segments: ScriptSegment[]): RetentionSegment[] {
+  return segments.map((s, i) => ({
+    id: `${s.type.toLowerCase()}-${i}-${s.frameStart}`,
+    type: toRetentionSegmentType(s.type),
+    startSeconds: s.timeStartSec,
+    endSeconds: s.timeEndSec,
+    text: s.text,
+    isHardConcept: s.type === 'TEACH',
+  }));
+}
+
+/**
+ * Adapt retention-engine output back into script-generator-v2 ScriptSegment[]
+ * preserving frame math (frame = timeSec * 30fps).
+ *
+ * Beats injected by the retention engine arrive as type 'retention_beat' —
+ * we map those back onto our nearest-equivalent SegmentType ('TENSION' for
+ * pattern interrupts / curiosity gaps / loss aversion, 'CTA' for cta_buyback)
+ * so downstream renderers (Remotion compositions) can keep their existing
+ * type-driven styling.
+ */
+function adaptFromRetention(
+  out: RetentionEngineOutput,
+  fps: number,
+): ScriptSegment[] {
+  return out.segments.map((s) => {
+    const text = s.text;
+    const wordCount = text.trim() === '' ? 0 : text.trim().split(/\s+/).length;
+    // Map retention type back; 'retention_beat' is meta — derive sub-type
+    // by comparing against beatsInserted to find the matching beatType.
+    let mappedType: SegmentType;
+    if (s.type === 'hook') mappedType = 'HOOK';
+    else if (s.type === 'cta') mappedType = 'CTA';
+    else if (s.type === 'retention_beat') {
+      const beat = out.beatsInserted.find(
+        (b) =>
+          Math.abs(b.insertAtSeconds - s.startSeconds) < 0.01 &&
+          b.text === s.text,
+      );
+      mappedType = beat?.beatType === 'cta_buyback' ? 'CTA' : 'TENSION';
+    } else {
+      mappedType = 'TEACH';
+    }
+    return {
+      frameStart: Math.round(s.startSeconds * fps),
+      frameEnd: Math.round(s.endSeconds * fps),
+      timeStartSec: s.startSeconds,
+      timeEndSec: s.endSeconds,
+      text,
+      type: mappedType,
+      brollHint: '',
+      audioHint: '',
+      wordCount,
+    };
+  });
+}
+
 export function generateScript(input: ScriptInput): GeneratedScript {
-  const segments =
+  const rawSegments =
     input.format === 'short'
       ? generateShortForm(input)
       : generateLongForm(input);
+
+  // Default retention-beat injection is OFF for backward compatibility —
+  // existing callers (and the test suite) expect the raw segments shape.
+  // Callers that want retention beats must opt-in with
+  // `enableRetentionBeats: true`. Production renderers should opt-in once
+  // retention output has been visually verified on a few topics.
+  // (Tracked in MASTER-GAP-LIST.md Tier S — flip default to true after
+  // visual QA on 2-3 topics, then update tests in the same PR.)
+  const useRetention = input.enableRetentionBeats === true;
+
+  const segments: ScriptSegment[] = useRetention
+    ? (() => {
+        try {
+          const out = insertRetentionBeats(
+            adaptToRetention(rawSegments),
+            input.topic,
+          );
+          return adaptFromRetention(out, 30); // 30fps standard
+        } catch (err) {
+          console.warn(
+            `[script-generator-v2] retention-engine fallback for "${input.topic}" — ${(err as Error).message}`,
+          );
+          return rawSegments;
+        }
+      })()
+    : rawSegments;
 
   const validationErrors = validateSegments(segments, input.format);
   const totalWords = segments.reduce((acc, s) => acc + s.wordCount, 0);
