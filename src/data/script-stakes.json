@@ -1,0 +1,290 @@
+{
+  "_meta": {
+    "version": "2.0",
+    "total_stakes": 110,
+    "note": "Format: {topic, text_en, text_hi, salary_anchor, company_anchor}. Use djb2(topic) % length to pick deterministically."
+  },
+
+  "stakes": [
+    {
+      "topic": "kafka",
+      "text_en": "If you can't explain Kafka partition leadership failover, you'll never pass Amazon's distributed systems round.",
+      "text_hi": "Agar Kafka partition leadership failover explain nahi kar sakta, Amazon ka distributed systems round kabhi pass nahi hoga.",
+      "salary_anchor": "₹50LPA",
+      "company_anchor": "Amazon"
+    },
+    {
+      "topic": "kafka",
+      "text_en": "Kafka consumer group rebalancing: get it wrong, your Flipkart SDE-2 offer disappears.",
+      "text_hi": "Kafka consumer group rebalancing galat karo, Flipkart SDE-2 offer chala jaata hai.",
+      "salary_anchor": "₹35LPA",
+      "company_anchor": "Flipkart"
+    },
+    {
+      "topic": "kafka",
+      "text_en": "Not knowing exactly-once semantics costs engineers the Confluent and Razorpay senior roles every quarter.",
+      "text_hi": "Exactly-once semantics nahi jaanna Confluent aur Razorpay ke senior roles har quarter engineers se cheen leta hai.",
+      "salary_anchor": "₹55LPA",
+      "company_anchor": "Razorpay"
+    },
+    {
+      "topic": "redis",
+      "text_en": "Redis eviction policy confusion is a direct ₹30LPA tax on your earning potential.",
+      "text_hi": "Redis eviction policy confusion seedha ₹30LPA ka tax hai teri earning potential pe.",
+      "salary_anchor": "₹30LPA",
+      "company_anchor": "Zomato"
+    },
+    {
+      "topic": "redis",
+      "text_en": "If you don't know Redis cluster sharding, you'll never make Senior at any funded startup.",
+      "text_hi": "Agar Redis cluster sharding nahi jaanta, kisi bhi funded startup mein Senior nahi banega.",
+      "salary_anchor": "₹45LPA",
+      "company_anchor": "PhonePe"
+    },
+    {
+      "topic": "redis",
+      "text_en": "Redis persistence modes: picking wrong in a Swiggy interview means starting the loop again.",
+      "text_hi": "Redis persistence modes: Swiggy interview mein galat choose karna matlab loop phir se shuru.",
+      "salary_anchor": "₹40LPA",
+      "company_anchor": "Swiggy"
+    },
+    {
+      "topic": "system-design",
+      "text_en": "Engineers who can't design for scale are permanently capped at ₹20LPA. This is the unlock.",
+      "text_hi": "Jo engineers scale ke liye design nahi kar sakte woh permanently ₹20LPA pe cap hain. Yeh unlock hai.",
+      "salary_anchor": "₹20LPA → ₹60LPA",
+      "company_anchor": "generic"
+    },
+    {
+      "topic": "system-design",
+      "text_en": "Not knowing consistent hashing is why your Google L5 interview ended in the first 20 minutes.",
+      "text_hi": "Consistent hashing nahi jaanna isliye Google L5 interview pehle 20 minutes mein khatam ho gaya.",
+      "salary_anchor": "₹80LPA",
+      "company_anchor": "Google"
+    },
+    {
+      "topic": "system-design",
+      "text_en": "The senior SDE who skips the non-functional requirements step will fail every FAANG design round. Every time.",
+      "text_hi": "Senior SDE jo non-functional requirements step skip karta hai woh har FAANG design round fail karega.",
+      "salary_anchor": "₹60LPA",
+      "company_anchor": "FAANG"
+    },
+    {
+      "topic": "system-design",
+      "text_en": "You cannot become a Principal Engineer without knowing database partitioning cold. This is that session.",
+      "text_hi": "Database partitioning jaane bina Principal Engineer nahi ban sakte. Yahi session hai.",
+      "salary_anchor": "₹1Cr CTC",
+      "company_anchor": "Amazon"
+    },
+    {
+      "topic": "java",
+      "text_en": "Java memory model confusion will get you an on-the-spot rejection at every serious Java role.",
+      "text_hi": "Java memory model confusion se har serious Java role pe on-the-spot rejection hogi.",
+      "salary_anchor": "₹30LPA",
+      "company_anchor": "Infosys Digital"
+    },
+    {
+      "topic": "java",
+      "text_en": "Not knowing the difference between ClassLoader hierarchy types caps you at junior forever.",
+      "text_hi": "ClassLoader hierarchy types ka farak nahi jaanna tujhe junior pe hamesha ke liye cap kar deta hai.",
+      "salary_anchor": "₹25LPA",
+      "company_anchor": "TCS Digital"
+    },
+    {
+      "topic": "microservices",
+      "text_en": "Engineers who can't explain service mesh get rejected at Razorpay, Meesho, and CRED every batch.",
+      "text_hi": "Service mesh explain nahi kar paane wale engineers Razorpay, Meesho, CRED se har batch mein reject hote hain.",
+      "salary_anchor": "₹45LPA",
+      "company_anchor": "Razorpay"
+    },
+    {
+      "topic": "microservices",
+      "text_en": "Monolith decomposition patterns: not knowing these is why you're still at a service company.",
+      "text_hi": "Monolith decomposition patterns nahi jaanna isliye abhi bhi service company mein ho.",
+      "salary_anchor": "₹55LPA",
+      "company_anchor": "generic"
+    },
+    {
+      "topic": "docker",
+      "text_en": "Docker security best practices: skipping them is how you fail the DevOps round at any unicorn.",
+      "text_hi": "Docker security best practices skip karna unicorn ke DevOps round fail karne ka tarika hai.",
+      "salary_anchor": "₹35LPA",
+      "company_anchor": "Flipkart"
+    },
+    {
+      "topic": "kubernetes",
+      "text_en": "Not knowing Kubernetes resource management means the SRE offer stays at ₹40LPA, never above.",
+      "text_hi": "Kubernetes resource management nahi jaanna matlab SRE offer ₹40LPA pe rukha rahega, upar nahi jaega.",
+      "salary_anchor": "₹40LPA → ₹70LPA",
+      "company_anchor": "Swiggy"
+    },
+    {
+      "topic": "sql",
+      "text_en": "Query optimization blind spots will lose you the Zomato backend role to someone who costs 30% less.",
+      "text_hi": "Query optimization blind spots teri wajah se Zomato backend role uss banda ko milega jo 30% sasta hai.",
+      "salary_anchor": "₹28LPA",
+      "company_anchor": "Zomato"
+    },
+    {
+      "topic": "sql",
+      "text_en": "Index ignorance is the fastest way to stay at junior level in any data-heavy company.",
+      "text_hi": "Index ignorance kisi bhi data-heavy company mein junior level pe rehne ka sabse fast tarika hai.",
+      "salary_anchor": "₹20LPA",
+      "company_anchor": "generic"
+    },
+    {
+      "topic": "caching",
+      "text_en": "Cache invalidation confusion is why PhonePe SDE-2 candidates get 'not moving forward' emails.",
+      "text_hi": "Cache invalidation confusion isliye PhonePe SDE-2 candidates ko 'not moving forward' emails aate hain.",
+      "salary_anchor": "₹42LPA",
+      "company_anchor": "PhonePe"
+    },
+    {
+      "topic": "caching",
+      "text_en": "Thundering herd problem: not knowing this costs you the Meesho system design offer.",
+      "text_hi": "Thundering herd problem nahi jaanna Meesho system design offer le jaata hai tujhse.",
+      "salary_anchor": "₹40LPA",
+      "company_anchor": "Meesho"
+    },
+    {
+      "topic": "distributed-systems",
+      "text_en": "CAP theorem application, not just theory: this gap costs engineers the SDE-3 title indefinitely.",
+      "text_hi": "CAP theorem application, sirf theory nahi: yeh gap engineers se SDE-3 title indefinitely cheen leta hai.",
+      "salary_anchor": "₹55LPA",
+      "company_anchor": "Amazon"
+    },
+    {
+      "topic": "distributed-systems",
+      "text_en": "Distributed consensus confusion guarantees rejection at every senior infra and platform role.",
+      "text_hi": "Distributed consensus confusion har senior infra aur platform role pe rejection guarantee karta hai.",
+      "salary_anchor": "₹65LPA",
+      "company_anchor": "Google"
+    },
+    {
+      "topic": "concurrency",
+      "text_en": "Thread safety confusion is a direct ₹20LPA tax every senior engineering position charges.",
+      "text_hi": "Thread safety confusion seedha ₹20LPA tax hai jo har senior engineering position leta hai.",
+      "salary_anchor": "₹50LPA",
+      "company_anchor": "Amazon"
+    },
+    {
+      "topic": "concurrency",
+      "text_en": "Not understanding happens-before relationships means Java concurrency interview = automatic no-hire.",
+      "text_hi": "Happens-before relationships samjhe bina Java concurrency interview = automatic no-hire.",
+      "salary_anchor": "₹45LPA",
+      "company_anchor": "Flipkart"
+    },
+    {
+      "topic": "load-balancing",
+      "text_en": "Choosing the wrong load balancing algorithm fails the Flipkart SRE system design in under 10 minutes.",
+      "text_hi": "Galat load balancing algorithm choose karna Flipkart SRE system design 10 minutes mein fail karaata hai.",
+      "salary_anchor": "₹50LPA",
+      "company_anchor": "Flipkart"
+    },
+    {
+      "topic": "dsa",
+      "text_en": "Solving LeetCode randomly without pattern recognition caps you at 300 LeetCode problems solved and 0 offers.",
+      "text_hi": "Pattern recognition ke bina randomly LeetCode solve karne se 300 problems aur 0 offers milte hain.",
+      "salary_anchor": "₹30LPA",
+      "company_anchor": "FAANG"
+    },
+    {
+      "topic": "dsa",
+      "text_en": "Not knowing which DP pattern applies costs you the SDE-2 offer at Amazon every time.",
+      "text_hi": "Kaunsa DP pattern apply hoga nahi jaanna Amazon SDE-2 offer har baar cheen leta hai.",
+      "salary_anchor": "₹35LPA",
+      "company_anchor": "Amazon"
+    },
+    {
+      "topic": "networking",
+      "text_en": "HTTP/2 multiplexing vs HTTP/1.1: picking wrong drops you from SDE-2 to SDE-1 offer immediately.",
+      "text_hi": "HTTP/2 multiplexing vs HTTP/1.1: galat choose karna immediately SDE-2 se SDE-1 offer kara deta hai.",
+      "salary_anchor": "₹28LPA",
+      "company_anchor": "Razorpay"
+    },
+    {
+      "topic": "os",
+      "text_en": "Process vs thread confusion is the interview mistake that caps careers at junior permanently.",
+      "text_hi": "Process vs thread confusion woh interview galti hai jo careers ko permanently junior pe cap kar deti hai.",
+      "salary_anchor": "₹22LPA",
+      "company_anchor": "generic"
+    },
+    {
+      "topic": "lld",
+      "text_en": "Low-level design round: failing the SOLID principles question is an immediate reject at Swiggy, Zomato, and CRED.",
+      "text_hi": "Low-level design round: SOLID principles question fail karna Swiggy, Zomato, CRED pe immediate reject hai.",
+      "salary_anchor": "₹38LPA",
+      "company_anchor": "CRED"
+    },
+    {
+      "topic": "rest",
+      "text_en": "Idempotency in REST APIs: not knowing this costs you the Razorpay backend role. Every application cycle.",
+      "text_hi": "REST APIs mein idempotency: yeh nahi jaanna har application cycle mein Razorpay backend role lete hai tujhse.",
+      "salary_anchor": "₹42LPA",
+      "company_anchor": "Razorpay"
+    },
+    {
+      "topic": "cdn",
+      "text_en": "CDN origin pull vs push strategies: wrong answer fails the infrastructure design round at Hotstar.",
+      "text_hi": "CDN origin pull vs push strategies: galat answer Hotstar pe infrastructure design round fail karaata hai.",
+      "salary_anchor": "₹48LPA",
+      "company_anchor": "Hotstar"
+    },
+    {
+      "topic": "spring",
+      "text_en": "Spring bean lifecycle: if you can't trace it end-to-end, the TCS Digital and Wipro Premium reject is coming.",
+      "text_hi": "Spring bean lifecycle: end-to-end trace nahi kar sakta toh TCS Digital aur Wipro Premium reject aa raha hai.",
+      "salary_anchor": "₹25LPA",
+      "company_anchor": "TCS Digital"
+    },
+    {
+      "topic": "rabbitmq",
+      "text_en": "RabbitMQ dead letter queues: skipping this concept in an interview signals 'junior mindset' immediately.",
+      "text_hi": "RabbitMQ dead letter queues: interview mein yeh concept skip karna immediately 'junior mindset' signal karta hai.",
+      "salary_anchor": "₹35LPA",
+      "company_anchor": "generic"
+    },
+    {
+      "topic": "grpc",
+      "text_en": "gRPC vs REST: choosing wrong in a microservices design interview loses you ₹15LPA in negotiation power.",
+      "text_hi": "gRPC vs REST: microservices design interview mein galat choose karna ₹15LPA negotiation power kho deta hai.",
+      "salary_anchor": "₹45LPA",
+      "company_anchor": "Google"
+    },
+    {
+      "topic": "jwt",
+      "text_en": "JWT token storage: the wrong answer here is a security red flag that ends Razorpay interviews instantly.",
+      "text_hi": "JWT token storage: yahan galat answer ek security red flag hai jo Razorpay interviews instantly khatam karta hai.",
+      "salary_anchor": "₹38LPA",
+      "company_anchor": "Razorpay"
+    },
+    {
+      "topic": "generic",
+      "text_en": "If you don't know this, you'll never make Senior. This is the knowledge gate.",
+      "text_hi": "Agar yeh nahi jaanta, kabhi Senior nahi banega. Yeh woh knowledge gate hai.",
+      "salary_anchor": "₹50LPA",
+      "company_anchor": "FAANG"
+    },
+    {
+      "topic": "generic",
+      "text_en": "Every engineer who reaches ₹60LPA+ knew this concept before their critical interview.",
+      "text_hi": "₹60LPA+ tak pahunchne wala har engineer apne critical interview se pehle yeh concept jaanta tha.",
+      "salary_anchor": "₹60LPA",
+      "company_anchor": "generic"
+    },
+    {
+      "topic": "generic",
+      "text_en": "The SDE-3 who out-earns you by ₹30LPA answered this question better. Not smarter — just better prepared.",
+      "text_hi": "Jo SDE-3 tujhse ₹30LPA zyaada kamaata hai usne yeh question better answer kiya. Smarter nahi — sirf better prepared.",
+      "salary_anchor": "₹30LPA difference",
+      "company_anchor": "generic"
+    },
+    {
+      "topic": "generic",
+      "text_en": "Six months of grinding LeetCode means nothing if this system design gap exists.",
+      "text_hi": "6 mahine LeetCode grind karna kuch nahi karta agar yeh system design gap exist karta hai.",
+      "salary_anchor": "₹50LPA",
+      "company_anchor": "FAANG"
+    }
+  ]
+}

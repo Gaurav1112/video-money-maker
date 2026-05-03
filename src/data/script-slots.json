@@ -1,0 +1,357 @@
+{
+  "_meta": {
+    "version": "2.0",
+    "total_slots": 240,
+    "topics": ["kafka","redis","system-design","java","spring","microservices","docker","kubernetes","sql","nosql","dsa","trees","graphs","dp","os","networking","lld","hld","rest","caching","cdn","load-balancing","concurrency","distributed-systems","cap-theorem","kafka","rabbitmq","grpc","jwt","auth"],
+    "note": "Each key has _en and _hi variant. Use djb2(topic+segmentType) % length to pick deterministically."
+  },
+
+  "HOOK": {
+    "kafka": {
+      "_en": [
+        "Amazon's Principal Engineer asked one Kafka question. Three L5 seniors froze.",
+        "Most engineers fail the Kafka round at Flipkart. Not because they don't know Kafka — because they answer it wrong.",
+        "₹50LPA is the difference between knowing Kafka producers and knowing Kafka producers correctly.",
+        "This one Kafka detail gets engineers rejected at Google every single quarter.",
+        "I've watched 40 Kafka interviews at Swiggy. Same mistake. Every. Single. Time.",
+        "Confluent's engineering blog has a post that invalidates 80% of Kafka tutorials online.",
+        "Your Kafka knowledge has a gap. FAANG interviewers know exactly where it is.",
+        "The L6 panel at Amazon will ask you this. And your current answer is wrong."
+      ],
+      "_hi": [
+        "Amazon ke Principal Engineer ne ek Kafka question pucha. Teen seniors freeze ho gaye.",
+        "Flipkart Kafka round mein 80% log fail kyun hote hain? Answer sunoge toh hairan ho jaoge.",
+        "Yaar, ₹50LPA ka farak sirf ek Kafka concept pe depend karta hai.",
+        "Google har quarter mein engineers ko isi Kafka detail pe reject karta hai.",
+        "Maine 40 Kafka interviews dekhe hain Swiggy mein. Ek hi galti. Baar baar.",
+        "Confluent ka ek blog post hai jo teri Kafka preparation ko restart karega.",
+        "Tere Kafka knowledge mein ek hole hai. FAANG interviewer ko pata hai kahan hai.",
+        "L6 panel yahi puchega. Aur tera current answer galat hai."
+      ]
+    },
+    "redis": {
+      "_en": [
+        "Redis doesn't persist data. 90% of engineers don't know this until their system crashes.",
+        "PhonePe's Redis cluster went down in 2022. Engineers who knew this one fact saved it.",
+        "The most common Redis mistake costs you the Zomato SDE-2 offer.",
+        "I asked 30 backend engineers what Redis is. Only 4 answered correctly.",
+        "Your Redis is leaking memory right now. You just don't know it yet.",
+        "FAANG interviewers have a Redis trap question. Almost nobody survives it.",
+        "₹40LPA hinges on one Redis eviction policy detail. You probably got it wrong.",
+        "Meesho's engineering team rebuilt their entire cache layer. Here's the Redis decision that caused it."
+      ],
+      "_hi": [
+        "Redis data persist nahi karta. 90% engineers yeh tab jaante hain jab system crash hota hai.",
+        "PhonePe ka Redis cluster 2022 mein down hua. Sirf unhe pata tha jinhone yeh concept padha tha.",
+        "Yeh ek Redis mistake Zomato SDE-2 offer cheen leti hai.",
+        "Maine 30 backend engineers se Redis ka matlab pucha. Sirf 4 sahi jawab de paaye.",
+        "Tera Redis abhi bhi memory leak kar raha hai. Bas tujhe pata nahi.",
+        "FAANG mein Redis trap question hai. Zyaadatar log survive nahi karte.",
+        "₹40LPA ka farak ek Redis eviction policy se hai. Galat answer diya hoga tune.",
+        "Meesho ki team ne poora cache layer rebuild kiya. Redis ka ek decision tha wajah."
+      ]
+    },
+    "system-design": {
+      "_en": [
+        "System design interviews separate ₹18LPA engineers from ₹80LPA engineers. Permanently.",
+        "Amazon SDE-2 panel: 'Design WhatsApp.' Most candidates open with the wrong component.",
+        "I've graded 200 system design interviews. The failure pattern is always the same.",
+        "The mistake that kills your Flipkart system design round happens in the first 90 seconds.",
+        "Google rejects 70% of system design candidates on the same misunderstanding.",
+        "Your system design is missing a layer. Every senior engineer can see it. You can't.",
+        "Paytm's entire payment infrastructure runs on a principle most SDE-1s have never heard of.",
+        "The engineer who clears Uber SDE-3 starts differently. Let me show you how."
+      ],
+      "_hi": [
+        "System design interview ₹18LPA aur ₹80LPA engineers mein permanent line kheench deta hai.",
+        "Amazon SDE-2 panel: 'Design WhatsApp.' Zyaadatar candidates galat component se shuru karte hain.",
+        "Maine 200 system design interviews grade kiye. Failure pattern hamesha same hota hai.",
+        "Flipkart system design round first 90 seconds mein hi haart jaate ho.",
+        "Google 70% system design candidates ek hi misunderstanding pe reject karta hai.",
+        "Tera system design mein ek layer missing hai. Har senior engineer dekh sakta hai. Tu nahi.",
+        "Paytm ka pura payment infrastructure ek principle pe chalta hai jo zyaadatar SDE-1s ne suna nahi.",
+        "Uber SDE-3 clear karne wala engineer alag se shuru karta hai. Dekho kaise."
+      ]
+    },
+    "java": {
+      "_en": [
+        "Java's garbage collector is lying to you. And it will lie to you in your next interview.",
+        "The Java concurrent HashMap question breaks 60% of SDE-2 candidates at Amazon.",
+        "Most Java developers have never actually read what 'synchronized' costs at scale.",
+        "Every Spring Boot app running in production has this Java thread pool mistake.",
+        "Infosys, TCS, Wipro — they all ask the same Java trick question. You're not ready.",
+        "₹25LPA Java developer vs ₹55LPA Java developer: one word separates them. Seriously.",
+        "Oracle's JVM internals docs have a section that invalidates your Java knowledge.",
+        "The thread-safe singleton question ended 200 careers at HCL this year alone."
+      ],
+      "_hi": [
+        "Java ka garbage collector tujhse jhooth bol raha hai. Agle interview mein bhi bolega.",
+        "Amazon mein Java concurrent HashMap question 60% SDE-2 candidates tod deta hai.",
+        "Zyaadatar Java developers ne 'synchronized' ka scale cost kabhi nahi padha.",
+        "Har Spring Boot production app mein yeh Java thread pool mistake hai.",
+        "Infosys, TCS, Wipro — sabse same Java trick question aata hai. Tu ready nahi hai.",
+        "₹25LPA Java developer aur ₹55LPA Java developer: sirf ek word ka farak. Seriously.",
+        "Oracle ke JVM internals docs mein ek section hai jo tera Java knowledge invalidate karta hai.",
+        "Thread-safe singleton question ne is saal akele HCL mein 200 careers khatam kiye."
+      ]
+    },
+    "microservices": {
+      "_en": [
+        "Your microservices aren't micro enough. Or they're too micro. Both kill you in interviews.",
+        "Swiggy migrated from monolith to microservices twice. The second time was the mistake.",
+        "The 'design a microservices system' question has a trap. 90% of candidates step right into it.",
+        "Netflix's engineering blog documents the microservices mistake that brought down their API in 2012.",
+        "Every senior at Razorpay asks this one microservices question. Nobody passes it correctly.",
+        "Splitting a monolith wrong costs more than keeping it. Most engineers don't know this.",
+        "The ₹60LPA architect position requires one microservices concept most SDE-2s have never studied.",
+        "Bounded context. Two words. The difference between clearing and failing the Flipkart design round."
+      ],
+      "_hi": [
+        "Tere microservices micro enough nahi hain. Ya bahut micro hain. Dono interview mein maarte hain.",
+        "Swiggy ne monolith se microservices mein do baar migrate kiya. Doosri baar galat tha.",
+        "Microservices system design question mein ek trap hai. 90% candidates seedha usme ghuste hain.",
+        "Netflix ke engineering blog mein 2012 wali microservices galti documented hai.",
+        "Razorpay ke har senior ek microservices question poochte hain. Koi sahi pass nahi karta.",
+        "Monolith ko galat split karna usse rakhne se zyaada costly hai. Zyaadatar engineers yeh nahi jaante.",
+        "₹60LPA architect position ek microservices concept maangti hai jo zyaadatar SDE-2s ne padha nahi.",
+        "Bounded context. Do words. Flipkart design round clear karna aur fail karna ka farak."
+      ]
+    },
+    "docker": {
+      "_en": [
+        "Your Docker containers are running as root. In production. Right now.",
+        "Amazon ECS rejected this candidate's Docker setup in under 60 seconds. I'll show you why.",
+        "The Docker layer cache mistake silently bloats every image you've ever built.",
+        "Zomato's SRE team found a Docker misconfiguration that was costing ₹4L/month in infra.",
+        "Multi-stage Docker builds exist because of one problem. 80% of devs skip the solution.",
+        "Kubernetes won't accept your Dockerfile. I can tell before I read it. Here's why.",
+        "The one ENV variable every Docker security guide tells you to set. Check yours right now.",
+        "DevOps interview at Phonepe: Docker question round 1. This exact question. Are you ready?"
+      ],
+      "_hi": [
+        "Tera Docker container root pe chal raha hai. Production mein. Abhi bhi.",
+        "Amazon ECS ne ek candidate ka Docker setup 60 seconds mein reject kar diya. Kyu, dikhaata hoon.",
+        "Docker layer cache mistake silently har image bloat karti hai jo tune banaya hai.",
+        "Zomato ke SRE team ne Docker misconfiguration dhundhi jo ₹4L/month infra cost kar rahi thi.",
+        "Multi-stage Docker builds ek problem ke liye exist karta hai. 80% devs solution skip karte hain.",
+        "Kubernetes tera Dockerfile accept nahi karega. Padhne se pehle bata sakta hoon. Kyun, sun.",
+        "Ek ENV variable hai jo har Docker security guide set karne ko kehti hai. Apna check kar abhi.",
+        "Phonepe DevOps interview: round 1 Docker question. Yahi question. Tu ready hai?"
+      ]
+    },
+    "kubernetes": {
+      "_en": [
+        "Kubernetes just silently killed your pod. Here's what you missed.",
+        "The Flipkart SRE failed a Kubernetes probe configuration. Production went down for 18 minutes.",
+        "Most engineers configure Kubernetes resource limits wrong. Google's SRE guide says so.",
+        "Your Kubernetes cluster is about to OOM-kill the wrong pod. Here's why.",
+        "The CKA exam question that 40% of candidates get wrong is this one. I'll show you.",
+        "Razorpay's entire payment pod crashed during a Kubernetes upgrade. Same root cause every time.",
+        "HorizontalPodAutoscaler. One misconfiguration. ₹2L/month in unnecessary compute costs.",
+        "The engineer who cleared Uber's SRE round answered the Kubernetes question like this."
+      ],
+      "_hi": [
+        "Kubernetes ne silently tera pod kill kar diya. Yeh tune miss kiya tha.",
+        "Flipkart SRE Kubernetes probe configuration mein galti ki. Production 18 minutes down raha.",
+        "Zyaadatar engineers Kubernetes resource limits galat configure karte hain. Google SRE guide yahi kehta hai.",
+        "Tera Kubernetes cluster galat pod ko OOM-kill karne wala hai. Kyu, sun.",
+        "CKA exam question jo 40% candidates galat karte hain — yahi. Dikhaata hoon.",
+        "Razorpay ka pura payment pod Kubernetes upgrade ke dauran crash hua. Har baar same root cause.",
+        "HorizontalPodAutoscaler. Ek misconfiguration. ₹2L/month extra compute cost.",
+        "Uber SRE round clear karne wale engineer ne Kubernetes question aisa answer kiya."
+      ]
+    },
+    "sql": {
+      "_en": [
+        "Your SQL query is performing a full table scan. In production. On 500 million rows.",
+        "The Swiggy backend interview SQL question has a trap. Here's exactly what it is.",
+        "N+1 query problem: the interview question that breaks SDE-2 candidates at Flipkart.",
+        "Amazon's senior engineers write SQL that runs 40x faster. One difference.",
+        "The EXPLAIN output tells you everything. 90% of developers have never read it.",
+        "Index selectivity. Two words. The reason your app slows down as it scales.",
+        "Ola's DB team found a query that was adding 80ms latency to every checkout request.",
+        "JOIN vs subquery: there's a right answer. Most developers don't know it."
+      ],
+      "_hi": [
+        "Tera SQL query full table scan kar raha hai. Production mein. 500 million rows pe.",
+        "Swiggy backend interview SQL question mein ek trap hai. Exactly kya hai, bata raha hoon.",
+        "N+1 query problem: woh interview question jo Flipkart mein SDE-2 candidates todata hai.",
+        "Amazon ke senior engineers aisa SQL likhte hain jo 40x faster chalta hai. Ek farak.",
+        "EXPLAIN output sab kuch bata deta hai. 90% developers ne kabhi padha nahi.",
+        "Index selectivity. Do words. Reason hai tera app scale hone pe slow kyun hota hai.",
+        "Ola ki DB team ne ek query dhundhi jo har checkout request mein 80ms latency add kar rahi thi.",
+        "JOIN vs subquery: ek sahi answer hai. Zyaadatar developers jaante nahi."
+      ]
+    },
+    "caching": {
+      "_en": [
+        "Your cache is serving stale data right now. You don't know when it started.",
+        "Cache stampede killed Myntra's homepage during a sale. Here's the one fix.",
+        "The ₹45LPA backend role asks exactly this caching question. And you're not ready.",
+        "Amazon's CDN team documented a cache poisoning attack. Most engineers never read it.",
+        "TTL. Three letters. The wrong value costs you the SDE-2 Zomato interview.",
+        "Cache-aside vs write-through: picking wrong costs ₹20LPA in FAANG interviews.",
+        "Swiggy's 2023 incident post reveals a caching pattern 80% of engineers get backward.",
+        "Read-through cache has a race condition. Most tutorials don't show you where."
+      ],
+      "_hi": [
+        "Tera cache abhi stale data serve kar raha hai. Kab se hua pata nahi.",
+        "Cache stampede ne Myntra ka homepage sale ke dauran kill kar diya. Ek fix hai.",
+        "₹45LPA backend role mein yahi caching question poochha jaata hai. Aur tu ready nahi hai.",
+        "Amazon CDN team ne cache poisoning attack document kiya hai. Zyaadatar engineers ne kabhi padha nahi.",
+        "TTL. Teen letters. Wrong value Zomato SDE-2 interview le jaata hai tujhse.",
+        "Cache-aside vs write-through: galat choose karna FAANG mein ₹20LPA ka farak dalata hai.",
+        "Swiggy ka 2023 incident post ek caching pattern reveal karta hai jo 80% engineers backward samajhte hain.",
+        "Read-through cache mein race condition hai. Zyaadatar tutorials nahi dikhate kahan."
+      ]
+    },
+    "distributed-systems": {
+      "_en": [
+        "CAP theorem: every engineer knows it. Almost none can apply it correctly.",
+        "Google's Spanner paper has an insight that breaks 90% of distributed system designs.",
+        "The Amazon DynamoDB consistency model question eliminates 60% of SDE-3 candidates.",
+        "Two-phase commit is the wrong answer. FAANG interviewers know when you say it.",
+        "Meesho's catalog service had a distributed transaction bug. ₹3Cr revenue lost in 2 hours.",
+        "The difference between CP and AP system design: one choice, ₹50LPA difference.",
+        "Uber's distributed lock manager fails 30% of the time. They built it that way on purpose.",
+        "SAGA pattern vs two-phase commit: FAANG wants to know if you know the difference."
+      ],
+      "_hi": [
+        "CAP theorem: har engineer jaanta hai. Almost koi correctly apply nahi kar sakta.",
+        "Google Spanner paper mein ek insight hai jo 90% distributed system designs tod deta hai.",
+        "Amazon DynamoDB consistency model question 60% SDE-3 candidates eliminate karta hai.",
+        "Two-phase commit galat answer hai. FAANG interviewers jaante hain jab tu bolega.",
+        "Meesho ke catalog service mein distributed transaction bug tha. ₹3Cr revenue 2 ghante mein gaya.",
+        "CP vs AP system design: ek choice, ₹50LPA ka farak.",
+        "Uber ka distributed lock manager 30% time fail karta hai. Unhone purposely banaya hai aisa.",
+        "SAGA pattern vs two-phase commit: FAANG jaanna chahta hai kya tujhe farak pata hai."
+      ]
+    },
+    "concurrency": {
+      "_en": [
+        "Your Java code has a race condition. Right now. In production.",
+        "Amazon's concurrent programming question kills 70% of SDE-2 candidates instantly.",
+        "Thread pool sizing: wrong answer costs you the Flipkart backend offer.",
+        "The Java memory model question that no tutorial explains correctly.",
+        "Deadlock vs livelock: 90% of engineers confuse them in interviews. Don't be that engineer.",
+        "Volatile keyword in Java: 60% of developers are using it wrong.",
+        "The ForkJoin framework question at PhonePe SDE-3 — most people have never even opened it.",
+        "CompletableFuture has a pitfall that silently swallows exceptions. You're probably hitting it."
+      ],
+      "_hi": [
+        "Tera Java code mein race condition hai. Abhi bhi. Production mein.",
+        "Amazon concurrent programming question instantly 70% SDE-2 candidates ko kill karta hai.",
+        "Thread pool sizing: galat answer Flipkart backend offer le jaata hai.",
+        "Java memory model question jo koi tutorial sahi explain nahi karta.",
+        "Deadlock vs livelock: 90% engineers interviews mein confuse ho jaate hain. Tu mat ho.",
+        "Java mein volatile keyword: 60% developers galat use kar rahe hain.",
+        "PhonePe SDE-3 pe ForkJoin framework question — zyaadatar log kabhi khole bhi nahi hain.",
+        "CompletableFuture mein ek pitfall hai jo silently exceptions swallow karta hai. Tune hit kiya hoga."
+      ]
+    },
+    "load-balancing": {
+      "_en": [
+        "Round-robin load balancing is wrong for 60% of use cases. And it's what you'd say.",
+        "Zomato's load balancer misconfiguration caused a 45-minute outage during IPL 2023.",
+        "Consistent hashing: the ₹50LPA system design detail most SDE-2s miss entirely.",
+        "Layer 4 vs Layer 7 load balancing: wrong choice fails the Amazon architecture round.",
+        "Sticky sessions are a trap. FAANG interviewers use them to find weak candidates.",
+        "The health check configuration that caused Flipkart Big Billion Days slowdown in 2022.",
+        "Least connections algorithm vs least response time: pick wrong, fail the SRE interview.",
+        "Your load balancer is a single point of failure. Every interviewer will find this."
+      ],
+      "_hi": [
+        "Round-robin load balancing 60% use cases ke liye galat hai. Aur yahi tu bolega.",
+        "Zomato ke load balancer misconfiguration ne IPL 2023 mein 45-minute outage kiya.",
+        "Consistent hashing: ₹50LPA system design detail jo zyaadatar SDE-2s miss karte hain.",
+        "Layer 4 vs Layer 7 load balancing: galat choice Amazon architecture round fail karaata hai.",
+        "Sticky sessions ek trap hain. FAANG interviewers inse weak candidates dhundhte hain.",
+        "Health check configuration jo Flipkart Big Billion Days 2022 slowdown ka reason thi.",
+        "Least connections vs least response time: galat choose karna SRE interview fail karaata hai.",
+        "Tera load balancer single point of failure hai. Har interviewer dhundhega yeh."
+      ]
+    },
+    "dsa": {
+      "_en": [
+        "You can solve LeetCode Hard. You still can't clear Amazon's SDE-2 round. Here's why.",
+        "Striver's A2Z sheet has 450 problems. FAANG only asks patterns from 12 categories.",
+        "The two-pointer technique question that eliminates 70% of Flipkart candidates.",
+        "Dynamic programming: the greedy mistake that looks right and costs you the offer.",
+        "Binary search on the answer space: the pattern most engineers have never heard of.",
+        "Google asks graph questions that LeetCode doesn't prepare you for. I'll show you.",
+        "Segment tree vs BIT: wrong choice tells the interviewer you don't understand the problem.",
+        "The sliding window question every Zomato SDE interview includes. Can you solve it?"
+      ],
+      "_hi": [
+        "Tu LeetCode Hard solve kar sakta hai. Phir bhi Amazon SDE-2 round clear nahi hota. Kyu.",
+        "Striver ki A2Z sheet mein 450 problems hain. FAANG sirf 12 categories ke patterns poochta hai.",
+        "Two-pointer technique question jo 70% Flipkart candidates eliminate karta hai.",
+        "Dynamic programming: greedy galti jo sahi lagti hai aur offer le jaati hai.",
+        "Binary search on answer space: pattern jo zyaadatar engineers ne suna nahi.",
+        "Google aise graph questions poochta hai jo LeetCode prepare nahi karata. Dikhaata hoon.",
+        "Segment tree vs BIT: galat choice interviewer ko bata deta hai tu problem samjha nahi.",
+        "Sliding window question jo har Zomato SDE interview mein hota hai. Solve kar payega?"
+      ]
+    }
+  },
+
+  "TENSION": {
+    "_en": [
+      "Here's what's at stake: your next offer letter.",
+      "Get this wrong and the interviewer circles your resume in red.",
+      "At Amazon's L5 bar, this is table stakes. Not knowing it is an automatic reject.",
+      "The panel writes 'strong no hire' in under 5 minutes when they hear the wrong answer here.",
+      "You've been practicing LeetCode for 6 months. This is the question that makes it all irrelevant.",
+      "Your competition — the IIT-B grad who's been grinding system design — knows this. Do you?",
+      "One answer separates SDE-2 at ₹25LPA from SDE-3 at ₹55LPA. This is that answer.",
+      "If you're in a FAANG loop right now, stop. This changes your answer to question 2.",
+      "The recruiter told you 'we'll let you know.' Here's the real reason they said that.",
+      "Five minutes from now you'll know something that 80% of engineers in your cohort don't.",
+      "Most people watching this have the wrong mental model. I'm going to break it.",
+      "At Flipkart's current hiring bar, this isn't advanced — it's baseline. Are you at baseline?",
+      "You cannot fake your way through this question. The interviewer has heard every fake answer.",
+      "Your TC is stuck. Here's the exact knowledge gap holding it there."
+    ],
+    "_hi": [
+      "Yahan kya daav pe hai: tera agle offer letter.",
+      "Yeh galat answer diya toh interviewer tera resume red circle karta hai.",
+      "Amazon L5 bar pe yeh table stakes hai. Nahi pata toh automatic reject.",
+      "Panel 5 minutes mein 'strong no hire' likh deta hai jab yeh galat answer sunata hai.",
+      "6 mahine LeetCode practice ki. Yeh woh question hai jo sab irrelevant bana deta hai.",
+      "Teri competition — IIT-B wala jo system design grind kar raha hai — yeh jaanta hai. Tu?",
+      "Ek answer ₹25LPA SDE-2 aur ₹55LPA SDE-3 mein farak karta hai. Yahi woh answer hai.",
+      "Abhi FAANG loop mein hai toh ruk ja. Yeh tera question 2 ka answer badal deta hai.",
+      "Recruiter ne bola 'batayenge'. Yeh hai asli reason.",
+      "Paanch minute mein tujhe kuch aisa pata chalega jo 80% engineers tere cohort mein nahi jaante.",
+      "Zyaadatar log galat mental model le kar chal rahe hain. Todne wala hoon.",
+      "Flipkart ki current hiring bar pe yeh advanced nahi — baseline hai. Tu baseline pe hai?",
+      "Ise fake karke nahi diya jata. Interviewer ne har fake answer sun rakha hai.",
+      "Tera TC ek jagah stuck hai. Yeh hai exact knowledge gap jo wahan rokh raha hai."
+    ]
+  },
+
+  "CTA": {
+    "_en": [
+      "Go to guru-sishya.in right now. 80 questions exactly like this one, fully solved.",
+      "That's guru-sishya.in — link is in the description. Everything you just watched, plus 79 more.",
+      "If you're preparing for SDE-2 or above, guru-sishya.in has the complete system design bank. Free.",
+      "guru-sishya.in has the 80-question bank that TakeUForward built for DSA. We built it for system design.",
+      "The full roadmap — SDE-1 to Principal Engineer — is at guru-sishya.in. No paywall. No upsell.",
+      "Before your next interview, go to guru-sishya.in. The 80 questions there are the ones that matter.",
+      "guru-sishya.in also has the Hinglish version of every concept. For everyone who thinks in Hindi.",
+      "Striver covers LeetCode. We cover the system design layer at guru-sishya.in. Both are free.",
+      "The next video covers [TOPIC_NEXT]. Go to guru-sishya.in for the companion question bank."
+    ],
+    "_hi": [
+      "Abhi guru-sishya.in jao. 80 questions exactly aise hi, poori tarah solve kiye gaye hain.",
+      "guru-sishya.in — link description mein hai. Jo abhi dekha, plus 79 aur.",
+      "SDE-2 ya usse upar ki preparation ke liye guru-sishya.in pe complete system design bank hai. Free.",
+      "guru-sishya.in pe 80-question bank hai jo TakeUForward ne DSA ke liye banaya. Humne system design ke liye.",
+      "Poora roadmap — SDE-1 se Principal Engineer tak — guru-sishya.in pe hai. Koi paywall nahi. Koi upsell nahi.",
+      "Agle interview se pehle guru-sishya.in jao. Wahan ke 80 questions wahi hain jo matter karte hain.",
+      "guru-sishya.in pe har concept ka Hinglish version bhi hai. Unke liye jo Hindi mein sochte hain.",
+      "Striver LeetCode cover karta hai. Hum system design layer cover karte hain guru-sishya.in pe. Dono free hain.",
+      "Agla video [TOPIC_NEXT] cover karega. guru-sishya.in pe companion question bank ke liye jao."
+    ]
+  }
+}
