@@ -16,7 +16,7 @@
  *   8. render-daily-short — no implicit new Date() in CI (guard for the patch)
  */
 
-import { describe, it, expect } from '@jest/globals';
+import { describe, it, expect, vi } from 'vitest';
 import { getSeed, seededInt, seededFloat, seededPick, seededShuffle, fnv1a32 } from '../src/lib/seed';
 import { getWobble, WOBBLE_NOISE_SEED } from '../src/lib/wobble';
 import { getShortForDate } from '../src/pipeline/shorts-generator';
@@ -272,8 +272,8 @@ describe('render-daily-short CI guard', () => {
 
     try {
       // Dynamically import so the module sees the patched env.
-      // Use jest.resetModules() to get a fresh module evaluation.
-      jest.resetModules();
+      // Use vi.resetModules() to get a fresh module evaluation.
+      vi.resetModules();
       // We import just the parseArgs-equivalent logic.
       // Since the patched file is a .patch.ts (not the live file), we test
       // the guard logic inline here:

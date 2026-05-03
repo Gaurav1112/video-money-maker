@@ -62,10 +62,10 @@ jobs:
             || true  # non-fatal: some repos use separate tsconfig for scripts
 
       - name: Run retention engine tests
-        run: npx jest tests/retention-engine.test.ts --no-coverage --verbose
+        run: npx vitest run tests/retention-engine.test.ts --reporter=verbose
 
       - name: Run retention proxy calibration tests
-        run: npx jest tests/retention-proxy.test.ts --no-coverage --verbose
+        run: npx vitest run tests/retention-proxy.test.ts --reporter=verbose
 
   # ── Job 2: Proxy check on any rendered video in the PR ──────────────────────
   retention-proxy-check:
