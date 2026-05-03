@@ -33,7 +33,7 @@ jobs:
     timeout-minutes: 10
     steps:
       # SHA-pinned: actions/checkout v4.2.2
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
 
       - name: Download actionlint
         env:
@@ -65,7 +65,7 @@ jobs:
     timeout-minutes: 10
     steps:
       # SHA-pinned: actions/checkout v4.2.2
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
         with:
           fetch-depth: 0   # full history — gitleaks scans all commits
 
@@ -91,7 +91,7 @@ jobs:
       # Upload SARIF to GitHub Security tab (visible in repo → Security → Code scanning)
       - name: Upload gitleaks SARIF
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
         with:
           name: gitleaks-sarif
           path: gitleaks-report.sarif
@@ -104,7 +104,7 @@ jobs:
     timeout-minutes: 15
     steps:
       # SHA-pinned: actions/checkout v4.2.2
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
 
       - name: Install trivy
         env:
@@ -137,7 +137,7 @@ jobs:
 
       - name: Upload trivy SARIF (deps)
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
         with:
           name: trivy-deps-sarif
           path: trivy-deps.sarif
@@ -145,7 +145,7 @@ jobs:
 
       - name: Upload trivy SARIF (secrets)
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
         with:
           name: trivy-secrets-sarif
           path: trivy-secrets.sarif
@@ -158,10 +158,10 @@ jobs:
     timeout-minutes: 10
     steps:
       # SHA-pinned: actions/checkout v4.2.2
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
 
       # SHA-pinned: actions/setup-node v4.4.0
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020  # v4.4.0
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e  # v6.4.0
         with:
           node-version: '20'
           cache: 'npm'

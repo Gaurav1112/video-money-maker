@@ -39,10 +39,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: "20"
           cache: "npm"
@@ -86,10 +86,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: "20"
           cache: "npm"
@@ -135,7 +135,7 @@ jobs:
           ffprobe -v quiet -show_entries format=duration -of csv=p=0 "$AUDIO" || true
 
       - name: Upload audio artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: hinglish-audio-${{ needs.determine.outputs.topic }}-s${{ needs.determine.outputs.session }}
           path: output/hinglish/
@@ -151,10 +151,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: "20"
           cache: "npm"
@@ -163,7 +163,7 @@ jobs:
         run: npm ci --prefer-offline
 
       - name: Download audio artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: hinglish-audio-${{ needs.determine.outputs.topic }}-s${{ needs.determine.outputs.session }}
           path: output/hinglish/
