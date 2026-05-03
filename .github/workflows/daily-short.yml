@@ -28,6 +28,13 @@ permissions:
 env:
   NODE_VERSION: '20'
 
+# B4: prevent overlapping runs (manual + scheduled) from racing the
+# ledger commit. cancel-in-progress=false → queue the second run so
+# both videos still get published, but serially.
+concurrency:
+  group: daily-short-upload
+  cancel-in-progress: false
+
 # ─── Phase detection ──────────────────────────────────────────────────────────
 jobs:
   determine-phase:
@@ -99,6 +106,11 @@ jobs:
       # FIX: was `npx tsx scripts/render-daily-short.ts` + implicit make-reels.ts
       #      → now explicitly calls make-shorts.ts which renders ViralShort at
       #        1080×1920, ≤55 s, with #shorts metadata for YT Shorts shelf placement.
+      - name: Pick eligible storyboard (B4 cooldown-aware)
+        id: pick
+        if: ${{ inputs.storyboard == '' }}
+        run: npx tsx scripts/published-state.ts pick
+
       - name: Render daily Short via make-shorts.ts (3× retry)
         id: render
         env:
@@ -108,16 +120,12 @@ jobs:
           if [ -n "${{ inputs.storyboard }}" ]; then
             TARGET="--storyboard ${{ inputs.storyboard }}"
           else
-            # B4: published-state ledger picks the next eligible storyboard,
-            # skipping any topic published within the last 30 days. Falls
-            # back to the oldest-published topic if every topic is on
-            # cooldown (rather than failing the workflow).
-            BOARD=$(npx tsx scripts/published-state.ts pick 2>&1 | tail -1)
+            BOARD="${{ steps.pick.outputs.path }}"
             if [ -z "$BOARD" ] || [ ! -f "$BOARD" ]; then
-              echo "FATAL: published-state.ts pick returned no storyboard ($BOARD)"
+              echo "FATAL: pick step did not produce a valid storyboard path ($BOARD)"
               exit 1
             fi
-            echo "Eligible pick: $BOARD"
+            echo "Eligible pick: $BOARD (topic=${{ steps.pick.outputs.topic }}, reason=${{ steps.pick.outputs.reason }})"
             TARGET="--storyboard $BOARD"
           fi
 
@@ -306,7 +314,8 @@ jobs:
             echo "Upload attempt $attempt/3…"
             if npx tsx scripts/upload-youtube.ts "$VIDEO" "$META" --shorts > /tmp/upload.log 2>&1; then
               cat /tmp/upload.log
-              VIDEO_ID=$(grep -oE 'video[ _]?id[":= ]+[A-Za-z0-9_-]{8,}' /tmp/upload.log | grep -oE '[A-Za-z0-9_-]{8,}$' | head -1 || true)
+              # Match upload-youtube.ts line: `Video ID:    <id>` — case-insensitive
+              VIDEO_ID=$(grep -iE 'video[ _]?id[":= ]+[A-Za-z0-9_-]{8,}' /tmp/upload.log | grep -oE '[A-Za-z0-9_-]{8,}$' | head -1 || true)
               echo "video_id=$VIDEO_ID" >> $GITHUB_OUTPUT
               echo "metadata_path=$META" >> $GITHUB_OUTPUT
               echo "Upload succeeded (video_id=$VIDEO_ID)"
@@ -330,12 +339,12 @@ jobs:
           META="${{ steps.upload.outputs.metadata_path }}"
           VIDEO_ID="${{ steps.upload.outputs.video_id }}"
           if [ -z "$META" ] || [ -z "$VIDEO_ID" ]; then
-            echo "::warning::Skipping ledger record (META=$META VIDEO_ID=$VIDEO_ID)"
-            exit 0
+            echo "::error::Missing META=$META or VIDEO_ID=$VIDEO_ID — refusing to skip ledger record"
+            exit 1
           fi
           npx tsx scripts/published-state.ts record "$META" "$VIDEO_ID"
 
-      - name: Commit ledger update
+      - name: Commit ledger update (fatal on failure — losing entries breaks cooldown)
         if: success() && inputs.dry_run != 'true' && steps.record.outcome == 'success'
         run: |
           git config user.name "github-actions[bot]"
@@ -345,8 +354,23 @@ jobs:
             exit 0
           fi
           git add data/published-state.json
-          git commit -m "chore(ledger): record published video (B4 cooldown tracking)" || exit 0
-          git push origin HEAD:main || echo "::warning::Could not push ledger update (non-fatal)"
+          git commit -m "chore(ledger): record published video (B4 cooldown tracking)"
+
+          # Retry push with rebase to handle concurrent main updates.
+          # Push failure is FATAL — silently dropping a ledger entry would
+          # let the same topic re-publish within the 30-day cooldown.
+          for attempt in 1 2 3; do
+            if git push origin HEAD:main; then
+              echo "Ledger pushed (attempt $attempt)"
+              exit 0
+            fi
+            echo "Push attempt $attempt failed; rebasing on origin/main and retrying"
+            git fetch origin main
+            git rebase origin/main || { git rebase --abort; exit 1; }
+            sleep $((attempt * 5))
+          done
+          echo "::error::Failed to push ledger update after 3 attempts — cooldown integrity at risk"
+          exit 1
 
       - name: Cleanup local files
         if: success() && inputs.dry_run != 'true'

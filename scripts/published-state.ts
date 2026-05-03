@@ -193,9 +193,11 @@ function cliPick(): void {
     fs.appendFileSync(process.env.GITHUB_OUTPUT, `path=${result.path}\n`);
     fs.appendFileSync(process.env.GITHUB_OUTPUT, `topic=${result.topic}\n`);
     fs.appendFileSync(process.env.GITHUB_OUTPUT, `reason=${result.reason}\n`);
+  } else {
+    // Local-shell fallback only (e.g. `published-state.ts pick`); the
+    // workflow consumes steps.pick.outputs.path, never stdout.
+    process.stdout.write(result.path + '\n');
   }
-  // Also print path to stdout so shell `$(...)` capture works
-  process.stdout.write(result.path + '\n');
 }
 
 function cliRecord(metaPathOrTopic: string, videoId: string): void {
