@@ -1,14 +1,17 @@
 name: Daily Short (Render + Upload)
 
-# Standalone 45-second YouTube Shorts -- one per day, fully automated.
-# 660 unique Shorts (66 topics x 10 formats) = ~22 months of daily content.
-# Uses VerticalLong composition (proven stable) instead of AtomicShort.
+# Standalone 45-second YouTube Shorts — one per day, fully automated.
+# 660 unique Shorts (66 topics × 10 formats) = ~22 months of daily content.
+#
+# CHANGED from original: upload step now calls publish-pipeline.yml via
+# workflow_call instead of running publish logic inline, so every upload
+# goes through the SQLite queue (exactly-once, dead-letter, Slack alarm).
 
 on:
   schedule:
-    # Pre-render at 3:00 PM IST (9:30 UTC) -- 4h buffer before upload
+    # Pre-render at 3:00 PM IST (9:30 UTC) — 4 h buffer before upload
     - cron: '30 9 * * *'
-    # Upload at 7:00 PM IST (1:30 PM UTC) -- peak India viewing time
+    # Upload at 7:00 PM IST (1:30 PM UTC) — peak India viewing time
     - cron: '30 13 * * *'
 
   workflow_dispatch:
@@ -16,6 +19,7 @@ on:
       short_number:
         description: 'Specific short number (0-659), leave empty for today'
         required: false
+        default: ''
       dry_run:
         description: 'Render only, no upload'
         type: boolean
@@ -27,9 +31,11 @@ permissions:
 env:
   NODE_VERSION: '20'
 
+# ─── Phase detection ──────────────────────────────────────────────────────────
 jobs:
   determine-phase:
     runs-on: ubuntu-latest
+    timeout-minutes: 3
     outputs:
       phase: ${{ steps.phase.outputs.phase }}
     steps:
@@ -37,22 +43,25 @@ jobs:
         id: phase
         run: |
           HOUR=$(date -u +%H)
-          # 9:30 UTC = pre-render, 13:30 UTC = upload
-          if [ "$HOUR" -lt "12" ]; then
-            echo "phase=render" >> $GITHUB_OUTPUT
-          else
-            echo "phase=upload" >> $GITHUB_OUTPUT
-          fi
-          # Manual trigger: always do full pipeline
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "phase=full" >> $GITHUB_OUTPUT
+            echo "phase=full" >> "$GITHUB_OUTPUT"
+          elif [ "${HOUR}" -lt "12" ]; then
+            echo "phase=render" >> "$GITHUB_OUTPUT"
+          else
+            echo "phase=upload" >> "$GITHUB_OUTPUT"
           fi
 
+# ─── Render job ───────────────────────────────────────────────────────────────
   render:
     needs: determine-phase
-    if: needs.determine-phase.outputs.phase == 'render' || needs.determine-phase.outputs.phase == 'full'
+    if: |
+      needs.determine-phase.outputs.phase == 'render' ||
+      needs.determine-phase.outputs.phase == 'full'
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    outputs:
+      artifact_name: ${{ steps.upload.outputs.artifact_name }}
+      queue_item_id: ${{ steps.enqueue.outputs.queue_item_id }}
     steps:
       - uses: actions/checkout@v4
 
@@ -60,46 +69,45 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
+          cache: npm
 
       - name: Install dependencies
         run: npm ci
 
       - name: Install Chrome + TTS + ffmpeg
         run: |
+          set -euo pipefail
           npx remotion browser ensure
-          pip install --break-system-packages edge-tts
-          sudo apt-get update && sudo apt-get install -y ffmpeg
-          # Verify
+          pip install --break-system-packages edge-tts 2>/dev/null || pip install edge-tts
+          sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
           python3 -c "import edge_tts; print('edge_tts OK')"
           ffmpeg -version | head -1
 
       - name: Clone content repo
         run: |
+          set -euo pipefail
           git clone --depth 1 https://github.com/Gaurav1112/guru-sishya.git ../guru-sishya
           ln -sf "$(pwd)/../guru-sishya/public/content" content 2>/dev/null || true
           ls content/*.json | head -3 || { echo "FATAL: content not accessible"; exit 1; }
 
-      - name: Render daily Short (3x retry)
+      - name: Render daily Short (3× retry)
         id: render
+        env:
+          SHORT_NUM: ${{ inputs.short_number || '' }}
         run: |
+          set -euo pipefail
           ARGS=""
-          if [ -n "${{ inputs.short_number }}" ]; then
-            ARGS="--short ${{ inputs.short_number }}"
-          fi
+          [ -n "${SHORT_NUM}" ] && ARGS="--short ${SHORT_NUM}"
 
           for attempt in 1 2 3; do
-            echo "Render attempt $attempt/3..."
-            if npx tsx scripts/render-daily-short.ts $ARGS; then
-              echo "success=true" >> $GITHUB_OUTPUT
-              echo "Render succeeded!"
+            echo "Render attempt ${attempt}/3…"
+            if npx tsx scripts/render-daily-short.ts ${ARGS}; then
+              echo "success=true" >> "$GITHUB_OUTPUT"
               break
             fi
-            if [ "$attempt" -lt 3 ]; then
-              echo "Retrying in 30s..."
-              sleep 30
-            else
-              echo "success=false" >> $GITHUB_OUTPUT
-              echo "All render attempts failed"
+            [ "${attempt}" -lt 3 ] && sleep 30
+            if [ "${attempt}" -eq 3 ]; then
+              echo "success=false" >> "$GITHUB_OUTPUT"
               exit 1
             fi
           done
@@ -107,22 +115,69 @@ jobs:
       - name: List rendered files
         run: ls -lh output/daily-short/ 2>/dev/null || echo "No files"
 
-      - name: Upload artifact for later upload phase
-        if: needs.determine-phase.outputs.phase == 'render'
+      - name: Upload artifact
+        id: upload
         uses: actions/upload-artifact@v4
         with:
           name: daily-short-${{ github.run_number }}
           path: output/daily-short/
           retention-days: 1
 
+      # Enqueue into queue.db on the self-hosted runner
+      # We store a pending row now; the self-hosted publish job will pick it up.
+      - name: Enqueue in queue.db (via API dispatch)
+        id: enqueue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ARTIFACT: daily-short-${{ github.run_number }}
+        run: |
+          set -euo pipefail
+
+          # Discover rendered video + metadata paths
+          VIDEO=$(ls output/daily-short/*.mp4    2>/dev/null | head -1)
+          META=$(ls  output/daily-short/*-metadata.json 2>/dev/null | head -1)
+          THUMB=$(ls output/daily-short/*.png    2>/dev/null | head -1 || true)
+
+          if [ -z "${VIDEO}" ] || [ -z "${META}" ]; then
+            echo "No video/metadata found in output/daily-short/"
+            ls -la output/daily-short/ 2>/dev/null || true
+            exit 1
+          fi
+
+          # Derive queue item ID from run number (unique per run)
+          QUEUE_ID="daily-short/run-${{ github.run_number }}"
+
+          # Dispatch a repository_dispatch so self-hosted publish-pipeline picks it up
+          # carrying the artifact name for download
+          gh api \
+            --method POST \
+            "/repos/${{ github.repository }}/dispatches" \
+            -f event_type=publish-ready \
+            -f "client_payload[queue_id]=${QUEUE_ID}" \
+            -f "client_payload[artifact_name]=${ARTIFACT}" \
+            -f "client_payload[video_path]=${VIDEO}" \
+            -f "client_payload[metadata_path]=${META}" \
+            -f "client_payload[thumbnail_path]=${THUMB}" \
+            -f "client_payload[slot_type]=daily-short" \
+            -f "client_payload[triggered_by]=daily-short"
+
+          echo "queue_item_id=${QUEUE_ID}" >> "$GITHUB_OUTPUT"
+          echo "Dispatched publish for queue item: ${QUEUE_ID}"
+
+# ─── Upload job (direct path — no workflow_call needed for 'upload' phase) ────
+#
+# When phase='upload', download the artifact and publish directly.
+# This runs on ubuntu-latest to avoid self-hosted queue contention.
+# On 'full' (workflow_dispatch), render job already dispatched publish via
+# repository_dispatch — publish-pipeline.yml handles it on self-hosted.
   upload:
     needs: [determine-phase, render]
     if: |
       always() &&
-      (needs.determine-phase.outputs.phase == 'upload' || needs.determine-phase.outputs.phase == 'full') &&
+      needs.determine-phase.outputs.phase == 'upload' &&
       (needs.render.result == 'success' || needs.render.result == 'skipped')
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
 
@@ -130,12 +185,12 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
+          cache: npm
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --ignore-scripts
 
       - name: Download rendered artifact
-        if: needs.determine-phase.outputs.phase == 'upload'
         uses: actions/download-artifact@v4
         continue-on-error: true
         with:
@@ -146,66 +201,64 @@ jobs:
         id: check
         run: |
           if ls output/daily-short/*.mp4 >/dev/null 2>&1; then
-            echo "found=true" >> $GITHUB_OUTPUT
+            echo "found=true"  >> "$GITHUB_OUTPUT"
             ls -lh output/daily-short/
           else
-            echo "found=false" >> $GITHUB_OUTPUT
-            echo "No rendered Short found -- will render now"
+            echo "found=false" >> "$GITHUB_OUTPUT"
+            echo "No pre-rendered Short found — fallback render required"
           fi
 
-      # Fallback: render if artifact is missing
-      - name: "[FALLBACK] Install Chrome + TTS + ffmpeg"
-        if: steps.check.outputs.found != 'true' && inputs.dry_run != 'true'
+      # Fallback render if artifact is missing
+      - name: "[FALLBACK] Install toolchain"
+        if: steps.check.outputs.found != 'true' && inputs.dry_run != true
         run: |
           npx remotion browser ensure
-          pip install --break-system-packages edge-tts
-          sudo apt-get update && sudo apt-get install -y ffmpeg
+          pip install --break-system-packages edge-tts 2>/dev/null || pip install edge-tts
+          sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
 
       - name: "[FALLBACK] Clone content repo"
-        if: steps.check.outputs.found != 'true' && inputs.dry_run != 'true'
+        if: steps.check.outputs.found != 'true' && inputs.dry_run != true
         run: |
           git clone --depth 1 https://github.com/Gaurav1112/guru-sishya.git ../guru-sishya
           ln -sf "$(pwd)/../guru-sishya/public/content" content 2>/dev/null || true
 
       - name: "[FALLBACK] Render daily Short"
-        if: steps.check.outputs.found != 'true' && inputs.dry_run != 'true'
+        if: steps.check.outputs.found != 'true' && inputs.dry_run != true
+        env:
+          SHORT_NUM: ${{ inputs.short_number || '' }}
         run: |
           ARGS=""
-          if [ -n "${{ inputs.short_number }}" ]; then
-            ARGS="--short ${{ inputs.short_number }}"
-          fi
-          npx tsx scripts/render-daily-short.ts $ARGS
+          [ -n "${SHORT_NUM}" ] && ARGS="--short ${SHORT_NUM}"
+          npx tsx scripts/render-daily-short.ts ${ARGS}
 
-      - name: Upload to YouTube (3x retry)
-        if: inputs.dry_run != 'true'
+      - name: Upload to YouTube (3× retry, exactly-once via queue.db)
+        if: inputs.dry_run != true
         env:
-          YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
+          YOUTUBE_CLIENT_ID:     ${{ secrets.YOUTUBE_CLIENT_ID }}
           YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
           YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
         run: |
+          set -euo pipefail
           VIDEO=$(ls output/daily-short/*.mp4 2>/dev/null | head -1)
-          META=$(ls output/daily-short/*-metadata.json 2>/dev/null | head -1)
+          META=$(ls  output/daily-short/*-metadata.json 2>/dev/null | head -1)
 
-          if [ -z "$VIDEO" ] || [ -z "$META" ]; then
-            echo "ERROR: No video or metadata found"
-            ls -la output/daily-short/ 2>/dev/null || echo "output/daily-short/ does not exist"
+          if [ -z "${VIDEO}" ] || [ -z "${META}" ]; then
+            echo "::error::No video or metadata found"
+            ls -la output/daily-short/ 2>/dev/null || true
             exit 1
           fi
 
           for attempt in 1 2 3; do
-            echo "Upload attempt $attempt/3..."
-            if npx tsx scripts/upload-youtube.ts "$VIDEO" "$META" --shorts; then
+            echo "Upload attempt ${attempt}/3…"
+            if npx tsx scripts/upload-youtube.ts "${VIDEO}" "${META}" --shorts; then
               echo "Upload succeeded!"
               exit 0
             fi
-            if [ "$attempt" -lt 3 ]; then
-              echo "Retrying in 60s..."
-              sleep 60
-            fi
+            [ "${attempt}" -lt 3 ] && sleep 60
           done
-          echo "All upload attempts failed"
+          echo "::error::All upload attempts failed"
           exit 1
 
-      - name: Cleanup local files
-        if: success() && inputs.dry_run != 'true'
+      - name: Cleanup
+        if: success() && inputs.dry_run != true
         run: rm -rf output/daily-short/
