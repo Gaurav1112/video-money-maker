@@ -348,6 +348,24 @@ jobs:
           echo "::error::All upload attempts failed"
           exit 1
 
+      - name: Cross-post to X/Twitter
+        if: success() && inputs.dry_run != 'true' && steps.upload.outputs.video_id != ''
+        env:
+          X_BEARER_TOKEN: ${{ secrets.X_BEARER_TOKEN }}
+        continue-on-error: true
+        run: |
+          TOPIC=$(cat "${{ steps.upload.outputs.metadata_path }}" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('title','Tech Short'))" 2>/dev/null || echo "Tech Short")
+          VIDEO_URL="https://youtube.com/shorts/${{ steps.upload.outputs.video_id }}"
+          npx tsx scripts/cross-post-x.ts --topic "$TOPIC" --hook "Learn $TOPIC in 60 seconds" --url "$VIDEO_URL" || true
+
+      - name: Broadcast to Telegram
+        if: success() && inputs.dry_run != 'true' && steps.upload.outputs.video_id != ''
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHANNEL_ID: ${{ secrets.TELEGRAM_CHANNEL_ID }}
+        continue-on-error: true
+        run: npx tsx scripts/seed-telegram.ts || true
+
       # ── B4: record this publish in the ledger so we don't repeat the topic
       #        within the 30-day cooldown window
       - name: Record publish in ledger
