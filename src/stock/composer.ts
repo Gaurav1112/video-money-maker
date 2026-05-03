@@ -34,12 +34,83 @@ async function isAssFilterAvailable(): Promise<boolean> {
   return assAvailableCache;
 }
 
+let drawtextAvailableCache: boolean | null = null;
+async function isDrawtextAvailable(): Promise<boolean> {
+  if (drawtextAvailableCache !== null) return drawtextAvailableCache;
+  try {
+    const { stdout } = await execFileP('ffmpeg', ['-hide_banner', '-filters'], {
+      maxBuffer: 4 * 1024 * 1024,
+    });
+    drawtextAvailableCache = /^\s*\S+\s+drawtext\s/m.test(stdout);
+  } catch {
+    drawtextAvailableCache = false;
+  }
+  return drawtextAvailableCache;
+}
+
 // ─── Types ────────────────────────────────────────────────────────────────────
+
+// Memoised font-file discovery. Tried in order; first existing file wins.
+// Keeps drawtext overlays working on macOS dev + Ubuntu CI without
+// fontconfig drama.
+let fontFileCache: string | null | undefined = undefined;
+async function discoverFontFile(): Promise<string | null> {
+  if (fontFileCache !== undefined) return fontFileCache;
+  const fs = await import('node:fs');
+  const candidates = [
+    '/System/Library/Fonts/Supplemental/Arial Bold.ttf',          // macOS
+    '/System/Library/Fonts/Supplemental/Arial.ttf',
+    '/System/Library/Fonts/HelveticaNeue.ttc',
+    '/System/Library/Fonts/Helvetica.ttc',
+    '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf',       // Ubuntu/Debian
+    '/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf',
+    '/usr/share/fonts/dejavu/DejaVuSans-Bold.ttf',                // Fedora
+    '/usr/share/fonts/dejavu-sans-fonts/DejaVuSans-Bold.ttf',
+  ];
+  for (const c of candidates) {
+    try {
+      if (fs.existsSync(c)) {
+        fontFileCache = c;
+        return c;
+      }
+    } catch { /* ignore */ }
+  }
+  fontFileCache = null;
+  return null;
+}
+
+/**
+ * Wraps `text` to lines of at most `maxChars` chars (whitespace-aware).
+ * Returns the wrapped string with REAL newline characters — caller is
+ * expected to write to a textfile and pass via drawtext `textfile=` (the
+ * `text=` syntax requires unwieldy double-escape for newlines).
+ */
+function wrapText(text: string, maxChars: number): string {
+  const words = text.replace(/\s+/g, ' ').trim().split(' ');
+  const lines: string[] = [];
+  let cur = '';
+  for (const w of words) {
+    if (cur.length === 0) {
+      cur = w;
+    } else if ((cur + ' ' + w).length <= maxChars) {
+      cur += ' ' + w;
+    } else {
+      lines.push(cur);
+      cur = w;
+    }
+  }
+  if (cur) lines.push(cur);
+  return lines.join('\n');
+}
 
 export interface SceneInput {
   clipPath: string;
   durationSec: number;
   sceneIndex: number;
+  /** Big hook/narration text burned-in (upper-third). If omitted, no overlay. */
+  bigText?: string;
+  /** Caption strip (lower-third). Smaller, multi-line, scene narration. */
+  captionText?: string;
 }
 
 export interface ComposeInput {
@@ -95,19 +166,73 @@ async function processScene(
   const FPS = 30;
   const durFrames = Math.ceil(scene.durationSec * FPS);
 
-  // Always normalize to 30fps so concat -c copy can splice without
-  // duration drift, and force pix_fmt + GOP closure for clean concat.
-  let filterChain: string;
-  if (enableZoompan) {
-    filterChain = `scale=-2:1920,crop=1080:1920,zoompan=z='1+0.0008*on':d=${durFrames}:s=1080x1920:fps=${FPS},fps=${FPS},setpts=PTS-STARTPTS`;
-  } else {
-    filterChain = `scale=-2:1920,crop=1080:1920,fps=${FPS},setpts=PTS-STARTPTS`;
+  const baseScale = enableZoompan
+    ? `scale=-2:1920,crop=1080:1920,zoompan=z='1+0.0008*on':d=${durFrames}:s=1080x1920:fps=${FPS}`
+    : 'scale=-2:1920,crop=1080:1920';
+  const filters: string[] = [`${baseScale},fps=${FPS},setpts=PTS-STARTPTS`];
+
+  const hasOverlay = !!(scene.bigText || scene.captionText);
+  const drawtextAvailable = hasOverlay ? await isDrawtextAvailable() : false;
+
+  if (hasOverlay && drawtextAvailable) {
+    const fontFile = await discoverFontFile();
+    const fontArg = fontFile ? `:fontfile='${fontFile}'` : '';
+
+    // ── Big hook text in upper-third ──────────────────────────────────────
+    if (scene.bigText) {
+      filters.push('drawbox=x=0:y=0:w=1080:h=640:color=black@0.55:t=fill');
+      const hookLines = wrapText(scene.bigText, 14).split('\n').slice(0, 3);
+      const FS = 92;
+      const LH = 120;
+      // Render each line as its own drawtext filter (avoids the newline-as-
+      // missing-glyph issue some drawtext builds have with textfile=).
+      const totalH = hookLines.length * LH;
+      const startY = 200 + Math.max(0, (240 - totalH) / 2);
+      hookLines.forEach((line, idx) => {
+        const escaped = line
+          .replace(/\\/g, '\\\\')
+          .replace(/:/g, '\\:')
+          .replace(/'/g, "\\'")
+          .replace(/%/g, '\\%');
+        filters.push(
+          `drawtext=text='${escaped}'${fontArg}:fontcolor=white:fontsize=${FS}:` +
+          `borderw=6:bordercolor=black@0.95:` +
+          `x=(w-text_w)/2:y=${Math.round(startY + idx * LH)}`
+        );
+      });
+    }
+
+    // ── Caption strip in lower-third ──────────────────────────────────────
+    if (scene.captionText) {
+      filters.push('drawbox=x=0:y=1280:w=1080:h=440:color=black@0.55:t=fill');
+      const capLines = wrapText(scene.captionText, 22).split('\n').slice(0, 5);
+      const FS = 56;
+      const LH = 76;
+      const totalH = capLines.length * LH;
+      const startY = 1300 + Math.max(0, (400 - totalH) / 2);
+      capLines.forEach((line, idx) => {
+        const escaped = line
+          .replace(/\\/g, '\\\\')
+          .replace(/:/g, '\\:')
+          .replace(/'/g, "\\'")
+          .replace(/%/g, '\\%');
+        filters.push(
+          `drawtext=text='${escaped}'${fontArg}:fontcolor=#FFEB3B:fontsize=${FS}:` +
+          `borderw=4:bordercolor=black@0.95:` +
+          `x=(w-text_w)/2:y=${Math.round(startY + idx * LH)}`
+        );
+      });
+    }
+  } else if (hasOverlay && !drawtextAvailable) {
+    console.warn('[composer] ffmpeg lacks drawtext — skipping text overlays');
   }
+
+  const filterChain = filters.join(',');
 
   if (isSynthetic) {
     await runFfmpeg([
       '-f', 'lavfi',
-      '-i', `color=c=black:s=1080x1920:r=${FPS}`,
+      '-i', `color=c=#0d2538:s=1080x1920:r=${FPS}`,
       '-t', String(scene.durationSec),
       '-vf', filterChain,
       '-r', String(FPS),
@@ -208,7 +333,7 @@ async function muxFinal(
 
   if (hasWatermark) {
     args.push('-i', bodyPath, '-i', audioPath, '-i', input.watermarkPath!);
-    const overlayFilter = `${vf ? `[0:v]${vf}[captioned];[captioned]` : '[0:v]'}[2:v]overlay=W-w-30:H-h-440[outv]`;
+    const overlayFilter = `${vf ? `[0:v]${vf}[captioned];[captioned]` : '[0:v]'}[2:v]overlay=30:30[outv]`;
     args.push(
       '-filter_complex', overlayFilter,
       '-map', '[outv]',

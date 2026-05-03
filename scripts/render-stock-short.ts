@@ -28,6 +28,7 @@ import { FALLBACK_CLIP } from '../src/stock/fallback.js';
 import type { StockStoryboard, PickedClip, StockScene } from '../src/stock/types.js';
 import { generateAssSubtitles } from '../src/stock/captions/ass-generator.js';
 import { runQualityGate } from '../src/stock/quality-gate.js';
+import { synthesize as ttsSynthesize } from '../src/voice/tts.js';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 
@@ -147,11 +148,10 @@ async function main(): Promise<void> {
   );
 
   // 5. Determine voice path
-  const voicePath = storyboard.audioFile
+  let voicePath: string | undefined = storyboard.audioFile
     ? path.resolve(path.dirname(sbPath), storyboard.audioFile)
     : undefined;
-  const hasVoice = !!(voicePath && fs.existsSync(voicePath));
-  if (!hasVoice) console.log('[orchestrator] no voice track found — composing with silent audio');
+  let hasVoice = !!(voicePath && fs.existsSync(voicePath));
 
   // 6. Compose
   const slug = safeTopic(storyboard.topic);
@@ -159,27 +159,69 @@ async function main(): Promise<void> {
   const outputPath = path.join(finalOutDir, 'short-stock.mp4');
   fs.mkdirSync(finalOutDir, { recursive: true });
 
-  console.log(`[orchestrator] composing → ${outputPath}`);
-
-  // ── Build merged ASS captions covering all scenes (offsets accumulate) ──
   const workDir = path.join(finalOutDir, '_work');
   fs.mkdirSync(workDir, { recursive: true });
-  const captionsPath = path.join(workDir, 'captions.ass');
-  await buildMergedAssCaptions(storyboard, captionsPath);
-  const hasCaptions = fs.existsSync(captionsPath) && fs.statSync(captionsPath).size > 0;
 
-  // ── Generate channel watermark PNG on the fly (no artist asset committed) ──
+  // ── Auto-generate TTS narration if storyboard didn't ship a voice ────────
+  if (!hasVoice && process.env['TTS_DISABLED'] !== '1') {
+    try {
+      const ttsResult = await generateNarrationForScenes(storyboard, workDir);
+      voicePath = ttsResult.audioPath;
+      hasVoice = true;
+      // Re-write each scene's duration to its narration audio length so the
+      // visual cuts line up with speech beats. Audio is now the source of
+      // truth — retention SLA (3s/4s) was for silent stock, but with real
+      // narration we instead cap each scene at 8s and total video at 55s.
+      const PER_SCENE_HARD_CAP = 8 * storyboard.fps;       // 8s per scene
+      const TOTAL_HARD_CAP = 55 * storyboard.fps;          // YT Shorts ≤60s
+      let runningTotal = 0;
+      storyboard.scenes = storyboard.scenes.map((scene, i) => {
+        const segDur = ttsResult.sceneDurations[i];
+        if (segDur && segDur > 0) {
+          // Add 200ms tail of breathing room between scenes
+          let newFrames = Math.round((segDur + 0.2) * storyboard.fps);
+          newFrames = Math.min(newFrames, PER_SCENE_HARD_CAP);
+          // Respect total cap by stealing from later scenes
+          const remaining = TOTAL_HARD_CAP - runningTotal;
+          if (newFrames > remaining) newFrames = Math.max(remaining, storyboard.fps);
+          runningTotal += newFrames;
+          return { ...scene, durationFrames: newFrames };
+        }
+        return scene;
+      });
+      console.log(`[orchestrator] tts: ${voicePath} (scenes: ${ttsResult.sceneDurations.map((d) => d.toFixed(2)).join('s + ')}s)`);
+    } catch (err) {
+      console.warn(`[orchestrator] TTS failed (${String(err).slice(0, 160)}) — composing with silent audio`);
+    }
+  }
+  if (!hasVoice) console.log('[orchestrator] no voice track found — composing with silent audio');
+
+  console.log(`[orchestrator] composing → ${outputPath}`);
+
+  // ── Generate channel watermark PNG on the fly ────────────────────────────
   const watermarkPath = path.join(workDir, 'watermark.png');
   await generateWatermarkPng(watermarkPath);
 
   await compose({
-    scenes: storyboard.scenes.map((scene, i) => ({
-      clipPath: clipPaths[i],
-      durationSec: scene.durationFrames / storyboard.fps,
-      sceneIndex: scene.sceneIndex,
-    })),
+    scenes: storyboard.scenes.map((scene, i) => {
+      const isHook = i === 0;
+      // Hook scene: short, punchy 4-6 word hook in giant text.
+      // Body scenes: narration sentence as caption strip.
+      const bigText = isHook
+        ? buildHookHeadline(storyboard.topic, scene.narration)
+        : undefined;
+      const captionText = isHook
+        ? undefined // hook text already dominates the upper third
+        : (scene.narration || '').slice(0, 160);
+      return {
+        clipPath: clipPaths[i],
+        durationSec: scene.durationFrames / storyboard.fps,
+        sceneIndex: scene.sceneIndex,
+        bigText,
+        captionText,
+      };
+    }),
     voicePath: hasVoice ? voicePath : undefined,
-    captionsPath: hasCaptions ? captionsPath : undefined,
     watermarkPath,
     outputPath,
     workDir,
@@ -207,6 +249,31 @@ async function main(): Promise<void> {
   const licensesPath = path.join(finalOutDir, 'licenses.json');
   fs.writeFileSync(licensesPath, JSON.stringify({ clips: licenses }, null, 2), 'utf8');
   console.log(`[orchestrator] ✓ licenses: ${licensesPath}`);
+}
+
+/**
+ * Builds a punchy 4-7 word hook headline from the topic + scene-0 narration.
+ * Used as the giant upper-third drawtext in the first 3 seconds.
+ */
+function buildHookHeadline(topic: string, narration: string): string {
+  // Aim: 4-6 word punch that fits on 2 lines @ 14 chars/line.
+  // Strategy: derive from topic when narration is verbose; otherwise use first
+  // 4-6 narration words.
+  const cleanTopic = topic.replace(/\s+/g, ' ').trim();
+  const firstSentence = (narration || '')
+    .split(/[.!?]/)[0]
+    .replace(/\s+/g, ' ')
+    .trim();
+  const narrWords = firstSentence.split(' ').filter(Boolean);
+
+  // Topic-led hook always wins when topic is short + punchy
+  if (cleanTopic.length > 0 && cleanTopic.length <= 28) {
+    return `${cleanTopic} in 60s`;
+  }
+  // Otherwise take 4-6 narration words
+  if (narrWords.length >= 3 && narrWords.length <= 6) return firstSentence;
+  if (narrWords.length > 6) return narrWords.slice(0, 5).join(' ') + '…';
+  return cleanTopic.length > 28 ? cleanTopic.slice(0, 25) + '…' : cleanTopic;
 }
 
 async function buildProviders() {
@@ -295,3 +362,65 @@ main().catch((err: unknown) => {
   console.error('[orchestrator] fatal:', err);
   process.exit(1);
 });
+
+/**
+ * Generates per-scene narration via Edge-TTS, concatenates into a single
+ * voice track, and returns the path + per-scene durations.
+ *
+ * Per-scene durations are returned so the orchestrator can resize each
+ * scene's video to match its narration length (audio drives video timing).
+ */
+async function generateNarrationForScenes(
+  sb: StockStoryboard,
+  workDir: string,
+): Promise<{ audioPath: string; sceneDurations: number[] }> {
+  const fs = await import('node:fs');
+  const path = await import('node:path');
+
+  const sceneAudioPaths: string[] = [];
+  const sceneDurations: number[] = [];
+
+  for (let i = 0; i < sb.scenes.length; i++) {
+    const scene = sb.scenes[i]!;
+    const text = (scene.narration ?? '').trim();
+    if (!text) {
+      // Synthesize a 0.5s silent placeholder so concat math stays consistent.
+      const silentPath = path.join(workDir, `voice-${i}.mp3`);
+      await execFileAsync('ffmpeg', [
+        '-y',
+        '-f', 'lavfi',
+        '-i', 'anullsrc=channel_layout=mono:sample_rate=24000',
+        '-t', '0.5',
+        '-c:a', 'libmp3lame', '-b:a', '128k',
+        silentPath,
+      ], { maxBuffer: 4 * 1024 * 1024 });
+      sceneAudioPaths.push(silentPath);
+      sceneDurations.push(0.5);
+      continue;
+    }
+    const outPath = path.join(workDir, `voice-${i}.mp3`);
+    const { durationSec } = await ttsSynthesize({ text, outPath });
+    sceneAudioPaths.push(outPath);
+    sceneDurations.push(durationSec);
+  }
+
+  // Concat with ffmpeg concat demuxer (safe across mp3 segments).
+  const listFile = path.join(workDir, 'voice-list.txt');
+  fs.writeFileSync(
+    listFile,
+    sceneAudioPaths.map((p) => `file '${p.replace(/'/g, "'\\''")}'`).join('\n') + '\n',
+    'utf8',
+  );
+  const finalAudio = path.join(workDir, 'voice.mp3');
+  await execFileAsync('ffmpeg', [
+    '-y',
+    '-f', 'concat',
+    '-safe', '0',
+    '-i', listFile,
+    '-c:a', 'libmp3lame',
+    '-b:a', '160k',
+    finalAudio,
+  ], { maxBuffer: 16 * 1024 * 1024 });
+
+  return { audioPath: finalAudio, sceneDurations };
+}

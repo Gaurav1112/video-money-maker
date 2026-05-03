@@ -129,6 +129,13 @@ jobs:
           path: assets/stock-cache/
           key: stock-cache-${{ hashFiles('assets/stock/manifest.json') }}
 
+      - name: Cache TTS narration (deterministic re-runs)
+        uses: actions/cache@v4
+        with:
+          path: assets/tts-cache/
+          key: tts-cache-${{ hashFiles('content/**/*.json') }}
+          restore-keys: tts-cache-
+
       - name: Render daily Short via render:stock (3× retry)
         id: render
         env:
