@@ -1,0 +1,15 @@
+{
+  "_comment": "Pre-curated CC0 SFX clips from Freesound. Used for scene-boundary audio cues.",
+  "sfx": [
+    {"id": "sfx-whoosh-1", "name": "Whoosh Swoosh", "tag": "whoosh", "url": "https://freesound.org/data/previews/495/495400_10614873-lq.mp3", "license": "CC0", "durationSec": 0.4},
+    {"id": "sfx-whoosh-2", "name": "Fast Whoosh", "tag": "whoosh", "url": "https://freesound.org/data/previews/399/399934_7088769-lq.mp3", "license": "CC0", "durationSec": 0.5},
+    {"id": "sfx-ding-1", "name": "Soft Ding", "tag": "ding", "url": "https://freesound.org/data/previews/411/411642_5121236-lq.mp3", "license": "CC0", "durationSec": 0.8},
+    {"id": "sfx-ding-2", "name": "Bell Ding", "tag": "ding", "url": "https://freesound.org/data/previews/415/415510_7037989-lq.mp3", "license": "CC0", "durationSec": 1.0},
+    {"id": "sfx-transition-1", "name": "Transition Swoosh", "tag": "transition", "url": "https://freesound.org/data/previews/476/476523_9886344-lq.mp3", "license": "CC0", "durationSec": 0.6},
+    {"id": "sfx-transition-2", "name": "Quick Transition", "tag": "transition", "url": "https://freesound.org/data/previews/338/338018_5121236-lq.mp3", "license": "CC0", "durationSec": 0.4},
+    {"id": "sfx-impact-1", "name": "Soft Impact", "tag": "impact", "url": "https://freesound.org/data/previews/523/523640_7037989-lq.mp3", "license": "CC0", "durationSec": 0.3},
+    {"id": "sfx-impact-2", "name": "Light Thud", "tag": "impact", "url": "https://freesound.org/data/previews/414/414209_5121236-lq.mp3", "license": "CC0", "durationSec": 0.4},
+    {"id": "sfx-notification-1", "name": "Notification Chime", "tag": "notification", "url": "https://freesound.org/data/previews/253/253173_4404479-lq.mp3", "license": "CC0", "durationSec": 0.6},
+    {"id": "sfx-pop-1", "name": "UI Pop", "tag": "pop", "url": "https://freesound.org/data/previews/536/536108_10852560-lq.mp3", "license": "CC0", "durationSec": 0.2}
+  ]
+}
