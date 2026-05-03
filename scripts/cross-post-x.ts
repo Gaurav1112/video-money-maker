@@ -21,6 +21,20 @@ if (!token) {
   process.exit(0);
 }
 
+// X API v2 POST /2/tweets requires user-context auth (OAuth 1.0a or
+// OAuth 2.0 PKCE user token), NOT app-only Bearer. Posting with a Bearer
+// token returns 403 "Authenticating with OAuth 2.0 Application-Only is
+// forbidden for this endpoint." Skip until OAuth1.0a creds are supplied.
+const hasOAuth1 =
+  !!process.env['X_API_KEY'] &&
+  !!process.env['X_API_SECRET'] &&
+  !!process.env['X_ACCESS_TOKEN'] &&
+  !!process.env['X_ACCESS_SECRET'];
+if (!hasOAuth1) {
+  console.log('[cross-post-x] OAuth 1.0a creds (X_API_KEY/X_API_SECRET/X_ACCESS_TOKEN/X_ACCESS_SECRET) missing — skipping (Bearer-only cannot POST tweets)');
+  process.exit(0);
+}
+
 interface TweetResponse { data: { id: string; text: string } }
 export {};
 

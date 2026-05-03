@@ -7,7 +7,7 @@
  * cache it on disk, and composite our voice + captions on top via ffmpeg.
  */
 
-export type StockProvider = 'coverr' | 'mixkit' | 'pexels' | 'pixabay';
+export type StockProvider = 'coverr' | 'mixkit' | 'pexels' | 'pixabay' | 'synthetic';
 
 export interface StockClip {
   /** Stable provider-scoped id. */

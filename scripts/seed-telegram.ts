@@ -99,15 +99,21 @@ export async function seedTelegram(args: {
   channelId?: string;
   send?: (token: string, channel: string, text: string) => Promise<{ ok: boolean; error?: string }>;
 }): Promise<{ skipped: boolean; reason?: string }> {
-  const botToken = args.botToken ?? process.env.TG_BOT_TOKEN;
-  const channelId = args.channelId ?? process.env.TG_CHANNEL_ID;
+  const botToken =
+    args.botToken ??
+    process.env['TELEGRAM_BOT_TOKEN'] ??
+    process.env['TG_BOT_TOKEN'];
+  const channelId =
+    args.channelId ??
+    process.env['TELEGRAM_CHANNEL_ID'] ??
+    process.env['TG_CHANNEL_ID'];
 
   if (!botToken) {
-    console.log('[seed-telegram] TG_BOT_TOKEN not set — skipping seed');
+    console.log('[seed-telegram] TELEGRAM_BOT_TOKEN not set — skipping seed (returning ok)');
     return { skipped: true, reason: 'no-token' };
   }
   if (!channelId) {
-    console.log('[seed-telegram] TG_CHANNEL_ID not set — skipping seed');
+    console.log('[seed-telegram] TELEGRAM_CHANNEL_ID not set — skipping seed (returning ok)');
     return { skipped: true, reason: 'no-channel' };
   }
 
@@ -134,8 +140,8 @@ async function cli(): Promise<void> {
     }
   }
   if (!videoId) {
-    console.error('usage: seed-telegram.ts <videoId> [--metadata <metadata.json>]');
-    process.exit(2);
+    console.error('[seed-telegram] no videoId provided — skipping seed (returning ok 0)');
+    process.exit(0);
   }
 
   let meta: ShortMetadata | null = null;

@@ -13,6 +13,26 @@
 import { execFile } from 'node:child_process';
 import { existsSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import { join, dirname } from 'node:path';
+import { promisify } from 'node:util';
+
+const execFileP = promisify(execFile);
+
+// Memoised filter-availability probes. Some ffmpeg builds (e.g. macOS
+// homebrew default) ship without libass; we skip captions gracefully
+// rather than failing the whole render.
+let assAvailableCache: boolean | null = null;
+async function isAssFilterAvailable(): Promise<boolean> {
+  if (assAvailableCache !== null) return assAvailableCache;
+  try {
+    const { stdout } = await execFileP('ffmpeg', ['-hide_banner', '-filters'], {
+      maxBuffer: 4 * 1024 * 1024,
+    });
+    assAvailableCache = /^\s*\S+\s+ass\s/m.test(stdout);
+  } catch {
+    assAvailableCache = false;
+  }
+  return assAvailableCache;
+}
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -72,24 +92,31 @@ async function processScene(
   enableZoompan: boolean
 ): Promise<void> {
   const isSynthetic = scene.clipPath.startsWith('synthetic://');
-  const durFrames = Math.ceil(scene.durationSec * 30);
+  const FPS = 30;
+  const durFrames = Math.ceil(scene.durationSec * FPS);
 
+  // Always normalize to 30fps so concat -c copy can splice without
+  // duration drift, and force pix_fmt + GOP closure for clean concat.
   let filterChain: string;
   if (enableZoompan) {
-    filterChain = `scale=-2:1920,crop=1080:1920,zoompan=z='1+0.0008*on':d=${durFrames}:s=1080x1920`;
+    filterChain = `scale=-2:1920,crop=1080:1920,zoompan=z='1+0.0008*on':d=${durFrames}:s=1080x1920:fps=${FPS},fps=${FPS},setpts=PTS-STARTPTS`;
   } else {
-    filterChain = 'scale=-2:1920,crop=1080:1920';
+    filterChain = `scale=-2:1920,crop=1080:1920,fps=${FPS},setpts=PTS-STARTPTS`;
   }
 
   if (isSynthetic) {
     await runFfmpeg([
       '-f', 'lavfi',
-      '-i', `color=c=black:s=1080x1920:r=30`,
+      '-i', `color=c=black:s=1080x1920:r=${FPS}`,
       '-t', String(scene.durationSec),
       '-vf', filterChain,
+      '-r', String(FPS),
       '-c:v', 'libx264',
       '-preset', 'ultrafast',
       '-pix_fmt', 'yuv420p',
+      '-g', String(FPS),
+      '-keyint_min', String(FPS),
+      '-sc_threshold', '0',
       '-an',
       outputPath,
     ]);
@@ -99,9 +126,13 @@ async function processScene(
       '-i', scene.clipPath,
       '-t', String(scene.durationSec),
       '-vf', filterChain,
+      '-r', String(FPS),
       '-c:v', 'libx264',
       '-preset', 'ultrafast',
       '-pix_fmt', 'yuv420p',
+      '-g', String(FPS),
+      '-keyint_min', String(FPS),
+      '-sc_threshold', '0',
       '-an',
       outputPath,
     ]);
@@ -143,7 +174,11 @@ async function muxFinal(
 ): Promise<void> {
   const hasVoice = !!(input.voicePath && existsSync(input.voicePath));
   const hasWatermark = !!(input.watermarkPath && existsSync(input.watermarkPath));
-  const hasCaptions = !!(input.captionsPath && existsSync(input.captionsPath));
+  const captionsRequested = !!(input.captionsPath && existsSync(input.captionsPath));
+  const hasCaptions = captionsRequested && (await isAssFilterAvailable());
+  if (captionsRequested && !hasCaptions) {
+    console.warn('[composer] ffmpeg lacks libass — skipping captions burn-in');
+  }
 
   // Determine total duration from body video
   const totalDur = await probeDuration(bodyPath);
@@ -189,10 +224,23 @@ async function muxFinal(
 
   args.push(
     '-c:v', 'libx264',
-    '-preset', 'ultrafast',
-    '-crf', '23',
+    '-preset', 'medium',
+    '-crf', '20',
+    '-pix_fmt', 'yuv420p',
+    '-color_primaries', 'bt709',
+    '-color_trc', 'bt709',
+    '-colorspace', 'bt709',
+    '-color_range', 'tv',
     '-c:a', 'aac',
-    '-b:a', '128k',
+    '-b:a', '192k',
+    '-ar', '48000',
+  );
+  // loudnorm crashes ffmpeg's aac encoder on near-silent input (NaN/Inf
+  // averages). Only apply when we have a real voice track.
+  if (hasVoice) {
+    args.push('-af', 'loudnorm=I=-14:LRA=7:tp=-1.0');
+  }
+  args.push(
     '-shortest',
     '-movflags', '+faststart',
     input.outputPath,

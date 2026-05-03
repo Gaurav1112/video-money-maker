@@ -129,14 +129,19 @@ jobs:
           path: assets/stock-cache/
           key: stock-cache-${{ hashFiles('assets/stock/manifest.json') }}
 
-      - name: Render daily Short via make-shorts.ts (3× retry)
+      - name: Render daily Short via render:stock (3× retry)
         id: render
         env:
           SHORT_NUM: ""
+          PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
+          PIXABAY_API_KEY: ${{ secrets.PIXABAY_API_KEY }}
+          FREESOUND_API_KEY: ${{ secrets.FREESOUND_API_KEY }}
+          UNSPLASH_ACCESS_KEY: ${{ secrets.UNSPLASH_ACCESS_KEY }}
+          CHANNEL_HANDLE: '@GuruSishya-India'
         run: |
           # Determine which storyboard to render
           if [ -n "${{ inputs.storyboard }}" ]; then
-            TARGET="--storyboard ${{ inputs.storyboard }}"
+            BOARD="${{ inputs.storyboard }}"
           else
             BOARD="${{ steps.pick.outputs.path }}"
             if [ -z "$BOARD" ] || [ ! -f "$BOARD" ]; then
@@ -144,14 +149,33 @@ jobs:
               exit 1
             fi
             echo "Eligible pick: $BOARD (topic=${{ steps.pick.outputs.topic }}, reason=${{ steps.pick.outputs.reason }})"
-            TARGET="--storyboard $BOARD"
           fi
 
+          OUT_ROOT="out/shorts"
+          mkdir -p "$OUT_ROOT"
+
           for attempt in 1 2 3; do
-            echo "Render attempt $attempt/3 — npm run render:stock -- $TARGET"
-            if npm run render:stock -- $TARGET; then
+            echo "Render attempt $attempt/3 — npm run render:stock -- --storyboard $BOARD --out $OUT_ROOT"
+            if npm run render:stock -- --storyboard "$BOARD" --out "$OUT_ROOT"; then
               echo "success=true" >> $GITHUB_OUTPUT
-              echo "Render succeeded"
+              # Locate the produced mp4 (renderer writes out/shorts/<slug>/short-stock.mp4)
+              # and copy it to a stable name out/shorts/<run>-yt.mp4 + meta.
+              MP4=$(find "$OUT_ROOT" -name 'short-stock.mp4' -print -quit)
+              if [ -z "$MP4" ]; then
+                echo "FATAL: render claimed success but no short-stock.mp4 found"
+                exit 1
+              fi
+              SLUG_DIR=$(dirname "$MP4")
+              FINAL="$OUT_ROOT/${{ github.run_number }}-yt.mp4"
+              cp "$MP4" "$FINAL"
+              # Copy licenses.json next to it, and emit metadata.json placeholder
+              cp "$SLUG_DIR/licenses.json" "$OUT_ROOT/${{ github.run_number }}-yt-licenses.json" || true
+              # Build minimal metadata.json so downstream upload step has a payload
+              SLUG=$(basename "$SLUG_DIR")
+              cat > "$OUT_ROOT/${{ github.run_number }}-yt-metadata.json" <<META
+          {"slug":"$SLUG","video":"$(basename "$FINAL")","run":"${{ github.run_number }}"}
+          META
+              echo "Render succeeded → $FINAL"
               break
             fi
             if [ "$attempt" -lt 3 ]; then
@@ -364,7 +388,14 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHANNEL_ID: ${{ secrets.TELEGRAM_CHANNEL_ID }}
         continue-on-error: true
-        run: npx tsx scripts/seed-telegram.ts || true
+        run: |
+          VIDEO_ID="${{ steps.upload.outputs.video_id }}"
+          META_PATH="${{ steps.upload.outputs.metadata_path }}"
+          if [ -n "$META_PATH" ] && [ -f "$META_PATH" ]; then
+            npx tsx scripts/seed-telegram.ts "$VIDEO_ID" --metadata "$META_PATH" || true
+          else
+            npx tsx scripts/seed-telegram.ts "$VIDEO_ID" || true
+          fi
 
       # ── B4: record this publish in the ledger so we don't repeat the topic
       #        within the 30-day cooldown window

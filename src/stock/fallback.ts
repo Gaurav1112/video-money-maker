@@ -10,11 +10,13 @@ import type { StockClip } from './types.js';
 
 export const FALLBACK_CLIP: StockClip = {
   id: 'fallback-synthetic-solid',
-  provider: 'coverr',
+  provider: 'synthetic',
   url: 'synthetic://solid-color',
   tags: [],
   durationSec: 60,
   width: 1080,
   height: 1920,
-  license: 'CC0',
+  license: 'N/A (programmatically generated solid color)',
+  pageUrl: '',
+  credit: 'No external source',
 };

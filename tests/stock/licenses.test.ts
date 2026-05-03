@@ -75,7 +75,7 @@ describe('licenses.json', () => {
   });
 
   it('all entries have a known provider', () => {
-    const valid = new Set(['coverr', 'mixkit', 'pexels', 'pixabay']);
+    const valid = new Set(['coverr', 'mixkit', 'pexels', 'pixabay', 'synthetic']);
     const invalid = licenses.clips.filter((c) => !valid.has(c.provider));
     expect(invalid).toHaveLength(0);
   });

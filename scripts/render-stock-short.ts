@@ -25,7 +25,13 @@ import { pickClipsForStoryboard } from '../src/stock/picker.js';
 import { StockCache } from '../src/stock/cache.js';
 import { compose } from '../src/stock/composer.js';
 import { FALLBACK_CLIP } from '../src/stock/fallback.js';
-import type { StockStoryboard, PickedClip } from '../src/stock/types.js';
+import type { StockStoryboard, PickedClip, StockScene } from '../src/stock/types.js';
+import { generateAssSubtitles } from '../src/stock/captions/ass-generator.js';
+import { runQualityGate } from '../src/stock/quality-gate.js';
+import { execFile } from 'node:child_process';
+import { promisify } from 'node:util';
+
+const execFileAsync = promisify(execFile);
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT  = path.resolve(__dirname, '..');
@@ -91,8 +97,30 @@ async function main(): Promise<void> {
       type:          (s['type']      as string) ?? 'text',
       narration:     (s['narration'] as string) ?? '',
       templateId:    s['templateId'] as string | undefined,
+      wordTimestamps: s['wordTimestamps'] as StockScene['wordTimestamps'],
     })),
   };
+
+  // ── Retention SLA: clamp scene durations ─────────────────────────────────
+  // YT Shorts retention dies after ~3s on the hook, then again at ~10s/15s/30s.
+  // Hard cap: hook ≤ 3s, body scenes ≤ 4s. Word-timestamps (if present) keep
+  // their relative timing inside the clamp.
+  const HOOK_MAX_FRAMES = Math.round(3 * fps);   // 3.0s
+  const BODY_MAX_FRAMES = Math.round(4 * fps);   // 4.0s
+  storyboard.scenes = storyboard.scenes.map((scene, i) => {
+    const cap = i === 0 ? HOOK_MAX_FRAMES : BODY_MAX_FRAMES;
+    if (scene.durationFrames > cap) {
+      console.log(`[orchestrator] clamping scene ${i}: ${scene.durationFrames}f → ${cap}f (retention SLA)`);
+      const ratio = cap / scene.durationFrames;
+      const wt = scene.wordTimestamps?.map((w) => ({
+        word: w.word,
+        startMs: Math.round(w.startMs * ratio),
+        endMs: Math.round(w.endMs * ratio),
+      }));
+      return { ...scene, durationFrames: cap, wordTimestamps: wt };
+    }
+    return scene;
+  });
   console.log(`[orchestrator] topic: ${storyboard.topic} | scenes: ${storyboard.scenes.length}`);
 
   // 2. Build providers
@@ -132,6 +160,18 @@ async function main(): Promise<void> {
   fs.mkdirSync(finalOutDir, { recursive: true });
 
   console.log(`[orchestrator] composing → ${outputPath}`);
+
+  // ── Build merged ASS captions covering all scenes (offsets accumulate) ──
+  const workDir = path.join(finalOutDir, '_work');
+  fs.mkdirSync(workDir, { recursive: true });
+  const captionsPath = path.join(workDir, 'captions.ass');
+  await buildMergedAssCaptions(storyboard, captionsPath);
+  const hasCaptions = fs.existsSync(captionsPath) && fs.statSync(captionsPath).size > 0;
+
+  // ── Generate channel watermark PNG on the fly (no artist asset committed) ──
+  const watermarkPath = path.join(workDir, 'watermark.png');
+  await generateWatermarkPng(watermarkPath);
+
   await compose({
     scenes: storyboard.scenes.map((scene, i) => ({
       clipPath: clipPaths[i],
@@ -139,10 +179,20 @@ async function main(): Promise<void> {
       sceneIndex: scene.sceneIndex,
     })),
     voicePath: hasVoice ? voicePath : undefined,
+    captionsPath: hasCaptions ? captionsPath : undefined,
+    watermarkPath,
     outputPath,
-    workDir: path.join(finalOutDir, '_work'),
+    workDir,
   });
   console.log(`[orchestrator] ✓ output: ${outputPath}`);
+
+  // ── Quality gate: refuse to ship solid-black / frozen-frame renders ──
+  const qg = await runQualityGate(outputPath);
+  console.log(`[orchestrator] quality-gate: passed=${qg.passed} meanVariance=${qg.meanVariance.toFixed(1)}${qg.reason ? ' reason=' + qg.reason : ''}`);
+  if (!qg.passed) {
+    console.error(`[orchestrator] ✗ QUALITY GATE FAILED — refusing to publish`);
+    process.exit(2);
+  }
 
   // 7. Write licenses.json
   const licenses: LicenseEntry[] = picked.map((p, i) => ({
@@ -168,6 +218,77 @@ async function buildProviders() {
   const pixabay = new PixabayProvider();
 
   return [coverr, mixkit, pexels, pixabay];
+}
+
+/**
+ * Builds one ASS file covering all scenes. Each scene's wordTimestamps are
+ * offset by the cumulative duration of preceding scenes so captions land on
+ * the right frames in the muxed output.
+ */
+async function buildMergedAssCaptions(sb: StockStoryboard, outPath: string): Promise<void> {
+  const allWords: Array<{ word: string; startMs: number; endMs: number }> = [];
+  let cumulativeMs = 0;
+  for (const scene of sb.scenes) {
+    if (scene.wordTimestamps && scene.wordTimestamps.length > 0) {
+      for (const w of scene.wordTimestamps) {
+        allWords.push({
+          word: w.word,
+          startMs: cumulativeMs + w.startMs,
+          endMs: cumulativeMs + w.endMs,
+        });
+      }
+    }
+    cumulativeMs += (scene.durationFrames / sb.fps) * 1000;
+  }
+  if (allWords.length === 0) {
+    console.log('[orchestrator] no wordTimestamps in any scene — skipping captions');
+    return;
+  }
+  await generateAssSubtitles({
+    narration: sb.scenes.map((s) => s.narration).join(' '),
+    wordTimestamps: allWords,
+    outputPath: outPath,
+  });
+  console.log(`[orchestrator] captions: ${outPath} (${allWords.length} words)`);
+}
+
+/**
+ * Renders a 360×100 PNG watermark with the channel handle. Generated each
+ * run so we don't commit binary assets and the handle is configurable via
+ * env var (CHANNEL_HANDLE; default "@GuruSishya-India").
+ */
+async function generateWatermarkPng(outPath: string): Promise<void> {
+  const handle = process.env['CHANNEL_HANDLE'] ?? '@GuruSishya-India';
+  const safeHandle = handle.replace(/[^A-Za-z0-9@_\- ]/g, '');
+
+  // Try a few common fontfile locations; fall back to default font.
+  const candidateFonts = [
+    '/System/Library/Fonts/Helvetica.ttc',                       // macOS
+    '/System/Library/Fonts/Supplemental/Arial.ttf',              // macOS
+    '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf',      // Ubuntu/Debian
+    '/usr/share/fonts/dejavu/DejaVuSans-Bold.ttf',               // Fedora/RHEL
+  ];
+  let fontfileArg = '';
+  for (const f of candidateFonts) {
+    try {
+      const fs = await import('node:fs');
+      if (fs.existsSync(f)) {
+        fontfileArg = `:fontfile='${f.replace(/'/g, "\\'")}'`;
+        break;
+      }
+    } catch { /* ignore */ }
+  }
+
+  await execFileAsync('ffmpeg', [
+    '-y',
+    '-f', 'lavfi',
+    '-i', 'color=color=black@0.0:s=440x80:d=1',
+    '-vf', `drawtext=text='${safeHandle}':fontcolor=white:fontsize=42:borderw=3:bordercolor=black@0.85:x=(w-text_w)/2:y=(h-text_h)/2${fontfileArg}`,
+    '-frames:v', '1',
+    outPath,
+  ], { maxBuffer: 4 * 1024 * 1024 }).catch((err) => {
+    console.warn('[orchestrator] watermark generation failed (non-fatal):', String(err).slice(0, 200));
+  });
 }
 
 main().catch((err: unknown) => {

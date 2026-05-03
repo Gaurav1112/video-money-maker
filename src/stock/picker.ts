@@ -24,7 +24,10 @@ export interface PickOptions {
 }
 
 /**
- * Picks one clip per scene. Never repeats a clip across scenes.
+ * Picks one clip per scene. Never repeats a clip across scenes — dedup by
+ * BOTH id and URL so manifest entries with distinct ids but identical CDN
+ * URLs (14 such pairs in the current Mixkit manifest) cannot produce
+ * back-to-back identical visuals.
  */
 export async function pickClipsForStoryboard(
   storyboard: StockStoryboard,
@@ -32,6 +35,7 @@ export async function pickClipsForStoryboard(
   opts: PickOptions = {}
 ): Promise<PickedClip[]> {
   const usedIds = new Set<string>();
+  const usedUrls = new Set<string>();
   const results: PickedClip[] = [];
   const multiplier = opts.minDurationMultiplier ?? 1;
 
@@ -43,10 +47,12 @@ export async function pickClipsForStoryboard(
       keywords,
       durationSec * multiplier,
       providers,
-      usedIds
+      usedIds,
+      usedUrls
     );
     if (picked.clip.id !== FALLBACK_CLIP.id) {
       usedIds.add(picked.clip.id);
+      usedUrls.add(picked.clip.url);
     }
     results.push(picked);
   }
@@ -61,7 +67,8 @@ async function pickForScene(
   keywords: string[],
   minDurationSec: number,
   providers: StockSearchProvider[],
-  usedIds: Set<string>
+  usedIds: Set<string>,
+  usedUrls: Set<string>
 ): Promise<PickedClip> {
   if (keywords.length === 0) {
     console.warn(`[picker] scene ${scene.sceneIndex}: no keywords — using fallback`);
@@ -95,6 +102,7 @@ async function pickForScene(
     for (let rank = 0; rank < providerClips.length; rank++) {
       const clip = providerClips[rank];
       if (usedIds.has(clip.id)) continue;
+      if (usedUrls.has(clip.url)) continue;
 
       const lcKeywords = keywords.map((k) => k.toLowerCase());
       const tagSet = new Set(clip.tags.map((t) => t.toLowerCase()));
