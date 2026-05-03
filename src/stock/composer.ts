@@ -173,7 +173,7 @@ async function muxFinal(
 
   if (hasWatermark) {
     args.push('-i', bodyPath, '-i', audioPath, '-i', input.watermarkPath!);
-    const overlayFilter = `${vf ? `[0:v]${vf}[captioned];[captioned]` : '[0:v]'}[2:v]overlay=W-w-30:H-h-100[outv]`;
+    const overlayFilter = `${vf ? `[0:v]${vf}[captioned];[captioned]` : '[0:v]'}[2:v]overlay=W-w-30:H-h-440[outv]`;
     args.push(
       '-filter_complex', overlayFilter,
       '-map', '[outv]',

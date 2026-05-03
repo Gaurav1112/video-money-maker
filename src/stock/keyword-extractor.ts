@@ -48,6 +48,9 @@ const STOPWORDS = new Set([
   'text','type','used','view','walk','week','went','work','world','write','written',
 ]);
 
+const DEFAULT_TAGS = ['technology', 'business', 'abstract', 'digital'];
+const DEVANAGARI_RE = /[\u0900-\u097F]/;
+
 // ─── Public API ───────────────────────────────────────────────────────────────
 
 /**
@@ -79,6 +82,14 @@ export function extractKeywords(scene: StockScene, topic: string): string[] {
   for (const token of narrationTokens) {
     if (result.length >= 6) break;
     add(token);
+  }
+
+  // Hindi/Devanagari fallback: if narration has Devanagari AND we got <2 English tokens
+  if (DEVANAGARI_RE.test(scene.narration) && result.length < 2) {
+    for (const tag of DEFAULT_TAGS) {
+      if (result.length >= 6) break;
+      add(tag);
+    }
   }
 
   // 3. Topic words
