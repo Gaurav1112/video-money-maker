@@ -53,12 +53,27 @@ async function isDrawtextAvailable(): Promise<boolean> {
 // Memoised font-file discovery. Tried in order; first existing file wins.
 // Keeps drawtext overlays working on macOS dev + Ubuntu CI without
 // fontconfig drama.
+//
+// We discover TWO fonts: a primary Latin font and a Devanagari fallback.
+// drawtext can fall back to the secondary via fontconfig pattern matching,
+// but on minimal Ubuntu runners fontconfig may be empty — so we prefer an
+// explicit fontfile that already includes Devanagari coverage. Noto Sans
+// is the gold standard (covers Latin + Devanagari + ~all scripts); when
+// not available we fall back to DejaVu (Latin) + Lohit (Devanagari) or
+// just DejaVu alone (Devanagari renders as tofu — better than crashing).
 let fontFileCache: string | null | undefined = undefined;
+let devanagariFontCache: string | null | undefined = undefined;
+
 async function discoverFontFile(): Promise<string | null> {
   if (fontFileCache !== undefined) return fontFileCache;
   const fs = await import('node:fs');
   const candidates = [
-    '/System/Library/Fonts/Supplemental/Arial Bold.ttf',          // macOS
+    // Prefer fonts with Latin+Devanagari coverage so Hindi text doesn't tofu.
+    '/usr/share/fonts/truetype/noto/NotoSans-Bold.ttf',           // Ubuntu noto
+    '/usr/share/fonts/truetype/noto/NotoSans-Regular.ttf',
+    '/Library/Fonts/NotoSans-Bold.ttf',                           // macOS user-installed
+    '/System/Library/Fonts/Supplemental/Devanagari MT Bold.ttf',  // macOS Devanagari MT
+    '/System/Library/Fonts/Supplemental/Arial Bold.ttf',          // macOS fallback
     '/System/Library/Fonts/Supplemental/Arial.ttf',
     '/System/Library/Fonts/HelveticaNeue.ttc',
     '/System/Library/Fonts/Helvetica.ttc',
@@ -78,6 +93,37 @@ async function discoverFontFile(): Promise<string | null> {
   fontFileCache = null;
   return null;
 }
+
+/**
+ * Discovers a Devanagari-capable font for Hindi/Hinglish narration overlays.
+ * Returns null when none found; caller should fall back to Latin font (text
+ * will render as tofu — caller is expected to detect Devanagari and route
+ * through this font when available).
+ */
+async function discoverDevanagariFont(): Promise<string | null> {
+  if (devanagariFontCache !== undefined) return devanagariFontCache;
+  const fs = await import('node:fs');
+  const candidates = [
+    '/usr/share/fonts/truetype/noto/NotoSansDevanagari-Bold.ttf',
+    '/usr/share/fonts/truetype/noto/NotoSansDevanagari-Regular.ttf',
+    '/usr/share/fonts/truetype/lohit-devanagari/Lohit-Devanagari.ttf',
+    '/Library/Fonts/NotoSansDevanagari-Bold.ttf',
+    '/System/Library/Fonts/Supplemental/Devanagari MT Bold.ttf',
+    '/System/Library/Fonts/Supplemental/Devanagari Sangam MN.ttc',
+  ];
+  for (const c of candidates) {
+    try {
+      if (fs.existsSync(c)) {
+        devanagariFontCache = c;
+        return c;
+      }
+    } catch { /* ignore */ }
+  }
+  devanagariFontCache = null;
+  return null;
+}
+
+const DEVANAGARI_RE = /[\u0900-\u097F]/;
 
 /**
  * Wraps `text` to lines of at most `maxChars` chars (whitespace-aware).
@@ -176,18 +222,29 @@ async function processScene(
 
   if (hasOverlay && drawtextAvailable) {
     const fontFile = await discoverFontFile();
+    const devFontFile = await discoverDevanagariFont();
     const fontArg = fontFile ? `:fontfile='${fontFile}'` : '';
+    // Picks the right font for a given line: Devanagari script triggers the
+    // dedicated CJK/Indic font; otherwise the Latin Bold fallback. Caller
+    // expected to pass `null` to mean "use Latin".
+    const fontArgFor = (line: string): string => {
+      if (DEVANAGARI_RE.test(line) && devFontFile) {
+        return `:fontfile='${devFontFile}'`;
+      }
+      return fontArg;
+    };
 
     // ── Big hook text in upper-third ──────────────────────────────────────
+    // Safe zone: y=220 → 1570 (Subscribe button overlaps y<220, like-strip
+    // overlaps y>1570 on the 1080×1920 portrait canvas). Hook band starts
+    // at y=240 to clear the Subscribe overlap, height 480 ⇒ ends at 720.
     if (scene.bigText) {
-      filters.push('drawbox=x=0:y=0:w=1080:h=640:color=black@0.55:t=fill');
+      filters.push('drawbox=x=0:y=240:w=1080:h=480:color=black@0.55:t=fill');
       const hookLines = wrapText(scene.bigText, 14).split('\n').slice(0, 3);
       const FS = 92;
       const LH = 120;
-      // Render each line as its own drawtext filter (avoids the newline-as-
-      // missing-glyph issue some drawtext builds have with textfile=).
       const totalH = hookLines.length * LH;
-      const startY = 200 + Math.max(0, (240 - totalH) / 2);
+      const startY = 260 + Math.max(0, (440 - totalH) / 2);
       hookLines.forEach((line, idx) => {
         const escaped = line
           .replace(/\\/g, '\\\\')
@@ -195,21 +252,23 @@ async function processScene(
           .replace(/'/g, "\\'")
           .replace(/%/g, '\\%');
         filters.push(
-          `drawtext=text='${escaped}'${fontArg}:fontcolor=white:fontsize=${FS}:` +
+          `drawtext=text='${escaped}'${fontArgFor(line)}:fontcolor=white:fontsize=${FS}:` +
           `borderw=6:bordercolor=black@0.95:` +
           `x=(w-text_w)/2:y=${Math.round(startY + idx * LH)}`
         );
       });
     }
 
-    // ── Caption strip in lower-third ──────────────────────────────────────
+    // ── Caption strip in mid-lower band ───────────────────────────────────
+    // Band: y=1080 → 1540 (well above the 1570 like-strip safe zone).
+    // 5 lines @ LH=76 = 380 px; 4 lines = 304 px — both fit comfortably.
     if (scene.captionText) {
-      filters.push('drawbox=x=0:y=1280:w=1080:h=440:color=black@0.55:t=fill');
+      filters.push('drawbox=x=0:y=1080:w=1080:h=460:color=black@0.55:t=fill');
       const capLines = wrapText(scene.captionText, 22).split('\n').slice(0, 5);
       const FS = 56;
       const LH = 76;
       const totalH = capLines.length * LH;
-      const startY = 1300 + Math.max(0, (400 - totalH) / 2);
+      const startY = 1100 + Math.max(0, (420 - totalH) / 2);
       capLines.forEach((line, idx) => {
         const escaped = line
           .replace(/\\/g, '\\\\')
@@ -217,7 +276,7 @@ async function processScene(
           .replace(/'/g, "\\'")
           .replace(/%/g, '\\%');
         filters.push(
-          `drawtext=text='${escaped}'${fontArg}:fontcolor=#FFEB3B:fontsize=${FS}:` +
+          `drawtext=text='${escaped}'${fontArgFor(line)}:fontcolor=#FFEB3B:fontsize=${FS}:` +
           `borderw=4:bordercolor=black@0.95:` +
           `x=(w-text_w)/2:y=${Math.round(startY + idx * LH)}`
         );
@@ -333,7 +392,12 @@ async function muxFinal(
 
   if (hasWatermark) {
     args.push('-i', bodyPath, '-i', audioPath, '-i', input.watermarkPath!);
-    const overlayFilter = `${vf ? `[0:v]${vf}[captioned];[captioned]` : '[0:v]'}[2:v]overlay=30:30[outv]`;
+    // Watermark anchored bottom-right with safe-zone insets:
+    //   x = W - w - 30  (30 px from right edge)
+    //   y = H - h - 200 (above the YT Shorts bottom UI strip 1570→1920)
+    // Spec: bottom-right per ComposeInput.watermarkPath JSDoc — do not move
+    // to top-left, that collides with the hook headline at y=240.
+    const overlayFilter = `${vf ? `[0:v]${vf}[captioned];[captioned]` : '[0:v]'}[2:v]overlay=W-w-30:H-h-200[outv]`;
     args.push(
       '-filter_complex', overlayFilter,
       '-map', '[outv]',
@@ -352,6 +416,12 @@ async function muxFinal(
     '-preset', 'medium',
     '-crf', '20',
     '-pix_fmt', 'yuv420p',
+    // Closed GOP: required by YouTube ingest for frame-accurate seek; the
+    // per-scene encodes already set these but the final mux re-encodes the
+    // concatenated body so we must re-assert.
+    '-g', '30',
+    '-keyint_min', '30',
+    '-sc_threshold', '0',
     '-color_primaries', 'bt709',
     '-color_trc', 'bt709',
     '-colorspace', 'bt709',
@@ -359,11 +429,15 @@ async function muxFinal(
     '-c:a', 'aac',
     '-b:a', '192k',
     '-ar', '48000',
+    // Stereo upmix from mono — mono AAC plays narrow on earphones; YT does
+    // not auto-upmix, so we explicitly duplicate mono → L/R channels.
+    '-ac', '2',
   );
   // loudnorm crashes ffmpeg's aac encoder on near-silent input (NaN/Inf
-  // averages). Only apply when we have a real voice track.
+  // averages). Only apply when we have a real voice track. LRA=11 is the
+  // sweet spot for narrative speech (LRA=7 sounds compressed).
   if (hasVoice) {
-    args.push('-af', 'loudnorm=I=-14:LRA=7:tp=-1.0');
+    args.push('-af', 'loudnorm=I=-14:LRA=11:tp=-1.5');
   }
   args.push(
     '-shortest',

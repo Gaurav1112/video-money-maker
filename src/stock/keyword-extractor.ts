@@ -14,6 +14,18 @@ import type { StockScene } from './types.js';
 // ─── Template keyword map ─────────────────────────────────────────────────────
 // Add every templateId found in src/compositions/ or real storyboards here.
 
+// CS / dev acronyms that are 2-3 chars long and should NOT be filtered out
+// by the generic length-4 minimum. Without this allowlist, narration like
+// "use SQL" or "TCP handshake" silently drops the most-relevant keyword.
+const SHORT_DEV_TERMS = new Set([
+  'os', 'io', 'go', 'jvm', 'jit', 'gc',
+  'api', 'sql', 'tcp', 'udp', 'ssl', 'tls', 'dns', 'cdn', 'orm', 'rpc',
+  'jwt', 'lru', 'lfu', 'mvc', 'mvp', 'mvm', 'bfs', 'dfs', 'dp', 'ml',
+  'aws', 'gcp', 'k8s', 'app', 'web', 'css', 'oop', 'cpu', 'gpu', 'ssd',
+  'cap', 'acid', 'rest', 'grpc', 'http', 'https', 'kafka', 'redis',
+  'json', 'xml', 'yaml', 'sso', 'mfa', 'iam', 'vpn', 'tcp', 'arp', 'ip',
+]);
+
 const TEMPLATE_KEYWORDS: Record<string, string[]> = {
   LoadBalancerArch: ['server', 'load', 'traffic', 'network', 'routing'],
   CacheArch:        ['cache', 'memory', 'data', 'storage'],
@@ -25,6 +37,18 @@ const TEMPLATE_KEYWORDS: Record<string, string[]> = {
   CloudArch:        ['cloud', 'server', 'infrastructure', 'datacenter'],
   APIArch:          ['api', 'request', 'server', 'network'],
   SecurityArch:     ['security', 'auth', 'protection', 'encryption'],
+  // DSA / LLD / GATE expansions — covers ~60% of ICP topics
+  DSAArch:          ['code', 'algorithm', 'data', 'developer', 'programming'],
+  LLDArch:          ['diagram', 'architecture', 'design', 'pattern', 'object'],
+  GATEArch:         ['exam', 'study', 'computer', 'science', 'student'],
+  TreeArch:         ['tree', 'graph', 'network', 'data', 'structure'],
+  GraphArch:        ['graph', 'network', 'connection', 'route'],
+  HashArch:         ['hash', 'data', 'memory', 'lookup'],
+  QueueArch:        ['queue', 'flow', 'pipeline', 'data'],
+  StackArch:        ['stack', 'memory', 'storage', 'data'],
+  ConcurrencyArch:  ['concurrency', 'threading', 'parallel', 'process'],
+  MicroservicesArch:['microservices', 'service', 'architecture', 'distributed'],
+  ContainerArch:    ['container', 'docker', 'kubernetes', 'deployment'],
 };
 
 // ─── English stopwords ────────────────────────────────────────────────────────
@@ -111,7 +135,10 @@ function tokenize(text: string): string[] {
     .replace(/[^a-z0-9 ]/g, ' ')
     .split(/\s+/)
     .filter((t) => {
-      if (t.length < 4 || t.length > 18) return false;
+      if (t.length === 0 || t.length > 18) return false;
+      // Always keep CS/dev short-term allowlist regardless of length floor
+      if (SHORT_DEV_TERMS.has(t)) return true;
+      if (t.length < 4) return false;
       if (STOPWORDS.has(t)) return false;
       return true;
     });

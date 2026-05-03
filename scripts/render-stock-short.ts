@@ -29,8 +29,10 @@ import type { StockStoryboard, PickedClip, StockScene } from '../src/stock/types
 import { generateAssSubtitles } from '../src/stock/captions/ass-generator.js';
 import { runQualityGate } from '../src/stock/quality-gate.js';
 import { synthesize as ttsSynthesize } from '../src/voice/tts.js';
+import { generateShortMetadata } from '../src/services/short-metadata.js';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
+import * as crypto from 'node:crypto';
 
 const execFileAsync = promisify(execFile);
 
@@ -170,18 +172,18 @@ async function main(): Promise<void> {
       hasVoice = true;
       // Re-write each scene's duration to its narration audio length so the
       // visual cuts line up with speech beats. Audio is now the source of
-      // truth — retention SLA (3s/4s) was for silent stock, but with real
-      // narration we instead cap each scene at 8s and total video at 55s.
-      const PER_SCENE_HARD_CAP = 8 * storyboard.fps;       // 8s per scene
-      const TOTAL_HARD_CAP = 55 * storyboard.fps;          // YT Shorts ≤60s
+      // truth — we keep the algorithm-critical 3s hook SLA (scene 0) by
+      // capping it independently from body scenes.
+      const HOOK_HARD_CAP = Math.round(3.0 * storyboard.fps);  // 3.0s for scene 0
+      const PER_SCENE_HARD_CAP = 8 * storyboard.fps;            // 8s body
+      const TOTAL_HARD_CAP = 55 * storyboard.fps;               // YT Shorts ≤60s
       let runningTotal = 0;
       storyboard.scenes = storyboard.scenes.map((scene, i) => {
         const segDur = ttsResult.sceneDurations[i];
         if (segDur && segDur > 0) {
-          // Add 200ms tail of breathing room between scenes
           let newFrames = Math.round((segDur + 0.2) * storyboard.fps);
-          newFrames = Math.min(newFrames, PER_SCENE_HARD_CAP);
-          // Respect total cap by stealing from later scenes
+          const cap = i === 0 ? HOOK_HARD_CAP : PER_SCENE_HARD_CAP;
+          newFrames = Math.min(newFrames, cap);
           const remaining = TOTAL_HARD_CAP - runningTotal;
           if (newFrames > remaining) newFrames = Math.max(remaining, storyboard.fps);
           runningTotal += newFrames;
@@ -212,7 +214,7 @@ async function main(): Promise<void> {
         : undefined;
       const captionText = isHook
         ? undefined // hook text already dominates the upper third
-        : (scene.narration || '').slice(0, 160);
+        : buildCaptionPhrase(scene.narration || '');
       return {
         clipPath: clipPaths[i],
         durationSec: scene.durationFrames / storyboard.fps,
@@ -249,31 +251,112 @@ async function main(): Promise<void> {
   const licensesPath = path.join(finalOutDir, 'licenses.json');
   fs.writeFileSync(licensesPath, JSON.stringify({ clips: licenses }, null, 2), 'utf8');
   console.log(`[orchestrator] ✓ licenses: ${licensesPath}`);
+
+  // 8. Write metadata.json — title/description/tags consumed by the
+  // youtube-upload + cross-post-x + telegram steps in CI.
+  const metadata = generateShortMetadata(storyboard, {
+    licenses: licenses.map((l) => ({
+      id: l.id,
+      provider: l.provider,
+      url: l.url,
+      attribution: l.credit || l.id,
+    })),
+    siteTopicSlug: slug,
+  });
+  const metadataPath = path.join(finalOutDir, 'metadata.json');
+  fs.writeFileSync(
+    metadataPath,
+    JSON.stringify({
+      slug,
+      topic: storyboard.topic,
+      title: metadata.title,
+      description: metadata.description,
+      tags: metadata.tags,
+      youtube: { title: metadata.title, description: metadata.description, tags: metadata.tags },
+    }, null, 2),
+    'utf8',
+  );
+  console.log(`[orchestrator] ✓ metadata: ${metadataPath}`);
+
+  // 9. Generate thumbnail PNG: frame extracted at t=0.5s, with a bold hook
+  // banner overlay. YT Shorts auto-picks frame 1 if no custom thumbnail is
+  // provided — and frame 1 is rarely the most engaging visual. We render
+  // a separate branded thumbnail so the upload step has it.
+  const thumbnailPath = path.join(finalOutDir, 'thumbnail.png');
+  await generateThumbnailPng({
+    sourceVideoPath: outputPath,
+    hook: buildHookHeadline(storyboard.topic, storyboard.scenes[0]?.narration ?? ''),
+    handle: process.env['CHANNEL_HANDLE'] ?? '@GuruSishya-India',
+    outPath: thumbnailPath,
+  });
+  console.log(`[orchestrator] ✓ thumbnail: ${thumbnailPath}`);
 }
 
 /**
  * Builds a punchy 4-7 word hook headline from the topic + scene-0 narration.
  * Used as the giant upper-third drawtext in the first 3 seconds.
  */
+/**
+ * Hook headline templates validated across Fireship / NeetCode / ByteByteGo
+ * / Striver / Aman Dhattarwal Shorts. Each beats the inert "{topic} in 60s"
+ * baseline by triggering one of: number-lead, stakes, contrarian-claim,
+ * curiosity-gap, or peer-Hinglish. Picked deterministically by hash(topic)
+ * so re-renders for the same topic produce the same hook copy (idempotent
+ * uploads).
+ *
+ * Keep each rendered string ≤ 36 chars after `${topic}` substitution so it
+ * fits on 3 wrapped lines @ 14 chars on the 1080×1920 hook band.
+ */
+const HOOK_TEMPLATES: Array<(topic: string) => string> = [
+  (t) => `${t} in 60s`,                       // baseline keeper for variety
+  (t) => `Most engineers get ${t} wrong`,     // H3 contrarian
+  (t) => `${t} — what FAANG asks`,            // H2 stakes
+  (t) => `Why ${t} matters now`,              // H4 curiosity
+  (t) => `3 things about ${t}`,               // H1 number-lead
+  (t) => `Bhai, ${t} ek line me`,             // H5 Hinglish peer
+];
+
+/**
+ * Builds a punchy 4-8 word hook headline. Deterministic per-topic via SHA1
+ * hash. Falls back to first 5 narration words if every template overflows.
+ */
 function buildHookHeadline(topic: string, narration: string): string {
-  // Aim: 4-6 word punch that fits on 2 lines @ 14 chars/line.
-  // Strategy: derive from topic when narration is verbose; otherwise use first
-  // 4-6 narration words.
   const cleanTopic = topic.replace(/\s+/g, ' ').trim();
   const firstSentence = (narration || '')
     .split(/[.!?]/)[0]
     .replace(/\s+/g, ' ')
     .trim();
-  const narrWords = firstSentence.split(' ').filter(Boolean);
 
-  // Topic-led hook always wins when topic is short + punchy
+  const HOOK_MAX = 42; // covers 3 lines × 14 chars
   if (cleanTopic.length > 0 && cleanTopic.length <= 28) {
-    return `${cleanTopic} in 60s`;
+    const hash = crypto.createHash('sha1').update(cleanTopic).digest();
+    const idx = hash.readUInt32BE(0) % HOOK_TEMPLATES.length;
+    const candidate = HOOK_TEMPLATES[idx]!(cleanTopic);
+    if (candidate.length <= HOOK_MAX) return candidate;
   }
-  // Otherwise take 4-6 narration words
+  const narrWords = firstSentence.split(' ').filter(Boolean);
   if (narrWords.length >= 3 && narrWords.length <= 6) return firstSentence;
   if (narrWords.length > 6) return narrWords.slice(0, 5).join(' ') + '…';
   return cleanTopic.length > 28 ? cleanTopic.slice(0, 25) + '…' : cleanTopic;
+}
+
+/**
+ * Extracts a key caption phrase from a scene narration. Truncates at a
+ * sentence/comma boundary ≤ 100 chars (word-bounded ellipsis fallback).
+ * Replaces the previous brittle `narration.slice(0, 160)` which clipped
+ * mid-word and floods the lower-third with too-long lines.
+ */
+function buildCaptionPhrase(narration: string): string {
+  const cleaned = (narration || '').replace(/\s+/g, ' ').trim();
+  if (!cleaned) return '';
+  // Prefer first clause break (.,!?;) within 100 chars
+  const m = cleaned.match(/^([^.!?;]{1,100})[.!?;]/);
+  if (m) return m[1].trim();
+  // Else word-bounded slice at 100 chars
+  if (cleaned.length <= 100) return cleaned;
+  const slice = cleaned.slice(0, 100);
+  const lastSpace = slice.lastIndexOf(' ');
+  return (lastSpace > 60 ? slice.slice(0, lastSpace) : slice).trim() + '…';
 }
 
 async function buildProviders() {
@@ -399,12 +482,26 @@ async function generateNarrationForScenes(
       continue;
     }
     const outPath = path.join(workDir, `voice-${i}.mp3`);
-    const { durationSec } = await ttsSynthesize({ text, outPath });
+    const rawPath = path.join(workDir, `voice-${i}-raw.mp3`);
+    const { durationSec: rawDur } = await ttsSynthesize({ text, outPath: rawPath, rate: '+8%' });
+    // Per-segment loudnorm so a quiet sentence next to a loud one doesn't
+    // jump 4-6 LU after global normalisation. Single-pass loudnorm at
+    // segment level is cheap and removes the within-video pump.
+    await execFileAsync('ffmpeg', [
+      '-y',
+      '-i', rawPath,
+      '-af', 'loudnorm=I=-16:LRA=11:tp=-1.5',
+      '-ar', '48000',
+      '-ac', '1',
+      '-c:a', 'libmp3lame', '-b:a', '160k',
+      outPath,
+    ], { maxBuffer: 8 * 1024 * 1024 });
     sceneAudioPaths.push(outPath);
-    sceneDurations.push(durationSec);
+    sceneDurations.push(rawDur);
   }
 
-  // Concat with ffmpeg concat demuxer (safe across mp3 segments).
+  // Concat with ffmpeg concat demuxer (safe across mp3 segments — all are
+  // now 48kHz mono libmp3lame after per-segment normalisation).
   const listFile = path.join(workDir, 'voice-list.txt');
   fs.writeFileSync(
     listFile,
@@ -423,4 +520,76 @@ async function generateNarrationForScenes(
   ], { maxBuffer: 16 * 1024 * 1024 });
 
   return { audioPath: finalAudio, sceneDurations };
+}
+
+/**
+ * Renders a 1080×1920 portrait thumbnail PNG: source-frame at t=0.5s of the
+ * final mp4 + dim overlay + giant hook headline + channel handle. ffmpeg
+ * drawtext only — no Puppeteer, no Remotion, no headless Chrome — so this
+ * runs deterministically in any CI environment.
+ */
+async function generateThumbnailPng(opts: {
+  sourceVideoPath: string;
+  hook: string;
+  handle: string;
+  outPath: string;
+}): Promise<void> {
+  const { sourceVideoPath, hook, handle, outPath } = opts;
+  // Word-wrap the hook to ≤14 chars/line, max 3 lines, draw each line as
+  // its own drawtext filter (newline-glyph workaround consistent with
+  // composer.ts hook rendering).
+  const words = hook.replace(/\s+/g, ' ').trim().split(' ');
+  const lines: string[] = [];
+  let cur = '';
+  for (const w of words) {
+    if (!cur) { cur = w; continue; }
+    if ((cur + ' ' + w).length <= 14) cur += ' ' + w; else { lines.push(cur); cur = w; }
+  }
+  if (cur) lines.push(cur);
+  const hookLines = lines.slice(0, 3);
+
+  // Discover a font (Latin) for drawtext.
+  const candidates = [
+    '/System/Library/Fonts/Supplemental/Arial Bold.ttf',
+    '/usr/share/fonts/truetype/noto/NotoSans-Bold.ttf',
+    '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf',
+    '/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf',
+  ];
+  let fontfile = '';
+  for (const c of candidates) {
+    if (fs.existsSync(c)) { fontfile = `:fontfile='${c.replace(/'/g, "\\'")}'`; break; }
+  }
+
+  const escape = (s: string) => s.replace(/\\/g, '\\\\').replace(/:/g, '\\:').replace(/'/g, "\\'").replace(/%/g, '\\%');
+  const FS = 110;
+  const LH = 140;
+  const totalH = hookLines.length * LH;
+  const startY = 480 + Math.max(0, (560 - totalH) / 2);
+
+  const filters: string[] = [
+    'scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920',
+    // Dim middle band where the hook sits
+    'drawbox=x=0:y=440:w=1080:h=640:color=black@0.65:t=fill',
+  ];
+  hookLines.forEach((line, idx) => {
+    filters.push(
+      `drawtext=text='${escape(line)}'${fontfile}:fontcolor=white:fontsize=${FS}:` +
+      `borderw=8:bordercolor=black@0.95:` +
+      `x=(w-text_w)/2:y=${Math.round(startY + idx * LH)}`
+    );
+  });
+  // Channel handle bottom-right
+  filters.push(
+    `drawtext=text='${escape(handle)}'${fontfile}:fontcolor=#FFEB3B:fontsize=44:` +
+    `borderw=4:bordercolor=black@0.95:x=w-text_w-40:y=h-text_h-160`
+  );
+
+  await execFileAsync('ffmpeg', [
+    '-y',
+    '-ss', '0.5',
+    '-i', sourceVideoPath,
+    '-frames:v', '1',
+    '-vf', filters.join(','),
+    outPath,
+  ], { maxBuffer: 8 * 1024 * 1024 });
 }

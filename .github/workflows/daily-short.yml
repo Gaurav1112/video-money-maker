@@ -74,11 +74,19 @@ jobs:
       artifact_name: daily-short-${{ github.run_number }}
       queue_item_id: ${{ steps.enqueue.outputs.queue_item_id }}
     steps:
-      - name: Mask API keys
+      - name: Mask all API keys
         run: |
           echo "::add-mask::${PIXABAY_API_KEY}"
+          echo "::add-mask::${PEXELS_API_KEY}"
+          echo "::add-mask::${FREESOUND_API_KEY}"
+          echo "::add-mask::${FREESOUND_CLIENT_ID}"
+          echo "::add-mask::${UNSPLASH_ACCESS_KEY}"
         env:
           PIXABAY_API_KEY: ${{ secrets.PIXABAY_API_KEY }}
+          PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
+          FREESOUND_API_KEY: ${{ secrets.FREESOUND_API_KEY }}
+          FREESOUND_CLIENT_ID: ${{ secrets.FREESOUND_CLIENT_ID }}
+          UNSPLASH_ACCESS_KEY: ${{ secrets.UNSPLASH_ACCESS_KEY }}
 
       - uses: actions/checkout@v4
 
@@ -145,17 +153,24 @@ jobs:
           FREESOUND_API_KEY: ${{ secrets.FREESOUND_API_KEY }}
           UNSPLASH_ACCESS_KEY: ${{ secrets.UNSPLASH_ACCESS_KEY }}
           CHANNEL_HANDLE: '@GuruSishya-India'
+          # SECURITY: route ${{ inputs.* }} through env vars so a malicious
+          # workflow_dispatch caller can't inject shell metacharacters into
+          # the run script via template-expression expansion.
+          INPUT_STORYBOARD: ${{ inputs.storyboard }}
+          PICK_PATH: ${{ steps.pick.outputs.path }}
+          PICK_TOPIC: ${{ steps.pick.outputs.topic }}
+          PICK_REASON: ${{ steps.pick.outputs.reason }}
         run: |
           # Determine which storyboard to render
-          if [ -n "${{ inputs.storyboard }}" ]; then
-            BOARD="${{ inputs.storyboard }}"
+          if [ -n "$INPUT_STORYBOARD" ]; then
+            BOARD="$INPUT_STORYBOARD"
           else
-            BOARD="${{ steps.pick.outputs.path }}"
+            BOARD="$PICK_PATH"
             if [ -z "$BOARD" ] || [ ! -f "$BOARD" ]; then
               echo "FATAL: pick step did not produce a valid storyboard path ($BOARD)"
               exit 1
             fi
-            echo "Eligible pick: $BOARD (topic=${{ steps.pick.outputs.topic }}, reason=${{ steps.pick.outputs.reason }})"
+            echo "Eligible pick: $BOARD (topic=$PICK_TOPIC, reason=$PICK_REASON)"
           fi
 
           OUT_ROOT="out/shorts"
@@ -175,13 +190,23 @@ jobs:
               SLUG_DIR=$(dirname "$MP4")
               FINAL="$OUT_ROOT/${{ github.run_number }}-yt.mp4"
               cp "$MP4" "$FINAL"
-              # Copy licenses.json next to it, and emit metadata.json placeholder
               cp "$SLUG_DIR/licenses.json" "$OUT_ROOT/${{ github.run_number }}-yt-licenses.json" || true
-              # Build minimal metadata.json so downstream upload step has a payload
-              SLUG=$(basename "$SLUG_DIR")
-              cat > "$OUT_ROOT/${{ github.run_number }}-yt-metadata.json" <<META
+              # Renderer now emits metadata.json + thumbnail.png alongside
+              # the mp4 (post-fe8a6a7 — generateShortMetadata + thumbnail
+              # generator). Promote both to the stable run-numbered name
+              # downstream upload + cross-post steps consume.
+              if [ -f "$SLUG_DIR/metadata.json" ]; then
+                cp "$SLUG_DIR/metadata.json" "$OUT_ROOT/${{ github.run_number }}-yt-metadata.json"
+              else
+                # Defensive fallback for older renderers
+                SLUG=$(basename "$SLUG_DIR")
+                cat > "$OUT_ROOT/${{ github.run_number }}-yt-metadata.json" <<META
           {"slug":"$SLUG","video":"$(basename "$FINAL")","run":"${{ github.run_number }}"}
           META
+              fi
+              if [ -f "$SLUG_DIR/thumbnail.png" ]; then
+                cp "$SLUG_DIR/thumbnail.png" "$OUT_ROOT/${{ github.run_number }}-yt-thumbnail.png"
+              fi
               echo "Render succeeded → $FINAL"
               break
             fi
@@ -330,9 +355,11 @@ jobs:
 
       - name: "[FALLBACK] Render with make-shorts.ts"
         if: steps.check.outputs.found != 'true' && inputs.dry_run != 'true'
+        env:
+          INPUT_STORYBOARD: ${{ inputs.storyboard }}
         run: |
-          if [ -n "${{ inputs.storyboard }}" ]; then
-            npm run render:stock -- --storyboard "${{ inputs.storyboard }}"
+          if [ -n "$INPUT_STORYBOARD" ]; then
+            npm run render:stock -- --storyboard "$INPUT_STORYBOARD"
           else
             DOY=$(date +%j)
             TOTAL=$(ls content/*.json 2>/dev/null | wc -l)
