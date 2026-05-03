@@ -181,13 +181,16 @@ jobs:
           set -euo pipefail
 
           # Discover rendered video + metadata paths
-          VIDEO=$(ls output/daily-short/*.mp4    2>/dev/null | head -1)
-          META=$(ls  output/daily-short/*-metadata.json 2>/dev/null | head -1)
-          THUMB=$(ls output/daily-short/*.png    2>/dev/null | head -1 || true)
+          # NOTE: render writes to out/shorts/ (line 144), NOT output/daily-short/.
+          # Path mismatch caused every scheduled run to error here with empty
+          # $VIDEO and $META — see MASTER-GAP-LIST.md Gap S2 for the audit.
+          VIDEO=$(ls out/shorts/*-yt.mp4         2>/dev/null | head -1)
+          META=$(ls  out/shorts/*-yt-metadata.json 2>/dev/null | head -1)
+          THUMB=$(ls out/shorts/*.png            2>/dev/null | head -1 || true)
 
           if [ -z "${VIDEO}" ] || [ -z "${META}" ]; then
-            echo "No video/metadata found in output/daily-short/"
-            ls -la output/daily-short/ 2>/dev/null || true
+            echo "No video/metadata found in out/shorts/"
+            ls -la out/shorts/ 2>/dev/null || true
             exit 1
           fi
 
