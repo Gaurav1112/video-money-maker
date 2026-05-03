@@ -51,10 +51,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: '20'
           cache: 'npm'
@@ -75,7 +75,7 @@ jobs:
           DEBIAN_FRONTEND: noninteractive
 
       - name: Cache TTS audio fixtures
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: tests/fixtures/determinism
           key: determinism-fixtures-${{ hashFiles('tests/fixtures/determinism/**') }}
@@ -98,7 +98,7 @@ jobs:
 
       - name: Upload renders on failure (for debugging)
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: determinism-failure-${{ github.run_id }}
           path: output/_determinism_check/

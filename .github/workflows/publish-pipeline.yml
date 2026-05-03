@@ -27,9 +27,9 @@ jobs:
       episode: ${{ steps.meta.outputs.episode }}
       metadata_path: ${{ steps.meta.outputs.metadata_path }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: '20'
           cache: npm
@@ -45,7 +45,7 @@ jobs:
           echo "episode=$(cat out/episode.txt)" >> "$GITHUB_OUTPUT"
           echo "metadata_path=out/metadata.json" >> "$GITHUB_OUTPUT"
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: episode-artifacts
           path: out/
@@ -59,12 +59,12 @@ jobs:
     outputs:
       youtube_url: ${{ steps.upload.outputs.youtube_url }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
         with: { node-version: '20', cache: npm }
       - run: npm ci
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with: { name: episode-artifacts, path: out/ }
 
       - name: Upload video to YouTube
@@ -78,7 +78,7 @@ jobs:
           npx tsx scripts/upload-youtube.ts --metadata out/metadata.json
           echo "youtube_url=$(cat out/youtube_url.txt)" >> "$GITHUB_OUTPUT"
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: episode-artifacts-with-yt-url
           path: out/
@@ -91,12 +91,12 @@ jobs:
     needs: upload-youtube
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
         with: { node-version: '20', cache: npm }
       - run: npm ci
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with: { name: episode-artifacts-with-yt-url, path: out/ }
 
       - name: Publish to Instagram
@@ -111,12 +111,12 @@ jobs:
     needs: upload-youtube
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
         with: { node-version: '20', cache: npm }
       - run: npm ci --ignore-scripts  # Playwright install handled separately
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with: { name: episode-artifacts-with-yt-url, path: out/ }
 
       - name: Install Playwright Chromium
@@ -135,16 +135,16 @@ jobs:
     needs: upload-youtube
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: '20'
           cache: npm
 
       - run: npm ci
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: episode-artifacts-with-yt-url
           path: out/

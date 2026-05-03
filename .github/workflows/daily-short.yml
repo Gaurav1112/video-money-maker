@@ -68,17 +68,17 @@ jobs:
       artifact_name: daily-short-${{ github.run_number }}
       queue_item_id: ${{ steps.enqueue.outputs.queue_item_id }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
 
       # Cache Remotion bundle output — saves ~60 s on warm runs
       - name: Cache Remotion bundle
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: node_modules/.cache/remotion
           key: remotion-bundle-${{ hashFiles('src/**', 'remotion.config.ts') }}
@@ -171,7 +171,7 @@ jobs:
       - name: Upload artifact for upload phase
         id: upload
         if: needs.determine-phase.outputs.phase == 'render'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: daily-short-${{ github.run_number }}
           path: out/shorts/
@@ -236,10 +236,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
@@ -248,7 +248,7 @@ jobs:
         run: npm ci --ignore-scripts
 
       - name: Download rendered artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         continue-on-error: true
         with:
           name: daily-short-${{ github.run_number }}
