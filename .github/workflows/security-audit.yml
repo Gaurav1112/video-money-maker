@@ -46,9 +46,10 @@ jobs:
           ./actionlint --version
 
       - name: Run actionlint
-        # Non-fatal: legacy workflows (pre-render, render-and-publish, quality-gate)
-        # have stale needs.<job>.outputs.<x> refs that need a separate cleanup pass.
-        # Keeping the lint visible in CI logs without blocking merges.
+        # Non-fatal during incremental hardening. The render-and-publish.yml
+        # render-job outputs were declared in fix/c3 (see commit log).
+        # Tracking remaining lints in MASTER-GAP-LIST.md Tier C — flip this
+        # to fail-fast once all are clean.
         continue-on-error: true
         env:
           # Suppress info-level shellcheck checks that produce noise on the

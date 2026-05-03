@@ -30,6 +30,9 @@ jobs:
   render:
     runs-on: self-hosted
     timeout-minutes: 120
+    outputs:
+      topic: ${{ steps.pick.outputs.topic }}
+      session: ${{ steps.pick.outputs.session }}
 
     services:
       kokoro:
