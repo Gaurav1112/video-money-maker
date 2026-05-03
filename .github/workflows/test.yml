@@ -1,0 +1,169 @@
+name: test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: test-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ─── Layer 2/3/5/6: Fast unit + integrity + determinism + security ─────────
+  unit:
+    name: "Unit · integrity · determinism · security"
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Run integrity tests
+        run: npm run test:integrity
+
+      - name: Run determinism tests
+        run: npm run test:determinism
+
+      - name: Run security tests
+        run: npm run test:security
+
+      - name: Run publishing tests
+        run: npm run test:publishing
+
+  # ─── Layer 4: Format validation ──────────────────────────────────────────
+  format:
+    name: "Format · shorts · longform"
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - run: npm ci
+
+      - name: Run format tests
+        run: npm run test:format
+
+  # ─── Layer 1: Retention (includes audio fixtures via ffmpeg) ─────────────
+  retention:
+    name: "Retention · audio LUFS · ducking · opener · captions"
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: [unit, format]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install ffmpeg system package
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y ffmpeg
+
+      - name: Cache Remotion bundler
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/remotion
+            node_modules/.cache
+          key: remotion-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            remotion-${{ runner.os }}-
+
+      - run: npm ci
+
+      - name: Build audio fixtures
+        run: npm run test:fixtures
+
+      - name: Run retention tests
+        run: npm run test:retention
+
+  # ─── Full suite with coverage gate ───────────────────────────────────────
+  coverage:
+    name: "Coverage gate (≥ 40% global / per-layer targets)"
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: [unit, format, retention]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install ffmpeg
+        run: sudo apt-get update -qq && sudo apt-get install -y ffmpeg
+
+      - run: npm ci
+
+      - name: Build fixtures
+        run: npm run test:fixtures
+
+      - name: Run full test suite with coverage
+        run: npm run test:ci
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage/
+          retention-days: 14
+
+      - name: Upload failed-render frames (debug)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: failed-frames
+          path: tests/fixtures/_renders/
+          retention-days: 3
+
+  # ─── Matrix: run each layer in parallel after unit passes ────────────────
+  layers:
+    name: "Layer · ${{ matrix.layer }}"
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [unit]
+    strategy:
+      fail-fast: false
+      matrix:
+        layer: [retention, integrity, publishing, format, determinism, security]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install ffmpeg (needed for audio layers)
+        if: matrix.layer == 'retention'
+        run: sudo apt-get update -qq && sudo apt-get install -y ffmpeg
+
+      - run: npm ci
+
+      - name: Build fixtures (retention only)
+        if: matrix.layer == 'retention'
+        run: npm run test:fixtures
+
+      - name: Run ${{ matrix.layer }} tests
+        run: npx vitest run --reporter=verbose tests/${{ matrix.layer }}
