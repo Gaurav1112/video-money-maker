@@ -1,0 +1,34 @@
+{
+  "topicId": 88,
+  "topic": "IPC: Pipes, Sockets, Shared Memory",
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "Bhai, Google ke SDE-2 round mein IPC: Pipes, Sockets, Shared Memory pe ye trick poochhi jati hai. 30 second sun le."
+    },
+    {
+      "type": "problem",
+      "narration": "Without understanding IPC: Pipes, Sockets, Shared Memory, systems fail at scale. Here's why it matters."
+    },
+    {
+      "type": "intuition",
+      "narration": "Think of IPC: Pipes, Sockets, Shared Memory like a traffic cop at a busy intersection — directing flow efficiently."
+    },
+    {
+      "type": "mechanism",
+      "narration": "The core mechanism of IPC: Pipes, Sockets, Shared Memory: it distributes work, manages state, and handles failures gracefully."
+    },
+    {
+      "type": "mechanism-detail",
+      "narration": "Key properties of IPC: Pipes, Sockets, Shared Memory: fault tolerance, horizontal scalability, and low latency."
+    },
+    {
+      "type": "example",
+      "narration": "Real-world example: companies like Netflix and Uber use IPC: Pipes, Sockets, Shared Memory to serve millions of users daily."
+    },
+    {
+      "type": "recap",
+      "narration": "Quick recap: IPC: Pipes, Sockets, Shared Memory solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+    }
+  ]
+}

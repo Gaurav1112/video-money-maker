@@ -1,0 +1,34 @@
+{
+  "topicId": 42,
+  "topic": "Sliding Window — When To Use It",
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "Yaar, Amazon ne mujhe Sliding Window — When To Use It pe yahi question poocha tha — 90% log yahi galat dete hain."
+    },
+    {
+      "type": "problem",
+      "narration": "Without understanding Sliding Window — When To Use It, systems fail at scale. Here's why it matters."
+    },
+    {
+      "type": "intuition",
+      "narration": "Think of Sliding Window — When To Use It like a traffic cop at a busy intersection — directing flow efficiently."
+    },
+    {
+      "type": "mechanism",
+      "narration": "The core mechanism of Sliding Window — When To Use It: it distributes work, manages state, and handles failures gracefully."
+    },
+    {
+      "type": "mechanism-detail",
+      "narration": "Key properties of Sliding Window — When To Use It: fault tolerance, horizontal scalability, and low latency."
+    },
+    {
+      "type": "example",
+      "narration": "Real-world example: companies like Netflix and Uber use Sliding Window — When To Use It to serve millions of users daily."
+    },
+    {
+      "type": "recap",
+      "narration": "Quick recap: Sliding Window — When To Use It solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+    }
+  ]
+}

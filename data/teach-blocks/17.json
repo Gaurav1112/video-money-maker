@@ -1,0 +1,34 @@
+{
+  "topicId": 17,
+  "topic": "Design: URL Shortener (TinyURL)",
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "Bhai sun, ye Design: URL Shortener (TinyURL) ki ek mistake teri ₹30-50LPA ki Amazon offer cancel kara dega."
+    },
+    {
+      "type": "problem",
+      "narration": "Without understanding Design: URL Shortener (TinyURL), systems fail at scale. Here's why it matters."
+    },
+    {
+      "type": "intuition",
+      "narration": "Think of Design: URL Shortener (TinyURL) like a traffic cop at a busy intersection — directing flow efficiently."
+    },
+    {
+      "type": "mechanism",
+      "narration": "The core mechanism of Design: URL Shortener (TinyURL): it distributes work, manages state, and handles failures gracefully."
+    },
+    {
+      "type": "mechanism-detail",
+      "narration": "Key properties of Design: URL Shortener (TinyURL): fault tolerance, horizontal scalability, and low latency."
+    },
+    {
+      "type": "example",
+      "narration": "Real-world example: companies like Netflix and Uber use Design: URL Shortener (TinyURL) to serve millions of users daily."
+    },
+    {
+      "type": "recap",
+      "narration": "Quick recap: Design: URL Shortener (TinyURL) solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+    }
+  ]
+}

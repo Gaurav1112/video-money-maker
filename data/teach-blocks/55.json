@@ -1,0 +1,34 @@
+{
+  "topicId": 55,
+  "topic": "Monotonic Stack: Next Greater Element",
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "Yaar, Amazon ne mujhe Monotonic Stack: Next Greater Element pe yahi question poocha tha — 90% log yahi galat dete hain."
+    },
+    {
+      "type": "problem",
+      "narration": "Without understanding Monotonic Stack: Next Greater Element, systems fail at scale. Here's why it matters."
+    },
+    {
+      "type": "intuition",
+      "narration": "Think of Monotonic Stack: Next Greater Element like a traffic cop at a busy intersection — directing flow efficiently."
+    },
+    {
+      "type": "mechanism",
+      "narration": "The core mechanism of Monotonic Stack: Next Greater Element: it distributes work, manages state, and handles failures gracefully."
+    },
+    {
+      "type": "mechanism-detail",
+      "narration": "Key properties of Monotonic Stack: Next Greater Element: fault tolerance, horizontal scalability, and low latency."
+    },
+    {
+      "type": "example",
+      "narration": "Real-world example: companies like Netflix and Uber use Monotonic Stack: Next Greater Element to serve millions of users daily."
+    },
+    {
+      "type": "recap",
+      "narration": "Quick recap: Monotonic Stack: Next Greater Element solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+    }
+  ]
+}

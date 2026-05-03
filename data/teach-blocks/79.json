@@ -1,0 +1,34 @@
+{
+  "topicId": 79,
+  "topic": "Counter-Offer Handling: Don't Get Trapped",
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "Ek line mein bata — Counter-Offer Handling: Don't Get Trapped? Galat answer = Amazon reject. Sahi answer = ₹40-70LPA."
+    },
+    {
+      "type": "problem",
+      "narration": "Without understanding Counter-Offer Handling: Don't Get Trapped, systems fail at scale. Here's why it matters."
+    },
+    {
+      "type": "intuition",
+      "narration": "Think of Counter-Offer Handling: Don't Get Trapped like a traffic cop at a busy intersection — directing flow efficiently."
+    },
+    {
+      "type": "mechanism",
+      "narration": "The core mechanism of Counter-Offer Handling: Don't Get Trapped: it distributes work, manages state, and handles failures gracefully."
+    },
+    {
+      "type": "mechanism-detail",
+      "narration": "Key properties of Counter-Offer Handling: Don't Get Trapped: fault tolerance, horizontal scalability, and low latency."
+    },
+    {
+      "type": "example",
+      "narration": "Real-world example: companies like Netflix and Uber use Counter-Offer Handling: Don't Get Trapped to serve millions of users daily."
+    },
+    {
+      "type": "recap",
+      "narration": "Quick recap: Counter-Offer Handling: Don't Get Trapped solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+    }
+  ]
+}

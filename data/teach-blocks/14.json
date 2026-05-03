@@ -1,0 +1,34 @@
+{
+  "topicId": 14,
+  "topic": "CQRS Pattern Done Right",
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "Bhai sun, ye CQRS Pattern Done Right ki ek mistake teri ₹40-60LPA ki Atlassian offer cancel kara dega."
+    },
+    {
+      "type": "problem",
+      "narration": "Without understanding CQRS Pattern Done Right, systems fail at scale. Here's why it matters."
+    },
+    {
+      "type": "intuition",
+      "narration": "Think of CQRS Pattern Done Right like a traffic cop at a busy intersection — directing flow efficiently."
+    },
+    {
+      "type": "mechanism",
+      "narration": "The core mechanism of CQRS Pattern Done Right: it distributes work, manages state, and handles failures gracefully."
+    },
+    {
+      "type": "mechanism-detail",
+      "narration": "Key properties of CQRS Pattern Done Right: fault tolerance, horizontal scalability, and low latency."
+    },
+    {
+      "type": "example",
+      "narration": "Real-world example: companies like Netflix and Uber use CQRS Pattern Done Right to serve millions of users daily."
+    },
+    {
+      "type": "recap",
+      "narration": "Quick recap: CQRS Pattern Done Right solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "topicId": 71,
+  "topic": "Technical Decision With Incomplete Data",
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "Ek line mein bata — Technical Decision With Incomplete Data? Galat answer = Amazon reject. Sahi answer = ₹35-60LPA."
+    },
+    {
+      "type": "problem",
+      "narration": "Without understanding Technical Decision With Incomplete Data, systems fail at scale. Here's why it matters."
+    },
+    {
+      "type": "intuition",
+      "narration": "Think of Technical Decision With Incomplete Data like a traffic cop at a busy intersection — directing flow efficiently."
+    },
+    {
+      "type": "mechanism",
+      "narration": "The core mechanism of Technical Decision With Incomplete Data: it distributes work, manages state, and handles failures gracefully."
+    },
+    {
+      "type": "mechanism-detail",
+      "narration": "Key properties of Technical Decision With Incomplete Data: fault tolerance, horizontal scalability, and low latency."
+    },
+    {
+      "type": "example",
+      "narration": "Real-world example: companies like Netflix and Uber use Technical Decision With Incomplete Data to serve millions of users daily."
+    },
+    {
+      "type": "recap",
+      "narration": "Quick recap: Technical Decision With Incomplete Data solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+    }
+  ]
+}

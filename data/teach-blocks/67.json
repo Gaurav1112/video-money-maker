@@ -1,0 +1,34 @@
+{
+  "topicId": 67,
+  "topic": "Biggest Failure You Faced (Honest Answer)",
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "Ek line mein bata — Biggest Failure You Faced (Honest Answer)? Galat answer = Amazon reject. Sahi answer = ₹30-55LPA."
+    },
+    {
+      "type": "problem",
+      "narration": "Without understanding Biggest Failure You Faced (Honest Answer), systems fail at scale. Here's why it matters."
+    },
+    {
+      "type": "intuition",
+      "narration": "Think of Biggest Failure You Faced (Honest Answer) like a traffic cop at a busy intersection — directing flow efficiently."
+    },
+    {
+      "type": "mechanism",
+      "narration": "The core mechanism of Biggest Failure You Faced (Honest Answer): it distributes work, manages state, and handles failures gracefully."
+    },
+    {
+      "type": "mechanism-detail",
+      "narration": "Key properties of Biggest Failure You Faced (Honest Answer): fault tolerance, horizontal scalability, and low latency."
+    },
+    {
+      "type": "example",
+      "narration": "Real-world example: companies like Netflix and Uber use Biggest Failure You Faced (Honest Answer) to serve millions of users daily."
+    },
+    {
+      "type": "recap",
+      "narration": "Quick recap: Biggest Failure You Faced (Honest Answer) solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+    }
+  ]
+}

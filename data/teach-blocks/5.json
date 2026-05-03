@@ -1,0 +1,34 @@
+{
+  "topicId": 5,
+  "topic": "Rate Limiting: Token Bucket vs Leaky Bucket",
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "Bhai sun, ye Rate Limiting: Token Bucket vs Leaky Bucket ki ek mistake teri ₹30-50LPA ki Razorpay offer cancel kara dega."
+    },
+    {
+      "type": "problem",
+      "narration": "Without understanding Rate Limiting: Token Bucket vs Leaky Bucket, systems fail at scale. Here's why it matters."
+    },
+    {
+      "type": "intuition",
+      "narration": "Think of Rate Limiting: Token Bucket vs Leaky Bucket like a traffic cop at a busy intersection — directing flow efficiently."
+    },
+    {
+      "type": "mechanism",
+      "narration": "The core mechanism of Rate Limiting: Token Bucket vs Leaky Bucket: it distributes work, manages state, and handles failures gracefully."
+    },
+    {
+      "type": "mechanism-detail",
+      "narration": "Key properties of Rate Limiting: Token Bucket vs Leaky Bucket: fault tolerance, horizontal scalability, and low latency."
+    },
+    {
+      "type": "example",
+      "narration": "Real-world example: companies like Netflix and Uber use Rate Limiting: Token Bucket vs Leaky Bucket to serve millions of users daily."
+    },
+    {
+      "type": "recap",
+      "narration": "Quick recap: Rate Limiting: Token Bucket vs Leaky Bucket solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+    }
+  ]
+}

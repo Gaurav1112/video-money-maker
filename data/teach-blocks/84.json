@@ -1,0 +1,34 @@
+{
+  "topicId": 84,
+  "topic": "TCP 3-Way Handshake + TLS",
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "Bhai, Cloudflare ke SDE-2 round mein TCP 3-Way Handshake + TLS pe ye trick poochhi jati hai. 30 second sun le."
+    },
+    {
+      "type": "problem",
+      "narration": "Without understanding TCP 3-Way Handshake + TLS, systems fail at scale. Here's why it matters."
+    },
+    {
+      "type": "intuition",
+      "narration": "Think of TCP 3-Way Handshake + TLS like a traffic cop at a busy intersection — directing flow efficiently."
+    },
+    {
+      "type": "mechanism",
+      "narration": "The core mechanism of TCP 3-Way Handshake + TLS: it distributes work, manages state, and handles failures gracefully."
+    },
+    {
+      "type": "mechanism-detail",
+      "narration": "Key properties of TCP 3-Way Handshake + TLS: fault tolerance, horizontal scalability, and low latency."
+    },
+    {
+      "type": "example",
+      "narration": "Real-world example: companies like Netflix and Uber use TCP 3-Way Handshake + TLS to serve millions of users daily."
+    },
+    {
+      "type": "recap",
+      "narration": "Quick recap: TCP 3-Way Handshake + TLS solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+    }
+  ]
+}

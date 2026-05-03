@@ -1,0 +1,34 @@
+{
+  "topicId": 69,
+  "topic": "Cross-Team Collaboration at a Startup",
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "Ek line mein bata — Cross-Team Collaboration at a Startup? Galat answer = Razorpay reject. Sahi answer = ₹25-50LPA."
+    },
+    {
+      "type": "problem",
+      "narration": "Without understanding Cross-Team Collaboration at a Startup, systems fail at scale. Here's why it matters."
+    },
+    {
+      "type": "intuition",
+      "narration": "Think of Cross-Team Collaboration at a Startup like a traffic cop at a busy intersection — directing flow efficiently."
+    },
+    {
+      "type": "mechanism",
+      "narration": "The core mechanism of Cross-Team Collaboration at a Startup: it distributes work, manages state, and handles failures gracefully."
+    },
+    {
+      "type": "mechanism-detail",
+      "narration": "Key properties of Cross-Team Collaboration at a Startup: fault tolerance, horizontal scalability, and low latency."
+    },
+    {
+      "type": "example",
+      "narration": "Real-world example: companies like Netflix and Uber use Cross-Team Collaboration at a Startup to serve millions of users daily."
+    },
+    {
+      "type": "recap",
+      "narration": "Quick recap: Cross-Team Collaboration at a Startup solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+    }
+  ]
+}

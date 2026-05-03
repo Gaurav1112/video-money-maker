@@ -1,0 +1,34 @@
+{
+  "topicId": 52,
+  "topic": "Bit Manipulation Tricks",
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "Yaar, Amazon ne mujhe Bit Manipulation Tricks pe yahi question poocha tha — 90% log yahi galat dete hain."
+    },
+    {
+      "type": "problem",
+      "narration": "Without understanding Bit Manipulation Tricks, systems fail at scale. Here's why it matters."
+    },
+    {
+      "type": "intuition",
+      "narration": "Think of Bit Manipulation Tricks like a traffic cop at a busy intersection — directing flow efficiently."
+    },
+    {
+      "type": "mechanism",
+      "narration": "The core mechanism of Bit Manipulation Tricks: it distributes work, manages state, and handles failures gracefully."
+    },
+    {
+      "type": "mechanism-detail",
+      "narration": "Key properties of Bit Manipulation Tricks: fault tolerance, horizontal scalability, and low latency."
+    },
+    {
+      "type": "example",
+      "narration": "Real-world example: companies like Netflix and Uber use Bit Manipulation Tricks to serve millions of users daily."
+    },
+    {
+      "type": "recap",
+      "narration": "Quick recap: Bit Manipulation Tricks solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+    }
+  ]
+}

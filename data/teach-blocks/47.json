@@ -1,0 +1,34 @@
+{
+  "topicId": 47,
+  "topic": "Tree Traversal: Inorder / Preorder / Postorder",
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "Yaar, Amazon ne mujhe Tree Traversal: Inorder / Preorder / Postorder pe yahi question poocha tha — 90% log yahi galat dete hain."
+    },
+    {
+      "type": "problem",
+      "narration": "Without understanding Tree Traversal: Inorder / Preorder / Postorder, systems fail at scale. Here's why it matters."
+    },
+    {
+      "type": "intuition",
+      "narration": "Think of Tree Traversal: Inorder / Preorder / Postorder like a traffic cop at a busy intersection — directing flow efficiently."
+    },
+    {
+      "type": "mechanism",
+      "narration": "The core mechanism of Tree Traversal: Inorder / Preorder / Postorder: it distributes work, manages state, and handles failures gracefully."
+    },
+    {
+      "type": "mechanism-detail",
+      "narration": "Key properties of Tree Traversal: Inorder / Preorder / Postorder: fault tolerance, horizontal scalability, and low latency."
+    },
+    {
+      "type": "example",
+      "narration": "Real-world example: companies like Netflix and Uber use Tree Traversal: Inorder / Preorder / Postorder to serve millions of users daily."
+    },
+    {
+      "type": "recap",
+      "narration": "Quick recap: Tree Traversal: Inorder / Preorder / Postorder solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+    }
+  ]
+}

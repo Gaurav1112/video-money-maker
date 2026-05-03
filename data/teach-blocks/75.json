@@ -1,0 +1,34 @@
+{
+  "topicId": 75,
+  "topic": "Google Behavioral Round: Strict STAR",
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "Ek line mein bata — Google Behavioral Round: Strict STAR? Galat answer = Google reject. Sahi answer = ₹40-65LPA."
+    },
+    {
+      "type": "problem",
+      "narration": "Without understanding Google Behavioral Round: Strict STAR, systems fail at scale. Here's why it matters."
+    },
+    {
+      "type": "intuition",
+      "narration": "Think of Google Behavioral Round: Strict STAR like a traffic cop at a busy intersection — directing flow efficiently."
+    },
+    {
+      "type": "mechanism",
+      "narration": "The core mechanism of Google Behavioral Round: Strict STAR: it distributes work, manages state, and handles failures gracefully."
+    },
+    {
+      "type": "mechanism-detail",
+      "narration": "Key properties of Google Behavioral Round: Strict STAR: fault tolerance, horizontal scalability, and low latency."
+    },
+    {
+      "type": "example",
+      "narration": "Real-world example: companies like Netflix and Uber use Google Behavioral Round: Strict STAR to serve millions of users daily."
+    },
+    {
+      "type": "recap",
+      "narration": "Quick recap: Google Behavioral Round: Strict STAR solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+    }
+  ]
+}

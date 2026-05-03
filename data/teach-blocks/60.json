@@ -1,0 +1,34 @@
+{
+  "topicId": 60,
+  "topic": "Recursion to Iteration: Stack Simulation",
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "Yaar, Amazon ne mujhe Recursion to Iteration: Stack Simulation pe yahi question poocha tha — 90% log yahi galat dete hain."
+    },
+    {
+      "type": "problem",
+      "narration": "Without understanding Recursion to Iteration: Stack Simulation, systems fail at scale. Here's why it matters."
+    },
+    {
+      "type": "intuition",
+      "narration": "Think of Recursion to Iteration: Stack Simulation like a traffic cop at a busy intersection — directing flow efficiently."
+    },
+    {
+      "type": "mechanism",
+      "narration": "The core mechanism of Recursion to Iteration: Stack Simulation: it distributes work, manages state, and handles failures gracefully."
+    },
+    {
+      "type": "mechanism-detail",
+      "narration": "Key properties of Recursion to Iteration: Stack Simulation: fault tolerance, horizontal scalability, and low latency."
+    },
+    {
+      "type": "example",
+      "narration": "Real-world example: companies like Netflix and Uber use Recursion to Iteration: Stack Simulation to serve millions of users daily."
+    },
+    {
+      "type": "recap",
+      "narration": "Quick recap: Recursion to Iteration: Stack Simulation solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+    }
+  ]
+}

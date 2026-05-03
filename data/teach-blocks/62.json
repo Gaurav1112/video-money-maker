@@ -1,0 +1,34 @@
+{
+  "topicId": 62,
+  "topic": "Amazon LP: Customer Obsession (Real Story)",
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "Ek line mein bata — Amazon LP: Customer Obsession (Real Story)? Galat answer = Amazon reject. Sahi answer = ₹35-60LPA."
+    },
+    {
+      "type": "problem",
+      "narration": "Without understanding Amazon LP: Customer Obsession (Real Story), systems fail at scale. Here's why it matters."
+    },
+    {
+      "type": "intuition",
+      "narration": "Think of Amazon LP: Customer Obsession (Real Story) like a traffic cop at a busy intersection — directing flow efficiently."
+    },
+    {
+      "type": "mechanism",
+      "narration": "The core mechanism of Amazon LP: Customer Obsession (Real Story): it distributes work, manages state, and handles failures gracefully."
+    },
+    {
+      "type": "mechanism-detail",
+      "narration": "Key properties of Amazon LP: Customer Obsession (Real Story): fault tolerance, horizontal scalability, and low latency."
+    },
+    {
+      "type": "example",
+      "narration": "Real-world example: companies like Netflix and Uber use Amazon LP: Customer Obsession (Real Story) to serve millions of users daily."
+    },
+    {
+      "type": "recap",
+      "narration": "Quick recap: Amazon LP: Customer Obsession (Real Story) solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+    }
+  ]
+}

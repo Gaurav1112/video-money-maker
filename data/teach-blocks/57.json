@@ -1,0 +1,34 @@
+{
+  "topicId": 57,
+  "topic": "String Patterns: KMP / Rabin-Karp",
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "Yaar, Google ne mujhe String Patterns: KMP / Rabin-Karp pe yahi question poocha tha — 90% log yahi galat dete hain."
+    },
+    {
+      "type": "problem",
+      "narration": "Without understanding String Patterns: KMP / Rabin-Karp, systems fail at scale. Here's why it matters."
+    },
+    {
+      "type": "intuition",
+      "narration": "Think of String Patterns: KMP / Rabin-Karp like a traffic cop at a busy intersection — directing flow efficiently."
+    },
+    {
+      "type": "mechanism",
+      "narration": "The core mechanism of String Patterns: KMP / Rabin-Karp: it distributes work, manages state, and handles failures gracefully."
+    },
+    {
+      "type": "mechanism-detail",
+      "narration": "Key properties of String Patterns: KMP / Rabin-Karp: fault tolerance, horizontal scalability, and low latency."
+    },
+    {
+      "type": "example",
+      "narration": "Real-world example: companies like Netflix and Uber use String Patterns: KMP / Rabin-Karp to serve millions of users daily."
+    },
+    {
+      "type": "recap",
+      "narration": "Quick recap: String Patterns: KMP / Rabin-Karp solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+    }
+  ]
+}

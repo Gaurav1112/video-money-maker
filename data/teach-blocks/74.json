@@ -1,0 +1,34 @@
+{
+  "topicId": 74,
+  "topic": "Cold Outreach to Hiring Manager (Template)",
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "Ek line mein bata — Cold Outreach to Hiring Manager (Template)? Galat answer = Amazon reject. Sahi answer = ₹30-60LPA."
+    },
+    {
+      "type": "problem",
+      "narration": "Without understanding Cold Outreach to Hiring Manager (Template), systems fail at scale. Here's why it matters."
+    },
+    {
+      "type": "intuition",
+      "narration": "Think of Cold Outreach to Hiring Manager (Template) like a traffic cop at a busy intersection — directing flow efficiently."
+    },
+    {
+      "type": "mechanism",
+      "narration": "The core mechanism of Cold Outreach to Hiring Manager (Template): it distributes work, manages state, and handles failures gracefully."
+    },
+    {
+      "type": "mechanism-detail",
+      "narration": "Key properties of Cold Outreach to Hiring Manager (Template): fault tolerance, horizontal scalability, and low latency."
+    },
+    {
+      "type": "example",
+      "narration": "Real-world example: companies like Netflix and Uber use Cold Outreach to Hiring Manager (Template) to serve millions of users daily."
+    },
+    {
+      "type": "recap",
+      "narration": "Quick recap: Cold Outreach to Hiring Manager (Template) solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+    }
+  ]
+}

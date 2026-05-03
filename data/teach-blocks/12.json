@@ -1,0 +1,34 @@
+{
+  "topicId": 12,
+  "topic": "Circuit Breaker Pattern (Resilience4j in real life)",
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "Bhai sun, ye Circuit Breaker Pattern (Resilience4j in real life) ki ek mistake teri ₹30-50LPA ki PhonePe offer cancel kara dega."
+    },
+    {
+      "type": "problem",
+      "narration": "Without understanding Circuit Breaker Pattern (Resilience4j in real life), systems fail at scale. Here's why it matters."
+    },
+    {
+      "type": "intuition",
+      "narration": "Think of Circuit Breaker Pattern (Resilience4j in real life) like a traffic cop at a busy intersection — directing flow efficiently."
+    },
+    {
+      "type": "mechanism",
+      "narration": "The core mechanism of Circuit Breaker Pattern (Resilience4j in real life): it distributes work, manages state, and handles failures gracefully."
+    },
+    {
+      "type": "mechanism-detail",
+      "narration": "Key properties of Circuit Breaker Pattern (Resilience4j in real life): fault tolerance, horizontal scalability, and low latency."
+    },
+    {
+      "type": "example",
+      "narration": "Real-world example: companies like Netflix and Uber use Circuit Breaker Pattern (Resilience4j in real life) to serve millions of users daily."
+    },
+    {
+      "type": "recap",
+      "narration": "Quick recap: Circuit Breaker Pattern (Resilience4j in real life) solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+    }
+  ]
+}

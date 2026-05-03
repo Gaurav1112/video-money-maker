@@ -1,0 +1,34 @@
+{
+  "topicId": 93,
+  "topic": "ACID Properties With Real Examples",
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "Tu agar ACID Properties With Real Examples samajh nahi paya, toh Razorpay ka ₹30-55LPA ka offer bhool ja."
+    },
+    {
+      "type": "problem",
+      "narration": "Without understanding ACID Properties With Real Examples, systems fail at scale. Here's why it matters."
+    },
+    {
+      "type": "intuition",
+      "narration": "Think of ACID Properties With Real Examples like a traffic cop at a busy intersection — directing flow efficiently."
+    },
+    {
+      "type": "mechanism",
+      "narration": "The core mechanism of ACID Properties With Real Examples: it distributes work, manages state, and handles failures gracefully."
+    },
+    {
+      "type": "mechanism-detail",
+      "narration": "Key properties of ACID Properties With Real Examples: fault tolerance, horizontal scalability, and low latency."
+    },
+    {
+      "type": "example",
+      "narration": "Real-world example: companies like Netflix and Uber use ACID Properties With Real Examples to serve millions of users daily."
+    },
+    {
+      "type": "recap",
+      "narration": "Quick recap: ACID Properties With Real Examples solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+    }
+  ]
+}

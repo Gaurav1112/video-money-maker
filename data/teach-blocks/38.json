@@ -1,0 +1,34 @@
+{
+  "topicId": 38,
+  "topic": "Design: Instagram-like Social Platform",
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "Bhai sun, ye Design: Instagram-like Social Platform ki ek mistake teri ₹50-80LPA ki Meta offer cancel kara dega."
+    },
+    {
+      "type": "problem",
+      "narration": "Without understanding Design: Instagram-like Social Platform, systems fail at scale. Here's why it matters."
+    },
+    {
+      "type": "intuition",
+      "narration": "Think of Design: Instagram-like Social Platform like a traffic cop at a busy intersection — directing flow efficiently."
+    },
+    {
+      "type": "mechanism",
+      "narration": "The core mechanism of Design: Instagram-like Social Platform: it distributes work, manages state, and handles failures gracefully."
+    },
+    {
+      "type": "mechanism-detail",
+      "narration": "Key properties of Design: Instagram-like Social Platform: fault tolerance, horizontal scalability, and low latency."
+    },
+    {
+      "type": "example",
+      "narration": "Real-world example: companies like Netflix and Uber use Design: Instagram-like Social Platform to serve millions of users daily."
+    },
+    {
+      "type": "recap",
+      "narration": "Quick recap: Design: Instagram-like Social Platform solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+    }
+  ]
+}

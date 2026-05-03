@@ -1,0 +1,34 @@
+{
+  "topicId": 9,
+  "topic": "Database Sharding Strategies",
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "Bhai sun, ye Database Sharding Strategies ki ek mistake teri ₹40-65LPA ki Flipkart offer cancel kara dega."
+    },
+    {
+      "type": "problem",
+      "narration": "Without understanding Database Sharding Strategies, systems fail at scale. Here's why it matters."
+    },
+    {
+      "type": "intuition",
+      "narration": "Think of Database Sharding Strategies like a traffic cop at a busy intersection — directing flow efficiently."
+    },
+    {
+      "type": "mechanism",
+      "narration": "The core mechanism of Database Sharding Strategies: it distributes work, manages state, and handles failures gracefully."
+    },
+    {
+      "type": "mechanism-detail",
+      "narration": "Key properties of Database Sharding Strategies: fault tolerance, horizontal scalability, and low latency."
+    },
+    {
+      "type": "example",
+      "narration": "Real-world example: companies like Netflix and Uber use Database Sharding Strategies to serve millions of users daily."
+    },
+    {
+      "type": "recap",
+      "narration": "Quick recap: Database Sharding Strategies solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+    }
+  ]
+}

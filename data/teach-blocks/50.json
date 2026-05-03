@@ -1,0 +1,34 @@
+{
+  "topicId": 50,
+  "topic": "Union-Find: Connected Components",
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "Yaar, Google ne mujhe Union-Find: Connected Components pe yahi question poocha tha — 90% log yahi galat dete hain."
+    },
+    {
+      "type": "problem",
+      "narration": "Without understanding Union-Find: Connected Components, systems fail at scale. Here's why it matters."
+    },
+    {
+      "type": "intuition",
+      "narration": "Think of Union-Find: Connected Components like a traffic cop at a busy intersection — directing flow efficiently."
+    },
+    {
+      "type": "mechanism",
+      "narration": "The core mechanism of Union-Find: Connected Components: it distributes work, manages state, and handles failures gracefully."
+    },
+    {
+      "type": "mechanism-detail",
+      "narration": "Key properties of Union-Find: Connected Components: fault tolerance, horizontal scalability, and low latency."
+    },
+    {
+      "type": "example",
+      "narration": "Real-world example: companies like Netflix and Uber use Union-Find: Connected Components to serve millions of users daily."
+    },
+    {
+      "type": "recap",
+      "narration": "Quick recap: Union-Find: Connected Components solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "topicId": 45,
+  "topic": "Binary Search Variants: Find First / Find Last",
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "Yaar, Amazon ne mujhe Binary Search Variants: Find First / Find Last pe yahi question poocha tha — 90% log yahi galat dete hain."
+    },
+    {
+      "type": "problem",
+      "narration": "Without understanding Binary Search Variants: Find First / Find Last, systems fail at scale. Here's why it matters."
+    },
+    {
+      "type": "intuition",
+      "narration": "Think of Binary Search Variants: Find First / Find Last like a traffic cop at a busy intersection — directing flow efficiently."
+    },
+    {
+      "type": "mechanism",
+      "narration": "The core mechanism of Binary Search Variants: Find First / Find Last: it distributes work, manages state, and handles failures gracefully."
+    },
+    {
+      "type": "mechanism-detail",
+      "narration": "Key properties of Binary Search Variants: Find First / Find Last: fault tolerance, horizontal scalability, and low latency."
+    },
+    {
+      "type": "example",
+      "narration": "Real-world example: companies like Netflix and Uber use Binary Search Variants: Find First / Find Last to serve millions of users daily."
+    },
+    {
+      "type": "recap",
+      "narration": "Quick recap: Binary Search Variants: Find First / Find Last solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+    }
+  ]
+}

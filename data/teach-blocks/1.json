@@ -1,0 +1,34 @@
+{
+  "topicId": 1,
+  "topic": "Kafka Consumer Groups",
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "Bhai sun, ye Kafka Consumer Groups ki ek mistake teri ₹35-55LPA ki Amazon offer cancel kara dega."
+    },
+    {
+      "type": "problem",
+      "narration": "Without understanding Kafka Consumer Groups, systems fail at scale. Here's why it matters."
+    },
+    {
+      "type": "intuition",
+      "narration": "Think of Kafka Consumer Groups like a traffic cop at a busy intersection — directing flow efficiently."
+    },
+    {
+      "type": "mechanism",
+      "narration": "The core mechanism of Kafka Consumer Groups: it distributes work, manages state, and handles failures gracefully."
+    },
+    {
+      "type": "mechanism-detail",
+      "narration": "Key properties of Kafka Consumer Groups: fault tolerance, horizontal scalability, and low latency."
+    },
+    {
+      "type": "example",
+      "narration": "Real-world example: companies like Netflix and Uber use Kafka Consumer Groups to serve millions of users daily."
+    },
+    {
+      "type": "recap",
+      "narration": "Quick recap: Kafka Consumer Groups solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+    }
+  ]
+}

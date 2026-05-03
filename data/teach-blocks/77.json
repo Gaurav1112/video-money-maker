@@ -1,0 +1,34 @@
+{
+  "topicId": 77,
+  "topic": "'Where Do You See Yourself in 5 Years' — India",
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "Ek line mein bata — 'Where Do You See Yourself in 5 Years' — India? Galat answer = Amazon reject. Sahi answer = ₹20-45LPA."
+    },
+    {
+      "type": "problem",
+      "narration": "Without understanding 'Where Do You See Yourself in 5 Years' — India, systems fail at scale. Here's why it matters."
+    },
+    {
+      "type": "intuition",
+      "narration": "Think of 'Where Do You See Yourself in 5 Years' — India like a traffic cop at a busy intersection — directing flow efficiently."
+    },
+    {
+      "type": "mechanism",
+      "narration": "The core mechanism of 'Where Do You See Yourself in 5 Years' — India: it distributes work, manages state, and handles failures gracefully."
+    },
+    {
+      "type": "mechanism-detail",
+      "narration": "Key properties of 'Where Do You See Yourself in 5 Years' — India: fault tolerance, horizontal scalability, and low latency."
+    },
+    {
+      "type": "example",
+      "narration": "Real-world example: companies like Netflix and Uber use 'Where Do You See Yourself in 5 Years' — India to serve millions of users daily."
+    },
+    {
+      "type": "recap",
+      "narration": "Quick recap: 'Where Do You See Yourself in 5 Years' — India solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+    }
+  ]
+}

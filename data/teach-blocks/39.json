@@ -1,0 +1,34 @@
+{
+  "topicId": 39,
+  "topic": "Design: Swiggy/Zomato Food Delivery",
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "Bhai sun, ye Design: Swiggy/Zomato Food Delivery ki ek mistake teri ₹45-70LPA ki Swiggy offer cancel kara dega."
+    },
+    {
+      "type": "problem",
+      "narration": "Without understanding Design: Swiggy/Zomato Food Delivery, systems fail at scale. Here's why it matters."
+    },
+    {
+      "type": "intuition",
+      "narration": "Think of Design: Swiggy/Zomato Food Delivery like a traffic cop at a busy intersection — directing flow efficiently."
+    },
+    {
+      "type": "mechanism",
+      "narration": "The core mechanism of Design: Swiggy/Zomato Food Delivery: it distributes work, manages state, and handles failures gracefully."
+    },
+    {
+      "type": "mechanism-detail",
+      "narration": "Key properties of Design: Swiggy/Zomato Food Delivery: fault tolerance, horizontal scalability, and low latency."
+    },
+    {
+      "type": "example",
+      "narration": "Real-world example: companies like Netflix and Uber use Design: Swiggy/Zomato Food Delivery to serve millions of users daily."
+    },
+    {
+      "type": "recap",
+      "narration": "Quick recap: Design: Swiggy/Zomato Food Delivery solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+    }
+  ]
+}

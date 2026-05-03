@@ -1,0 +1,34 @@
+{
+  "topicId": 31,
+  "topic": "Bloom Filters Explained",
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "Bhai sun, ye Bloom Filters Explained ki ek mistake teri ₹40-60LPA ki Google offer cancel kara dega."
+    },
+    {
+      "type": "problem",
+      "narration": "Without understanding Bloom Filters Explained, systems fail at scale. Here's why it matters."
+    },
+    {
+      "type": "intuition",
+      "narration": "Think of Bloom Filters Explained like a traffic cop at a busy intersection — directing flow efficiently."
+    },
+    {
+      "type": "mechanism",
+      "narration": "The core mechanism of Bloom Filters Explained: it distributes work, manages state, and handles failures gracefully."
+    },
+    {
+      "type": "mechanism-detail",
+      "narration": "Key properties of Bloom Filters Explained: fault tolerance, horizontal scalability, and low latency."
+    },
+    {
+      "type": "example",
+      "narration": "Real-world example: companies like Netflix and Uber use Bloom Filters Explained to serve millions of users daily."
+    },
+    {
+      "type": "recap",
+      "narration": "Quick recap: Bloom Filters Explained solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+    }
+  ]
+}

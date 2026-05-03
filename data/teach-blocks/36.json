@@ -1,0 +1,34 @@
+{
+  "topicId": 36,
+  "topic": "API Gateway vs Load Balancer — When Which",
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "Bhai sun, ye API Gateway vs Load Balancer — When Which ki ek mistake teri ₹35-55LPA ki Razorpay offer cancel kara dega."
+    },
+    {
+      "type": "problem",
+      "narration": "Without understanding API Gateway vs Load Balancer — When Which, systems fail at scale. Here's why it matters."
+    },
+    {
+      "type": "intuition",
+      "narration": "Think of API Gateway vs Load Balancer — When Which like a traffic cop at a busy intersection — directing flow efficiently."
+    },
+    {
+      "type": "mechanism",
+      "narration": "The core mechanism of API Gateway vs Load Balancer — When Which: it distributes work, manages state, and handles failures gracefully."
+    },
+    {
+      "type": "mechanism-detail",
+      "narration": "Key properties of API Gateway vs Load Balancer — When Which: fault tolerance, horizontal scalability, and low latency."
+    },
+    {
+      "type": "example",
+      "narration": "Real-world example: companies like Netflix and Uber use API Gateway vs Load Balancer — When Which to serve millions of users daily."
+    },
+    {
+      "type": "recap",
+      "narration": "Quick recap: API Gateway vs Load Balancer — When Which solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+    }
+  ]
+}

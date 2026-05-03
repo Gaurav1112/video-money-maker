@@ -1,0 +1,34 @@
+{
+  "topicId": 32,
+  "topic": "Two-Phase Commit Problem",
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "Bhai sun, ye Two-Phase Commit Problem ki ek mistake teri ₹45-65LPA ki Google offer cancel kara dega."
+    },
+    {
+      "type": "problem",
+      "narration": "Without understanding Two-Phase Commit Problem, systems fail at scale. Here's why it matters."
+    },
+    {
+      "type": "intuition",
+      "narration": "Think of Two-Phase Commit Problem like a traffic cop at a busy intersection — directing flow efficiently."
+    },
+    {
+      "type": "mechanism",
+      "narration": "The core mechanism of Two-Phase Commit Problem: it distributes work, manages state, and handles failures gracefully."
+    },
+    {
+      "type": "mechanism-detail",
+      "narration": "Key properties of Two-Phase Commit Problem: fault tolerance, horizontal scalability, and low latency."
+    },
+    {
+      "type": "example",
+      "narration": "Real-world example: companies like Netflix and Uber use Two-Phase Commit Problem to serve millions of users daily."
+    },
+    {
+      "type": "recap",
+      "narration": "Quick recap: Two-Phase Commit Problem solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+    }
+  ]
+}

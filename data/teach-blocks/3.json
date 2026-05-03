@@ -1,0 +1,34 @@
+{
+  "topicId": 3,
+  "topic": "Load Balancer Algorithms: Round Robin vs Least Connections",
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "Bhai sun, ye Load Balancer Algorithms: Round Robin vs Least Connections ki ek mistake teri ₹30-50LPA ki Amazon offer cancel kara dega."
+    },
+    {
+      "type": "problem",
+      "narration": "Without understanding Load Balancer Algorithms: Round Robin vs Least Connections, systems fail at scale. Here's why it matters."
+    },
+    {
+      "type": "intuition",
+      "narration": "Think of Load Balancer Algorithms: Round Robin vs Least Connections like a traffic cop at a busy intersection — directing flow efficiently."
+    },
+    {
+      "type": "mechanism",
+      "narration": "The core mechanism of Load Balancer Algorithms: Round Robin vs Least Connections: it distributes work, manages state, and handles failures gracefully."
+    },
+    {
+      "type": "mechanism-detail",
+      "narration": "Key properties of Load Balancer Algorithms: Round Robin vs Least Connections: fault tolerance, horizontal scalability, and low latency."
+    },
+    {
+      "type": "example",
+      "narration": "Real-world example: companies like Netflix and Uber use Load Balancer Algorithms: Round Robin vs Least Connections to serve millions of users daily."
+    },
+    {
+      "type": "recap",
+      "narration": "Quick recap: Load Balancer Algorithms: Round Robin vs Least Connections solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+    }
+  ]
+}

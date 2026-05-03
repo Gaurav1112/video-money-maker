@@ -1,0 +1,34 @@
+{
+  "topicId": 102,
+  "topic": "DBMS",
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "GATE 2026 mein DBMS ke 8-10 marks pakke. Padh lo abhi."
+    },
+    {
+      "type": "problem",
+      "narration": "Without understanding DBMS, systems fail at scale. Here's why it matters."
+    },
+    {
+      "type": "intuition",
+      "narration": "Think of DBMS like a traffic cop at a busy intersection — directing flow efficiently."
+    },
+    {
+      "type": "mechanism",
+      "narration": "The core mechanism of DBMS: it distributes work, manages state, and handles failures gracefully."
+    },
+    {
+      "type": "mechanism-detail",
+      "narration": "Key properties of DBMS: fault tolerance, horizontal scalability, and low latency."
+    },
+    {
+      "type": "example",
+      "narration": "Real-world example: companies like Netflix and Uber use DBMS to serve millions of users daily."
+    },
+    {
+      "type": "recap",
+      "narration": "Quick recap: DBMS solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+    }
+  ]
+}

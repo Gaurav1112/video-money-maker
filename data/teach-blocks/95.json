@@ -1,0 +1,34 @@
+{
+  "topicId": 95,
+  "topic": "PostgreSQL MVCC Explained",
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "Tu agar PostgreSQL MVCC Explained samajh nahi paya, toh Razorpay ka ₹35-60LPA ka offer bhool ja."
+    },
+    {
+      "type": "problem",
+      "narration": "Without understanding PostgreSQL MVCC Explained, systems fail at scale. Here's why it matters."
+    },
+    {
+      "type": "intuition",
+      "narration": "Think of PostgreSQL MVCC Explained like a traffic cop at a busy intersection — directing flow efficiently."
+    },
+    {
+      "type": "mechanism",
+      "narration": "The core mechanism of PostgreSQL MVCC Explained: it distributes work, manages state, and handles failures gracefully."
+    },
+    {
+      "type": "mechanism-detail",
+      "narration": "Key properties of PostgreSQL MVCC Explained: fault tolerance, horizontal scalability, and low latency."
+    },
+    {
+      "type": "example",
+      "narration": "Real-world example: companies like Netflix and Uber use PostgreSQL MVCC Explained to serve millions of users daily."
+    },
+    {
+      "type": "recap",
+      "narration": "Quick recap: PostgreSQL MVCC Explained solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+    }
+  ]
+}

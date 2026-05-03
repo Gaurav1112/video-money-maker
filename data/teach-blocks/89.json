@@ -1,0 +1,34 @@
+{
+  "topicId": 89,
+  "topic": "TLS Certificate Chain Explained",
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "Bhai, Cloudflare ke SDE-2 round mein TLS Certificate Chain Explained pe ye trick poochhi jati hai. 30 second sun le."
+    },
+    {
+      "type": "problem",
+      "narration": "Without understanding TLS Certificate Chain Explained, systems fail at scale. Here's why it matters."
+    },
+    {
+      "type": "intuition",
+      "narration": "Think of TLS Certificate Chain Explained like a traffic cop at a busy intersection — directing flow efficiently."
+    },
+    {
+      "type": "mechanism",
+      "narration": "The core mechanism of TLS Certificate Chain Explained: it distributes work, manages state, and handles failures gracefully."
+    },
+    {
+      "type": "mechanism-detail",
+      "narration": "Key properties of TLS Certificate Chain Explained: fault tolerance, horizontal scalability, and low latency."
+    },
+    {
+      "type": "example",
+      "narration": "Real-world example: companies like Netflix and Uber use TLS Certificate Chain Explained to serve millions of users daily."
+    },
+    {
+      "type": "recap",
+      "narration": "Quick recap: TLS Certificate Chain Explained solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+    }
+  ]
+}

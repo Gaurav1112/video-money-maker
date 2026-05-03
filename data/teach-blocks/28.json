@@ -1,0 +1,34 @@
+{
+  "topicId": 28,
+  "topic": "gRPC vs REST vs GraphQL",
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "Bhai sun, ye gRPC vs REST vs GraphQL ki ek mistake teri ₹35-55LPA ki Atlassian offer cancel kara dega."
+    },
+    {
+      "type": "problem",
+      "narration": "Without understanding gRPC vs REST vs GraphQL, systems fail at scale. Here's why it matters."
+    },
+    {
+      "type": "intuition",
+      "narration": "Think of gRPC vs REST vs GraphQL like a traffic cop at a busy intersection — directing flow efficiently."
+    },
+    {
+      "type": "mechanism",
+      "narration": "The core mechanism of gRPC vs REST vs GraphQL: it distributes work, manages state, and handles failures gracefully."
+    },
+    {
+      "type": "mechanism-detail",
+      "narration": "Key properties of gRPC vs REST vs GraphQL: fault tolerance, horizontal scalability, and low latency."
+    },
+    {
+      "type": "example",
+      "narration": "Real-world example: companies like Netflix and Uber use gRPC vs REST vs GraphQL to serve millions of users daily."
+    },
+    {
+      "type": "recap",
+      "narration": "Quick recap: gRPC vs REST vs GraphQL solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "topicId": 20,
+  "topic": "Design: YouTube/Netflix Video Streaming",
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "Bhai sun, ye Design: YouTube/Netflix Video Streaming ki ek mistake teri ₹50-80LPA ki Netflix India offer cancel kara dega."
+    },
+    {
+      "type": "problem",
+      "narration": "Without understanding Design: YouTube/Netflix Video Streaming, systems fail at scale. Here's why it matters."
+    },
+    {
+      "type": "intuition",
+      "narration": "Think of Design: YouTube/Netflix Video Streaming like a traffic cop at a busy intersection — directing flow efficiently."
+    },
+    {
+      "type": "mechanism",
+      "narration": "The core mechanism of Design: YouTube/Netflix Video Streaming: it distributes work, manages state, and handles failures gracefully."
+    },
+    {
+      "type": "mechanism-detail",
+      "narration": "Key properties of Design: YouTube/Netflix Video Streaming: fault tolerance, horizontal scalability, and low latency."
+    },
+    {
+      "type": "example",
+      "narration": "Real-world example: companies like Netflix and Uber use Design: YouTube/Netflix Video Streaming to serve millions of users daily."
+    },
+    {
+      "type": "recap",
+      "narration": "Quick recap: Design: YouTube/Netflix Video Streaming solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+    }
+  ]
+}

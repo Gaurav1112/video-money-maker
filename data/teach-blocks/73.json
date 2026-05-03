@@ -1,0 +1,34 @@
+{
+  "topicId": 73,
+  "topic": "FAANG Referral Strategy via LinkedIn",
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "Ek line mein bata — FAANG Referral Strategy via LinkedIn? Galat answer = Amazon reject. Sahi answer = ₹35-65LPA."
+    },
+    {
+      "type": "problem",
+      "narration": "Without understanding FAANG Referral Strategy via LinkedIn, systems fail at scale. Here's why it matters."
+    },
+    {
+      "type": "intuition",
+      "narration": "Think of FAANG Referral Strategy via LinkedIn like a traffic cop at a busy intersection — directing flow efficiently."
+    },
+    {
+      "type": "mechanism",
+      "narration": "The core mechanism of FAANG Referral Strategy via LinkedIn: it distributes work, manages state, and handles failures gracefully."
+    },
+    {
+      "type": "mechanism-detail",
+      "narration": "Key properties of FAANG Referral Strategy via LinkedIn: fault tolerance, horizontal scalability, and low latency."
+    },
+    {
+      "type": "example",
+      "narration": "Real-world example: companies like Netflix and Uber use FAANG Referral Strategy via LinkedIn to serve millions of users daily."
+    },
+    {
+      "type": "recap",
+      "narration": "Quick recap: FAANG Referral Strategy via LinkedIn solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+    }
+  ]
+}

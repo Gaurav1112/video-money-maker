@@ -1,0 +1,34 @@
+{
+  "topicId": 37,
+  "topic": "Idempotency in APIs",
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "Bhai sun, ye Idempotency in APIs ki ek mistake teri ₹35-55LPA ki Razorpay offer cancel kara dega."
+    },
+    {
+      "type": "problem",
+      "narration": "Without understanding Idempotency in APIs, systems fail at scale. Here's why it matters."
+    },
+    {
+      "type": "intuition",
+      "narration": "Think of Idempotency in APIs like a traffic cop at a busy intersection — directing flow efficiently."
+    },
+    {
+      "type": "mechanism",
+      "narration": "The core mechanism of Idempotency in APIs: it distributes work, manages state, and handles failures gracefully."
+    },
+    {
+      "type": "mechanism-detail",
+      "narration": "Key properties of Idempotency in APIs: fault tolerance, horizontal scalability, and low latency."
+    },
+    {
+      "type": "example",
+      "narration": "Real-world example: companies like Netflix and Uber use Idempotency in APIs to serve millions of users daily."
+    },
+    {
+      "type": "recap",
+      "narration": "Quick recap: Idempotency in APIs solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+    }
+  ]
+}

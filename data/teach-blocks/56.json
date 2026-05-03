@@ -1,0 +1,34 @@
+{
+  "topicId": 56,
+  "topic": "HashMap Internals: Collision + Chaining",
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "Yaar, Amazon ne mujhe HashMap Internals: Collision + Chaining pe yahi question poocha tha — 90% log yahi galat dete hain."
+    },
+    {
+      "type": "problem",
+      "narration": "Without understanding HashMap Internals: Collision + Chaining, systems fail at scale. Here's why it matters."
+    },
+    {
+      "type": "intuition",
+      "narration": "Think of HashMap Internals: Collision + Chaining like a traffic cop at a busy intersection — directing flow efficiently."
+    },
+    {
+      "type": "mechanism",
+      "narration": "The core mechanism of HashMap Internals: Collision + Chaining: it distributes work, manages state, and handles failures gracefully."
+    },
+    {
+      "type": "mechanism-detail",
+      "narration": "Key properties of HashMap Internals: Collision + Chaining: fault tolerance, horizontal scalability, and low latency."
+    },
+    {
+      "type": "example",
+      "narration": "Real-world example: companies like Netflix and Uber use HashMap Internals: Collision + Chaining to serve millions of users daily."
+    },
+    {
+      "type": "recap",
+      "narration": "Quick recap: HashMap Internals: Collision + Chaining solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+    }
+  ]
+}

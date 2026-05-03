@@ -1,0 +1,34 @@
+{
+  "topicId": 78,
+  "topic": "Notice Period Buyout Negotiation",
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "Ek line mein bata — Notice Period Buyout Negotiation? Galat answer = Flipkart reject. Sahi answer = ₹30-55LPA."
+    },
+    {
+      "type": "problem",
+      "narration": "Without understanding Notice Period Buyout Negotiation, systems fail at scale. Here's why it matters."
+    },
+    {
+      "type": "intuition",
+      "narration": "Think of Notice Period Buyout Negotiation like a traffic cop at a busy intersection — directing flow efficiently."
+    },
+    {
+      "type": "mechanism",
+      "narration": "The core mechanism of Notice Period Buyout Negotiation: it distributes work, manages state, and handles failures gracefully."
+    },
+    {
+      "type": "mechanism-detail",
+      "narration": "Key properties of Notice Period Buyout Negotiation: fault tolerance, horizontal scalability, and low latency."
+    },
+    {
+      "type": "example",
+      "narration": "Real-world example: companies like Netflix and Uber use Notice Period Buyout Negotiation to serve millions of users daily."
+    },
+    {
+      "type": "recap",
+      "narration": "Quick recap: Notice Period Buyout Negotiation solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+    }
+  ]
+}

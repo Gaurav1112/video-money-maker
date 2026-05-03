@@ -1,0 +1,34 @@
+{
+  "topicId": 81,
+  "topic": "Process vs Thread vs Goroutine",
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "Bhai, Google ke SDE-2 round mein Process vs Thread vs Goroutine pe ye trick poochhi jati hai. 30 second sun le."
+    },
+    {
+      "type": "problem",
+      "narration": "Without understanding Process vs Thread vs Goroutine, systems fail at scale. Here's why it matters."
+    },
+    {
+      "type": "intuition",
+      "narration": "Think of Process vs Thread vs Goroutine like a traffic cop at a busy intersection — directing flow efficiently."
+    },
+    {
+      "type": "mechanism",
+      "narration": "The core mechanism of Process vs Thread vs Goroutine: it distributes work, manages state, and handles failures gracefully."
+    },
+    {
+      "type": "mechanism-detail",
+      "narration": "Key properties of Process vs Thread vs Goroutine: fault tolerance, horizontal scalability, and low latency."
+    },
+    {
+      "type": "example",
+      "narration": "Real-world example: companies like Netflix and Uber use Process vs Thread vs Goroutine to serve millions of users daily."
+    },
+    {
+      "type": "recap",
+      "narration": "Quick recap: Process vs Thread vs Goroutine solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+    }
+  ]
+}

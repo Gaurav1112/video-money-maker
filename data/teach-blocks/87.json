@@ -1,0 +1,34 @@
+{
+  "topicId": 87,
+  "topic": "Linux Process Scheduling (CFS)",
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "Bhai, Google ke SDE-2 round mein Linux Process Scheduling (CFS) pe ye trick poochhi jati hai. 30 second sun le."
+    },
+    {
+      "type": "problem",
+      "narration": "Without understanding Linux Process Scheduling (CFS), systems fail at scale. Here's why it matters."
+    },
+    {
+      "type": "intuition",
+      "narration": "Think of Linux Process Scheduling (CFS) like a traffic cop at a busy intersection — directing flow efficiently."
+    },
+    {
+      "type": "mechanism",
+      "narration": "The core mechanism of Linux Process Scheduling (CFS): it distributes work, manages state, and handles failures gracefully."
+    },
+    {
+      "type": "mechanism-detail",
+      "narration": "Key properties of Linux Process Scheduling (CFS): fault tolerance, horizontal scalability, and low latency."
+    },
+    {
+      "type": "example",
+      "narration": "Real-world example: companies like Netflix and Uber use Linux Process Scheduling (CFS) to serve millions of users daily."
+    },
+    {
+      "type": "recap",
+      "narration": "Quick recap: Linux Process Scheduling (CFS) solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+    }
+  ]
+}

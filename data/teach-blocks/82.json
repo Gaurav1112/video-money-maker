@@ -1,0 +1,34 @@
+{
+  "topicId": 82,
+  "topic": "Deadlock: Detect, Prevent, Avoid",
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "Bhai, Amazon ke SDE-2 round mein Deadlock: Detect, Prevent, Avoid pe ye trick poochhi jati hai. 30 second sun le."
+    },
+    {
+      "type": "problem",
+      "narration": "Without understanding Deadlock: Detect, Prevent, Avoid, systems fail at scale. Here's why it matters."
+    },
+    {
+      "type": "intuition",
+      "narration": "Think of Deadlock: Detect, Prevent, Avoid like a traffic cop at a busy intersection — directing flow efficiently."
+    },
+    {
+      "type": "mechanism",
+      "narration": "The core mechanism of Deadlock: Detect, Prevent, Avoid: it distributes work, manages state, and handles failures gracefully."
+    },
+    {
+      "type": "mechanism-detail",
+      "narration": "Key properties of Deadlock: Detect, Prevent, Avoid: fault tolerance, horizontal scalability, and low latency."
+    },
+    {
+      "type": "example",
+      "narration": "Real-world example: companies like Netflix and Uber use Deadlock: Detect, Prevent, Avoid to serve millions of users daily."
+    },
+    {
+      "type": "recap",
+      "narration": "Quick recap: Deadlock: Detect, Prevent, Avoid solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+    }
+  ]
+}

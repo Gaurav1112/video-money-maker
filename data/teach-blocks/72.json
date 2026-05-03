@@ -1,0 +1,34 @@
+{
+  "topicId": 72,
+  "topic": "Salary Negotiation in India (3 Offers Strategy)",
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "Ek line mein bata — Salary Negotiation in India (3 Offers Strategy)? Galat answer = Amazon reject. Sahi answer = ₹40-70LPA."
+    },
+    {
+      "type": "problem",
+      "narration": "Without understanding Salary Negotiation in India (3 Offers Strategy), systems fail at scale. Here's why it matters."
+    },
+    {
+      "type": "intuition",
+      "narration": "Think of Salary Negotiation in India (3 Offers Strategy) like a traffic cop at a busy intersection — directing flow efficiently."
+    },
+    {
+      "type": "mechanism",
+      "narration": "The core mechanism of Salary Negotiation in India (3 Offers Strategy): it distributes work, manages state, and handles failures gracefully."
+    },
+    {
+      "type": "mechanism-detail",
+      "narration": "Key properties of Salary Negotiation in India (3 Offers Strategy): fault tolerance, horizontal scalability, and low latency."
+    },
+    {
+      "type": "example",
+      "narration": "Real-world example: companies like Netflix and Uber use Salary Negotiation in India (3 Offers Strategy) to serve millions of users daily."
+    },
+    {
+      "type": "recap",
+      "narration": "Quick recap: Salary Negotiation in India (3 Offers Strategy) solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+    }
+  ]
+}

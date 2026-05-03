@@ -1,0 +1,34 @@
+{
+  "topicId": 30,
+  "topic": "Database Replication: Sync vs Async",
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "Bhai sun, ye Database Replication: Sync vs Async ki ek mistake teri ₹40-60LPA ki Amazon offer cancel kara dega."
+    },
+    {
+      "type": "problem",
+      "narration": "Without understanding Database Replication: Sync vs Async, systems fail at scale. Here's why it matters."
+    },
+    {
+      "type": "intuition",
+      "narration": "Think of Database Replication: Sync vs Async like a traffic cop at a busy intersection — directing flow efficiently."
+    },
+    {
+      "type": "mechanism",
+      "narration": "The core mechanism of Database Replication: Sync vs Async: it distributes work, manages state, and handles failures gracefully."
+    },
+    {
+      "type": "mechanism-detail",
+      "narration": "Key properties of Database Replication: Sync vs Async: fault tolerance, horizontal scalability, and low latency."
+    },
+    {
+      "type": "example",
+      "narration": "Real-world example: companies like Netflix and Uber use Database Replication: Sync vs Async to serve millions of users daily."
+    },
+    {
+      "type": "recap",
+      "narration": "Quick recap: Database Replication: Sync vs Async solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+    }
+  ]
+}

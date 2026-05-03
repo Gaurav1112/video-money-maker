@@ -1,0 +1,34 @@
+{
+  "topicId": 97,
+  "topic": "Redis Data Structures: When to Use Which",
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "Tu agar Redis Data Structures: When to Use Which samajh nahi paya, toh Razorpay ka ₹30-55LPA ka offer bhool ja."
+    },
+    {
+      "type": "problem",
+      "narration": "Without understanding Redis Data Structures: When to Use Which, systems fail at scale. Here's why it matters."
+    },
+    {
+      "type": "intuition",
+      "narration": "Think of Redis Data Structures: When to Use Which like a traffic cop at a busy intersection — directing flow efficiently."
+    },
+    {
+      "type": "mechanism",
+      "narration": "The core mechanism of Redis Data Structures: When to Use Which: it distributes work, manages state, and handles failures gracefully."
+    },
+    {
+      "type": "mechanism-detail",
+      "narration": "Key properties of Redis Data Structures: When to Use Which: fault tolerance, horizontal scalability, and low latency."
+    },
+    {
+      "type": "example",
+      "narration": "Real-world example: companies like Netflix and Uber use Redis Data Structures: When to Use Which to serve millions of users daily."
+    },
+    {
+      "type": "recap",
+      "narration": "Quick recap: Redis Data Structures: When to Use Which solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+    }
+  ]
+}

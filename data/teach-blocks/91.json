@@ -1,0 +1,34 @@
+{
+  "topicId": 91,
+  "topic": "B-Tree vs LSM Tree (Why RocksDB Uses LSM)",
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "Tu agar B-Tree vs LSM Tree (Why RocksDB Uses LSM) samajh nahi paya, toh Google ka ₹40-65LPA ka offer bhool ja."
+    },
+    {
+      "type": "problem",
+      "narration": "Without understanding B-Tree vs LSM Tree (Why RocksDB Uses LSM), systems fail at scale. Here's why it matters."
+    },
+    {
+      "type": "intuition",
+      "narration": "Think of B-Tree vs LSM Tree (Why RocksDB Uses LSM) like a traffic cop at a busy intersection — directing flow efficiently."
+    },
+    {
+      "type": "mechanism",
+      "narration": "The core mechanism of B-Tree vs LSM Tree (Why RocksDB Uses LSM): it distributes work, manages state, and handles failures gracefully."
+    },
+    {
+      "type": "mechanism-detail",
+      "narration": "Key properties of B-Tree vs LSM Tree (Why RocksDB Uses LSM): fault tolerance, horizontal scalability, and low latency."
+    },
+    {
+      "type": "example",
+      "narration": "Real-world example: companies like Netflix and Uber use B-Tree vs LSM Tree (Why RocksDB Uses LSM) to serve millions of users daily."
+    },
+    {
+      "type": "recap",
+      "narration": "Quick recap: B-Tree vs LSM Tree (Why RocksDB Uses LSM) solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+    }
+  ]
+}

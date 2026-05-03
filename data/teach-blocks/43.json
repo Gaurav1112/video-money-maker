@@ -1,0 +1,34 @@
+{
+  "topicId": 43,
+  "topic": "BFS vs DFS — Which One in Interviews",
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "Yaar, Google ne mujhe BFS vs DFS — Which One in Interviews pe yahi question poocha tha — 90% log yahi galat dete hain."
+    },
+    {
+      "type": "problem",
+      "narration": "Without understanding BFS vs DFS — Which One in Interviews, systems fail at scale. Here's why it matters."
+    },
+    {
+      "type": "intuition",
+      "narration": "Think of BFS vs DFS — Which One in Interviews like a traffic cop at a busy intersection — directing flow efficiently."
+    },
+    {
+      "type": "mechanism",
+      "narration": "The core mechanism of BFS vs DFS — Which One in Interviews: it distributes work, manages state, and handles failures gracefully."
+    },
+    {
+      "type": "mechanism-detail",
+      "narration": "Key properties of BFS vs DFS — Which One in Interviews: fault tolerance, horizontal scalability, and low latency."
+    },
+    {
+      "type": "example",
+      "narration": "Real-world example: companies like Netflix and Uber use BFS vs DFS — Which One in Interviews to serve millions of users daily."
+    },
+    {
+      "type": "recap",
+      "narration": "Quick recap: BFS vs DFS — Which One in Interviews solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+    }
+  ]
+}

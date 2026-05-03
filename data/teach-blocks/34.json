@@ -1,0 +1,34 @@
+{
+  "topicId": 34,
+  "topic": "Service Discovery: Consul vs Kubernetes",
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "Bhai sun, ye Service Discovery: Consul vs Kubernetes ki ek mistake teri ₹40-60LPA ki Atlassian offer cancel kara dega."
+    },
+    {
+      "type": "problem",
+      "narration": "Without understanding Service Discovery: Consul vs Kubernetes, systems fail at scale. Here's why it matters."
+    },
+    {
+      "type": "intuition",
+      "narration": "Think of Service Discovery: Consul vs Kubernetes like a traffic cop at a busy intersection — directing flow efficiently."
+    },
+    {
+      "type": "mechanism",
+      "narration": "The core mechanism of Service Discovery: Consul vs Kubernetes: it distributes work, manages state, and handles failures gracefully."
+    },
+    {
+      "type": "mechanism-detail",
+      "narration": "Key properties of Service Discovery: Consul vs Kubernetes: fault tolerance, horizontal scalability, and low latency."
+    },
+    {
+      "type": "example",
+      "narration": "Real-world example: companies like Netflix and Uber use Service Discovery: Consul vs Kubernetes to serve millions of users daily."
+    },
+    {
+      "type": "recap",
+      "narration": "Quick recap: Service Discovery: Consul vs Kubernetes solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+    }
+  ]
+}

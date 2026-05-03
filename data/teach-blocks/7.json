@@ -1,0 +1,34 @@
+{
+  "topicId": 7,
+  "topic": "Consistent Hashing & Why Virtual Nodes",
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "Bhai sun, ye Consistent Hashing & Why Virtual Nodes ki ek mistake teri ₹40-60LPA ki Amazon offer cancel kara dega."
+    },
+    {
+      "type": "problem",
+      "narration": "Without understanding Consistent Hashing & Why Virtual Nodes, systems fail at scale. Here's why it matters."
+    },
+    {
+      "type": "intuition",
+      "narration": "Think of Consistent Hashing & Why Virtual Nodes like a traffic cop at a busy intersection — directing flow efficiently."
+    },
+    {
+      "type": "mechanism",
+      "narration": "The core mechanism of Consistent Hashing & Why Virtual Nodes: it distributes work, manages state, and handles failures gracefully."
+    },
+    {
+      "type": "mechanism-detail",
+      "narration": "Key properties of Consistent Hashing & Why Virtual Nodes: fault tolerance, horizontal scalability, and low latency."
+    },
+    {
+      "type": "example",
+      "narration": "Real-world example: companies like Netflix and Uber use Consistent Hashing & Why Virtual Nodes to serve millions of users daily."
+    },
+    {
+      "type": "recap",
+      "narration": "Quick recap: Consistent Hashing & Why Virtual Nodes solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+    }
+  ]
+}

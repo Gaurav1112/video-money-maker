@@ -1,0 +1,34 @@
+{
+  "topicId": 86,
+  "topic": "HTTP/2 Multiplexing vs HTTP/1.1",
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "Bhai, Cloudflare ke SDE-2 round mein HTTP/2 Multiplexing vs HTTP/1.1 pe ye trick poochhi jati hai. 30 second sun le."
+    },
+    {
+      "type": "problem",
+      "narration": "Without understanding HTTP/2 Multiplexing vs HTTP/1.1, systems fail at scale. Here's why it matters."
+    },
+    {
+      "type": "intuition",
+      "narration": "Think of HTTP/2 Multiplexing vs HTTP/1.1 like a traffic cop at a busy intersection — directing flow efficiently."
+    },
+    {
+      "type": "mechanism",
+      "narration": "The core mechanism of HTTP/2 Multiplexing vs HTTP/1.1: it distributes work, manages state, and handles failures gracefully."
+    },
+    {
+      "type": "mechanism-detail",
+      "narration": "Key properties of HTTP/2 Multiplexing vs HTTP/1.1: fault tolerance, horizontal scalability, and low latency."
+    },
+    {
+      "type": "example",
+      "narration": "Real-world example: companies like Netflix and Uber use HTTP/2 Multiplexing vs HTTP/1.1 to serve millions of users daily."
+    },
+    {
+      "type": "recap",
+      "narration": "Quick recap: HTTP/2 Multiplexing vs HTTP/1.1 solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+    }
+  ]
+}

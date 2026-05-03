@@ -1,0 +1,34 @@
+{
+  "topicId": 19,
+  "topic": "Design: Notification System (Push + In-App)",
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "Bhai sun, ye Design: Notification System (Push + In-App) ki ek mistake teri ₹35-55LPA ki Swiggy offer cancel kara dega."
+    },
+    {
+      "type": "problem",
+      "narration": "Without understanding Design: Notification System (Push + In-App), systems fail at scale. Here's why it matters."
+    },
+    {
+      "type": "intuition",
+      "narration": "Think of Design: Notification System (Push + In-App) like a traffic cop at a busy intersection — directing flow efficiently."
+    },
+    {
+      "type": "mechanism",
+      "narration": "The core mechanism of Design: Notification System (Push + In-App): it distributes work, manages state, and handles failures gracefully."
+    },
+    {
+      "type": "mechanism-detail",
+      "narration": "Key properties of Design: Notification System (Push + In-App): fault tolerance, horizontal scalability, and low latency."
+    },
+    {
+      "type": "example",
+      "narration": "Real-world example: companies like Netflix and Uber use Design: Notification System (Push + In-App) to serve millions of users daily."
+    },
+    {
+      "type": "recap",
+      "narration": "Quick recap: Design: Notification System (Push + In-App) solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+    }
+  ]
+}

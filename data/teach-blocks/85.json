@@ -1,0 +1,34 @@
+{
+  "topicId": 85,
+  "topic": "DNS Resolution Step-By-Step",
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "Bhai, Cloudflare ke SDE-2 round mein DNS Resolution Step-By-Step pe ye trick poochhi jati hai. 30 second sun le."
+    },
+    {
+      "type": "problem",
+      "narration": "Without understanding DNS Resolution Step-By-Step, systems fail at scale. Here's why it matters."
+    },
+    {
+      "type": "intuition",
+      "narration": "Think of DNS Resolution Step-By-Step like a traffic cop at a busy intersection — directing flow efficiently."
+    },
+    {
+      "type": "mechanism",
+      "narration": "The core mechanism of DNS Resolution Step-By-Step: it distributes work, manages state, and handles failures gracefully."
+    },
+    {
+      "type": "mechanism-detail",
+      "narration": "Key properties of DNS Resolution Step-By-Step: fault tolerance, horizontal scalability, and low latency."
+    },
+    {
+      "type": "example",
+      "narration": "Real-world example: companies like Netflix and Uber use DNS Resolution Step-By-Step to serve millions of users daily."
+    },
+    {
+      "type": "recap",
+      "narration": "Quick recap: DNS Resolution Step-By-Step solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+    }
+  ]
+}

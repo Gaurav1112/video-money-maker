@@ -1,0 +1,34 @@
+{
+  "topicId": 108,
+  "topic": "Compiler Design",
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "GATE 2026 mein Compiler Design ke 8-10 marks pakke. Padh lo abhi."
+    },
+    {
+      "type": "problem",
+      "narration": "Without understanding Compiler Design, systems fail at scale. Here's why it matters."
+    },
+    {
+      "type": "intuition",
+      "narration": "Think of Compiler Design like a traffic cop at a busy intersection — directing flow efficiently."
+    },
+    {
+      "type": "mechanism",
+      "narration": "The core mechanism of Compiler Design: it distributes work, manages state, and handles failures gracefully."
+    },
+    {
+      "type": "mechanism-detail",
+      "narration": "Key properties of Compiler Design: fault tolerance, horizontal scalability, and low latency."
+    },
+    {
+      "type": "example",
+      "narration": "Real-world example: companies like Netflix and Uber use Compiler Design to serve millions of users daily."
+    },
+    {
+      "type": "recap",
+      "narration": "Quick recap: Compiler Design solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+    }
+  ]
+}

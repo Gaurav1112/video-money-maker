@@ -1,0 +1,34 @@
+{
+  "topicId": 96,
+  "topic": "MongoDB Aggregation Pipeline",
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "Tu agar MongoDB Aggregation Pipeline samajh nahi paya, toh Swiggy ka ₹25-50LPA ka offer bhool ja."
+    },
+    {
+      "type": "problem",
+      "narration": "Without understanding MongoDB Aggregation Pipeline, systems fail at scale. Here's why it matters."
+    },
+    {
+      "type": "intuition",
+      "narration": "Think of MongoDB Aggregation Pipeline like a traffic cop at a busy intersection — directing flow efficiently."
+    },
+    {
+      "type": "mechanism",
+      "narration": "The core mechanism of MongoDB Aggregation Pipeline: it distributes work, manages state, and handles failures gracefully."
+    },
+    {
+      "type": "mechanism-detail",
+      "narration": "Key properties of MongoDB Aggregation Pipeline: fault tolerance, horizontal scalability, and low latency."
+    },
+    {
+      "type": "example",
+      "narration": "Real-world example: companies like Netflix and Uber use MongoDB Aggregation Pipeline to serve millions of users daily."
+    },
+    {
+      "type": "recap",
+      "narration": "Quick recap: MongoDB Aggregation Pipeline solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+    }
+  ]
+}

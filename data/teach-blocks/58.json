@@ -1,0 +1,34 @@
+{
+  "topicId": 58,
+  "topic": "Merge Sort vs Quick Sort — Interview Choice",
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "Yaar, Amazon ne mujhe Merge Sort vs Quick Sort — Interview Choice pe yahi question poocha tha — 90% log yahi galat dete hain."
+    },
+    {
+      "type": "problem",
+      "narration": "Without understanding Merge Sort vs Quick Sort — Interview Choice, systems fail at scale. Here's why it matters."
+    },
+    {
+      "type": "intuition",
+      "narration": "Think of Merge Sort vs Quick Sort — Interview Choice like a traffic cop at a busy intersection — directing flow efficiently."
+    },
+    {
+      "type": "mechanism",
+      "narration": "The core mechanism of Merge Sort vs Quick Sort — Interview Choice: it distributes work, manages state, and handles failures gracefully."
+    },
+    {
+      "type": "mechanism-detail",
+      "narration": "Key properties of Merge Sort vs Quick Sort — Interview Choice: fault tolerance, horizontal scalability, and low latency."
+    },
+    {
+      "type": "example",
+      "narration": "Real-world example: companies like Netflix and Uber use Merge Sort vs Quick Sort — Interview Choice to serve millions of users daily."
+    },
+    {
+      "type": "recap",
+      "narration": "Quick recap: Merge Sort vs Quick Sort — Interview Choice solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+    }
+  ]
+}

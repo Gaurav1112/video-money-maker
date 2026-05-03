@@ -1,0 +1,34 @@
+{
+  "topicId": 94,
+  "topic": "Database Isolation Levels & Read Phenomena",
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "Tu agar Database Isolation Levels & Read Phenomena samajh nahi paya, toh Razorpay ka ₹35-60LPA ka offer bhool ja."
+    },
+    {
+      "type": "problem",
+      "narration": "Without understanding Database Isolation Levels & Read Phenomena, systems fail at scale. Here's why it matters."
+    },
+    {
+      "type": "intuition",
+      "narration": "Think of Database Isolation Levels & Read Phenomena like a traffic cop at a busy intersection — directing flow efficiently."
+    },
+    {
+      "type": "mechanism",
+      "narration": "The core mechanism of Database Isolation Levels & Read Phenomena: it distributes work, manages state, and handles failures gracefully."
+    },
+    {
+      "type": "mechanism-detail",
+      "narration": "Key properties of Database Isolation Levels & Read Phenomena: fault tolerance, horizontal scalability, and low latency."
+    },
+    {
+      "type": "example",
+      "narration": "Real-world example: companies like Netflix and Uber use Database Isolation Levels & Read Phenomena to serve millions of users daily."
+    },
+    {
+      "type": "recap",
+      "narration": "Quick recap: Database Isolation Levels & Read Phenomena solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "topicId": 27,
+  "topic": "Microservices vs Monolith — Honest Truth",
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "Bhai sun, ye Microservices vs Monolith — Honest Truth ki ek mistake teri ₹35-55LPA ki Razorpay offer cancel kara dega."
+    },
+    {
+      "type": "problem",
+      "narration": "Without understanding Microservices vs Monolith — Honest Truth, systems fail at scale. Here's why it matters."
+    },
+    {
+      "type": "intuition",
+      "narration": "Think of Microservices vs Monolith — Honest Truth like a traffic cop at a busy intersection — directing flow efficiently."
+    },
+    {
+      "type": "mechanism",
+      "narration": "The core mechanism of Microservices vs Monolith — Honest Truth: it distributes work, manages state, and handles failures gracefully."
+    },
+    {
+      "type": "mechanism-detail",
+      "narration": "Key properties of Microservices vs Monolith — Honest Truth: fault tolerance, horizontal scalability, and low latency."
+    },
+    {
+      "type": "example",
+      "narration": "Real-world example: companies like Netflix and Uber use Microservices vs Monolith — Honest Truth to serve millions of users daily."
+    },
+    {
+      "type": "recap",
+      "narration": "Quick recap: Microservices vs Monolith — Honest Truth solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+    }
+  ]
+}

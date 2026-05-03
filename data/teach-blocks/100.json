@@ -1,0 +1,34 @@
+{
+  "topicId": 100,
+  "topic": "SQL N+1 Problem And How To Fix It",
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "Tu agar SQL N+1 Problem And How To Fix It samajh nahi paya, toh Razorpay ka ₹25-50LPA ka offer bhool ja."
+    },
+    {
+      "type": "problem",
+      "narration": "Without understanding SQL N+1 Problem And How To Fix It, systems fail at scale. Here's why it matters."
+    },
+    {
+      "type": "intuition",
+      "narration": "Think of SQL N+1 Problem And How To Fix It like a traffic cop at a busy intersection — directing flow efficiently."
+    },
+    {
+      "type": "mechanism",
+      "narration": "The core mechanism of SQL N+1 Problem And How To Fix It: it distributes work, manages state, and handles failures gracefully."
+    },
+    {
+      "type": "mechanism-detail",
+      "narration": "Key properties of SQL N+1 Problem And How To Fix It: fault tolerance, horizontal scalability, and low latency."
+    },
+    {
+      "type": "example",
+      "narration": "Real-world example: companies like Netflix and Uber use SQL N+1 Problem And How To Fix It to serve millions of users daily."
+    },
+    {
+      "type": "recap",
+      "narration": "Quick recap: SQL N+1 Problem And How To Fix It solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "topicId": 8,
+  "topic": "CAP Theorem: What It Actually Means",
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "Bhai sun, ye CAP Theorem: What It Actually Means ki ek mistake teri ₹40-60LPA ki Google offer cancel kara dega."
+    },
+    {
+      "type": "problem",
+      "narration": "Without understanding CAP Theorem: What It Actually Means, systems fail at scale. Here's why it matters."
+    },
+    {
+      "type": "intuition",
+      "narration": "Think of CAP Theorem: What It Actually Means like a traffic cop at a busy intersection — directing flow efficiently."
+    },
+    {
+      "type": "mechanism",
+      "narration": "The core mechanism of CAP Theorem: What It Actually Means: it distributes work, manages state, and handles failures gracefully."
+    },
+    {
+      "type": "mechanism-detail",
+      "narration": "Key properties of CAP Theorem: What It Actually Means: fault tolerance, horizontal scalability, and low latency."
+    },
+    {
+      "type": "example",
+      "narration": "Real-world example: companies like Netflix and Uber use CAP Theorem: What It Actually Means to serve millions of users daily."
+    },
+    {
+      "type": "recap",
+      "narration": "Quick recap: CAP Theorem: What It Actually Means solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "topicId": 6,
+  "topic": "CDN Push vs Pull Strategy",
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "Bhai sun, ye CDN Push vs Pull Strategy ki ek mistake teri ₹35-55LPA ki Hotstar offer cancel kara dega."
+    },
+    {
+      "type": "problem",
+      "narration": "Without understanding CDN Push vs Pull Strategy, systems fail at scale. Here's why it matters."
+    },
+    {
+      "type": "intuition",
+      "narration": "Think of CDN Push vs Pull Strategy like a traffic cop at a busy intersection — directing flow efficiently."
+    },
+    {
+      "type": "mechanism",
+      "narration": "The core mechanism of CDN Push vs Pull Strategy: it distributes work, manages state, and handles failures gracefully."
+    },
+    {
+      "type": "mechanism-detail",
+      "narration": "Key properties of CDN Push vs Pull Strategy: fault tolerance, horizontal scalability, and low latency."
+    },
+    {
+      "type": "example",
+      "narration": "Real-world example: companies like Netflix and Uber use CDN Push vs Pull Strategy to serve millions of users daily."
+    },
+    {
+      "type": "recap",
+      "narration": "Quick recap: CDN Push vs Pull Strategy solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+    }
+  ]
+}

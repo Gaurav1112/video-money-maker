@@ -1,0 +1,34 @@
+{
+  "topicId": 10,
+  "topic": "Caching: Cache-Aside vs Write-Through vs Write-Behind",
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "Bhai sun, ye Caching: Cache-Aside vs Write-Through vs Write-Behind ki ek mistake teri ₹30-50LPA ki Amazon offer cancel kara dega."
+    },
+    {
+      "type": "problem",
+      "narration": "Without understanding Caching: Cache-Aside vs Write-Through vs Write-Behind, systems fail at scale. Here's why it matters."
+    },
+    {
+      "type": "intuition",
+      "narration": "Think of Caching: Cache-Aside vs Write-Through vs Write-Behind like a traffic cop at a busy intersection — directing flow efficiently."
+    },
+    {
+      "type": "mechanism",
+      "narration": "The core mechanism of Caching: Cache-Aside vs Write-Through vs Write-Behind: it distributes work, manages state, and handles failures gracefully."
+    },
+    {
+      "type": "mechanism-detail",
+      "narration": "Key properties of Caching: Cache-Aside vs Write-Through vs Write-Behind: fault tolerance, horizontal scalability, and low latency."
+    },
+    {
+      "type": "example",
+      "narration": "Real-world example: companies like Netflix and Uber use Caching: Cache-Aside vs Write-Through vs Write-Behind to serve millions of users daily."
+    },
+    {
+      "type": "recap",
+      "narration": "Quick recap: Caching: Cache-Aside vs Write-Through vs Write-Behind solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+    }
+  ]
+}

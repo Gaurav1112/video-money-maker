@@ -1,0 +1,34 @@
+{
+  "topicId": 61,
+  "topic": "'Tell Me About Yourself' — Indian Dev Formula",
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "Ek line mein bata — 'Tell Me About Yourself' — Indian Dev Formula? Galat answer = Amazon reject. Sahi answer = ₹25-50LPA."
+    },
+    {
+      "type": "problem",
+      "narration": "Without understanding 'Tell Me About Yourself' — Indian Dev Formula, systems fail at scale. Here's why it matters."
+    },
+    {
+      "type": "intuition",
+      "narration": "Think of 'Tell Me About Yourself' — Indian Dev Formula like a traffic cop at a busy intersection — directing flow efficiently."
+    },
+    {
+      "type": "mechanism",
+      "narration": "The core mechanism of 'Tell Me About Yourself' — Indian Dev Formula: it distributes work, manages state, and handles failures gracefully."
+    },
+    {
+      "type": "mechanism-detail",
+      "narration": "Key properties of 'Tell Me About Yourself' — Indian Dev Formula: fault tolerance, horizontal scalability, and low latency."
+    },
+    {
+      "type": "example",
+      "narration": "Real-world example: companies like Netflix and Uber use 'Tell Me About Yourself' — Indian Dev Formula to serve millions of users daily."
+    },
+    {
+      "type": "recap",
+      "narration": "Quick recap: 'Tell Me About Yourself' — Indian Dev Formula solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+    }
+  ]
+}

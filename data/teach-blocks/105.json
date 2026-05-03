@@ -1,0 +1,34 @@
+{
+  "topicId": 105,
+  "topic": "Algorithms",
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "GATE 2026 mein Algorithms ke 8-10 marks pakke. Padh lo abhi."
+    },
+    {
+      "type": "problem",
+      "narration": "Without understanding Algorithms, systems fail at scale. Here's why it matters."
+    },
+    {
+      "type": "intuition",
+      "narration": "Think of Algorithms like a traffic cop at a busy intersection — directing flow efficiently."
+    },
+    {
+      "type": "mechanism",
+      "narration": "The core mechanism of Algorithms: it distributes work, manages state, and handles failures gracefully."
+    },
+    {
+      "type": "mechanism-detail",
+      "narration": "Key properties of Algorithms: fault tolerance, horizontal scalability, and low latency."
+    },
+    {
+      "type": "example",
+      "narration": "Real-world example: companies like Netflix and Uber use Algorithms to serve millions of users daily."
+    },
+    {
+      "type": "recap",
+      "narration": "Quick recap: Algorithms solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+    }
+  ]
+}

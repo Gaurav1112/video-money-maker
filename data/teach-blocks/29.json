@@ -1,0 +1,34 @@
+{
+  "topicId": 29,
+  "topic": "WebSocket vs SSE vs Long-Polling",
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "Bhai sun, ye WebSocket vs SSE vs Long-Polling ki ek mistake teri ₹35-55LPA ki Slack offer cancel kara dega."
+    },
+    {
+      "type": "problem",
+      "narration": "Without understanding WebSocket vs SSE vs Long-Polling, systems fail at scale. Here's why it matters."
+    },
+    {
+      "type": "intuition",
+      "narration": "Think of WebSocket vs SSE vs Long-Polling like a traffic cop at a busy intersection — directing flow efficiently."
+    },
+    {
+      "type": "mechanism",
+      "narration": "The core mechanism of WebSocket vs SSE vs Long-Polling: it distributes work, manages state, and handles failures gracefully."
+    },
+    {
+      "type": "mechanism-detail",
+      "narration": "Key properties of WebSocket vs SSE vs Long-Polling: fault tolerance, horizontal scalability, and low latency."
+    },
+    {
+      "type": "example",
+      "narration": "Real-world example: companies like Netflix and Uber use WebSocket vs SSE vs Long-Polling to serve millions of users daily."
+    },
+    {
+      "type": "recap",
+      "narration": "Quick recap: WebSocket vs SSE vs Long-Polling solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+    }
+  ]
+}

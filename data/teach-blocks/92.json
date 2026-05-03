@@ -1,0 +1,34 @@
+{
+  "topicId": 92,
+  "topic": "SQL Query Execution Plan (EXPLAIN)",
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "Tu agar SQL Query Execution Plan (EXPLAIN) samajh nahi paya, toh Amazon ka ₹30-55LPA ka offer bhool ja."
+    },
+    {
+      "type": "problem",
+      "narration": "Without understanding SQL Query Execution Plan (EXPLAIN), systems fail at scale. Here's why it matters."
+    },
+    {
+      "type": "intuition",
+      "narration": "Think of SQL Query Execution Plan (EXPLAIN) like a traffic cop at a busy intersection — directing flow efficiently."
+    },
+    {
+      "type": "mechanism",
+      "narration": "The core mechanism of SQL Query Execution Plan (EXPLAIN): it distributes work, manages state, and handles failures gracefully."
+    },
+    {
+      "type": "mechanism-detail",
+      "narration": "Key properties of SQL Query Execution Plan (EXPLAIN): fault tolerance, horizontal scalability, and low latency."
+    },
+    {
+      "type": "example",
+      "narration": "Real-world example: companies like Netflix and Uber use SQL Query Execution Plan (EXPLAIN) to serve millions of users daily."
+    },
+    {
+      "type": "recap",
+      "narration": "Quick recap: SQL Query Execution Plan (EXPLAIN) solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+    }
+  ]
+}

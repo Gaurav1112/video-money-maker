@@ -1,0 +1,34 @@
+{
+  "topicId": 98,
+  "topic": "Elasticsearch Indexing & Inverted Index",
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "Tu agar Elasticsearch Indexing & Inverted Index samajh nahi paya, toh Flipkart ka ₹35-60LPA ka offer bhool ja."
+    },
+    {
+      "type": "problem",
+      "narration": "Without understanding Elasticsearch Indexing & Inverted Index, systems fail at scale. Here's why it matters."
+    },
+    {
+      "type": "intuition",
+      "narration": "Think of Elasticsearch Indexing & Inverted Index like a traffic cop at a busy intersection — directing flow efficiently."
+    },
+    {
+      "type": "mechanism",
+      "narration": "The core mechanism of Elasticsearch Indexing & Inverted Index: it distributes work, manages state, and handles failures gracefully."
+    },
+    {
+      "type": "mechanism-detail",
+      "narration": "Key properties of Elasticsearch Indexing & Inverted Index: fault tolerance, horizontal scalability, and low latency."
+    },
+    {
+      "type": "example",
+      "narration": "Real-world example: companies like Netflix and Uber use Elasticsearch Indexing & Inverted Index to serve millions of users daily."
+    },
+    {
+      "type": "recap",
+      "narration": "Quick recap: Elasticsearch Indexing & Inverted Index solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+    }
+  ]
+}
