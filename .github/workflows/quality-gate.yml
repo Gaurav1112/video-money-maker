@@ -106,10 +106,10 @@ jobs:
       report_url: ${{ steps.upload.outputs.artifact-url }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
@@ -127,14 +127,14 @@ jobs:
             imagemagick
 
       - name: Download rendered video artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: ${{ needs.detect-artifacts.outputs.video_artifact }}
           path: gate-input/video
         continue-on-error: true  # manual dispatch won't have artifact
 
       - name: Download metadata artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: ${{ needs.detect-artifacts.outputs.metadata_artifact }}
           path: gate-input/metadata
@@ -157,7 +157,7 @@ jobs:
           echo "Found metadata: $METADATA"
 
       - name: Restore quality cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: data/quality-cache
           key: quality-cache-${{ hashFiles(steps.find-files.outputs.video_path) }}
@@ -202,7 +202,7 @@ jobs:
       - name: Upload gate report artifact
         id: upload
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: quality-gate-report-${{ github.run_id }}
           path: |
@@ -213,7 +213,7 @@ jobs:
 
       - name: Save quality cache
         if: always()
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: data/quality-cache
           key: quality-cache-${{ hashFiles(steps.find-files.outputs.video_path) }}
@@ -226,10 +226,10 @@ jobs:
     if: needs.quality-gate.outputs.gate_passed == 'true'
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Download gate report
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: quality-gate-report-${{ github.run_id }}
 
@@ -260,7 +260,7 @@ jobs:
           EOF
 
       - name: Upload gate-passed signal
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: gate-passed-${{ needs.detect-artifacts.outputs.episode }}
           path: gate-passed.json
@@ -285,10 +285,10 @@ jobs:
       contents: read
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Download gate report
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: quality-gate-report-${{ github.run_id }}
 
