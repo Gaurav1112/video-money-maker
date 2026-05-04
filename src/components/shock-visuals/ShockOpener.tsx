@@ -12,7 +12,7 @@
  */
 
 import React from 'react';
-import { AbsoluteFill, Sequence, Text, useCurrentFrame, interpolate } from 'remotion';
+import { AbsoluteFill, Sequence, useCurrentFrame, interpolate } from 'remotion';
 
 export const ShockOpener: React.FC<{
   wrong: string;
@@ -46,7 +46,7 @@ export const ShockOpener: React.FC<{
             textAlign: 'center',
             borderRight: '8px solid #ffff00'
           }}>
-            <Text style={{ 
+            <p style={{ 
               color: '#fff', 
               fontSize: 48,
               fontWeight: 'bold',
@@ -54,15 +54,15 @@ export const ShockOpener: React.FC<{
               letterSpacing: 2
             }}>
               ❌ WRONG
-            </Text>
-            <Text style={{ 
+            </p>
+            <p style={{ 
               color: '#fff', 
               fontSize: 28,
               fontWeight: '600',
               lineHeight: 1.4
             }}>
               {wrong}
-            </Text>
+            </p>
           </div>
           
           {/* RIGHT (Green) Pane */}
@@ -76,7 +76,7 @@ export const ShockOpener: React.FC<{
             textAlign: 'center',
             borderLeft: '8px solid #ffff00'
           }}>
-            <Text style={{ 
+            <p style={{ 
               color: '#fff', 
               fontSize: 48,
               fontWeight: 'bold',
@@ -84,15 +84,15 @@ export const ShockOpener: React.FC<{
               letterSpacing: 2
             }}>
               ✅ RIGHT
-            </Text>
-            <Text style={{ 
+            </p>
+            <p style={{ 
               color: '#fff', 
               fontSize: 28,
               fontWeight: '600',
               lineHeight: 1.4
             }}>
               {right}
-            </Text>
+            </p>
           </div>
         </AbsoluteFill>
       </Sequence>
