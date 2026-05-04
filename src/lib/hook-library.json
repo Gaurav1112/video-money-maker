@@ -1,0 +1,5013 @@
+{
+  "library": {
+    "version": "1.0.0",
+    "generated": "2026-05-04T15:53:10.377Z",
+    "patterns": [
+      {
+        "id": "shock",
+        "name": "Shock",
+        "templates": [
+          {
+            "id": "shock-load-0",
+            "claim": "90% Engineers Get Load Balancing WRONG",
+            "topic": "load-balancing",
+            "strength": 8.3,
+            "pattern": "shock"
+          },
+          {
+            "id": "shock-caching-0",
+            "claim": "90% Engineers Get Caching WRONG",
+            "topic": "caching",
+            "strength": 8.3,
+            "pattern": "shock"
+          },
+          {
+            "id": "shock-database-0",
+            "claim": "90% Engineers Get Database Design WRONG",
+            "topic": "database-design",
+            "strength": 8.3,
+            "pattern": "shock"
+          },
+          {
+            "id": "shock-api-0",
+            "claim": "90% Engineers Get Api Gateway WRONG",
+            "topic": "api-gateway",
+            "strength": 8.3,
+            "pattern": "shock"
+          },
+          {
+            "id": "shock-microservices-0",
+            "claim": "90% Engineers Get Microservices WRONG",
+            "topic": "microservices",
+            "strength": 8.3,
+            "pattern": "shock"
+          },
+          {
+            "id": "shock-load-1",
+            "claim": "Amazon Rejects 95% on Load Balancing",
+            "topic": "load-balancing",
+            "strength": 8.3,
+            "pattern": "shock"
+          },
+          {
+            "id": "shock-caching-1",
+            "claim": "Facebook Rejects 85% on Caching",
+            "topic": "caching",
+            "strength": 8.1,
+            "pattern": "shock"
+          },
+          {
+            "id": "shock-database-1",
+            "claim": "Spotify Rejects 80% on Database Design",
+            "topic": "database-design",
+            "strength": 8.1,
+            "pattern": "shock"
+          },
+          {
+            "id": "shock-api-1",
+            "claim": "Amazon Rejects 90% on Api Gateway",
+            "topic": "api-gateway",
+            "strength": 8.3,
+            "pattern": "shock"
+          },
+          {
+            "id": "shock-microservices-1",
+            "claim": "Netflix Rejects 90% on Microservices",
+            "topic": "microservices",
+            "strength": 8.3,
+            "pattern": "shock"
+          },
+          {
+            "id": "shock-load-2",
+            "claim": "The Load Balancing Mistake Costing ₹100LPA",
+            "topic": "load-balancing",
+            "strength": 8,
+            "pattern": "shock"
+          },
+          {
+            "id": "shock-caching-2",
+            "claim": "The Caching Mistake Costing ₹60LPA",
+            "topic": "caching",
+            "strength": 8,
+            "pattern": "shock"
+          },
+          {
+            "id": "shock-database-2",
+            "claim": "The Database Design Mistake Costing ₹50LPA",
+            "topic": "database-design",
+            "strength": 8,
+            "pattern": "shock"
+          },
+          {
+            "id": "shock-api-2",
+            "claim": "The Api Gateway Mistake Costing ₹100LPA",
+            "topic": "api-gateway",
+            "strength": 8,
+            "pattern": "shock"
+          },
+          {
+            "id": "shock-microservices-2",
+            "claim": "The Microservices Mistake Costing ₹50LPA",
+            "topic": "microservices",
+            "strength": 8,
+            "pattern": "shock"
+          }
+        ]
+      },
+      {
+        "id": "curiosity",
+        "name": "Curiosity",
+        "templates": [
+          {
+            "id": "curiosity-load-0",
+            "claim": "Why Amazon Uses Load Balancing Not random?",
+            "topic": "load-balancing",
+            "strength": 8.1,
+            "pattern": "curiosity"
+          },
+          {
+            "id": "curiosity-caching-0",
+            "claim": "Why Facebook Uses Caching Not DB?",
+            "topic": "caching",
+            "strength": 7.9,
+            "pattern": "curiosity"
+          },
+          {
+            "id": "curiosity-database-0",
+            "claim": "Why Spotify Uses Database Design Not NoSQL?",
+            "topic": "database-design",
+            "strength": 7.9,
+            "pattern": "curiosity"
+          },
+          {
+            "id": "curiosity-api-0",
+            "claim": "Why Amazon Uses Api Gateway Not direct?",
+            "topic": "api-gateway",
+            "strength": 8.1,
+            "pattern": "curiosity"
+          },
+          {
+            "id": "curiosity-microservices-0",
+            "claim": "Why Netflix Uses Microservices Not SOA?",
+            "topic": "microservices",
+            "strength": 8.1,
+            "pattern": "curiosity"
+          },
+          {
+            "id": "curiosity-load-1",
+            "claim": "Every FAANG Asks About Load Balancing...",
+            "topic": "load-balancing",
+            "strength": 7.7,
+            "pattern": "curiosity"
+          },
+          {
+            "id": "curiosity-caching-1",
+            "claim": "Every FAANG Asks About Caching...",
+            "topic": "caching",
+            "strength": 7.7,
+            "pattern": "curiosity"
+          },
+          {
+            "id": "curiosity-database-1",
+            "claim": "Every FAANG Asks About Database Design...",
+            "topic": "database-design",
+            "strength": 7.7,
+            "pattern": "curiosity"
+          },
+          {
+            "id": "curiosity-api-1",
+            "claim": "Every FAANG Asks About Api Gateway...",
+            "topic": "api-gateway",
+            "strength": 7.7,
+            "pattern": "curiosity"
+          },
+          {
+            "id": "curiosity-microservices-1",
+            "claim": "Every FAANG Asks About Microservices...",
+            "topic": "microservices",
+            "strength": 7.7,
+            "pattern": "curiosity"
+          },
+          {
+            "id": "curiosity-load-2",
+            "claim": "What Amazon Engineers Know About Load Balancing",
+            "topic": "load-balancing",
+            "strength": 7.9,
+            "pattern": "curiosity"
+          },
+          {
+            "id": "curiosity-caching-2",
+            "claim": "What Facebook Engineers Know About Caching",
+            "topic": "caching",
+            "strength": 7.7,
+            "pattern": "curiosity"
+          },
+          {
+            "id": "curiosity-database-2",
+            "claim": "What Spotify Engineers Know About Database Design",
+            "topic": "database-design",
+            "strength": 7.7,
+            "pattern": "curiosity"
+          },
+          {
+            "id": "curiosity-api-2",
+            "claim": "What Amazon Engineers Know About Api Gateway",
+            "topic": "api-gateway",
+            "strength": 7.9,
+            "pattern": "curiosity"
+          },
+          {
+            "id": "curiosity-microservices-2",
+            "claim": "What Netflix Engineers Know About Microservices",
+            "topic": "microservices",
+            "strength": 7.9,
+            "pattern": "curiosity"
+          }
+        ]
+      },
+      {
+        "id": "contrast",
+        "name": "Contrast",
+        "templates": [
+          {
+            "id": "contrast-load-0",
+            "claim": "Everything About Load Balancing Is Wrong",
+            "topic": "load-balancing",
+            "strength": 7.8,
+            "pattern": "contrast"
+          },
+          {
+            "id": "contrast-caching-0",
+            "claim": "Everything About Caching Is Wrong",
+            "topic": "caching",
+            "strength": 7.8,
+            "pattern": "contrast"
+          },
+          {
+            "id": "contrast-database-0",
+            "claim": "Everything About Database Design Is Wrong",
+            "topic": "database-design",
+            "strength": 7.8,
+            "pattern": "contrast"
+          },
+          {
+            "id": "contrast-api-0",
+            "claim": "Everything About Api Gateway Is Wrong",
+            "topic": "api-gateway",
+            "strength": 7.8,
+            "pattern": "contrast"
+          },
+          {
+            "id": "contrast-microservices-0",
+            "claim": "Everything About Microservices Is Wrong",
+            "topic": "microservices",
+            "strength": 7.8,
+            "pattern": "contrast"
+          },
+          {
+            "id": "contrast-load-1",
+            "claim": "Load Balancing Makes Systems SLOWER",
+            "topic": "load-balancing",
+            "strength": 7.5,
+            "pattern": "contrast"
+          },
+          {
+            "id": "contrast-caching-1",
+            "claim": "Caching Makes Systems SLOWER",
+            "topic": "caching",
+            "strength": 7.5,
+            "pattern": "contrast"
+          },
+          {
+            "id": "contrast-database-1",
+            "claim": "Database Design Makes Systems SLOWER",
+            "topic": "database-design",
+            "strength": 7.5,
+            "pattern": "contrast"
+          },
+          {
+            "id": "contrast-api-1",
+            "claim": "Api Gateway Makes Systems SLOWER",
+            "topic": "api-gateway",
+            "strength": 7.5,
+            "pattern": "contrast"
+          },
+          {
+            "id": "contrast-microservices-1",
+            "claim": "Microservices Makes Systems SLOWER",
+            "topic": "microservices",
+            "strength": 7.5,
+            "pattern": "contrast"
+          },
+          {
+            "id": "contrast-load-2",
+            "claim": "Stop Learning Load Balancing Wrong Way",
+            "topic": "load-balancing",
+            "strength": 7.8,
+            "pattern": "contrast"
+          },
+          {
+            "id": "contrast-caching-2",
+            "claim": "Stop Learning Caching Wrong Way",
+            "topic": "caching",
+            "strength": 7.8,
+            "pattern": "contrast"
+          },
+          {
+            "id": "contrast-database-2",
+            "claim": "Stop Learning Database Design Wrong Way",
+            "topic": "database-design",
+            "strength": 7.8,
+            "pattern": "contrast"
+          },
+          {
+            "id": "contrast-api-2",
+            "claim": "Stop Learning Api Gateway Wrong Way",
+            "topic": "api-gateway",
+            "strength": 7.8,
+            "pattern": "contrast"
+          },
+          {
+            "id": "contrast-microservices-2",
+            "claim": "Stop Learning Microservices Wrong Way",
+            "topic": "microservices",
+            "strength": 7.8,
+            "pattern": "contrast"
+          }
+        ]
+      },
+      {
+        "id": "urgency",
+        "name": "Urgency",
+        "templates": [
+          {
+            "id": "urgency-load-0",
+            "claim": "Master Load Balancing Before Interview",
+            "topic": "load-balancing",
+            "strength": 7.7,
+            "pattern": "urgency"
+          },
+          {
+            "id": "urgency-caching-0",
+            "claim": "Master Caching Before Interview",
+            "topic": "caching",
+            "strength": 7.7,
+            "pattern": "urgency"
+          },
+          {
+            "id": "urgency-database-0",
+            "claim": "Master Database Design Before Interview",
+            "topic": "database-design",
+            "strength": 7.7,
+            "pattern": "urgency"
+          },
+          {
+            "id": "urgency-api-0",
+            "claim": "Master Api Gateway Before Interview",
+            "topic": "api-gateway",
+            "strength": 7.7,
+            "pattern": "urgency"
+          },
+          {
+            "id": "urgency-microservices-0",
+            "claim": "Master Microservices Before Interview",
+            "topic": "microservices",
+            "strength": 7.7,
+            "pattern": "urgency"
+          },
+          {
+            "id": "urgency-load-1",
+            "claim": "Load Balancing Question Everyone Gets Wrong",
+            "topic": "load-balancing",
+            "strength": 7.8,
+            "pattern": "urgency"
+          },
+          {
+            "id": "urgency-caching-1",
+            "claim": "Caching Question Everyone Gets Wrong",
+            "topic": "caching",
+            "strength": 7.8,
+            "pattern": "urgency"
+          },
+          {
+            "id": "urgency-database-1",
+            "claim": "Database Design Question Everyone Gets Wrong",
+            "topic": "database-design",
+            "strength": 7.8,
+            "pattern": "urgency"
+          },
+          {
+            "id": "urgency-api-1",
+            "claim": "Api Gateway Question Everyone Gets Wrong",
+            "topic": "api-gateway",
+            "strength": 7.8,
+            "pattern": "urgency"
+          },
+          {
+            "id": "urgency-microservices-1",
+            "claim": "Microservices Question Everyone Gets Wrong",
+            "topic": "microservices",
+            "strength": 7.8,
+            "pattern": "urgency"
+          },
+          {
+            "id": "urgency-load-2",
+            "claim": "Learn Load Balancing in 2min",
+            "topic": "load-balancing",
+            "strength": 7.5,
+            "pattern": "urgency"
+          },
+          {
+            "id": "urgency-caching-2",
+            "claim": "Learn Caching in 30s",
+            "topic": "caching",
+            "strength": 7.5,
+            "pattern": "urgency"
+          },
+          {
+            "id": "urgency-database-2",
+            "claim": "Learn Database Design in 3min",
+            "topic": "database-design",
+            "strength": 7.5,
+            "pattern": "urgency"
+          },
+          {
+            "id": "urgency-api-2",
+            "claim": "Learn Api Gateway in 45s",
+            "topic": "api-gateway",
+            "strength": 7.5,
+            "pattern": "urgency"
+          },
+          {
+            "id": "urgency-microservices-2",
+            "claim": "Learn Microservices in 3min",
+            "topic": "microservices",
+            "strength": 7.5,
+            "pattern": "urgency"
+          }
+        ]
+      },
+      {
+        "id": "story",
+        "name": "Story",
+        "templates": [
+          {
+            "id": "story-load-0",
+            "claim": "A Amazon Engineer's Load Balancing Secret",
+            "topic": "load-balancing",
+            "strength": 8.2,
+            "pattern": "story"
+          },
+          {
+            "id": "story-caching-0",
+            "claim": "A Facebook Engineer's Caching Secret",
+            "topic": "caching",
+            "strength": 8,
+            "pattern": "story"
+          },
+          {
+            "id": "story-database-0",
+            "claim": "A Spotify Engineer's Database Design Secret",
+            "topic": "database-design",
+            "strength": 8,
+            "pattern": "story"
+          },
+          {
+            "id": "story-api-0",
+            "claim": "A Amazon Engineer's Api Gateway Secret",
+            "topic": "api-gateway",
+            "strength": 8.2,
+            "pattern": "story"
+          },
+          {
+            "id": "story-microservices-0",
+            "claim": "A Netflix Engineer's Microservices Secret",
+            "topic": "microservices",
+            "strength": 8.2,
+            "pattern": "story"
+          },
+          {
+            "id": "story-load-1",
+            "claim": "My System Design Before Load Balancing",
+            "topic": "load-balancing",
+            "strength": 7.7,
+            "pattern": "story"
+          },
+          {
+            "id": "story-caching-1",
+            "claim": "My System Design Before Caching",
+            "topic": "caching",
+            "strength": 7.7,
+            "pattern": "story"
+          },
+          {
+            "id": "story-database-1",
+            "claim": "My System Design Before Database Design",
+            "topic": "database-design",
+            "strength": 7.7,
+            "pattern": "story"
+          },
+          {
+            "id": "story-api-1",
+            "claim": "My System Design Before Api Gateway",
+            "topic": "api-gateway",
+            "strength": 7.7,
+            "pattern": "story"
+          },
+          {
+            "id": "story-microservices-1",
+            "claim": "My System Design Before Microservices",
+            "topic": "microservices",
+            "strength": 7.7,
+            "pattern": "story"
+          },
+          {
+            "id": "story-load-2",
+            "claim": "Why I Failed Load Balancing Interview",
+            "topic": "load-balancing",
+            "strength": 8.3,
+            "pattern": "story"
+          },
+          {
+            "id": "story-caching-2",
+            "claim": "Why I Failed Caching Interview",
+            "topic": "caching",
+            "strength": 8.3,
+            "pattern": "story"
+          },
+          {
+            "id": "story-database-2",
+            "claim": "Why I Failed Database Design Interview",
+            "topic": "database-design",
+            "strength": 8.3,
+            "pattern": "story"
+          },
+          {
+            "id": "story-api-2",
+            "claim": "Why I Failed Api Gateway Interview",
+            "topic": "api-gateway",
+            "strength": 8.3,
+            "pattern": "story"
+          },
+          {
+            "id": "story-microservices-2",
+            "claim": "Why I Failed Microservices Interview",
+            "topic": "microservices",
+            "strength": 8.3,
+            "pattern": "story"
+          }
+        ]
+      },
+      {
+        "id": "fear",
+        "name": "Fear",
+        "templates": [
+          {
+            "id": "fear-load-0",
+            "claim": "Stop Rejections: Learn Load Balancing",
+            "topic": "load-balancing",
+            "strength": 7.8,
+            "pattern": "fear"
+          },
+          {
+            "id": "fear-caching-0",
+            "claim": "Stop Rejections: Learn Caching",
+            "topic": "caching",
+            "strength": 7.8,
+            "pattern": "fear"
+          },
+          {
+            "id": "fear-database-0",
+            "claim": "Stop Rejections: Learn Database Design",
+            "topic": "database-design",
+            "strength": 7.8,
+            "pattern": "fear"
+          },
+          {
+            "id": "fear-api-0",
+            "claim": "Stop Rejections: Learn Api Gateway",
+            "topic": "api-gateway",
+            "strength": 7.8,
+            "pattern": "fear"
+          },
+          {
+            "id": "fear-microservices-0",
+            "claim": "Stop Rejections: Learn Microservices",
+            "topic": "microservices",
+            "strength": 7.8,
+            "pattern": "fear"
+          },
+          {
+            "id": "fear-load-1",
+            "claim": "95% Fail This Load Balancing Question",
+            "topic": "load-balancing",
+            "strength": 8.1,
+            "pattern": "fear"
+          },
+          {
+            "id": "fear-caching-1",
+            "claim": "85% Fail This Caching Question",
+            "topic": "caching",
+            "strength": 8.1,
+            "pattern": "fear"
+          },
+          {
+            "id": "fear-database-1",
+            "claim": "80% Fail This Database Design Question",
+            "topic": "database-design",
+            "strength": 8.1,
+            "pattern": "fear"
+          },
+          {
+            "id": "fear-api-1",
+            "claim": "90% Fail This Api Gateway Question",
+            "topic": "api-gateway",
+            "strength": 8.1,
+            "pattern": "fear"
+          },
+          {
+            "id": "fear-microservices-1",
+            "claim": "90% Fail This Microservices Question",
+            "topic": "microservices",
+            "strength": 8.1,
+            "pattern": "fear"
+          },
+          {
+            "id": "fear-load-2",
+            "claim": "Most Devs Never Master Load Balancing",
+            "topic": "load-balancing",
+            "strength": 7.5,
+            "pattern": "fear"
+          },
+          {
+            "id": "fear-caching-2",
+            "claim": "Most Devs Never Master Caching",
+            "topic": "caching",
+            "strength": 7.5,
+            "pattern": "fear"
+          },
+          {
+            "id": "fear-database-2",
+            "claim": "Most Devs Never Master Database Design",
+            "topic": "database-design",
+            "strength": 7.5,
+            "pattern": "fear"
+          },
+          {
+            "id": "fear-api-2",
+            "claim": "Most Devs Never Master Api Gateway",
+            "topic": "api-gateway",
+            "strength": 7.5,
+            "pattern": "fear"
+          },
+          {
+            "id": "fear-microservices-2",
+            "claim": "Most Devs Never Master Microservices",
+            "topic": "microservices",
+            "strength": 7.5,
+            "pattern": "fear"
+          }
+        ]
+      },
+      {
+        "id": "promise",
+        "name": "Promise",
+        "templates": [
+          {
+            "id": "promise-load-0",
+            "claim": "Understand Load Balancing in 2min",
+            "topic": "load-balancing",
+            "strength": 7.5,
+            "pattern": "promise"
+          },
+          {
+            "id": "promise-caching-0",
+            "claim": "Understand Caching in 30s",
+            "topic": "caching",
+            "strength": 7.5,
+            "pattern": "promise"
+          },
+          {
+            "id": "promise-database-0",
+            "claim": "Understand Database Design in 3min",
+            "topic": "database-design",
+            "strength": 7.5,
+            "pattern": "promise"
+          },
+          {
+            "id": "promise-api-0",
+            "claim": "Understand Api Gateway in 45s",
+            "topic": "api-gateway",
+            "strength": 7.5,
+            "pattern": "promise"
+          },
+          {
+            "id": "promise-microservices-0",
+            "claim": "Understand Microservices in 3min",
+            "topic": "microservices",
+            "strength": 7.5,
+            "pattern": "promise"
+          },
+          {
+            "id": "promise-load-1",
+            "claim": "Master Load Balancing Forever",
+            "topic": "load-balancing",
+            "strength": 7.5,
+            "pattern": "promise"
+          },
+          {
+            "id": "promise-caching-1",
+            "claim": "Master Caching Forever",
+            "topic": "caching",
+            "strength": 7.5,
+            "pattern": "promise"
+          },
+          {
+            "id": "promise-database-1",
+            "claim": "Master Database Design Forever",
+            "topic": "database-design",
+            "strength": 7.5,
+            "pattern": "promise"
+          },
+          {
+            "id": "promise-api-1",
+            "claim": "Master Api Gateway Forever",
+            "topic": "api-gateway",
+            "strength": 7.5,
+            "pattern": "promise"
+          },
+          {
+            "id": "promise-microservices-1",
+            "claim": "Master Microservices Forever",
+            "topic": "microservices",
+            "strength": 7.5,
+            "pattern": "promise"
+          },
+          {
+            "id": "promise-load-2",
+            "claim": "{95} Load Balancing Patterns Every Interview Asks",
+            "topic": "load-balancing",
+            "strength": 7.7,
+            "pattern": "promise"
+          },
+          {
+            "id": "promise-caching-2",
+            "claim": "{85} Caching Patterns Every Interview Asks",
+            "topic": "caching",
+            "strength": 7.7,
+            "pattern": "promise"
+          },
+          {
+            "id": "promise-database-2",
+            "claim": "{80} Database Design Patterns Every Interview Asks",
+            "topic": "database-design",
+            "strength": 7.7,
+            "pattern": "promise"
+          },
+          {
+            "id": "promise-api-2",
+            "claim": "{90} Api Gateway Patterns Every Interview Asks",
+            "topic": "api-gateway",
+            "strength": 7.7,
+            "pattern": "promise"
+          },
+          {
+            "id": "promise-microservices-2",
+            "claim": "{90} Microservices Patterns Every Interview Asks",
+            "topic": "microservices",
+            "strength": 7.7,
+            "pattern": "promise"
+          }
+        ]
+      },
+      {
+        "id": "insider",
+        "name": "Insider",
+        "templates": [
+          {
+            "id": "insider-load-0",
+            "claim": "Load Balancing Trick FAANG Wants",
+            "topic": "load-balancing",
+            "strength": 7.7,
+            "pattern": "insider"
+          },
+          {
+            "id": "insider-caching-0",
+            "claim": "Caching Trick FAANG Wants",
+            "topic": "caching",
+            "strength": 7.7,
+            "pattern": "insider"
+          },
+          {
+            "id": "insider-database-0",
+            "claim": "Database Design Trick FAANG Wants",
+            "topic": "database-design",
+            "strength": 7.7,
+            "pattern": "insider"
+          },
+          {
+            "id": "insider-api-0",
+            "claim": "Api Gateway Trick FAANG Wants",
+            "topic": "api-gateway",
+            "strength": 7.7,
+            "pattern": "insider"
+          },
+          {
+            "id": "insider-microservices-0",
+            "claim": "Microservices Trick FAANG Wants",
+            "topic": "microservices",
+            "strength": 7.7,
+            "pattern": "insider"
+          },
+          {
+            "id": "insider-load-1",
+            "claim": "Amazon Does Load Balancing This Way",
+            "topic": "load-balancing",
+            "strength": 7.7,
+            "pattern": "insider"
+          },
+          {
+            "id": "insider-caching-1",
+            "claim": "Facebook Does Caching This Way",
+            "topic": "caching",
+            "strength": 7.5,
+            "pattern": "insider"
+          },
+          {
+            "id": "insider-database-1",
+            "claim": "Spotify Does Database Design This Way",
+            "topic": "database-design",
+            "strength": 7.5,
+            "pattern": "insider"
+          },
+          {
+            "id": "insider-api-1",
+            "claim": "Amazon Does Api Gateway This Way",
+            "topic": "api-gateway",
+            "strength": 7.7,
+            "pattern": "insider"
+          },
+          {
+            "id": "insider-microservices-1",
+            "claim": "Netflix Does Microservices This Way",
+            "topic": "microservices",
+            "strength": 7.7,
+            "pattern": "insider"
+          },
+          {
+            "id": "insider-load-2",
+            "claim": "Secret Load Balancing Strategy",
+            "topic": "load-balancing",
+            "strength": 7.8,
+            "pattern": "insider"
+          },
+          {
+            "id": "insider-caching-2",
+            "claim": "Secret Caching Strategy",
+            "topic": "caching",
+            "strength": 7.8,
+            "pattern": "insider"
+          },
+          {
+            "id": "insider-database-2",
+            "claim": "Secret Database Design Strategy",
+            "topic": "database-design",
+            "strength": 7.8,
+            "pattern": "insider"
+          },
+          {
+            "id": "insider-api-2",
+            "claim": "Secret Api Gateway Strategy",
+            "topic": "api-gateway",
+            "strength": 7.8,
+            "pattern": "insider"
+          },
+          {
+            "id": "insider-microservices-2",
+            "claim": "Secret Microservices Strategy",
+            "topic": "microservices",
+            "strength": 7.8,
+            "pattern": "insider"
+          }
+        ]
+      },
+      {
+        "id": "comparison",
+        "name": "Comparison",
+        "templates": [
+          {
+            "id": "comparison-load-0",
+            "claim": "L4 vs L7 — Surprising Answer",
+            "topic": "load-balancing",
+            "strength": 7.5,
+            "pattern": "comparison"
+          },
+          {
+            "id": "comparison-caching-0",
+            "claim": "Redis vs Memcached — Surprising Answer",
+            "topic": "caching",
+            "strength": 7.5,
+            "pattern": "comparison"
+          },
+          {
+            "id": "comparison-database-0",
+            "claim": "Sharding vs Replication — Surprising Answer",
+            "topic": "database-design",
+            "strength": 7.5,
+            "pattern": "comparison"
+          },
+          {
+            "id": "comparison-api-0",
+            "claim": "Kong vs AWS — Surprising Answer",
+            "topic": "api-gateway",
+            "strength": 7.5,
+            "pattern": "comparison"
+          },
+          {
+            "id": "comparison-microservices-0",
+            "claim": "Sync vs Async — Surprising Answer",
+            "topic": "microservices",
+            "strength": 7.5,
+            "pattern": "comparison"
+          },
+          {
+            "id": "comparison-load-1",
+            "claim": "Amazon Chose L4 Over L7",
+            "topic": "load-balancing",
+            "strength": 7.7,
+            "pattern": "comparison"
+          },
+          {
+            "id": "comparison-caching-1",
+            "claim": "Facebook Chose Redis Over Memcached",
+            "topic": "caching",
+            "strength": 7.5,
+            "pattern": "comparison"
+          },
+          {
+            "id": "comparison-database-1",
+            "claim": "Spotify Chose Sharding Over Replication",
+            "topic": "database-design",
+            "strength": 7.5,
+            "pattern": "comparison"
+          },
+          {
+            "id": "comparison-api-1",
+            "claim": "Amazon Chose Kong Over AWS",
+            "topic": "api-gateway",
+            "strength": 7.7,
+            "pattern": "comparison"
+          },
+          {
+            "id": "comparison-microservices-1",
+            "claim": "Netflix Chose Sync Over Async",
+            "topic": "microservices",
+            "strength": 7.7,
+            "pattern": "comparison"
+          },
+          {
+            "id": "comparison-load-2",
+            "claim": "Comparing {95} Load Balancing Approaches",
+            "topic": "load-balancing",
+            "strength": 7.5,
+            "pattern": "comparison"
+          },
+          {
+            "id": "comparison-caching-2",
+            "claim": "Comparing {85} Caching Approaches",
+            "topic": "caching",
+            "strength": 7.5,
+            "pattern": "comparison"
+          },
+          {
+            "id": "comparison-database-2",
+            "claim": "Comparing {80} Database Design Approaches",
+            "topic": "database-design",
+            "strength": 7.5,
+            "pattern": "comparison"
+          },
+          {
+            "id": "comparison-api-2",
+            "claim": "Comparing {90} Api Gateway Approaches",
+            "topic": "api-gateway",
+            "strength": 7.5,
+            "pattern": "comparison"
+          },
+          {
+            "id": "comparison-microservices-2",
+            "claim": "Comparing {90} Microservices Approaches",
+            "topic": "microservices",
+            "strength": 7.5,
+            "pattern": "comparison"
+          }
+        ]
+      },
+      {
+        "id": "bold",
+        "name": "Bold",
+        "templates": [
+          {
+            "id": "bold-load-0",
+            "claim": "Load Balancing Is Trending 2026",
+            "topic": "load-balancing",
+            "strength": 7.5,
+            "pattern": "bold"
+          },
+          {
+            "id": "bold-caching-0",
+            "claim": "Caching Is Trending 2026",
+            "topic": "caching",
+            "strength": 7.5,
+            "pattern": "bold"
+          },
+          {
+            "id": "bold-database-0",
+            "claim": "Database Design Is Trending 2026",
+            "topic": "database-design",
+            "strength": 7.5,
+            "pattern": "bold"
+          },
+          {
+            "id": "bold-api-0",
+            "claim": "Api Gateway Is Trending 2026",
+            "topic": "api-gateway",
+            "strength": 7.5,
+            "pattern": "bold"
+          },
+          {
+            "id": "bold-microservices-0",
+            "claim": "Microservices Is Trending 2026",
+            "topic": "microservices",
+            "strength": 7.5,
+            "pattern": "bold"
+          },
+          {
+            "id": "bold-load-1",
+            "claim": "I Called It: Load Balancing Changed Everything",
+            "topic": "load-balancing",
+            "strength": 7.5,
+            "pattern": "bold"
+          },
+          {
+            "id": "bold-caching-1",
+            "claim": "I Called It: Caching Changed Everything",
+            "topic": "caching",
+            "strength": 7.5,
+            "pattern": "bold"
+          },
+          {
+            "id": "bold-database-1",
+            "claim": "I Called It: Database Design Changed Everything",
+            "topic": "database-design",
+            "strength": 7.5,
+            "pattern": "bold"
+          },
+          {
+            "id": "bold-api-1",
+            "claim": "I Called It: Api Gateway Changed Everything",
+            "topic": "api-gateway",
+            "strength": 7.5,
+            "pattern": "bold"
+          },
+          {
+            "id": "bold-microservices-1",
+            "claim": "I Called It: Microservices Changed Everything",
+            "topic": "microservices",
+            "strength": 7.5,
+            "pattern": "bold"
+          },
+          {
+            "id": "bold-load-2",
+            "claim": "Load Balancing Revolution",
+            "topic": "load-balancing",
+            "strength": 7.5,
+            "pattern": "bold"
+          },
+          {
+            "id": "bold-caching-2",
+            "claim": "Caching Revolution",
+            "topic": "caching",
+            "strength": 7.5,
+            "pattern": "bold"
+          },
+          {
+            "id": "bold-database-2",
+            "claim": "Database Design Revolution",
+            "topic": "database-design",
+            "strength": 7.5,
+            "pattern": "bold"
+          },
+          {
+            "id": "bold-api-2",
+            "claim": "Api Gateway Revolution",
+            "topic": "api-gateway",
+            "strength": 7.5,
+            "pattern": "bold"
+          },
+          {
+            "id": "bold-microservices-2",
+            "claim": "Microservices Revolution",
+            "topic": "microservices",
+            "strength": 7.5,
+            "pattern": "bold"
+          }
+        ]
+      },
+      {
+        "id": "mystery",
+        "name": "Mystery",
+        "templates": [
+          {
+            "id": "mystery-load-0",
+            "claim": "Most Get Load Balancing Wrong",
+            "topic": "load-balancing",
+            "strength": 7.8,
+            "pattern": "mystery"
+          },
+          {
+            "id": "mystery-caching-0",
+            "claim": "Most Get Caching Wrong",
+            "topic": "caching",
+            "strength": 7.8,
+            "pattern": "mystery"
+          },
+          {
+            "id": "mystery-database-0",
+            "claim": "Most Get Database Design Wrong",
+            "topic": "database-design",
+            "strength": 7.8,
+            "pattern": "mystery"
+          },
+          {
+            "id": "mystery-api-0",
+            "claim": "Most Get Api Gateway Wrong",
+            "topic": "api-gateway",
+            "strength": 7.8,
+            "pattern": "mystery"
+          },
+          {
+            "id": "mystery-microservices-0",
+            "claim": "Most Get Microservices Wrong",
+            "topic": "microservices",
+            "strength": 7.8,
+            "pattern": "mystery"
+          },
+          {
+            "id": "mystery-load-1",
+            "claim": "Load Balancing Question Breaks {95}%",
+            "topic": "load-balancing",
+            "strength": 7.5,
+            "pattern": "mystery"
+          },
+          {
+            "id": "mystery-caching-1",
+            "claim": "Caching Question Breaks {85}%",
+            "topic": "caching",
+            "strength": 7.5,
+            "pattern": "mystery"
+          },
+          {
+            "id": "mystery-database-1",
+            "claim": "Database Design Question Breaks {80}%",
+            "topic": "database-design",
+            "strength": 7.5,
+            "pattern": "mystery"
+          },
+          {
+            "id": "mystery-api-1",
+            "claim": "Api Gateway Question Breaks {90}%",
+            "topic": "api-gateway",
+            "strength": 7.5,
+            "pattern": "mystery"
+          },
+          {
+            "id": "mystery-microservices-1",
+            "claim": "Microservices Question Breaks {90}%",
+            "topic": "microservices",
+            "strength": 7.5,
+            "pattern": "mystery"
+          },
+          {
+            "id": "mystery-load-2",
+            "claim": "Never Knew Load Balancing",
+            "topic": "load-balancing",
+            "strength": 7.8,
+            "pattern": "mystery"
+          },
+          {
+            "id": "mystery-caching-2",
+            "claim": "Never Knew Caching",
+            "topic": "caching",
+            "strength": 7.8,
+            "pattern": "mystery"
+          },
+          {
+            "id": "mystery-database-2",
+            "claim": "Never Knew Database Design",
+            "topic": "database-design",
+            "strength": 7.8,
+            "pattern": "mystery"
+          },
+          {
+            "id": "mystery-api-2",
+            "claim": "Never Knew Api Gateway",
+            "topic": "api-gateway",
+            "strength": 7.8,
+            "pattern": "mystery"
+          },
+          {
+            "id": "mystery-microservices-2",
+            "claim": "Never Knew Microservices",
+            "topic": "microservices",
+            "strength": 7.8,
+            "pattern": "mystery"
+          }
+        ]
+      },
+      {
+        "id": "authority",
+        "name": "Authority",
+        "templates": [
+          {
+            "id": "authority-load-0",
+            "claim": "Amazon Eng Team Does Load Balancing This",
+            "topic": "load-balancing",
+            "strength": 7.7,
+            "pattern": "authority"
+          },
+          {
+            "id": "authority-caching-0",
+            "claim": "Facebook Eng Team Does Caching This",
+            "topic": "caching",
+            "strength": 7.5,
+            "pattern": "authority"
+          },
+          {
+            "id": "authority-database-0",
+            "claim": "Spotify Eng Team Does Database Design This",
+            "topic": "database-design",
+            "strength": 7.5,
+            "pattern": "authority"
+          },
+          {
+            "id": "authority-api-0",
+            "claim": "Amazon Eng Team Does Api Gateway This",
+            "topic": "api-gateway",
+            "strength": 7.7,
+            "pattern": "authority"
+          },
+          {
+            "id": "authority-microservices-0",
+            "claim": "Netflix Eng Team Does Microservices This",
+            "topic": "microservices",
+            "strength": 7.7,
+            "pattern": "authority"
+          },
+          {
+            "id": "authority-load-1",
+            "claim": "Amazon Senior: Load Balancing Revealed",
+            "topic": "load-balancing",
+            "strength": 7.7,
+            "pattern": "authority"
+          },
+          {
+            "id": "authority-caching-1",
+            "claim": "Facebook Senior: Caching Revealed",
+            "topic": "caching",
+            "strength": 7.5,
+            "pattern": "authority"
+          },
+          {
+            "id": "authority-database-1",
+            "claim": "Spotify Senior: Database Design Revealed",
+            "topic": "database-design",
+            "strength": 7.5,
+            "pattern": "authority"
+          },
+          {
+            "id": "authority-api-1",
+            "claim": "Amazon Senior: Api Gateway Revealed",
+            "topic": "api-gateway",
+            "strength": 7.7,
+            "pattern": "authority"
+          },
+          {
+            "id": "authority-microservices-1",
+            "claim": "Netflix Senior: Microservices Revealed",
+            "topic": "microservices",
+            "strength": 7.7,
+            "pattern": "authority"
+          },
+          {
+            "id": "authority-load-2",
+            "claim": "{95} Tech Leads on Load Balancing",
+            "topic": "load-balancing",
+            "strength": 7.5,
+            "pattern": "authority"
+          },
+          {
+            "id": "authority-caching-2",
+            "claim": "{85} Tech Leads on Caching",
+            "topic": "caching",
+            "strength": 7.5,
+            "pattern": "authority"
+          },
+          {
+            "id": "authority-database-2",
+            "claim": "{80} Tech Leads on Database Design",
+            "topic": "database-design",
+            "strength": 7.5,
+            "pattern": "authority"
+          },
+          {
+            "id": "authority-api-2",
+            "claim": "{90} Tech Leads on Api Gateway",
+            "topic": "api-gateway",
+            "strength": 7.5,
+            "pattern": "authority"
+          },
+          {
+            "id": "authority-microservices-2",
+            "claim": "{90} Tech Leads on Microservices",
+            "topic": "microservices",
+            "strength": 7.5,
+            "pattern": "authority"
+          }
+        ]
+      },
+      {
+        "id": "vulnerable",
+        "name": "Vulnerable",
+        "templates": [
+          {
+            "id": "vulnerable-load-0",
+            "claim": "I Struggled Load Balancing Years",
+            "topic": "load-balancing",
+            "strength": 7.5,
+            "pattern": "vulnerable"
+          },
+          {
+            "id": "vulnerable-caching-0",
+            "claim": "I Struggled Caching Years",
+            "topic": "caching",
+            "strength": 7.5,
+            "pattern": "vulnerable"
+          },
+          {
+            "id": "vulnerable-database-0",
+            "claim": "I Struggled Database Design Years",
+            "topic": "database-design",
+            "strength": 7.5,
+            "pattern": "vulnerable"
+          },
+          {
+            "id": "vulnerable-api-0",
+            "claim": "I Struggled Api Gateway Years",
+            "topic": "api-gateway",
+            "strength": 7.5,
+            "pattern": "vulnerable"
+          },
+          {
+            "id": "vulnerable-microservices-0",
+            "claim": "I Struggled Microservices Years",
+            "topic": "microservices",
+            "strength": 7.5,
+            "pattern": "vulnerable"
+          },
+          {
+            "id": "vulnerable-load-1",
+            "claim": "Nobody Explained Load Balancing This Way",
+            "topic": "load-balancing",
+            "strength": 7.5,
+            "pattern": "vulnerable"
+          },
+          {
+            "id": "vulnerable-caching-1",
+            "claim": "Nobody Explained Caching This Way",
+            "topic": "caching",
+            "strength": 7.5,
+            "pattern": "vulnerable"
+          },
+          {
+            "id": "vulnerable-database-1",
+            "claim": "Nobody Explained Database Design This Way",
+            "topic": "database-design",
+            "strength": 7.5,
+            "pattern": "vulnerable"
+          },
+          {
+            "id": "vulnerable-api-1",
+            "claim": "Nobody Explained Api Gateway This Way",
+            "topic": "api-gateway",
+            "strength": 7.5,
+            "pattern": "vulnerable"
+          },
+          {
+            "id": "vulnerable-microservices-1",
+            "claim": "Nobody Explained Microservices This Way",
+            "topic": "microservices",
+            "strength": 7.5,
+            "pattern": "vulnerable"
+          },
+          {
+            "id": "vulnerable-load-2",
+            "claim": "Load Balancing Breakthrough Last Week",
+            "topic": "load-balancing",
+            "strength": 7.5,
+            "pattern": "vulnerable"
+          },
+          {
+            "id": "vulnerable-caching-2",
+            "claim": "Caching Breakthrough Last Week",
+            "topic": "caching",
+            "strength": 7.5,
+            "pattern": "vulnerable"
+          },
+          {
+            "id": "vulnerable-database-2",
+            "claim": "Database Design Breakthrough Last Week",
+            "topic": "database-design",
+            "strength": 7.5,
+            "pattern": "vulnerable"
+          },
+          {
+            "id": "vulnerable-api-2",
+            "claim": "Api Gateway Breakthrough Last Week",
+            "topic": "api-gateway",
+            "strength": 7.5,
+            "pattern": "vulnerable"
+          },
+          {
+            "id": "vulnerable-microservices-2",
+            "claim": "Microservices Breakthrough Last Week",
+            "topic": "microservices",
+            "strength": 7.5,
+            "pattern": "vulnerable"
+          }
+        ]
+      },
+      {
+        "id": "challenge",
+        "name": "Challenge",
+        "templates": [
+          {
+            "id": "challenge-load-0",
+            "claim": "Design Load Balancing Under Pressure?",
+            "topic": "load-balancing",
+            "strength": 7.6,
+            "pattern": "challenge"
+          },
+          {
+            "id": "challenge-caching-0",
+            "claim": "Design Caching Under Pressure?",
+            "topic": "caching",
+            "strength": 7.6,
+            "pattern": "challenge"
+          },
+          {
+            "id": "challenge-database-0",
+            "claim": "Design Database Design Under Pressure?",
+            "topic": "database-design",
+            "strength": 7.6,
+            "pattern": "challenge"
+          },
+          {
+            "id": "challenge-api-0",
+            "claim": "Design Api Gateway Under Pressure?",
+            "topic": "api-gateway",
+            "strength": 7.6,
+            "pattern": "challenge"
+          },
+          {
+            "id": "challenge-microservices-0",
+            "claim": "Design Microservices Under Pressure?",
+            "topic": "microservices",
+            "strength": 7.6,
+            "pattern": "challenge"
+          },
+          {
+            "id": "challenge-load-1",
+            "claim": "Most Can't Explain Load Balancing",
+            "topic": "load-balancing",
+            "strength": 7.5,
+            "pattern": "challenge"
+          },
+          {
+            "id": "challenge-caching-1",
+            "claim": "Most Can't Explain Caching",
+            "topic": "caching",
+            "strength": 7.5,
+            "pattern": "challenge"
+          },
+          {
+            "id": "challenge-database-1",
+            "claim": "Most Can't Explain Database Design",
+            "topic": "database-design",
+            "strength": 7.5,
+            "pattern": "challenge"
+          },
+          {
+            "id": "challenge-api-1",
+            "claim": "Most Can't Explain Api Gateway",
+            "topic": "api-gateway",
+            "strength": 7.5,
+            "pattern": "challenge"
+          },
+          {
+            "id": "challenge-microservices-1",
+            "claim": "Most Can't Explain Microservices",
+            "topic": "microservices",
+            "strength": 7.5,
+            "pattern": "challenge"
+          },
+          {
+            "id": "challenge-load-2",
+            "claim": "Explain Load Balancing Without Stuttering",
+            "topic": "load-balancing",
+            "strength": 7.5,
+            "pattern": "challenge"
+          },
+          {
+            "id": "challenge-caching-2",
+            "claim": "Explain Caching Without Stuttering",
+            "topic": "caching",
+            "strength": 7.5,
+            "pattern": "challenge"
+          },
+          {
+            "id": "challenge-database-2",
+            "claim": "Explain Database Design Without Stuttering",
+            "topic": "database-design",
+            "strength": 7.5,
+            "pattern": "challenge"
+          },
+          {
+            "id": "challenge-api-2",
+            "claim": "Explain Api Gateway Without Stuttering",
+            "topic": "api-gateway",
+            "strength": 7.5,
+            "pattern": "challenge"
+          },
+          {
+            "id": "challenge-microservices-2",
+            "claim": "Explain Microservices Without Stuttering",
+            "topic": "microservices",
+            "strength": 7.5,
+            "pattern": "challenge"
+          }
+        ]
+      },
+      {
+        "id": "pattern-break",
+        "name": "Pattern Break",
+        "templates": [
+          {
+            "id": "pattern-break-load-0",
+            "claim": "Wait: Amazon Does Load Balancing Different",
+            "topic": "load-balancing",
+            "strength": 7.7,
+            "pattern": "pattern-break"
+          },
+          {
+            "id": "pattern-break-caching-0",
+            "claim": "Wait: Facebook Does Caching Different",
+            "topic": "caching",
+            "strength": 7.5,
+            "pattern": "pattern-break"
+          },
+          {
+            "id": "pattern-break-database-0",
+            "claim": "Wait: Spotify Does Database Design Different",
+            "topic": "database-design",
+            "strength": 7.5,
+            "pattern": "pattern-break"
+          },
+          {
+            "id": "pattern-break-api-0",
+            "claim": "Wait: Amazon Does Api Gateway Different",
+            "topic": "api-gateway",
+            "strength": 7.7,
+            "pattern": "pattern-break"
+          },
+          {
+            "id": "pattern-break-microservices-0",
+            "claim": "Wait: Netflix Does Microservices Different",
+            "topic": "microservices",
+            "strength": 7.7,
+            "pattern": "pattern-break"
+          },
+          {
+            "id": "pattern-break-load-1",
+            "claim": "Plot Twist: Load Balancing Works This Way",
+            "topic": "load-balancing",
+            "strength": 7.5,
+            "pattern": "pattern-break"
+          },
+          {
+            "id": "pattern-break-caching-1",
+            "claim": "Plot Twist: Caching Works This Way",
+            "topic": "caching",
+            "strength": 7.5,
+            "pattern": "pattern-break"
+          },
+          {
+            "id": "pattern-break-database-1",
+            "claim": "Plot Twist: Database Design Works This Way",
+            "topic": "database-design",
+            "strength": 7.5,
+            "pattern": "pattern-break"
+          },
+          {
+            "id": "pattern-break-api-1",
+            "claim": "Plot Twist: Api Gateway Works This Way",
+            "topic": "api-gateway",
+            "strength": 7.5,
+            "pattern": "pattern-break"
+          },
+          {
+            "id": "pattern-break-microservices-1",
+            "claim": "Plot Twist: Microservices Works This Way",
+            "topic": "microservices",
+            "strength": 7.5,
+            "pattern": "pattern-break"
+          },
+          {
+            "id": "pattern-break-load-2",
+            "claim": "Spoiler: Load Balancing Strategy Different",
+            "topic": "load-balancing",
+            "strength": 7.5,
+            "pattern": "pattern-break"
+          },
+          {
+            "id": "pattern-break-caching-2",
+            "claim": "Spoiler: Caching Strategy Different",
+            "topic": "caching",
+            "strength": 7.5,
+            "pattern": "pattern-break"
+          },
+          {
+            "id": "pattern-break-database-2",
+            "claim": "Spoiler: Database Design Strategy Different",
+            "topic": "database-design",
+            "strength": 7.5,
+            "pattern": "pattern-break"
+          },
+          {
+            "id": "pattern-break-api-2",
+            "claim": "Spoiler: Api Gateway Strategy Different",
+            "topic": "api-gateway",
+            "strength": 7.5,
+            "pattern": "pattern-break"
+          },
+          {
+            "id": "pattern-break-microservices-2",
+            "claim": "Spoiler: Microservices Strategy Different",
+            "topic": "microservices",
+            "strength": 7.5,
+            "pattern": "pattern-break"
+          }
+        ]
+      },
+      {
+        "id": "specific",
+        "name": "Specific",
+        "templates": [
+          {
+            "id": "specific-load-0",
+            "claim": "1M Requests/Sec: Amazon Load Balancing",
+            "topic": "load-balancing",
+            "strength": 7.7,
+            "pattern": "specific"
+          },
+          {
+            "id": "specific-caching-0",
+            "claim": "2B Requests/Sec: Facebook Caching",
+            "topic": "caching",
+            "strength": 7.5,
+            "pattern": "specific"
+          },
+          {
+            "id": "specific-database-0",
+            "claim": "50PB Requests/Sec: Spotify Database Design",
+            "topic": "database-design",
+            "strength": 7.5,
+            "pattern": "specific"
+          },
+          {
+            "id": "specific-api-0",
+            "claim": "100M Requests/Sec: Amazon Api Gateway",
+            "topic": "api-gateway",
+            "strength": 7.7,
+            "pattern": "specific"
+          },
+          {
+            "id": "specific-microservices-0",
+            "claim": "700 Requests/Sec: Netflix Microservices",
+            "topic": "microservices",
+            "strength": 7.7,
+            "pattern": "specific"
+          },
+          {
+            "id": "specific-load-1",
+            "claim": "{95} Cores Load Balancing",
+            "topic": "load-balancing",
+            "strength": 7.5,
+            "pattern": "specific"
+          },
+          {
+            "id": "specific-caching-1",
+            "claim": "{85} Cores Caching",
+            "topic": "caching",
+            "strength": 7.5,
+            "pattern": "specific"
+          },
+          {
+            "id": "specific-database-1",
+            "claim": "{80} Cores Database Design",
+            "topic": "database-design",
+            "strength": 7.5,
+            "pattern": "specific"
+          },
+          {
+            "id": "specific-api-1",
+            "claim": "{90} Cores Api Gateway",
+            "topic": "api-gateway",
+            "strength": 7.5,
+            "pattern": "specific"
+          },
+          {
+            "id": "specific-microservices-1",
+            "claim": "{90} Cores Microservices",
+            "topic": "microservices",
+            "strength": 7.5,
+            "pattern": "specific"
+          },
+          {
+            "id": "specific-load-2",
+            "claim": "{95} Load Balancing Patterns",
+            "topic": "load-balancing",
+            "strength": 7.5,
+            "pattern": "specific"
+          },
+          {
+            "id": "specific-caching-2",
+            "claim": "{85} Caching Patterns",
+            "topic": "caching",
+            "strength": 7.5,
+            "pattern": "specific"
+          },
+          {
+            "id": "specific-database-2",
+            "claim": "{80} Database Design Patterns",
+            "topic": "database-design",
+            "strength": 7.5,
+            "pattern": "specific"
+          },
+          {
+            "id": "specific-api-2",
+            "claim": "{90} Api Gateway Patterns",
+            "topic": "api-gateway",
+            "strength": 7.5,
+            "pattern": "specific"
+          },
+          {
+            "id": "specific-microservices-2",
+            "claim": "{90} Microservices Patterns",
+            "topic": "microservices",
+            "strength": 7.5,
+            "pattern": "specific"
+          }
+        ]
+      },
+      {
+        "id": "hindsight",
+        "name": "Hindsight",
+        "templates": [
+          {
+            "id": "hindsight-load-0",
+            "claim": "I Wish Learned Load Balancing This Way",
+            "topic": "load-balancing",
+            "strength": 7.5,
+            "pattern": "hindsight"
+          },
+          {
+            "id": "hindsight-caching-0",
+            "claim": "I Wish Learned Caching This Way",
+            "topic": "caching",
+            "strength": 7.5,
+            "pattern": "hindsight"
+          },
+          {
+            "id": "hindsight-database-0",
+            "claim": "I Wish Learned Database Design This Way",
+            "topic": "database-design",
+            "strength": 7.5,
+            "pattern": "hindsight"
+          },
+          {
+            "id": "hindsight-api-0",
+            "claim": "I Wish Learned Api Gateway This Way",
+            "topic": "api-gateway",
+            "strength": 7.5,
+            "pattern": "hindsight"
+          },
+          {
+            "id": "hindsight-microservices-0",
+            "claim": "I Wish Learned Microservices This Way",
+            "topic": "microservices",
+            "strength": 7.5,
+            "pattern": "hindsight"
+          },
+          {
+            "id": "hindsight-load-1",
+            "claim": "Amazon Load Balancing Lesson Nobody Gets",
+            "topic": "load-balancing",
+            "strength": 7.7,
+            "pattern": "hindsight"
+          },
+          {
+            "id": "hindsight-caching-1",
+            "claim": "Facebook Caching Lesson Nobody Gets",
+            "topic": "caching",
+            "strength": 7.5,
+            "pattern": "hindsight"
+          },
+          {
+            "id": "hindsight-database-1",
+            "claim": "Spotify Database Design Lesson Nobody Gets",
+            "topic": "database-design",
+            "strength": 7.5,
+            "pattern": "hindsight"
+          },
+          {
+            "id": "hindsight-api-1",
+            "claim": "Amazon Api Gateway Lesson Nobody Gets",
+            "topic": "api-gateway",
+            "strength": 7.7,
+            "pattern": "hindsight"
+          },
+          {
+            "id": "hindsight-microservices-1",
+            "claim": "Netflix Microservices Lesson Nobody Gets",
+            "topic": "microservices",
+            "strength": 7.7,
+            "pattern": "hindsight"
+          },
+          {
+            "id": "hindsight-load-2",
+            "claim": "Load Balancing Truth They Don't Teach",
+            "topic": "load-balancing",
+            "strength": 7.5,
+            "pattern": "hindsight"
+          },
+          {
+            "id": "hindsight-caching-2",
+            "claim": "Caching Truth They Don't Teach",
+            "topic": "caching",
+            "strength": 7.5,
+            "pattern": "hindsight"
+          },
+          {
+            "id": "hindsight-database-2",
+            "claim": "Database Design Truth They Don't Teach",
+            "topic": "database-design",
+            "strength": 7.5,
+            "pattern": "hindsight"
+          },
+          {
+            "id": "hindsight-api-2",
+            "claim": "Api Gateway Truth They Don't Teach",
+            "topic": "api-gateway",
+            "strength": 7.5,
+            "pattern": "hindsight"
+          },
+          {
+            "id": "hindsight-microservices-2",
+            "claim": "Microservices Truth They Don't Teach",
+            "topic": "microservices",
+            "strength": 7.5,
+            "pattern": "hindsight"
+          }
+        ]
+      },
+      {
+        "id": "game",
+        "name": "Game",
+        "templates": [
+          {
+            "id": "game-load-0",
+            "claim": "Level Up Load Balancing in 2min",
+            "topic": "load-balancing",
+            "strength": 7.5,
+            "pattern": "game"
+          },
+          {
+            "id": "game-caching-0",
+            "claim": "Level Up Caching in 30s",
+            "topic": "caching",
+            "strength": 7.5,
+            "pattern": "game"
+          },
+          {
+            "id": "game-database-0",
+            "claim": "Level Up Database Design in 3min",
+            "topic": "database-design",
+            "strength": 7.5,
+            "pattern": "game"
+          },
+          {
+            "id": "game-api-0",
+            "claim": "Level Up Api Gateway in 45s",
+            "topic": "api-gateway",
+            "strength": 7.5,
+            "pattern": "game"
+          },
+          {
+            "id": "game-microservices-0",
+            "claim": "Level Up Microservices in 3min",
+            "topic": "microservices",
+            "strength": 7.5,
+            "pattern": "game"
+          },
+          {
+            "id": "game-load-1",
+            "claim": "Load Balancing Speedrun: {95} Steps",
+            "topic": "load-balancing",
+            "strength": 7.5,
+            "pattern": "game"
+          },
+          {
+            "id": "game-caching-1",
+            "claim": "Caching Speedrun: {85} Steps",
+            "topic": "caching",
+            "strength": 7.5,
+            "pattern": "game"
+          },
+          {
+            "id": "game-database-1",
+            "claim": "Database Design Speedrun: {80} Steps",
+            "topic": "database-design",
+            "strength": 7.5,
+            "pattern": "game"
+          },
+          {
+            "id": "game-api-1",
+            "claim": "Api Gateway Speedrun: {90} Steps",
+            "topic": "api-gateway",
+            "strength": 7.5,
+            "pattern": "game"
+          },
+          {
+            "id": "game-microservices-1",
+            "claim": "Microservices Speedrun: {90} Steps",
+            "topic": "microservices",
+            "strength": 7.5,
+            "pattern": "game"
+          },
+          {
+            "id": "game-load-2",
+            "claim": "Beat Load Balancing Interview",
+            "topic": "load-balancing",
+            "strength": 7.7,
+            "pattern": "game"
+          },
+          {
+            "id": "game-caching-2",
+            "claim": "Beat Caching Interview",
+            "topic": "caching",
+            "strength": 7.7,
+            "pattern": "game"
+          },
+          {
+            "id": "game-database-2",
+            "claim": "Beat Database Design Interview",
+            "topic": "database-design",
+            "strength": 7.7,
+            "pattern": "game"
+          },
+          {
+            "id": "game-api-2",
+            "claim": "Beat Api Gateway Interview",
+            "topic": "api-gateway",
+            "strength": 7.7,
+            "pattern": "game"
+          },
+          {
+            "id": "game-microservices-2",
+            "claim": "Beat Microservices Interview",
+            "topic": "microservices",
+            "strength": 7.7,
+            "pattern": "game"
+          }
+        ]
+      },
+      {
+        "id": "social",
+        "name": "Social",
+        "templates": [
+          {
+            "id": "social-load-0",
+            "claim": "Every Amazon Eng Knows Load Balancing",
+            "topic": "load-balancing",
+            "strength": 7.7,
+            "pattern": "social"
+          },
+          {
+            "id": "social-caching-0",
+            "claim": "Every Facebook Eng Knows Caching",
+            "topic": "caching",
+            "strength": 7.5,
+            "pattern": "social"
+          },
+          {
+            "id": "social-database-0",
+            "claim": "Every Spotify Eng Knows Database Design",
+            "topic": "database-design",
+            "strength": 7.5,
+            "pattern": "social"
+          },
+          {
+            "id": "social-api-0",
+            "claim": "Every Amazon Eng Knows Api Gateway",
+            "topic": "api-gateway",
+            "strength": 7.7,
+            "pattern": "social"
+          },
+          {
+            "id": "social-microservices-0",
+            "claim": "Every Netflix Eng Knows Microservices",
+            "topic": "microservices",
+            "strength": 7.7,
+            "pattern": "social"
+          },
+          {
+            "id": "social-load-1",
+            "claim": "{95}% Hired Know Load Balancing Secret",
+            "topic": "load-balancing",
+            "strength": 7.8,
+            "pattern": "social"
+          },
+          {
+            "id": "social-caching-1",
+            "claim": "{85}% Hired Know Caching Secret",
+            "topic": "caching",
+            "strength": 7.8,
+            "pattern": "social"
+          },
+          {
+            "id": "social-database-1",
+            "claim": "{80}% Hired Know Database Design Secret",
+            "topic": "database-design",
+            "strength": 7.8,
+            "pattern": "social"
+          },
+          {
+            "id": "social-api-1",
+            "claim": "{90}% Hired Know Api Gateway Secret",
+            "topic": "api-gateway",
+            "strength": 7.8,
+            "pattern": "social"
+          },
+          {
+            "id": "social-microservices-1",
+            "claim": "{90}% Hired Know Microservices Secret",
+            "topic": "microservices",
+            "strength": 7.8,
+            "pattern": "social"
+          },
+          {
+            "id": "social-load-2",
+            "claim": "Top Eng Agree: Load Balancing Works",
+            "topic": "load-balancing",
+            "strength": 7.5,
+            "pattern": "social"
+          },
+          {
+            "id": "social-caching-2",
+            "claim": "Top Eng Agree: Caching Works",
+            "topic": "caching",
+            "strength": 7.5,
+            "pattern": "social"
+          },
+          {
+            "id": "social-database-2",
+            "claim": "Top Eng Agree: Database Design Works",
+            "topic": "database-design",
+            "strength": 7.5,
+            "pattern": "social"
+          },
+          {
+            "id": "social-api-2",
+            "claim": "Top Eng Agree: Api Gateway Works",
+            "topic": "api-gateway",
+            "strength": 7.5,
+            "pattern": "social"
+          },
+          {
+            "id": "social-microservices-2",
+            "claim": "Top Eng Agree: Microservices Works",
+            "topic": "microservices",
+            "strength": 7.5,
+            "pattern": "social"
+          }
+        ]
+      },
+      {
+        "id": "scarcity",
+        "name": "Scarcity",
+        "templates": [
+          {
+            "id": "scarcity-load-0",
+            "claim": "Load Balancing Technique Getting Harder",
+            "topic": "load-balancing",
+            "strength": 7.5,
+            "pattern": "scarcity"
+          },
+          {
+            "id": "scarcity-caching-0",
+            "claim": "Caching Technique Getting Harder",
+            "topic": "caching",
+            "strength": 7.5,
+            "pattern": "scarcity"
+          },
+          {
+            "id": "scarcity-database-0",
+            "claim": "Database Design Technique Getting Harder",
+            "topic": "database-design",
+            "strength": 7.5,
+            "pattern": "scarcity"
+          },
+          {
+            "id": "scarcity-api-0",
+            "claim": "Api Gateway Technique Getting Harder",
+            "topic": "api-gateway",
+            "strength": 7.5,
+            "pattern": "scarcity"
+          },
+          {
+            "id": "scarcity-microservices-0",
+            "claim": "Microservices Technique Getting Harder",
+            "topic": "microservices",
+            "strength": 7.5,
+            "pattern": "scarcity"
+          },
+          {
+            "id": "scarcity-load-1",
+            "claim": "Load Balancing Edge: Shrinking",
+            "topic": "load-balancing",
+            "strength": 7.5,
+            "pattern": "scarcity"
+          },
+          {
+            "id": "scarcity-caching-1",
+            "claim": "Caching Edge: Shrinking",
+            "topic": "caching",
+            "strength": 7.5,
+            "pattern": "scarcity"
+          },
+          {
+            "id": "scarcity-database-1",
+            "claim": "Database Design Edge: Shrinking",
+            "topic": "database-design",
+            "strength": 7.5,
+            "pattern": "scarcity"
+          },
+          {
+            "id": "scarcity-api-1",
+            "claim": "Api Gateway Edge: Shrinking",
+            "topic": "api-gateway",
+            "strength": 7.5,
+            "pattern": "scarcity"
+          },
+          {
+            "id": "scarcity-microservices-1",
+            "claim": "Microservices Edge: Shrinking",
+            "topic": "microservices",
+            "strength": 7.5,
+            "pattern": "scarcity"
+          },
+          {
+            "id": "scarcity-load-2",
+            "claim": "Soon All Know Load Balancing",
+            "topic": "load-balancing",
+            "strength": 7.5,
+            "pattern": "scarcity"
+          },
+          {
+            "id": "scarcity-caching-2",
+            "claim": "Soon All Know Caching",
+            "topic": "caching",
+            "strength": 7.5,
+            "pattern": "scarcity"
+          },
+          {
+            "id": "scarcity-database-2",
+            "claim": "Soon All Know Database Design",
+            "topic": "database-design",
+            "strength": 7.5,
+            "pattern": "scarcity"
+          },
+          {
+            "id": "scarcity-api-2",
+            "claim": "Soon All Know Api Gateway",
+            "topic": "api-gateway",
+            "strength": 7.5,
+            "pattern": "scarcity"
+          },
+          {
+            "id": "scarcity-microservices-2",
+            "claim": "Soon All Know Microservices",
+            "topic": "microservices",
+            "strength": 7.5,
+            "pattern": "scarcity"
+          }
+        ]
+      },
+      {
+        "id": "contradiction",
+        "name": "Contradiction",
+        "templates": [
+          {
+            "id": "contradiction-load-0",
+            "claim": "Load Balancing Paradox Most Miss",
+            "topic": "load-balancing",
+            "strength": 7.5,
+            "pattern": "contradiction"
+          },
+          {
+            "id": "contradiction-caching-0",
+            "claim": "Caching Paradox Most Miss",
+            "topic": "caching",
+            "strength": 7.5,
+            "pattern": "contradiction"
+          },
+          {
+            "id": "contradiction-database-0",
+            "claim": "Database Design Paradox Most Miss",
+            "topic": "database-design",
+            "strength": 7.5,
+            "pattern": "contradiction"
+          },
+          {
+            "id": "contradiction-api-0",
+            "claim": "Api Gateway Paradox Most Miss",
+            "topic": "api-gateway",
+            "strength": 7.5,
+            "pattern": "contradiction"
+          },
+          {
+            "id": "contradiction-microservices-0",
+            "claim": "Microservices Paradox Most Miss",
+            "topic": "microservices",
+            "strength": 7.5,
+            "pattern": "contradiction"
+          },
+          {
+            "id": "contradiction-load-1",
+            "claim": "Amazon Does Load Balancing Backwards",
+            "topic": "load-balancing",
+            "strength": 7.7,
+            "pattern": "contradiction"
+          },
+          {
+            "id": "contradiction-caching-1",
+            "claim": "Facebook Does Caching Backwards",
+            "topic": "caching",
+            "strength": 7.5,
+            "pattern": "contradiction"
+          },
+          {
+            "id": "contradiction-database-1",
+            "claim": "Spotify Does Database Design Backwards",
+            "topic": "database-design",
+            "strength": 7.5,
+            "pattern": "contradiction"
+          },
+          {
+            "id": "contradiction-api-1",
+            "claim": "Amazon Does Api Gateway Backwards",
+            "topic": "api-gateway",
+            "strength": 7.7,
+            "pattern": "contradiction"
+          },
+          {
+            "id": "contradiction-microservices-1",
+            "claim": "Netflix Does Microservices Backwards",
+            "topic": "microservices",
+            "strength": 7.7,
+            "pattern": "contradiction"
+          },
+          {
+            "id": "contradiction-load-2",
+            "claim": "Load Balancing Truth Contradicts",
+            "topic": "load-balancing",
+            "strength": 7.5,
+            "pattern": "contradiction"
+          },
+          {
+            "id": "contradiction-caching-2",
+            "claim": "Caching Truth Contradicts",
+            "topic": "caching",
+            "strength": 7.5,
+            "pattern": "contradiction"
+          },
+          {
+            "id": "contradiction-database-2",
+            "claim": "Database Design Truth Contradicts",
+            "topic": "database-design",
+            "strength": 7.5,
+            "pattern": "contradiction"
+          },
+          {
+            "id": "contradiction-api-2",
+            "claim": "Api Gateway Truth Contradicts",
+            "topic": "api-gateway",
+            "strength": 7.5,
+            "pattern": "contradiction"
+          },
+          {
+            "id": "contradiction-microservices-2",
+            "claim": "Microservices Truth Contradicts",
+            "topic": "microservices",
+            "strength": 7.5,
+            "pattern": "contradiction"
+          }
+        ]
+      },
+      {
+        "id": "emotion",
+        "name": "Emotion",
+        "templates": [
+          {
+            "id": "emotion-load-0",
+            "claim": "Got Emotional About Load Balancing",
+            "topic": "load-balancing",
+            "strength": 7.5,
+            "pattern": "emotion"
+          },
+          {
+            "id": "emotion-caching-0",
+            "claim": "Got Emotional About Caching",
+            "topic": "caching",
+            "strength": 7.5,
+            "pattern": "emotion"
+          },
+          {
+            "id": "emotion-database-0",
+            "claim": "Got Emotional About Database Design",
+            "topic": "database-design",
+            "strength": 7.5,
+            "pattern": "emotion"
+          },
+          {
+            "id": "emotion-api-0",
+            "claim": "Got Emotional About Api Gateway",
+            "topic": "api-gateway",
+            "strength": 7.5,
+            "pattern": "emotion"
+          },
+          {
+            "id": "emotion-microservices-0",
+            "claim": "Got Emotional About Microservices",
+            "topic": "microservices",
+            "strength": 7.5,
+            "pattern": "emotion"
+          },
+          {
+            "id": "emotion-load-1",
+            "claim": "Load Balancing Changed Coding",
+            "topic": "load-balancing",
+            "strength": 7.7,
+            "pattern": "emotion"
+          },
+          {
+            "id": "emotion-caching-1",
+            "claim": "Caching Changed Coding",
+            "topic": "caching",
+            "strength": 7.7,
+            "pattern": "emotion"
+          },
+          {
+            "id": "emotion-database-1",
+            "claim": "Database Design Changed Coding",
+            "topic": "database-design",
+            "strength": 7.7,
+            "pattern": "emotion"
+          },
+          {
+            "id": "emotion-api-1",
+            "claim": "Api Gateway Changed Coding",
+            "topic": "api-gateway",
+            "strength": 7.7,
+            "pattern": "emotion"
+          },
+          {
+            "id": "emotion-microservices-1",
+            "claim": "Microservices Changed Coding",
+            "topic": "microservices",
+            "strength": 7.7,
+            "pattern": "emotion"
+          },
+          {
+            "id": "emotion-load-2",
+            "claim": "Why Load Balancing Matters",
+            "topic": "load-balancing",
+            "strength": 7.8,
+            "pattern": "emotion"
+          },
+          {
+            "id": "emotion-caching-2",
+            "claim": "Why Caching Matters",
+            "topic": "caching",
+            "strength": 7.8,
+            "pattern": "emotion"
+          },
+          {
+            "id": "emotion-database-2",
+            "claim": "Why Database Design Matters",
+            "topic": "database-design",
+            "strength": 7.8,
+            "pattern": "emotion"
+          },
+          {
+            "id": "emotion-api-2",
+            "claim": "Why Api Gateway Matters",
+            "topic": "api-gateway",
+            "strength": 7.8,
+            "pattern": "emotion"
+          },
+          {
+            "id": "emotion-microservices-2",
+            "claim": "Why Microservices Matters",
+            "topic": "microservices",
+            "strength": 7.8,
+            "pattern": "emotion"
+          }
+        ]
+      },
+      {
+        "id": "surprise",
+        "name": "Surprise",
+        "templates": [
+          {
+            "id": "surprise-load-0",
+            "claim": "Plot: Amazon Load Balancing With L4",
+            "topic": "load-balancing",
+            "strength": 7.7,
+            "pattern": "surprise"
+          },
+          {
+            "id": "surprise-caching-0",
+            "claim": "Plot: Facebook Caching With Redis",
+            "topic": "caching",
+            "strength": 7.5,
+            "pattern": "surprise"
+          },
+          {
+            "id": "surprise-database-0",
+            "claim": "Plot: Spotify Database Design With Sharding",
+            "topic": "database-design",
+            "strength": 7.5,
+            "pattern": "surprise"
+          },
+          {
+            "id": "surprise-api-0",
+            "claim": "Plot: Amazon Api Gateway With Kong",
+            "topic": "api-gateway",
+            "strength": 7.7,
+            "pattern": "surprise"
+          },
+          {
+            "id": "surprise-microservices-0",
+            "claim": "Plot: Netflix Microservices With Sync",
+            "topic": "microservices",
+            "strength": 7.7,
+            "pattern": "surprise"
+          },
+          {
+            "id": "surprise-load-1",
+            "claim": "Load Balancing Secret Surprised",
+            "topic": "load-balancing",
+            "strength": 7.8,
+            "pattern": "surprise"
+          },
+          {
+            "id": "surprise-caching-1",
+            "claim": "Caching Secret Surprised",
+            "topic": "caching",
+            "strength": 7.8,
+            "pattern": "surprise"
+          },
+          {
+            "id": "surprise-database-1",
+            "claim": "Database Design Secret Surprised",
+            "topic": "database-design",
+            "strength": 7.8,
+            "pattern": "surprise"
+          },
+          {
+            "id": "surprise-api-1",
+            "claim": "Api Gateway Secret Surprised",
+            "topic": "api-gateway",
+            "strength": 7.8,
+            "pattern": "surprise"
+          },
+          {
+            "id": "surprise-microservices-1",
+            "claim": "Microservices Secret Surprised",
+            "topic": "microservices",
+            "strength": 7.8,
+            "pattern": "surprise"
+          },
+          {
+            "id": "surprise-load-2",
+            "claim": "How Amazon Uses Load Balancing",
+            "topic": "load-balancing",
+            "strength": 7.7,
+            "pattern": "surprise"
+          },
+          {
+            "id": "surprise-caching-2",
+            "claim": "How Facebook Uses Caching",
+            "topic": "caching",
+            "strength": 7.5,
+            "pattern": "surprise"
+          },
+          {
+            "id": "surprise-database-2",
+            "claim": "How Spotify Uses Database Design",
+            "topic": "database-design",
+            "strength": 7.5,
+            "pattern": "surprise"
+          },
+          {
+            "id": "surprise-api-2",
+            "claim": "How Amazon Uses Api Gateway",
+            "topic": "api-gateway",
+            "strength": 7.7,
+            "pattern": "surprise"
+          },
+          {
+            "id": "surprise-microservices-2",
+            "claim": "How Netflix Uses Microservices",
+            "topic": "microservices",
+            "strength": 7.7,
+            "pattern": "surprise"
+          }
+        ]
+      },
+      {
+        "id": "value",
+        "name": "Value",
+        "templates": [
+          {
+            "id": "value-load-0",
+            "claim": "Learn Load Balancing, Ace Interviews",
+            "topic": "load-balancing",
+            "strength": 7.7,
+            "pattern": "value"
+          },
+          {
+            "id": "value-caching-0",
+            "claim": "Learn Caching, Ace Interviews",
+            "topic": "caching",
+            "strength": 7.7,
+            "pattern": "value"
+          },
+          {
+            "id": "value-database-0",
+            "claim": "Learn Database Design, Ace Interviews",
+            "topic": "database-design",
+            "strength": 7.7,
+            "pattern": "value"
+          },
+          {
+            "id": "value-api-0",
+            "claim": "Learn Api Gateway, Ace Interviews",
+            "topic": "api-gateway",
+            "strength": 7.7,
+            "pattern": "value"
+          },
+          {
+            "id": "value-microservices-0",
+            "claim": "Learn Microservices, Ace Interviews",
+            "topic": "microservices",
+            "strength": 7.7,
+            "pattern": "value"
+          },
+          {
+            "id": "value-load-1",
+            "claim": "Load Balancing Mastery = Better Career",
+            "topic": "load-balancing",
+            "strength": 7.5,
+            "pattern": "value"
+          },
+          {
+            "id": "value-caching-1",
+            "claim": "Caching Mastery = Better Career",
+            "topic": "caching",
+            "strength": 7.5,
+            "pattern": "value"
+          },
+          {
+            "id": "value-database-1",
+            "claim": "Database Design Mastery = Better Career",
+            "topic": "database-design",
+            "strength": 7.5,
+            "pattern": "value"
+          },
+          {
+            "id": "value-api-1",
+            "claim": "Api Gateway Mastery = Better Career",
+            "topic": "api-gateway",
+            "strength": 7.5,
+            "pattern": "value"
+          },
+          {
+            "id": "value-microservices-1",
+            "claim": "Microservices Mastery = Better Career",
+            "topic": "microservices",
+            "strength": 7.5,
+            "pattern": "value"
+          },
+          {
+            "id": "value-load-2",
+            "claim": "Ready Load Balancing in 2min",
+            "topic": "load-balancing",
+            "strength": 7.5,
+            "pattern": "value"
+          },
+          {
+            "id": "value-caching-2",
+            "claim": "Ready Caching in 30s",
+            "topic": "caching",
+            "strength": 7.5,
+            "pattern": "value"
+          },
+          {
+            "id": "value-database-2",
+            "claim": "Ready Database Design in 3min",
+            "topic": "database-design",
+            "strength": 7.5,
+            "pattern": "value"
+          },
+          {
+            "id": "value-api-2",
+            "claim": "Ready Api Gateway in 45s",
+            "topic": "api-gateway",
+            "strength": 7.5,
+            "pattern": "value"
+          },
+          {
+            "id": "value-microservices-2",
+            "claim": "Ready Microservices in 3min",
+            "topic": "microservices",
+            "strength": 7.5,
+            "pattern": "value"
+          }
+        ]
+      },
+      {
+        "id": "narrative",
+        "name": "Narrative",
+        "templates": [
+          {
+            "id": "narrative-load-0",
+            "claim": "Zero to FAANG Load Balancing",
+            "topic": "load-balancing",
+            "strength": 7.7,
+            "pattern": "narrative"
+          },
+          {
+            "id": "narrative-caching-0",
+            "claim": "Zero to FAANG Caching",
+            "topic": "caching",
+            "strength": 7.7,
+            "pattern": "narrative"
+          },
+          {
+            "id": "narrative-database-0",
+            "claim": "Zero to FAANG Database Design",
+            "topic": "database-design",
+            "strength": 7.7,
+            "pattern": "narrative"
+          },
+          {
+            "id": "narrative-api-0",
+            "claim": "Zero to FAANG Api Gateway",
+            "topic": "api-gateway",
+            "strength": 7.7,
+            "pattern": "narrative"
+          },
+          {
+            "id": "narrative-microservices-0",
+            "claim": "Zero to FAANG Microservices",
+            "topic": "microservices",
+            "strength": 7.7,
+            "pattern": "narrative"
+          },
+          {
+            "id": "narrative-load-1",
+            "claim": "Load Balancing: 3-Month Transform",
+            "topic": "load-balancing",
+            "strength": 7.5,
+            "pattern": "narrative"
+          },
+          {
+            "id": "narrative-caching-1",
+            "claim": "Caching: 3-Month Transform",
+            "topic": "caching",
+            "strength": 7.5,
+            "pattern": "narrative"
+          },
+          {
+            "id": "narrative-database-1",
+            "claim": "Database Design: 3-Month Transform",
+            "topic": "database-design",
+            "strength": 7.5,
+            "pattern": "narrative"
+          },
+          {
+            "id": "narrative-api-1",
+            "claim": "Api Gateway: 3-Month Transform",
+            "topic": "api-gateway",
+            "strength": 7.5,
+            "pattern": "narrative"
+          },
+          {
+            "id": "narrative-microservices-1",
+            "claim": "Microservices: 3-Month Transform",
+            "topic": "microservices",
+            "strength": 7.5,
+            "pattern": "narrative"
+          },
+          {
+            "id": "narrative-load-2",
+            "claim": "Load Balancing Opened Doors",
+            "topic": "load-balancing",
+            "strength": 7.5,
+            "pattern": "narrative"
+          },
+          {
+            "id": "narrative-caching-2",
+            "claim": "Caching Opened Doors",
+            "topic": "caching",
+            "strength": 7.5,
+            "pattern": "narrative"
+          },
+          {
+            "id": "narrative-database-2",
+            "claim": "Database Design Opened Doors",
+            "topic": "database-design",
+            "strength": 7.5,
+            "pattern": "narrative"
+          },
+          {
+            "id": "narrative-api-2",
+            "claim": "Api Gateway Opened Doors",
+            "topic": "api-gateway",
+            "strength": 7.5,
+            "pattern": "narrative"
+          },
+          {
+            "id": "narrative-microservices-2",
+            "claim": "Microservices Opened Doors",
+            "topic": "microservices",
+            "strength": 7.5,
+            "pattern": "narrative"
+          }
+        ]
+      },
+      {
+        "id": "fomo",
+        "name": "Fomo",
+        "templates": [
+          {
+            "id": "fomo-load-0",
+            "claim": "Amazon Already Using Load Balancing",
+            "topic": "load-balancing",
+            "strength": 7.7,
+            "pattern": "fomo"
+          },
+          {
+            "id": "fomo-caching-0",
+            "claim": "Facebook Already Using Caching",
+            "topic": "caching",
+            "strength": 7.5,
+            "pattern": "fomo"
+          },
+          {
+            "id": "fomo-database-0",
+            "claim": "Spotify Already Using Database Design",
+            "topic": "database-design",
+            "strength": 7.5,
+            "pattern": "fomo"
+          },
+          {
+            "id": "fomo-api-0",
+            "claim": "Amazon Already Using Api Gateway",
+            "topic": "api-gateway",
+            "strength": 7.7,
+            "pattern": "fomo"
+          },
+          {
+            "id": "fomo-microservices-0",
+            "claim": "Netflix Already Using Microservices",
+            "topic": "microservices",
+            "strength": 7.7,
+            "pattern": "fomo"
+          },
+          {
+            "id": "fomo-load-1",
+            "claim": "Don't Know Load Balancing = Behind",
+            "topic": "load-balancing",
+            "strength": 7.5,
+            "pattern": "fomo"
+          },
+          {
+            "id": "fomo-caching-1",
+            "claim": "Don't Know Caching = Behind",
+            "topic": "caching",
+            "strength": 7.5,
+            "pattern": "fomo"
+          },
+          {
+            "id": "fomo-database-1",
+            "claim": "Don't Know Database Design = Behind",
+            "topic": "database-design",
+            "strength": 7.5,
+            "pattern": "fomo"
+          },
+          {
+            "id": "fomo-api-1",
+            "claim": "Don't Know Api Gateway = Behind",
+            "topic": "api-gateway",
+            "strength": 7.5,
+            "pattern": "fomo"
+          },
+          {
+            "id": "fomo-microservices-1",
+            "claim": "Don't Know Microservices = Behind",
+            "topic": "microservices",
+            "strength": 7.5,
+            "pattern": "fomo"
+          },
+          {
+            "id": "fomo-load-2",
+            "claim": "Everyone Mastering Load Balancing",
+            "topic": "load-balancing",
+            "strength": 7.5,
+            "pattern": "fomo"
+          },
+          {
+            "id": "fomo-caching-2",
+            "claim": "Everyone Mastering Caching",
+            "topic": "caching",
+            "strength": 7.5,
+            "pattern": "fomo"
+          },
+          {
+            "id": "fomo-database-2",
+            "claim": "Everyone Mastering Database Design",
+            "topic": "database-design",
+            "strength": 7.5,
+            "pattern": "fomo"
+          },
+          {
+            "id": "fomo-api-2",
+            "claim": "Everyone Mastering Api Gateway",
+            "topic": "api-gateway",
+            "strength": 7.5,
+            "pattern": "fomo"
+          },
+          {
+            "id": "fomo-microservices-2",
+            "claim": "Everyone Mastering Microservices",
+            "topic": "microservices",
+            "strength": 7.5,
+            "pattern": "fomo"
+          }
+        ]
+      },
+      {
+        "id": "intimacy",
+        "name": "Intimacy",
+        "templates": [
+          {
+            "id": "intimacy-load-0",
+            "claim": "Share Load Balancing Secret",
+            "topic": "load-balancing",
+            "strength": 7.8,
+            "pattern": "intimacy"
+          },
+          {
+            "id": "intimacy-caching-0",
+            "claim": "Share Caching Secret",
+            "topic": "caching",
+            "strength": 7.8,
+            "pattern": "intimacy"
+          },
+          {
+            "id": "intimacy-database-0",
+            "claim": "Share Database Design Secret",
+            "topic": "database-design",
+            "strength": 7.8,
+            "pattern": "intimacy"
+          },
+          {
+            "id": "intimacy-api-0",
+            "claim": "Share Api Gateway Secret",
+            "topic": "api-gateway",
+            "strength": 7.8,
+            "pattern": "intimacy"
+          },
+          {
+            "id": "intimacy-microservices-0",
+            "claim": "Share Microservices Secret",
+            "topic": "microservices",
+            "strength": 7.8,
+            "pattern": "intimacy"
+          },
+          {
+            "id": "intimacy-load-1",
+            "claim": "Tell Friends Load Balancing",
+            "topic": "load-balancing",
+            "strength": 7.5,
+            "pattern": "intimacy"
+          },
+          {
+            "id": "intimacy-caching-1",
+            "claim": "Tell Friends Caching",
+            "topic": "caching",
+            "strength": 7.5,
+            "pattern": "intimacy"
+          },
+          {
+            "id": "intimacy-database-1",
+            "claim": "Tell Friends Database Design",
+            "topic": "database-design",
+            "strength": 7.5,
+            "pattern": "intimacy"
+          },
+          {
+            "id": "intimacy-api-1",
+            "claim": "Tell Friends Api Gateway",
+            "topic": "api-gateway",
+            "strength": 7.5,
+            "pattern": "intimacy"
+          },
+          {
+            "id": "intimacy-microservices-1",
+            "claim": "Tell Friends Microservices",
+            "topic": "microservices",
+            "strength": 7.5,
+            "pattern": "intimacy"
+          },
+          {
+            "id": "intimacy-load-2",
+            "claim": "Load Balancing Truth Only Tell",
+            "topic": "load-balancing",
+            "strength": 7.5,
+            "pattern": "intimacy"
+          },
+          {
+            "id": "intimacy-caching-2",
+            "claim": "Caching Truth Only Tell",
+            "topic": "caching",
+            "strength": 7.5,
+            "pattern": "intimacy"
+          },
+          {
+            "id": "intimacy-database-2",
+            "claim": "Database Design Truth Only Tell",
+            "topic": "database-design",
+            "strength": 7.5,
+            "pattern": "intimacy"
+          },
+          {
+            "id": "intimacy-api-2",
+            "claim": "Api Gateway Truth Only Tell",
+            "topic": "api-gateway",
+            "strength": 7.5,
+            "pattern": "intimacy"
+          },
+          {
+            "id": "intimacy-microservices-2",
+            "claim": "Microservices Truth Only Tell",
+            "topic": "microservices",
+            "strength": 7.5,
+            "pattern": "intimacy"
+          }
+        ]
+      },
+      {
+        "id": "dare",
+        "name": "Dare",
+        "templates": [
+          {
+            "id": "dare-load-0",
+            "claim": "Dare Load Balancing Master 2min",
+            "topic": "load-balancing",
+            "strength": 7.5,
+            "pattern": "dare"
+          },
+          {
+            "id": "dare-caching-0",
+            "claim": "Dare Caching Master 30s",
+            "topic": "caching",
+            "strength": 7.5,
+            "pattern": "dare"
+          },
+          {
+            "id": "dare-database-0",
+            "claim": "Dare Database Design Master 3min",
+            "topic": "database-design",
+            "strength": 7.5,
+            "pattern": "dare"
+          },
+          {
+            "id": "dare-api-0",
+            "claim": "Dare Api Gateway Master 45s",
+            "topic": "api-gateway",
+            "strength": 7.5,
+            "pattern": "dare"
+          },
+          {
+            "id": "dare-microservices-0",
+            "claim": "Dare Microservices Master 3min",
+            "topic": "microservices",
+            "strength": 7.5,
+            "pattern": "dare"
+          },
+          {
+            "id": "dare-load-1",
+            "claim": "Bet Can't Explain Load Balancing",
+            "topic": "load-balancing",
+            "strength": 7.5,
+            "pattern": "dare"
+          },
+          {
+            "id": "dare-caching-1",
+            "claim": "Bet Can't Explain Caching",
+            "topic": "caching",
+            "strength": 7.5,
+            "pattern": "dare"
+          },
+          {
+            "id": "dare-database-1",
+            "claim": "Bet Can't Explain Database Design",
+            "topic": "database-design",
+            "strength": 7.5,
+            "pattern": "dare"
+          },
+          {
+            "id": "dare-api-1",
+            "claim": "Bet Can't Explain Api Gateway",
+            "topic": "api-gateway",
+            "strength": 7.5,
+            "pattern": "dare"
+          },
+          {
+            "id": "dare-microservices-1",
+            "claim": "Bet Can't Explain Microservices",
+            "topic": "microservices",
+            "strength": 7.5,
+            "pattern": "dare"
+          },
+          {
+            "id": "dare-load-2",
+            "claim": "Design Load Balancing Challenge",
+            "topic": "load-balancing",
+            "strength": 7.5,
+            "pattern": "dare"
+          },
+          {
+            "id": "dare-caching-2",
+            "claim": "Design Caching Challenge",
+            "topic": "caching",
+            "strength": 7.5,
+            "pattern": "dare"
+          },
+          {
+            "id": "dare-database-2",
+            "claim": "Design Database Design Challenge",
+            "topic": "database-design",
+            "strength": 7.5,
+            "pattern": "dare"
+          },
+          {
+            "id": "dare-api-2",
+            "claim": "Design Api Gateway Challenge",
+            "topic": "api-gateway",
+            "strength": 7.5,
+            "pattern": "dare"
+          },
+          {
+            "id": "dare-microservices-2",
+            "claim": "Design Microservices Challenge",
+            "topic": "microservices",
+            "strength": 7.5,
+            "pattern": "dare"
+          }
+        ]
+      },
+      {
+        "id": "guarantee",
+        "name": "Guarantee",
+        "templates": [
+          {
+            "id": "guarantee-load-0",
+            "claim": "Guarantee Load Balancing Understanding",
+            "topic": "load-balancing",
+            "strength": 7.5,
+            "pattern": "guarantee"
+          },
+          {
+            "id": "guarantee-caching-0",
+            "claim": "Guarantee Caching Understanding",
+            "topic": "caching",
+            "strength": 7.5,
+            "pattern": "guarantee"
+          },
+          {
+            "id": "guarantee-database-0",
+            "claim": "Guarantee Database Design Understanding",
+            "topic": "database-design",
+            "strength": 7.5,
+            "pattern": "guarantee"
+          },
+          {
+            "id": "guarantee-api-0",
+            "claim": "Guarantee Api Gateway Understanding",
+            "topic": "api-gateway",
+            "strength": 7.5,
+            "pattern": "guarantee"
+          },
+          {
+            "id": "guarantee-microservices-0",
+            "claim": "Guarantee Microservices Understanding",
+            "topic": "microservices",
+            "strength": 7.5,
+            "pattern": "guarantee"
+          },
+          {
+            "id": "guarantee-load-1",
+            "claim": "Guarantee Load Balancing Strategy Works",
+            "topic": "load-balancing",
+            "strength": 7.5,
+            "pattern": "guarantee"
+          },
+          {
+            "id": "guarantee-caching-1",
+            "claim": "Guarantee Caching Strategy Works",
+            "topic": "caching",
+            "strength": 7.5,
+            "pattern": "guarantee"
+          },
+          {
+            "id": "guarantee-database-1",
+            "claim": "Guarantee Database Design Strategy Works",
+            "topic": "database-design",
+            "strength": 7.5,
+            "pattern": "guarantee"
+          },
+          {
+            "id": "guarantee-api-1",
+            "claim": "Guarantee Api Gateway Strategy Works",
+            "topic": "api-gateway",
+            "strength": 7.5,
+            "pattern": "guarantee"
+          },
+          {
+            "id": "guarantee-microservices-1",
+            "claim": "Guarantee Microservices Strategy Works",
+            "topic": "microservices",
+            "strength": 7.5,
+            "pattern": "guarantee"
+          },
+          {
+            "id": "guarantee-load-2",
+            "claim": "Load Balancing Never Confuse Again",
+            "topic": "load-balancing",
+            "strength": 7.5,
+            "pattern": "guarantee"
+          },
+          {
+            "id": "guarantee-caching-2",
+            "claim": "Caching Never Confuse Again",
+            "topic": "caching",
+            "strength": 7.5,
+            "pattern": "guarantee"
+          },
+          {
+            "id": "guarantee-database-2",
+            "claim": "Database Design Never Confuse Again",
+            "topic": "database-design",
+            "strength": 7.5,
+            "pattern": "guarantee"
+          },
+          {
+            "id": "guarantee-api-2",
+            "claim": "Api Gateway Never Confuse Again",
+            "topic": "api-gateway",
+            "strength": 7.5,
+            "pattern": "guarantee"
+          },
+          {
+            "id": "guarantee-microservices-2",
+            "claim": "Microservices Never Confuse Again",
+            "topic": "microservices",
+            "strength": 7.5,
+            "pattern": "guarantee"
+          }
+        ]
+      },
+      {
+        "id": "myth",
+        "name": "Myth",
+        "templates": [
+          {
+            "id": "myth-load-0",
+            "claim": "Load Balancing Myth Ruins Interviews",
+            "topic": "load-balancing",
+            "strength": 7.7,
+            "pattern": "myth"
+          },
+          {
+            "id": "myth-caching-0",
+            "claim": "Caching Myth Ruins Interviews",
+            "topic": "caching",
+            "strength": 7.7,
+            "pattern": "myth"
+          },
+          {
+            "id": "myth-database-0",
+            "claim": "Database Design Myth Ruins Interviews",
+            "topic": "database-design",
+            "strength": 7.7,
+            "pattern": "myth"
+          },
+          {
+            "id": "myth-api-0",
+            "claim": "Api Gateway Myth Ruins Interviews",
+            "topic": "api-gateway",
+            "strength": 7.7,
+            "pattern": "myth"
+          },
+          {
+            "id": "myth-microservices-0",
+            "claim": "Microservices Myth Ruins Interviews",
+            "topic": "microservices",
+            "strength": 7.7,
+            "pattern": "myth"
+          },
+          {
+            "id": "myth-load-1",
+            "claim": "Stop Load Balancing Lie",
+            "topic": "load-balancing",
+            "strength": 7.5,
+            "pattern": "myth"
+          },
+          {
+            "id": "myth-caching-1",
+            "claim": "Stop Caching Lie",
+            "topic": "caching",
+            "strength": 7.5,
+            "pattern": "myth"
+          },
+          {
+            "id": "myth-database-1",
+            "claim": "Stop Database Design Lie",
+            "topic": "database-design",
+            "strength": 7.5,
+            "pattern": "myth"
+          },
+          {
+            "id": "myth-api-1",
+            "claim": "Stop Api Gateway Lie",
+            "topic": "api-gateway",
+            "strength": 7.5,
+            "pattern": "myth"
+          },
+          {
+            "id": "myth-microservices-1",
+            "claim": "Stop Microservices Lie",
+            "topic": "microservices",
+            "strength": 7.5,
+            "pattern": "myth"
+          },
+          {
+            "id": "myth-load-2",
+            "claim": "Amazon Exposed Load Balancing",
+            "topic": "load-balancing",
+            "strength": 7.7,
+            "pattern": "myth"
+          },
+          {
+            "id": "myth-caching-2",
+            "claim": "Facebook Exposed Caching",
+            "topic": "caching",
+            "strength": 7.5,
+            "pattern": "myth"
+          },
+          {
+            "id": "myth-database-2",
+            "claim": "Spotify Exposed Database Design",
+            "topic": "database-design",
+            "strength": 7.5,
+            "pattern": "myth"
+          },
+          {
+            "id": "myth-api-2",
+            "claim": "Amazon Exposed Api Gateway",
+            "topic": "api-gateway",
+            "strength": 7.7,
+            "pattern": "myth"
+          },
+          {
+            "id": "myth-microservices-2",
+            "claim": "Netflix Exposed Microservices",
+            "topic": "microservices",
+            "strength": 7.7,
+            "pattern": "myth"
+          }
+        ]
+      },
+      {
+        "id": "optimize",
+        "name": "Optimize",
+        "templates": [
+          {
+            "id": "optimize-load-0",
+            "claim": "Optimize Load Balancing: Amazon Way",
+            "topic": "load-balancing",
+            "strength": 7.7,
+            "pattern": "optimize"
+          },
+          {
+            "id": "optimize-caching-0",
+            "claim": "Optimize Caching: Facebook Way",
+            "topic": "caching",
+            "strength": 7.5,
+            "pattern": "optimize"
+          },
+          {
+            "id": "optimize-database-0",
+            "claim": "Optimize Database Design: Spotify Way",
+            "topic": "database-design",
+            "strength": 7.5,
+            "pattern": "optimize"
+          },
+          {
+            "id": "optimize-api-0",
+            "claim": "Optimize Api Gateway: Amazon Way",
+            "topic": "api-gateway",
+            "strength": 7.7,
+            "pattern": "optimize"
+          },
+          {
+            "id": "optimize-microservices-0",
+            "claim": "Optimize Microservices: Netflix Way",
+            "topic": "microservices",
+            "strength": 7.7,
+            "pattern": "optimize"
+          },
+          {
+            "id": "optimize-load-1",
+            "claim": "Load Balancing Hack Everyone Misses",
+            "topic": "load-balancing",
+            "strength": 7.5,
+            "pattern": "optimize"
+          },
+          {
+            "id": "optimize-caching-1",
+            "claim": "Caching Hack Everyone Misses",
+            "topic": "caching",
+            "strength": 7.5,
+            "pattern": "optimize"
+          },
+          {
+            "id": "optimize-database-1",
+            "claim": "Database Design Hack Everyone Misses",
+            "topic": "database-design",
+            "strength": 7.5,
+            "pattern": "optimize"
+          },
+          {
+            "id": "optimize-api-1",
+            "claim": "Api Gateway Hack Everyone Misses",
+            "topic": "api-gateway",
+            "strength": 7.5,
+            "pattern": "optimize"
+          },
+          {
+            "id": "optimize-microservices-1",
+            "claim": "Microservices Hack Everyone Misses",
+            "topic": "microservices",
+            "strength": 7.5,
+            "pattern": "optimize"
+          },
+          {
+            "id": "optimize-load-2",
+            "claim": "10x Load Balancing in 2min",
+            "topic": "load-balancing",
+            "strength": 7.5,
+            "pattern": "optimize"
+          },
+          {
+            "id": "optimize-caching-2",
+            "claim": "10x Caching in 30s",
+            "topic": "caching",
+            "strength": 7.5,
+            "pattern": "optimize"
+          },
+          {
+            "id": "optimize-database-2",
+            "claim": "10x Database Design in 3min",
+            "topic": "database-design",
+            "strength": 7.5,
+            "pattern": "optimize"
+          },
+          {
+            "id": "optimize-api-2",
+            "claim": "10x Api Gateway in 45s",
+            "topic": "api-gateway",
+            "strength": 7.5,
+            "pattern": "optimize"
+          },
+          {
+            "id": "optimize-microservices-2",
+            "claim": "10x Microservices in 3min",
+            "topic": "microservices",
+            "strength": 7.5,
+            "pattern": "optimize"
+          }
+        ]
+      },
+      {
+        "id": "psychology",
+        "name": "Psychology",
+        "templates": [
+          {
+            "id": "psychology-load-0",
+            "claim": "Brain Gets Load Balancing Wrong",
+            "topic": "load-balancing",
+            "strength": 7.8,
+            "pattern": "psychology"
+          },
+          {
+            "id": "psychology-caching-0",
+            "claim": "Brain Gets Caching Wrong",
+            "topic": "caching",
+            "strength": 7.8,
+            "pattern": "psychology"
+          },
+          {
+            "id": "psychology-database-0",
+            "claim": "Brain Gets Database Design Wrong",
+            "topic": "database-design",
+            "strength": 7.8,
+            "pattern": "psychology"
+          },
+          {
+            "id": "psychology-api-0",
+            "claim": "Brain Gets Api Gateway Wrong",
+            "topic": "api-gateway",
+            "strength": 7.8,
+            "pattern": "psychology"
+          },
+          {
+            "id": "psychology-microservices-0",
+            "claim": "Brain Gets Microservices Wrong",
+            "topic": "microservices",
+            "strength": 7.8,
+            "pattern": "psychology"
+          },
+          {
+            "id": "psychology-load-1",
+            "claim": "Psychology Load Balancing",
+            "topic": "load-balancing",
+            "strength": 7.5,
+            "pattern": "psychology"
+          },
+          {
+            "id": "psychology-caching-1",
+            "claim": "Psychology Caching",
+            "topic": "caching",
+            "strength": 7.5,
+            "pattern": "psychology"
+          },
+          {
+            "id": "psychology-database-1",
+            "claim": "Psychology Database Design",
+            "topic": "database-design",
+            "strength": 7.5,
+            "pattern": "psychology"
+          },
+          {
+            "id": "psychology-api-1",
+            "claim": "Psychology Api Gateway",
+            "topic": "api-gateway",
+            "strength": 7.5,
+            "pattern": "psychology"
+          },
+          {
+            "id": "psychology-microservices-1",
+            "claim": "Psychology Microservices",
+            "topic": "microservices",
+            "strength": 7.5,
+            "pattern": "psychology"
+          },
+          {
+            "id": "psychology-load-2",
+            "claim": "Amazon Think Load Balancing",
+            "topic": "load-balancing",
+            "strength": 7.7,
+            "pattern": "psychology"
+          },
+          {
+            "id": "psychology-caching-2",
+            "claim": "Facebook Think Caching",
+            "topic": "caching",
+            "strength": 7.5,
+            "pattern": "psychology"
+          },
+          {
+            "id": "psychology-database-2",
+            "claim": "Spotify Think Database Design",
+            "topic": "database-design",
+            "strength": 7.5,
+            "pattern": "psychology"
+          },
+          {
+            "id": "psychology-api-2",
+            "claim": "Amazon Think Api Gateway",
+            "topic": "api-gateway",
+            "strength": 7.7,
+            "pattern": "psychology"
+          },
+          {
+            "id": "psychology-microservices-2",
+            "claim": "Netflix Think Microservices",
+            "topic": "microservices",
+            "strength": 7.7,
+            "pattern": "psychology"
+          }
+        ]
+      },
+      {
+        "id": "health",
+        "name": "Health",
+        "templates": [
+          {
+            "id": "health-load-0",
+            "claim": "Stop Burning Load Balancing Interviews",
+            "topic": "load-balancing",
+            "strength": 7.7,
+            "pattern": "health"
+          },
+          {
+            "id": "health-caching-0",
+            "claim": "Stop Burning Caching Interviews",
+            "topic": "caching",
+            "strength": 7.7,
+            "pattern": "health"
+          },
+          {
+            "id": "health-database-0",
+            "claim": "Stop Burning Database Design Interviews",
+            "topic": "database-design",
+            "strength": 7.7,
+            "pattern": "health"
+          },
+          {
+            "id": "health-api-0",
+            "claim": "Stop Burning Api Gateway Interviews",
+            "topic": "api-gateway",
+            "strength": 7.7,
+            "pattern": "health"
+          },
+          {
+            "id": "health-microservices-0",
+            "claim": "Stop Burning Microservices Interviews",
+            "topic": "microservices",
+            "strength": 7.7,
+            "pattern": "health"
+          },
+          {
+            "id": "health-load-1",
+            "claim": "Load Balancing Work-Life Balance",
+            "topic": "load-balancing",
+            "strength": 7.5,
+            "pattern": "health"
+          },
+          {
+            "id": "health-caching-1",
+            "claim": "Caching Work-Life Balance",
+            "topic": "caching",
+            "strength": 7.5,
+            "pattern": "health"
+          },
+          {
+            "id": "health-database-1",
+            "claim": "Database Design Work-Life Balance",
+            "topic": "database-design",
+            "strength": 7.5,
+            "pattern": "health"
+          },
+          {
+            "id": "health-api-1",
+            "claim": "Api Gateway Work-Life Balance",
+            "topic": "api-gateway",
+            "strength": 7.5,
+            "pattern": "health"
+          },
+          {
+            "id": "health-microservices-1",
+            "claim": "Microservices Work-Life Balance",
+            "topic": "microservices",
+            "strength": 7.5,
+            "pattern": "health"
+          },
+          {
+            "id": "health-load-2",
+            "claim": "Load Balancing Reduces Stress",
+            "topic": "load-balancing",
+            "strength": 7.5,
+            "pattern": "health"
+          },
+          {
+            "id": "health-caching-2",
+            "claim": "Caching Reduces Stress",
+            "topic": "caching",
+            "strength": 7.5,
+            "pattern": "health"
+          },
+          {
+            "id": "health-database-2",
+            "claim": "Database Design Reduces Stress",
+            "topic": "database-design",
+            "strength": 7.5,
+            "pattern": "health"
+          },
+          {
+            "id": "health-api-2",
+            "claim": "Api Gateway Reduces Stress",
+            "topic": "api-gateway",
+            "strength": 7.5,
+            "pattern": "health"
+          },
+          {
+            "id": "health-microservices-2",
+            "claim": "Microservices Reduces Stress",
+            "topic": "microservices",
+            "strength": 7.5,
+            "pattern": "health"
+          }
+        ]
+      },
+      {
+        "id": "money",
+        "name": "Money",
+        "templates": [
+          {
+            "id": "money-load-0",
+            "claim": "Load Balancing Worth ₹{100}LPA",
+            "topic": "load-balancing",
+            "strength": 7.5,
+            "pattern": "money"
+          },
+          {
+            "id": "money-caching-0",
+            "claim": "Caching Worth ₹{60}LPA",
+            "topic": "caching",
+            "strength": 7.5,
+            "pattern": "money"
+          },
+          {
+            "id": "money-database-0",
+            "claim": "Database Design Worth ₹{50}LPA",
+            "topic": "database-design",
+            "strength": 7.5,
+            "pattern": "money"
+          },
+          {
+            "id": "money-api-0",
+            "claim": "Api Gateway Worth ₹{100}LPA",
+            "topic": "api-gateway",
+            "strength": 7.5,
+            "pattern": "money"
+          },
+          {
+            "id": "money-microservices-0",
+            "claim": "Microservices Worth ₹{50}LPA",
+            "topic": "microservices",
+            "strength": 7.5,
+            "pattern": "money"
+          },
+          {
+            "id": "money-load-1",
+            "claim": "Load Balancing Every High-Earner",
+            "topic": "load-balancing",
+            "strength": 7.5,
+            "pattern": "money"
+          },
+          {
+            "id": "money-caching-1",
+            "claim": "Caching Every High-Earner",
+            "topic": "caching",
+            "strength": 7.5,
+            "pattern": "money"
+          },
+          {
+            "id": "money-database-1",
+            "claim": "Database Design Every High-Earner",
+            "topic": "database-design",
+            "strength": 7.5,
+            "pattern": "money"
+          },
+          {
+            "id": "money-api-1",
+            "claim": "Api Gateway Every High-Earner",
+            "topic": "api-gateway",
+            "strength": 7.5,
+            "pattern": "money"
+          },
+          {
+            "id": "money-microservices-1",
+            "claim": "Microservices Every High-Earner",
+            "topic": "microservices",
+            "strength": 7.5,
+            "pattern": "money"
+          },
+          {
+            "id": "money-load-2",
+            "claim": "Load Balancing: +{95}% Salary",
+            "topic": "load-balancing",
+            "strength": 7.7,
+            "pattern": "money"
+          },
+          {
+            "id": "money-caching-2",
+            "claim": "Caching: +{85}% Salary",
+            "topic": "caching",
+            "strength": 7.7,
+            "pattern": "money"
+          },
+          {
+            "id": "money-database-2",
+            "claim": "Database Design: +{80}% Salary",
+            "topic": "database-design",
+            "strength": 7.7,
+            "pattern": "money"
+          },
+          {
+            "id": "money-api-2",
+            "claim": "Api Gateway: +{90}% Salary",
+            "topic": "api-gateway",
+            "strength": 7.7,
+            "pattern": "money"
+          },
+          {
+            "id": "money-microservices-2",
+            "claim": "Microservices: +{90}% Salary",
+            "topic": "microservices",
+            "strength": 7.7,
+            "pattern": "money"
+          }
+        ]
+      },
+      {
+        "id": "simple",
+        "name": "Simple",
+        "templates": [
+          {
+            "id": "simple-load-0",
+            "claim": "Simple Load Balancing",
+            "topic": "load-balancing",
+            "strength": 7.5,
+            "pattern": "simple"
+          },
+          {
+            "id": "simple-caching-0",
+            "claim": "Simple Caching",
+            "topic": "caching",
+            "strength": 7.5,
+            "pattern": "simple"
+          },
+          {
+            "id": "simple-database-0",
+            "claim": "Simple Database Design",
+            "topic": "database-design",
+            "strength": 7.5,
+            "pattern": "simple"
+          },
+          {
+            "id": "simple-api-0",
+            "claim": "Simple Api Gateway",
+            "topic": "api-gateway",
+            "strength": 7.5,
+            "pattern": "simple"
+          },
+          {
+            "id": "simple-microservices-0",
+            "claim": "Simple Microservices",
+            "topic": "microservices",
+            "strength": 7.5,
+            "pattern": "simple"
+          },
+          {
+            "id": "simple-load-1",
+            "claim": "{95}-Year Could Load Balancing",
+            "topic": "load-balancing",
+            "strength": 7.5,
+            "pattern": "simple"
+          },
+          {
+            "id": "simple-caching-1",
+            "claim": "{85}-Year Could Caching",
+            "topic": "caching",
+            "strength": 7.5,
+            "pattern": "simple"
+          },
+          {
+            "id": "simple-database-1",
+            "claim": "{80}-Year Could Database Design",
+            "topic": "database-design",
+            "strength": 7.5,
+            "pattern": "simple"
+          },
+          {
+            "id": "simple-api-1",
+            "claim": "{90}-Year Could Api Gateway",
+            "topic": "api-gateway",
+            "strength": 7.5,
+            "pattern": "simple"
+          },
+          {
+            "id": "simple-microservices-1",
+            "claim": "{90}-Year Could Microservices",
+            "topic": "microservices",
+            "strength": 7.5,
+            "pattern": "simple"
+          },
+          {
+            "id": "simple-load-2",
+            "claim": "Load Balancing Plain English",
+            "topic": "load-balancing",
+            "strength": 7.5,
+            "pattern": "simple"
+          },
+          {
+            "id": "simple-caching-2",
+            "claim": "Caching Plain English",
+            "topic": "caching",
+            "strength": 7.5,
+            "pattern": "simple"
+          },
+          {
+            "id": "simple-database-2",
+            "claim": "Database Design Plain English",
+            "topic": "database-design",
+            "strength": 7.5,
+            "pattern": "simple"
+          },
+          {
+            "id": "simple-api-2",
+            "claim": "Api Gateway Plain English",
+            "topic": "api-gateway",
+            "strength": 7.5,
+            "pattern": "simple"
+          },
+          {
+            "id": "simple-microservices-2",
+            "claim": "Microservices Plain English",
+            "topic": "microservices",
+            "strength": 7.5,
+            "pattern": "simple"
+          }
+        ]
+      },
+      {
+        "id": "speed",
+        "name": "Speed",
+        "templates": [
+          {
+            "id": "speed-load-0",
+            "claim": "Load Balancing in 2min: Fast Track",
+            "topic": "load-balancing",
+            "strength": 7.5,
+            "pattern": "speed"
+          },
+          {
+            "id": "speed-caching-0",
+            "claim": "Caching in 30s: Fast Track",
+            "topic": "caching",
+            "strength": 7.5,
+            "pattern": "speed"
+          },
+          {
+            "id": "speed-database-0",
+            "claim": "Database Design in 3min: Fast Track",
+            "topic": "database-design",
+            "strength": 7.5,
+            "pattern": "speed"
+          },
+          {
+            "id": "speed-api-0",
+            "claim": "Api Gateway in 45s: Fast Track",
+            "topic": "api-gateway",
+            "strength": 7.5,
+            "pattern": "speed"
+          },
+          {
+            "id": "speed-microservices-0",
+            "claim": "Microservices in 3min: Fast Track",
+            "topic": "microservices",
+            "strength": 7.5,
+            "pattern": "speed"
+          },
+          {
+            "id": "speed-load-1",
+            "claim": "Quick Load Balancing Trick",
+            "topic": "load-balancing",
+            "strength": 7.5,
+            "pattern": "speed"
+          },
+          {
+            "id": "speed-caching-1",
+            "claim": "Quick Caching Trick",
+            "topic": "caching",
+            "strength": 7.5,
+            "pattern": "speed"
+          },
+          {
+            "id": "speed-database-1",
+            "claim": "Quick Database Design Trick",
+            "topic": "database-design",
+            "strength": 7.5,
+            "pattern": "speed"
+          },
+          {
+            "id": "speed-api-1",
+            "claim": "Quick Api Gateway Trick",
+            "topic": "api-gateway",
+            "strength": 7.5,
+            "pattern": "speed"
+          },
+          {
+            "id": "speed-microservices-1",
+            "claim": "Quick Microservices Trick",
+            "topic": "microservices",
+            "strength": 7.5,
+            "pattern": "speed"
+          },
+          {
+            "id": "speed-load-2",
+            "claim": "{95} Min Load Balancing",
+            "topic": "load-balancing",
+            "strength": 7.5,
+            "pattern": "speed"
+          },
+          {
+            "id": "speed-caching-2",
+            "claim": "{85} Min Caching",
+            "topic": "caching",
+            "strength": 7.5,
+            "pattern": "speed"
+          },
+          {
+            "id": "speed-database-2",
+            "claim": "{80} Min Database Design",
+            "topic": "database-design",
+            "strength": 7.5,
+            "pattern": "speed"
+          },
+          {
+            "id": "speed-api-2",
+            "claim": "{90} Min Api Gateway",
+            "topic": "api-gateway",
+            "strength": 7.5,
+            "pattern": "speed"
+          },
+          {
+            "id": "speed-microservices-2",
+            "claim": "{90} Min Microservices",
+            "topic": "microservices",
+            "strength": 7.5,
+            "pattern": "speed"
+          }
+        ]
+      },
+      {
+        "id": "power",
+        "name": "Power",
+        "templates": [
+          {
+            "id": "power-load-0",
+            "claim": "Load Balancing Power User",
+            "topic": "load-balancing",
+            "strength": 7.5,
+            "pattern": "power"
+          },
+          {
+            "id": "power-caching-0",
+            "claim": "Caching Power User",
+            "topic": "caching",
+            "strength": 7.5,
+            "pattern": "power"
+          },
+          {
+            "id": "power-database-0",
+            "claim": "Database Design Power User",
+            "topic": "database-design",
+            "strength": 7.5,
+            "pattern": "power"
+          },
+          {
+            "id": "power-api-0",
+            "claim": "Api Gateway Power User",
+            "topic": "api-gateway",
+            "strength": 7.5,
+            "pattern": "power"
+          },
+          {
+            "id": "power-microservices-0",
+            "claim": "Microservices Power User",
+            "topic": "microservices",
+            "strength": 7.5,
+            "pattern": "power"
+          },
+          {
+            "id": "power-load-1",
+            "claim": "Load Balancing Superpower Missing",
+            "topic": "load-balancing",
+            "strength": 7.5,
+            "pattern": "power"
+          },
+          {
+            "id": "power-caching-1",
+            "claim": "Caching Superpower Missing",
+            "topic": "caching",
+            "strength": 7.5,
+            "pattern": "power"
+          },
+          {
+            "id": "power-database-1",
+            "claim": "Database Design Superpower Missing",
+            "topic": "database-design",
+            "strength": 7.5,
+            "pattern": "power"
+          },
+          {
+            "id": "power-api-1",
+            "claim": "Api Gateway Superpower Missing",
+            "topic": "api-gateway",
+            "strength": 7.5,
+            "pattern": "power"
+          },
+          {
+            "id": "power-microservices-1",
+            "claim": "Microservices Superpower Missing",
+            "topic": "microservices",
+            "strength": 7.5,
+            "pattern": "power"
+          },
+          {
+            "id": "power-load-2",
+            "claim": "Unlock Load Balancing Potential",
+            "topic": "load-balancing",
+            "strength": 7.5,
+            "pattern": "power"
+          },
+          {
+            "id": "power-caching-2",
+            "claim": "Unlock Caching Potential",
+            "topic": "caching",
+            "strength": 7.5,
+            "pattern": "power"
+          },
+          {
+            "id": "power-database-2",
+            "claim": "Unlock Database Design Potential",
+            "topic": "database-design",
+            "strength": 7.5,
+            "pattern": "power"
+          },
+          {
+            "id": "power-api-2",
+            "claim": "Unlock Api Gateway Potential",
+            "topic": "api-gateway",
+            "strength": 7.5,
+            "pattern": "power"
+          },
+          {
+            "id": "power-microservices-2",
+            "claim": "Unlock Microservices Potential",
+            "topic": "microservices",
+            "strength": 7.5,
+            "pattern": "power"
+          }
+        ]
+      },
+      {
+        "id": "tribe",
+        "name": "Tribe",
+        "templates": [
+          {
+            "id": "tribe-load-0",
+            "claim": "Elite Load Balancing Engineers",
+            "topic": "load-balancing",
+            "strength": 7.7,
+            "pattern": "tribe"
+          },
+          {
+            "id": "tribe-caching-0",
+            "claim": "Elite Caching Engineers",
+            "topic": "caching",
+            "strength": 7.7,
+            "pattern": "tribe"
+          },
+          {
+            "id": "tribe-database-0",
+            "claim": "Elite Database Design Engineers",
+            "topic": "database-design",
+            "strength": 7.7,
+            "pattern": "tribe"
+          },
+          {
+            "id": "tribe-api-0",
+            "claim": "Elite Api Gateway Engineers",
+            "topic": "api-gateway",
+            "strength": 7.7,
+            "pattern": "tribe"
+          },
+          {
+            "id": "tribe-microservices-0",
+            "claim": "Elite Microservices Engineers",
+            "topic": "microservices",
+            "strength": 7.7,
+            "pattern": "tribe"
+          },
+          {
+            "id": "tribe-load-1",
+            "claim": "Load Balancing Secret",
+            "topic": "load-balancing",
+            "strength": 7.8,
+            "pattern": "tribe"
+          },
+          {
+            "id": "tribe-caching-1",
+            "claim": "Caching Secret",
+            "topic": "caching",
+            "strength": 7.8,
+            "pattern": "tribe"
+          },
+          {
+            "id": "tribe-database-1",
+            "claim": "Database Design Secret",
+            "topic": "database-design",
+            "strength": 7.8,
+            "pattern": "tribe"
+          },
+          {
+            "id": "tribe-api-1",
+            "claim": "Api Gateway Secret",
+            "topic": "api-gateway",
+            "strength": 7.8,
+            "pattern": "tribe"
+          },
+          {
+            "id": "tribe-microservices-1",
+            "claim": "Microservices Secret",
+            "topic": "microservices",
+            "strength": 7.8,
+            "pattern": "tribe"
+          },
+          {
+            "id": "tribe-load-2",
+            "claim": "Top {95}% Load Balancing",
+            "topic": "load-balancing",
+            "strength": 7.5,
+            "pattern": "tribe"
+          },
+          {
+            "id": "tribe-caching-2",
+            "claim": "Top {85}% Caching",
+            "topic": "caching",
+            "strength": 7.5,
+            "pattern": "tribe"
+          },
+          {
+            "id": "tribe-database-2",
+            "claim": "Top {80}% Database Design",
+            "topic": "database-design",
+            "strength": 7.5,
+            "pattern": "tribe"
+          },
+          {
+            "id": "tribe-api-2",
+            "claim": "Top {90}% Api Gateway",
+            "topic": "api-gateway",
+            "strength": 7.5,
+            "pattern": "tribe"
+          },
+          {
+            "id": "tribe-microservices-2",
+            "claim": "Top {90}% Microservices",
+            "topic": "microservices",
+            "strength": 7.5,
+            "pattern": "tribe"
+          }
+        ]
+      },
+      {
+        "id": "journey",
+        "name": "Journey",
+        "templates": [
+          {
+            "id": "journey-load-0",
+            "claim": "Zero to FAANG Load Balancing",
+            "topic": "load-balancing",
+            "strength": 7.7,
+            "pattern": "journey"
+          },
+          {
+            "id": "journey-caching-0",
+            "claim": "Zero to FAANG Caching",
+            "topic": "caching",
+            "strength": 7.7,
+            "pattern": "journey"
+          },
+          {
+            "id": "journey-database-0",
+            "claim": "Zero to FAANG Database Design",
+            "topic": "database-design",
+            "strength": 7.7,
+            "pattern": "journey"
+          },
+          {
+            "id": "journey-api-0",
+            "claim": "Zero to FAANG Api Gateway",
+            "topic": "api-gateway",
+            "strength": 7.7,
+            "pattern": "journey"
+          },
+          {
+            "id": "journey-microservices-0",
+            "claim": "Zero to FAANG Microservices",
+            "topic": "microservices",
+            "strength": 7.7,
+            "pattern": "journey"
+          },
+          {
+            "id": "journey-load-1",
+            "claim": "Load Balancing Competitive Edge",
+            "topic": "load-balancing",
+            "strength": 7.5,
+            "pattern": "journey"
+          },
+          {
+            "id": "journey-caching-1",
+            "claim": "Caching Competitive Edge",
+            "topic": "caching",
+            "strength": 7.5,
+            "pattern": "journey"
+          },
+          {
+            "id": "journey-database-1",
+            "claim": "Database Design Competitive Edge",
+            "topic": "database-design",
+            "strength": 7.5,
+            "pattern": "journey"
+          },
+          {
+            "id": "journey-api-1",
+            "claim": "Api Gateway Competitive Edge",
+            "topic": "api-gateway",
+            "strength": 7.5,
+            "pattern": "journey"
+          },
+          {
+            "id": "journey-microservices-1",
+            "claim": "Microservices Competitive Edge",
+            "topic": "microservices",
+            "strength": 7.5,
+            "pattern": "journey"
+          },
+          {
+            "id": "journey-load-2",
+            "claim": "Load Balancing Developer Quest",
+            "topic": "load-balancing",
+            "strength": 7.7,
+            "pattern": "journey"
+          },
+          {
+            "id": "journey-caching-2",
+            "claim": "Caching Developer Quest",
+            "topic": "caching",
+            "strength": 7.7,
+            "pattern": "journey"
+          },
+          {
+            "id": "journey-database-2",
+            "claim": "Database Design Developer Quest",
+            "topic": "database-design",
+            "strength": 7.7,
+            "pattern": "journey"
+          },
+          {
+            "id": "journey-api-2",
+            "claim": "Api Gateway Developer Quest",
+            "topic": "api-gateway",
+            "strength": 7.7,
+            "pattern": "journey"
+          },
+          {
+            "id": "journey-microservices-2",
+            "claim": "Microservices Developer Quest",
+            "topic": "microservices",
+            "strength": 7.7,
+            "pattern": "journey"
+          }
+        ]
+      },
+      {
+        "id": "wisdom",
+        "name": "Wisdom",
+        "templates": [
+          {
+            "id": "wisdom-load-0",
+            "claim": "Timeless Load Balancing",
+            "topic": "load-balancing",
+            "strength": 7.5,
+            "pattern": "wisdom"
+          },
+          {
+            "id": "wisdom-caching-0",
+            "claim": "Timeless Caching",
+            "topic": "caching",
+            "strength": 7.5,
+            "pattern": "wisdom"
+          },
+          {
+            "id": "wisdom-database-0",
+            "claim": "Timeless Database Design",
+            "topic": "database-design",
+            "strength": 7.5,
+            "pattern": "wisdom"
+          },
+          {
+            "id": "wisdom-api-0",
+            "claim": "Timeless Api Gateway",
+            "topic": "api-gateway",
+            "strength": 7.5,
+            "pattern": "wisdom"
+          },
+          {
+            "id": "wisdom-microservices-0",
+            "claim": "Timeless Microservices",
+            "topic": "microservices",
+            "strength": 7.5,
+            "pattern": "wisdom"
+          },
+          {
+            "id": "wisdom-load-1",
+            "claim": "Load Balancing Ancient Wisdom",
+            "topic": "load-balancing",
+            "strength": 7.5,
+            "pattern": "wisdom"
+          },
+          {
+            "id": "wisdom-caching-1",
+            "claim": "Caching Ancient Wisdom",
+            "topic": "caching",
+            "strength": 7.5,
+            "pattern": "wisdom"
+          },
+          {
+            "id": "wisdom-database-1",
+            "claim": "Database Design Ancient Wisdom",
+            "topic": "database-design",
+            "strength": 7.5,
+            "pattern": "wisdom"
+          },
+          {
+            "id": "wisdom-api-1",
+            "claim": "Api Gateway Ancient Wisdom",
+            "topic": "api-gateway",
+            "strength": 7.5,
+            "pattern": "wisdom"
+          },
+          {
+            "id": "wisdom-microservices-1",
+            "claim": "Microservices Ancient Wisdom",
+            "topic": "microservices",
+            "strength": 7.5,
+            "pattern": "wisdom"
+          },
+          {
+            "id": "wisdom-load-2",
+            "claim": "Great Load Balancing Engineers",
+            "topic": "load-balancing",
+            "strength": 7.7,
+            "pattern": "wisdom"
+          },
+          {
+            "id": "wisdom-caching-2",
+            "claim": "Great Caching Engineers",
+            "topic": "caching",
+            "strength": 7.7,
+            "pattern": "wisdom"
+          },
+          {
+            "id": "wisdom-database-2",
+            "claim": "Great Database Design Engineers",
+            "topic": "database-design",
+            "strength": 7.7,
+            "pattern": "wisdom"
+          },
+          {
+            "id": "wisdom-api-2",
+            "claim": "Great Api Gateway Engineers",
+            "topic": "api-gateway",
+            "strength": 7.7,
+            "pattern": "wisdom"
+          },
+          {
+            "id": "wisdom-microservices-2",
+            "claim": "Great Microservices Engineers",
+            "topic": "microservices",
+            "strength": 7.7,
+            "pattern": "wisdom"
+          }
+        ]
+      },
+      {
+        "id": "trend",
+        "name": "Trend",
+        "templates": [
+          {
+            "id": "trend-load-0",
+            "claim": "Load Balancing Trending Tech",
+            "topic": "load-balancing",
+            "strength": 7.5,
+            "pattern": "trend"
+          },
+          {
+            "id": "trend-caching-0",
+            "claim": "Caching Trending Tech",
+            "topic": "caching",
+            "strength": 7.5,
+            "pattern": "trend"
+          },
+          {
+            "id": "trend-database-0",
+            "claim": "Database Design Trending Tech",
+            "topic": "database-design",
+            "strength": 7.5,
+            "pattern": "trend"
+          },
+          {
+            "id": "trend-api-0",
+            "claim": "Api Gateway Trending Tech",
+            "topic": "api-gateway",
+            "strength": 7.5,
+            "pattern": "trend"
+          },
+          {
+            "id": "trend-microservices-0",
+            "claim": "Microservices Trending Tech",
+            "topic": "microservices",
+            "strength": 7.5,
+            "pattern": "trend"
+          },
+          {
+            "id": "trend-load-1",
+            "claim": "Amazon Shifted Load Balancing",
+            "topic": "load-balancing",
+            "strength": 7.7,
+            "pattern": "trend"
+          },
+          {
+            "id": "trend-caching-1",
+            "claim": "Facebook Shifted Caching",
+            "topic": "caching",
+            "strength": 7.5,
+            "pattern": "trend"
+          },
+          {
+            "id": "trend-database-1",
+            "claim": "Spotify Shifted Database Design",
+            "topic": "database-design",
+            "strength": 7.5,
+            "pattern": "trend"
+          },
+          {
+            "id": "trend-api-1",
+            "claim": "Amazon Shifted Api Gateway",
+            "topic": "api-gateway",
+            "strength": 7.7,
+            "pattern": "trend"
+          },
+          {
+            "id": "trend-microservices-1",
+            "claim": "Netflix Shifted Microservices",
+            "topic": "microservices",
+            "strength": 7.7,
+            "pattern": "trend"
+          },
+          {
+            "id": "trend-load-2",
+            "claim": "Load Balancing Trend 2026",
+            "topic": "load-balancing",
+            "strength": 7.5,
+            "pattern": "trend"
+          },
+          {
+            "id": "trend-caching-2",
+            "claim": "Caching Trend 2026",
+            "topic": "caching",
+            "strength": 7.5,
+            "pattern": "trend"
+          },
+          {
+            "id": "trend-database-2",
+            "claim": "Database Design Trend 2026",
+            "topic": "database-design",
+            "strength": 7.5,
+            "pattern": "trend"
+          },
+          {
+            "id": "trend-api-2",
+            "claim": "Api Gateway Trend 2026",
+            "topic": "api-gateway",
+            "strength": 7.5,
+            "pattern": "trend"
+          },
+          {
+            "id": "trend-microservices-2",
+            "claim": "Microservices Trend 2026",
+            "topic": "microservices",
+            "strength": 7.5,
+            "pattern": "trend"
+          }
+        ]
+      },
+      {
+        "id": "reverse",
+        "name": "Reverse",
+        "templates": [
+          {
+            "id": "reverse-load-0",
+            "claim": "Reverse Load Balancing Approach",
+            "topic": "load-balancing",
+            "strength": 7.5,
+            "pattern": "reverse"
+          },
+          {
+            "id": "reverse-caching-0",
+            "claim": "Reverse Caching Approach",
+            "topic": "caching",
+            "strength": 7.5,
+            "pattern": "reverse"
+          },
+          {
+            "id": "reverse-database-0",
+            "claim": "Reverse Database Design Approach",
+            "topic": "database-design",
+            "strength": 7.5,
+            "pattern": "reverse"
+          },
+          {
+            "id": "reverse-api-0",
+            "claim": "Reverse Api Gateway Approach",
+            "topic": "api-gateway",
+            "strength": 7.5,
+            "pattern": "reverse"
+          },
+          {
+            "id": "reverse-microservices-0",
+            "claim": "Reverse Microservices Approach",
+            "topic": "microservices",
+            "strength": 7.5,
+            "pattern": "reverse"
+          },
+          {
+            "id": "reverse-load-1",
+            "claim": "Do Load Balancing Backwards?",
+            "topic": "load-balancing",
+            "strength": 7.6,
+            "pattern": "reverse"
+          },
+          {
+            "id": "reverse-caching-1",
+            "claim": "Do Caching Backwards?",
+            "topic": "caching",
+            "strength": 7.6,
+            "pattern": "reverse"
+          },
+          {
+            "id": "reverse-database-1",
+            "claim": "Do Database Design Backwards?",
+            "topic": "database-design",
+            "strength": 7.6,
+            "pattern": "reverse"
+          },
+          {
+            "id": "reverse-api-1",
+            "claim": "Do Api Gateway Backwards?",
+            "topic": "api-gateway",
+            "strength": 7.6,
+            "pattern": "reverse"
+          },
+          {
+            "id": "reverse-microservices-1",
+            "claim": "Do Microservices Backwards?",
+            "topic": "microservices",
+            "strength": 7.6,
+            "pattern": "reverse"
+          },
+          {
+            "id": "reverse-load-2",
+            "claim": "Load Balancing Upside Down",
+            "topic": "load-balancing",
+            "strength": 7.5,
+            "pattern": "reverse"
+          },
+          {
+            "id": "reverse-caching-2",
+            "claim": "Caching Upside Down",
+            "topic": "caching",
+            "strength": 7.5,
+            "pattern": "reverse"
+          },
+          {
+            "id": "reverse-database-2",
+            "claim": "Database Design Upside Down",
+            "topic": "database-design",
+            "strength": 7.5,
+            "pattern": "reverse"
+          },
+          {
+            "id": "reverse-api-2",
+            "claim": "Api Gateway Upside Down",
+            "topic": "api-gateway",
+            "strength": 7.5,
+            "pattern": "reverse"
+          },
+          {
+            "id": "reverse-microservices-2",
+            "claim": "Microservices Upside Down",
+            "topic": "microservices",
+            "strength": 7.5,
+            "pattern": "reverse"
+          }
+        ]
+      },
+      {
+        "id": "transform",
+        "name": "Transform",
+        "templates": [
+          {
+            "id": "transform-load-0",
+            "claim": "Load Balancing Career Transform",
+            "topic": "load-balancing",
+            "strength": 7.5,
+            "pattern": "transform"
+          },
+          {
+            "id": "transform-caching-0",
+            "claim": "Caching Career Transform",
+            "topic": "caching",
+            "strength": 7.5,
+            "pattern": "transform"
+          },
+          {
+            "id": "transform-database-0",
+            "claim": "Database Design Career Transform",
+            "topic": "database-design",
+            "strength": 7.5,
+            "pattern": "transform"
+          },
+          {
+            "id": "transform-api-0",
+            "claim": "Api Gateway Career Transform",
+            "topic": "api-gateway",
+            "strength": 7.5,
+            "pattern": "transform"
+          },
+          {
+            "id": "transform-microservices-0",
+            "claim": "Microservices Career Transform",
+            "topic": "microservices",
+            "strength": 7.5,
+            "pattern": "transform"
+          },
+          {
+            "id": "transform-load-1",
+            "claim": "Load Balancing Turnaround",
+            "topic": "load-balancing",
+            "strength": 7.5,
+            "pattern": "transform"
+          },
+          {
+            "id": "transform-caching-1",
+            "claim": "Caching Turnaround",
+            "topic": "caching",
+            "strength": 7.5,
+            "pattern": "transform"
+          },
+          {
+            "id": "transform-database-1",
+            "claim": "Database Design Turnaround",
+            "topic": "database-design",
+            "strength": 7.5,
+            "pattern": "transform"
+          },
+          {
+            "id": "transform-api-1",
+            "claim": "Api Gateway Turnaround",
+            "topic": "api-gateway",
+            "strength": 7.5,
+            "pattern": "transform"
+          },
+          {
+            "id": "transform-microservices-1",
+            "claim": "Microservices Turnaround",
+            "topic": "microservices",
+            "strength": 7.5,
+            "pattern": "transform"
+          },
+          {
+            "id": "transform-load-2",
+            "claim": "Finally Load Balancing Changed",
+            "topic": "load-balancing",
+            "strength": 7.5,
+            "pattern": "transform"
+          },
+          {
+            "id": "transform-caching-2",
+            "claim": "Finally Caching Changed",
+            "topic": "caching",
+            "strength": 7.5,
+            "pattern": "transform"
+          },
+          {
+            "id": "transform-database-2",
+            "claim": "Finally Database Design Changed",
+            "topic": "database-design",
+            "strength": 7.5,
+            "pattern": "transform"
+          },
+          {
+            "id": "transform-api-2",
+            "claim": "Finally Api Gateway Changed",
+            "topic": "api-gateway",
+            "strength": 7.5,
+            "pattern": "transform"
+          },
+          {
+            "id": "transform-microservices-2",
+            "claim": "Finally Microservices Changed",
+            "topic": "microservices",
+            "strength": 7.5,
+            "pattern": "transform"
+          }
+        ]
+      },
+      {
+        "id": "science",
+        "name": "Science",
+        "templates": [
+          {
+            "id": "science-load-0",
+            "claim": "Science Load Balancing",
+            "topic": "load-balancing",
+            "strength": 7.5,
+            "pattern": "science"
+          },
+          {
+            "id": "science-caching-0",
+            "claim": "Science Caching",
+            "topic": "caching",
+            "strength": 7.5,
+            "pattern": "science"
+          },
+          {
+            "id": "science-database-0",
+            "claim": "Science Database Design",
+            "topic": "database-design",
+            "strength": 7.5,
+            "pattern": "science"
+          },
+          {
+            "id": "science-api-0",
+            "claim": "Science Api Gateway",
+            "topic": "api-gateway",
+            "strength": 7.5,
+            "pattern": "science"
+          },
+          {
+            "id": "science-microservices-0",
+            "claim": "Science Microservices",
+            "topic": "microservices",
+            "strength": 7.5,
+            "pattern": "science"
+          },
+          {
+            "id": "science-load-1",
+            "claim": "Research Load Balancing Works",
+            "topic": "load-balancing",
+            "strength": 7.5,
+            "pattern": "science"
+          },
+          {
+            "id": "science-caching-1",
+            "claim": "Research Caching Works",
+            "topic": "caching",
+            "strength": 7.5,
+            "pattern": "science"
+          },
+          {
+            "id": "science-database-1",
+            "claim": "Research Database Design Works",
+            "topic": "database-design",
+            "strength": 7.5,
+            "pattern": "science"
+          },
+          {
+            "id": "science-api-1",
+            "claim": "Research Api Gateway Works",
+            "topic": "api-gateway",
+            "strength": 7.5,
+            "pattern": "science"
+          },
+          {
+            "id": "science-microservices-1",
+            "claim": "Research Microservices Works",
+            "topic": "microservices",
+            "strength": 7.5,
+            "pattern": "science"
+          },
+          {
+            "id": "science-load-2",
+            "claim": "Amazon Load Balancing Study",
+            "topic": "load-balancing",
+            "strength": 7.7,
+            "pattern": "science"
+          },
+          {
+            "id": "science-caching-2",
+            "claim": "Facebook Caching Study",
+            "topic": "caching",
+            "strength": 7.5,
+            "pattern": "science"
+          },
+          {
+            "id": "science-database-2",
+            "claim": "Spotify Database Design Study",
+            "topic": "database-design",
+            "strength": 7.5,
+            "pattern": "science"
+          },
+          {
+            "id": "science-api-2",
+            "claim": "Amazon Api Gateway Study",
+            "topic": "api-gateway",
+            "strength": 7.7,
+            "pattern": "science"
+          },
+          {
+            "id": "science-microservices-2",
+            "claim": "Netflix Microservices Study",
+            "topic": "microservices",
+            "strength": 7.7,
+            "pattern": "science"
+          }
+        ]
+      },
+      {
+        "id": "irony",
+        "name": "Irony",
+        "templates": [
+          {
+            "id": "irony-load-0",
+            "claim": "Irony Load Balancing Wrong",
+            "topic": "load-balancing",
+            "strength": 7.8,
+            "pattern": "irony"
+          },
+          {
+            "id": "irony-caching-0",
+            "claim": "Irony Caching Wrong",
+            "topic": "caching",
+            "strength": 7.8,
+            "pattern": "irony"
+          },
+          {
+            "id": "irony-database-0",
+            "claim": "Irony Database Design Wrong",
+            "topic": "database-design",
+            "strength": 7.8,
+            "pattern": "irony"
+          },
+          {
+            "id": "irony-api-0",
+            "claim": "Irony Api Gateway Wrong",
+            "topic": "api-gateway",
+            "strength": 7.8,
+            "pattern": "irony"
+          },
+          {
+            "id": "irony-microservices-0",
+            "claim": "Irony Microservices Wrong",
+            "topic": "microservices",
+            "strength": 7.8,
+            "pattern": "irony"
+          },
+          {
+            "id": "irony-load-1",
+            "claim": "Story Load Balancing Funny",
+            "topic": "load-balancing",
+            "strength": 7.5,
+            "pattern": "irony"
+          },
+          {
+            "id": "irony-caching-1",
+            "claim": "Story Caching Funny",
+            "topic": "caching",
+            "strength": 7.5,
+            "pattern": "irony"
+          },
+          {
+            "id": "irony-database-1",
+            "claim": "Story Database Design Funny",
+            "topic": "database-design",
+            "strength": 7.5,
+            "pattern": "irony"
+          },
+          {
+            "id": "irony-api-1",
+            "claim": "Story Api Gateway Funny",
+            "topic": "api-gateway",
+            "strength": 7.5,
+            "pattern": "irony"
+          },
+          {
+            "id": "irony-microservices-1",
+            "claim": "Story Microservices Funny",
+            "topic": "microservices",
+            "strength": 7.5,
+            "pattern": "irony"
+          },
+          {
+            "id": "irony-load-2",
+            "claim": "Load Balancing Truth Hilarious",
+            "topic": "load-balancing",
+            "strength": 7.5,
+            "pattern": "irony"
+          },
+          {
+            "id": "irony-caching-2",
+            "claim": "Caching Truth Hilarious",
+            "topic": "caching",
+            "strength": 7.5,
+            "pattern": "irony"
+          },
+          {
+            "id": "irony-database-2",
+            "claim": "Database Design Truth Hilarious",
+            "topic": "database-design",
+            "strength": 7.5,
+            "pattern": "irony"
+          },
+          {
+            "id": "irony-api-2",
+            "claim": "Api Gateway Truth Hilarious",
+            "topic": "api-gateway",
+            "strength": 7.5,
+            "pattern": "irony"
+          },
+          {
+            "id": "irony-microservices-2",
+            "claim": "Microservices Truth Hilarious",
+            "topic": "microservices",
+            "strength": 7.5,
+            "pattern": "irony"
+          }
+        ]
+      }
+    ]
+  },
+  "stats": {
+    "totalPatterns": 45,
+    "totalTemplates": 675,
+    "averageStrength": 7.61,
+    "strengthDistribution": {
+      "excellent": 0,
+      "good": 675,
+      "fair": 0
+    }
+  }
+}
