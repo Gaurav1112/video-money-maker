@@ -30,6 +30,7 @@ import { generateAssSubtitles } from '../src/stock/captions/ass-generator.js';
 import { runQualityGate } from '../src/stock/quality-gate.js';
 import { synthesize as ttsSynthesize } from '../src/voice/tts.js';
 import { generateShortMetadata, BRAND_AT, BRAND_HANDLE_RAW } from '../src/services/short-metadata.js';
+import { findTopicBankEntry } from '../src/data/topic-bank-loader.js';
 import { execFile } from 'node:child_process';
 import { FFMPEG_BIN, FFPROBE_BIN } from '../src/lib/ffmpeg-bin.js';
 import { promisify } from 'node:util';
@@ -165,6 +166,17 @@ async function main(): Promise<void> {
   const workDir = path.join(finalOutDir, '_work');
   fs.mkdirSync(workDir, { recursive: true });
 
+  // Topic-bank wire-up (Panel-8 Dist + Audience P0): the 110 curated
+  // hookHinglish strings in src/data/topic-bank.json were previously
+  // dead-code — the renderer always picked from generic templates. We
+  // now look up by safeTopic-slug and, if found, route the curated
+  // hook through TTS+title while keeping the visual hook short for the
+  // 1080×1920 hook band.
+  const bankEntry = findTopicBankEntry(slug);
+  if (bankEntry) {
+    console.log(`[orchestrator] topic-bank hit: ${slug} → "${bankEntry.hookHinglish ?? bankEntry.shortTitle}"`);
+  }
+
   // Hook headline is the SINGLE source of truth for scene-0 visual text,
   // scene-0 TTS audio, and the YT title — computed once here so all three
   // surfaces stay in lock-step. Fixes the v9 regression where scene-0 audio
@@ -174,11 +186,18 @@ async function main(): Promise<void> {
     storyboard.topic,
     storyboard.scenes[0]?.narration ?? '',
   );
+  // hookSpoken: full Hinglish hook for TTS scene-0 audio (longer, urgent).
+  // hookVisual: punchy ≤42-char headline for the on-screen hook band.
+  // When a bank entry exists with hookHinglish, the spoken+title carry
+  // the curated copy; the visual still uses the short template so the
+  // 3-line/14-char hook band remains legible.
+  const hookSpoken: string = bankEntry?.hookHinglish?.trim() || hookHeadline;
+  const hookVisual: string = hookHeadline;
 
   // ── Auto-generate TTS narration if storyboard didn't ship a voice ────────
   if (!hasVoice && process.env['TTS_DISABLED'] !== '1') {
     try {
-      const ttsResult = await generateNarrationForScenes(storyboard, workDir, hookHeadline);
+      const ttsResult = await generateNarrationForScenes(storyboard, workDir, hookSpoken);
       voicePath = ttsResult.audioPath;
       hasVoice = true;
       // Re-write each scene's duration to its narration audio length so the
@@ -212,6 +231,40 @@ async function main(): Promise<void> {
         return { ...scene, wordTimestamps: wt };
       });
       console.log(`[orchestrator] tts: ${voicePath} (scenes: ${ttsResult.sceneDurations.map((d) => d.toFixed(2)).join('s + ')}s)`);
+
+      // Panel-8 Eng P0 (Carmack): when summed scene narration exceeds
+      // the cap budget, ffmpeg's `-shortest` silently truncates audio
+      // at the end of the last visual frame — last-line voice loss is
+      // the single biggest hidden defect in the pipeline (a viewer
+      // hears "the answer is" and the video ends mid-sentence). Detect
+      // here, then EXTEND the final scene to absorb the audio tail
+      // plus a 1.5s end-card pad. Bounded by TOTAL_HARD_CAP so we never
+      // ship > 60s. If we'd blow the cap, we fail loud — never ship a
+      // half-narrated short.
+      const totalAudioSec = ttsResult.sceneDurations.reduce((a, b) => a + (b ?? 0), 0);
+      const totalVideoSec = runningTotal / storyboard.fps;
+      const END_CARD_SEC = 1.5;
+      const desiredVideoSec = totalAudioSec + END_CARD_SEC;
+      if (desiredVideoSec > totalVideoSec + 0.05) {
+        const totalCapSec = TOTAL_HARD_CAP / storyboard.fps;
+        if (desiredVideoSec > totalCapSec + 0.05) {
+          throw new Error(
+            `[orchestrator] audio (${totalAudioSec.toFixed(2)}s) + end-card (${END_CARD_SEC}s) ` +
+            `exceeds TOTAL_HARD_CAP (${totalCapSec.toFixed(1)}s). Author shorter narration ` +
+            `or split into multiple shorts.`
+          );
+        }
+        const lastIdx = storyboard.scenes.length - 1;
+        const last = storyboard.scenes[lastIdx]!;
+        const extraFrames = Math.ceil((desiredVideoSec - totalVideoSec) * storyboard.fps);
+        const newLastFrames = last.durationFrames + extraFrames;
+        storyboard.scenes[lastIdx] = { ...last, durationFrames: newLastFrames };
+        console.log(
+          `[orchestrator] extended last scene by ${extraFrames}f (` +
+          `${(extraFrames / storyboard.fps).toFixed(2)}s) to fit ` +
+          `audio ${totalAudioSec.toFixed(2)}s + end-card ${END_CARD_SEC}s`
+        );
+      }
     } catch (err) {
       console.warn(`[orchestrator] TTS failed (${String(err).slice(0, 160)}) — composing with silent audio`);
     }
@@ -237,23 +290,34 @@ async function main(): Promise<void> {
   await compose({
     scenes: storyboard.scenes.map((scene, i) => {
       const isHook = i === 0;
+      const isLast = i === storyboard.scenes.length - 1;
       // Hook scene: short, punchy 4-6 word hook in giant text.
       // Body scenes: narration sentence as caption strip — but only when
       // ASS karaoke captions are NOT active, otherwise we double-stack.
       const bigText = isHook
-        ? hookHeadline
+        ? hookVisual
         : undefined;
       const captionText = isHook
         ? undefined // hook text already dominates the upper third
         : hasAssCaptions
           ? undefined // Ret3 P1: ASS karaoke owns the caption layer
           : buildCaptionPhrase(scene.narration || '');
+      // Panel-8 Dist P0: end-card loop hook. The Shorts recommender
+      // reads loop-rate as a primary promotion signal in the cold-start
+      // 48-hour window. We draw a final-1.5s overlay on the LAST scene
+      // with a comment-bait + subscribe ask so every video closes with
+      // an explicit replay/subscribe pull. Localised Hinglish to match
+      // the @GuruSishya-India brand voice.
+      const endCardText = isLast
+        ? `Comment 🔥 if you got it\nSubscribe ${BRAND_AT} — kal milte hain`
+        : undefined;
       return {
         clipPath: clipPaths[i],
         durationSec: scene.durationFrames / storyboard.fps,
         sceneIndex: scene.sceneIndex,
         bigText,
         captionText,
+        endCardText,
       };
     }),
     voicePath: hasVoice ? voicePath : undefined,
@@ -304,8 +368,9 @@ async function main(): Promise<void> {
       url: l.url,
       attribution: l.credit || l.id,
     })),
-    siteTopicSlug: slug,
+    siteTopicSlug: bankEntry?.siteTopicSlug ?? slug,
     hookHeadline,
+    shortTitle: bankEntry?.shortTitle,
   });
   const metadataPath = path.join(finalOutDir, 'metadata.json');
   fs.writeFileSync(
@@ -653,32 +718,39 @@ async function generateThumbnailPng(opts: {
     if (fs.existsSync(c)) { fontfile = `:fontfile='${c.replace(/'/g, "\\'")}'`; break; }
   }
 
-  const FS = 110;
-  const LH = 140;
+  // Panel-8 Dist P1 (MrBeast/MKBHD): at the 120×210-px shelf size,
+  // 110-px text on a 1080×1920 canvas renders ~12 px tall — illegible.
+  // Bumped to 165 px (≈18 px shelf), tighter line-height, larger
+  // border to keep the stroke visible at small scale. Salary anchor
+  // (yellow) raised from 44 → 64.
+  const FS = 165;
+  const LH = 188;
   const totalH = hookLines.length * LH;
-  const startY = 480 + Math.max(0, (560 - totalH) / 2);
+  const startY = 460 + Math.max(0, (640 - totalH) / 2);
 
   const filters: string[] = [
     'scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920',
     // Dim middle band where the hook sits
-    'drawbox=x=0:y=440:w=1080:h=640:color=black@0.65:t=fill',
+    'drawbox=x=0:y=420:w=1080:h=720:color=black@0.65:t=fill',
   ];
   hookLines.forEach((line, idx) => {
     filters.push(
       `drawtext=text='${escapeDrawtext(line)}'${fontfile}:fontcolor=white:fontsize=${FS}:` +
-      `borderw=8:bordercolor=black@0.95:` +
+      `borderw=10:bordercolor=black@0.95:` +
       `x=(w-text_w)/2:y=${Math.round(startY + idx * LH)}`
     );
   });
-  // Channel handle bottom-right
+  // Channel handle bottom-right (yellow salary anchor; bumped 44 → 64)
   filters.push(
-    `drawtext=text='${escapeDrawtext(handle)}'${fontfile}:fontcolor=#FFEB3B:fontsize=44:` +
-    `borderw=4:bordercolor=black@0.95:x=w-text_w-40:y=h-text_h-160`
+    `drawtext=text='${escapeDrawtext(handle)}'${fontfile}:fontcolor=#FFEB3B:fontsize=64:` +
+    `borderw=5:bordercolor=black@0.95:x=w-text_w-40:y=h-text_h-160`
   );
 
   await execFileAsync(FFMPEG_BIN, [
     '-y',
-    '-ss', '0.5',
+    // Seek to 1.5s — past the hook SFX/zoom intro, into a settled frame.
+    // t=0.5s caught a mid-zoompan blur per Panel-8 distribution review.
+    '-ss', '1.5',
     '-i', sourceVideoPath,
     '-frames:v', '1',
     '-vf', filters.join(','),

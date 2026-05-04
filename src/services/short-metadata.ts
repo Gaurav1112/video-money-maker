@@ -40,6 +40,13 @@ export interface MetadataInput {
    * audio (Dist2 coherence requirement).
    */
   hookHeadline?: string;
+  /**
+   * Topic-bank curated `shortTitle` (Panel-8 Dist P0). When provided, this
+   * overrides the formulaic TITLE_TEMPLATES path so each topic ships with
+   * a unique, hand-tuned title — eliminating shelf-fatigue from the
+   * "Most engineers get X wrong" stamp pattern.
+   */
+  shortTitle?: string;
 }
 
 /** YouTube hard cap is 100 chars; we leave 6 for `#Shorts` ⇒ 94 for hook copy. */
@@ -150,9 +157,20 @@ export function generateShortMetadata(
   storyboard: StockStoryboard,
   input: MetadataInput = {}
 ): ShortMetadata {
-  const { licenses = [], extraTags = [], siteTopicSlug, hookHeadline } = input;
-  const hook = shortHook(storyboard.topic, hookHeadline);
-  const title = `${hook} #Shorts`.slice(0, TITLE_MAX);
+  const { licenses = [], extraTags = [], siteTopicSlug, hookHeadline, shortTitle } = input;
+  // Panel-8 Dist P0: prefer topic-bank curated shortTitle when present —
+  // each one is a hand-written power-line tuned to the specific topic
+  // ("90% of Engineers Get Kafka Consumer Groups WRONG 😳"). Avoids
+  // formulaic shelf-fatigue across 110 videos. Falls back to template
+  // path when the bank has no entry.
+  const trimmedShortTitle = (shortTitle ?? '').replace(/\s+/g, ' ').trim();
+  const baseHook = trimmedShortTitle.length > 0
+    ? trimmedShortTitle.length <= HOOK_BUDGET
+      ? trimmedShortTitle
+      : trimmedShortTitle.slice(0, HOOK_BUDGET - 1).trimEnd() + '…'
+    : shortHook(storyboard.topic, hookHeadline);
+  const hook = baseHook;
+  const title = `${baseHook} #Shorts`.slice(0, TITLE_MAX);
 
   // Tag set: topic-derived + ICP-search + brand + caller extras. Expanded
   // ICP tags target tier-1 college / campus-placement search alongside

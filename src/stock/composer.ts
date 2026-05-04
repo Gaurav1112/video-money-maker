@@ -176,6 +176,14 @@ export interface SceneInput {
   bigText?: string;
   /** Caption strip (lower-third). Smaller, multi-line, scene narration. */
   captionText?: string;
+  /**
+   * Loop-CTA text drawn ONLY during the final 1.5 s of this scene
+   * (Panel-8 Dist P0 — Shorts feed promotion is gated on loop-rate;
+   * shipping with no closing argument flatlines algorithmic reach).
+   * Newlines split into lines on screen. Typically set on the last
+   * scene only.
+   */
+  endCardText?: string;
 }
 
 export interface ComposeInput {
@@ -255,8 +263,13 @@ async function processScene(
       // Zoom in: 1.00 → ~1.17 over the scene
       zoompanFilter = `zoompan=z='1+0.0016*on':d=${durFrames}:s=1080x1920:fps=${FPS}`;
     } else {
-      // Zoom out: start at ~1.20, end at ~1.00
-      zoompanFilter = `zoompan=z='max(1,1.20-0.00133*on)':d=${durFrames}:s=1080x1920:fps=${FPS}`;
+      // Panel-8 Ret P1 (McKinnon): previous hardcoded 0.00133 never
+      // resolved to 1.00× at end of scene — at 105 frames (3.5s × 30)
+      // the math left zoom at 1.06×, breaking the in/out symmetry.
+      // Compute the velocity from durFrames so the ramp ALWAYS ends
+      // exactly at 1.00× regardless of cap changes.
+      const zoomOutVel = (0.20 / durFrames).toFixed(6);
+      zoompanFilter = `zoompan=z='max(1,1.20-${zoomOutVel}*on)':d=${durFrames}:s=1080x1920:fps=${FPS}`;
     }
   }
   const baseScale = enableZoompan
@@ -264,7 +277,17 @@ async function processScene(
     : 'scale=-2:1920,crop=1080:1920';
   const filters: string[] = [`${baseScale},fps=${FPS},setpts=PTS-STARTPTS`];
 
-  const hasOverlay = !!(scene.bigText || scene.captionText);
+  // Panel-8 Ret P0 (Schiffer): pattern-interrupt brightness flash on
+  // every 3rd body scene (sceneIndex 3, 6, 9 …). 80ms at +0.20
+  // brightness creates a frame-accurate cut signal that resets the
+  // viewer's foveal attention — the same trick TikTok/Reels editors
+  // use mid-clip to defeat doom-scroll fatigue. Skipped for the hook
+  // (sceneIndex 0) and scene-1/scene-2 to keep the open clean.
+  if (scene.sceneIndex >= 3 && scene.sceneIndex % 3 === 0) {
+    filters.push(`eq=brightness=0.20:enable='lt(t,0.08)'`);
+  }
+
+  const hasOverlay = !!(scene.bigText || scene.captionText || scene.endCardText);
   const drawtextAvailable = hasOverlay ? await isDrawtextAvailable() : false;
 
   if (hasOverlay && drawtextAvailable) {
@@ -318,6 +341,34 @@ async function processScene(
           `drawtext=text='${escaped}'${fontArgFor(line)}:fontcolor=#FFEB3B:fontsize=${FS}:` +
           `borderw=4:bordercolor=black@0.95:` +
           `x=(w-text_w)/2:y=${Math.round(startY + idx * LH)}`
+        );
+      });
+    }
+
+    // ── End-card loop CTA (last 1.5s of last scene only) ──────────────────
+    // Panel-8 Dist P0 (Roberto Blake): Shorts feed promotion is gated
+    // on loop-rate in the first 48-hour cold-start window. We draw a
+    // black-band overlay with the comment-bait + subscribe pull during
+    // the final 1.5s — explicit replay/subscribe ask without losing
+    // the underlying B-roll. enable= timing is scoped to this scene's
+    // local timestamp (relative to scene start, not absolute).
+    if (scene.endCardText) {
+      const endCardStart = Math.max(0, scene.durationSec - 1.5);
+      const endCardEnable = `enable='gte(t,${endCardStart.toFixed(3)})'`;
+      filters.push(
+        `drawbox=x=0:y=760:w=1080:h=400:color=black@0.78:t=fill:${endCardEnable}`
+      );
+      const ecLines = scene.endCardText.split('\n').slice(0, 3);
+      const FS = 64;
+      const LH = 96;
+      const totalH = ecLines.length * LH;
+      const startY = 800 + Math.max(0, (340 - totalH) / 2);
+      ecLines.forEach((line, idx) => {
+        const escaped = escapeDrawtext(line);
+        filters.push(
+          `drawtext=text='${escaped}'${fontArgFor(line)}:fontcolor=#FFEB3B:fontsize=${FS}:` +
+          `borderw=5:bordercolor=black@0.95:` +
+          `x=(w-text_w)/2:y=${Math.round(startY + idx * LH)}:${endCardEnable}`
         );
       });
     }
@@ -581,7 +632,7 @@ async function mixBgmBed(
       '[1:a]aformat=channel_layouts=stereo,lowpass=f=700,tremolo=f=0.25:d=0.10,volume=-26dB[bgm]',
       '[2:a]aformat=channel_layouts=stereo[sfx]',
       '[bgm][0:a]sidechaincompress=threshold=0.04:ratio=8:attack=10:release=300[ducked]',
-      '[0:a][ducked][sfx]amix=inputs=3:duration=first:dropout_transition=0[mix]',
+      '[0:a][ducked][sfx]amix=inputs=3:duration=first:dropout_transition=0:weights=1 0.35 0.6[mix]',
       '[mix]loudnorm=I=-14:LRA=11:tp=-1.5[aout]',
     ].join(';'),
     '-map', '[aout]',
