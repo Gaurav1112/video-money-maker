@@ -70,8 +70,10 @@ jobs:
           unzip -q Rhubarb-Lip-Sync-1.13.0-Linux.zip -d /opt/rhubarb || true
           echo "/opt/rhubarb" >> $GITHUB_PATH || true
 
-      - name: Render ${{ inputs.limit || '2' }} sessions
-        run: npx tsx scripts/batch-render-all.ts --limit ${{ inputs.limit || '2' }}
+      - name: Render sessions
+        env:
+          BATCH_LIMIT: ${{ inputs.limit || '2' }}
+        run: npx tsx scripts/batch-render-all.ts --limit "$BATCH_LIMIT"
         timeout-minutes: 300
 
       - name: Show render status
