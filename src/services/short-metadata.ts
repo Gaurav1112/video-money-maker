@@ -213,16 +213,22 @@ export function generateShortMetadata(
   const isDsaSurface = cat === 'dsa' || cat === '';
   // Core tags safe across every category (true cross-funnel CSE / FAANG
   // search anchors that don't bias the recommendation graph).
+  // Panel-15 Aud P1 (Kunal/Apna): `apnacollege` was identical pollution
+  // class to `strivergrind` and `leetcode` already gated in P11/P13 —
+  // when system-design or db-internals shorts ship with `apnacollege`
+  // they pull mass-fresher recommendation signal that suppresses the
+  // senior-dev / global discovery graph. Moved into the fresher-funnel
+  // bucket so it only fires on dsa / behavioral / empty category.
   const CORE_ICP_TAGS = [
     'faang', 'dsa', 'systemdesign', 'placement',
     'interviewprep', 'codingshorts', 'cseducation', 'lowleveldesign',
-    'softwareengineer', 'computerscience', 'apnacollege',
+    'softwareengineer', 'computerscience',
   ];
   // India-academic / fresher-funnel tags — only attach to dsa /
   // behavioral / empty category. On system-design + db-internals
   // they suppress global / senior-dev discovery (Kunal + Harkirat ICP).
   const FRESHER_FUNNEL_TAGS = isFresherFunnel
-    ? ['gate2026', 'tier1college', 'campusplacement']
+    ? ['gate2026', 'tier1college', 'campusplacement', 'apnacollege']
     : [];
   // Panel-13 Dist P0 (Schiffer): `leetcode` is a DSA-platform signal,
   // identical pollution risk to the `strivergrind` problem fixed in
@@ -307,6 +313,18 @@ export function generateShortMetadata(
         ? `⚠️ ${stake}`
         : null;
 
+  // Panel-15 Aud P1 (Apna College / Harkirat): when the bank entry has
+  // no curated salaryBand (most system-design / db-internals topics)
+  // the description still needs a Rs-anchor for the GATE/fresher ICP
+  // — Apna College persona converts on numeric salary tiers, not on
+  // abstract FAANG positioning. Surface the canonical 2026 India SDE
+  // band (E3 -> E4 -> E5 / Tier-2 -> Tier-1 -> FAANG-India ladder)
+  // when no per-topic band exists. Fires on every category — system
+  // design and db-internals viewers also map to these tiers.
+  const fallbackSalaryLine = !salaryBand
+    ? '💼 FAANG India SDE band: ₹14L (entry) → ₹26L (mid) → ₹45L+ (senior)'
+    : null;
+
   // Panel-10 Dist P1 (Schiffer): description structure tuned for both
   // the algorithm (hashtags above the YT mobile fold for niche signal)
   // AND the human reader (lead with the hook, not a hashtag soup).
@@ -316,6 +334,7 @@ export function generateShortMetadata(
     `⚡ ${hook}`,
     `${NICHE_HASHTAGS} ${BROAD_HASHTAGS}`,
     ...(stakeLine ? [stakeLine] : []),
+    ...(fallbackSalaryLine ? [fallbackSalaryLine] : []),
     ...(hookHinglish ? [`🎙️ "${hookHinglish}"`] : []),
     `🔗 Full deep-dive + practice: ${ctaUrl}`,
     `📘 Instant FREE 80-Q FAANG cheatsheet (no signup) → ${leadMagnetUrl}`,

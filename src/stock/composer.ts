@@ -534,11 +534,15 @@ async function muxFinal(
     for (let i = 0; i < input.scenes.length; i++) {
       const dur = input.scenes[i]!.durationSec;
       // Panel-14 Eng P1 (Brendan): NaN/Infinity in any scene's
-      // durationSec would poison cum for all subsequent boundaries
-      // (NaN propagates through addition, comparisons all return
-      // false). Guard each scene; on bad input, skip that boundary
-      // computation and fall back to no-whoosh for the run rather
-      // than emit a malformed aevalsrc expression.
+      // durationSec must not poison cum for subsequent scenes (NaN
+      // propagates through addition, comparisons all return false).
+      // Panel-15 Eng P1 (Eich) doc-fix: previous comment claimed
+      // "fall back to no-whoosh for the run" — actual behaviour is
+      // skip that scene's duration contribution AND skip pushing its
+      // boundary, then continue. Downstream boundaries are computed
+      // off the partial cum, so a corrupt scene-1 dur leaves scenes
+      // 2..N's whooshes shifted earlier by the missing dur. Strictly
+      // better than NaN injection into aevalsrc, but not "no whoosh".
       if (!Number.isFinite(dur) || dur <= 0) continue;
       cum += dur;
       if (i < input.scenes.length - 1 && cum > 0.05 && cum < totalDur - 0.20) {
@@ -666,20 +670,34 @@ async function muxFinal(
  * MrBeast/Reels/TikTok cut uses to defeat doom-scroll fatigue.
  * Procedural so it stays deterministic and adds no binary assets.
  */
-function buildWhooshExpr(boundariesSec: number[], totalDur: number): string {
+/**
+ * Whoosh chirp coefficient k. Symbolic derivation kept inline so the
+ * audio-math invariant (sweep f0 -> f1 over duration D) is auditable
+ * without grepping the comment. sin(2*PI*(f0 + k*Δ)*Δ) has phase
+ * derivative 2*PI*(f0 + 2*k*Δ); instantaneous freq f0 + 2*k*Δ.
+ * Solving f0 + 2*k*D = f1 for k yields (f1 - f0) / (2*D).
+ *   f0 = 1200 Hz, f1 = 7200 Hz, D = 0.180 s
+ *   k = (7200 - 1200) / (2 * 0.180) = 16666.6666...
+ * Keep the symbolic form so any future tuning of f0/f1/D updates the
+ * coefficient by recomputation, not by guessing a magic literal.
+ * (Panel-15 Eng P1 Hejlsberg.)
+ */
+export const WHOOSH_F0_HZ = 1200;
+export const WHOOSH_F1_HZ = 7200;
+export const WHOOSH_DUR_S = 0.180;
+export const WHOOSH_K = (WHOOSH_F1_HZ - WHOOSH_F0_HZ) / (2 * WHOOSH_DUR_S);
+
+export function buildWhooshExpr(boundariesSec: number[], totalDur: number): string {
   if (!boundariesSec.length) return '';
-  // Each whoosh: 180ms exponentially-decaying frequency sweep
-  // (1200Hz → 7200Hz over 180ms), amplitude 0.30, gated by
-  // gte(t,T) * lt(t-T,0.18). Sum of all boundary impulses.
-  // Panel-14 Eng/Ret P0 (Maeda/Huang): instantaneous frequency of
-  // sin(2π(f0 + k·Δ)·Δ) is f0 + 2k·Δ (derivative of phase wrt t).
-  // Reaching f1 = 7200Hz at Δ=0.18s requires k = (f1-f0)/(2·0.18)
-  // = 6000/0.36 = 16666.667 — not 6000. Previous coefficient only
-  // climbed to 1200 + 2·6000·0.18 = 3360Hz, missing the upper octave
-  // that gives the whoosh its perceptual "swoosh" punch.
+  // Each whoosh: WHOOSH_DUR_S exponentially-decaying frequency sweep
+  // from WHOOSH_F0_HZ to WHOOSH_F1_HZ, amplitude 0.30, gated by
+  // gte(t,T) * lt(t-T,WHOOSH_DUR_S). Sum of all boundary impulses.
+  const k = WHOOSH_K.toFixed(3);
+  const dur = WHOOSH_DUR_S.toFixed(3);
+  const f0 = WHOOSH_F0_HZ.toFixed(0);
   const terms = boundariesSec.map((t) => {
     const T = t.toFixed(3);
-    return `gte(t\\,${T})*lt(t-${T}\\,0.18)*0.30*exp(-7*(t-${T}))*sin(2*PI*(1200+16666.667*(t-${T}))*(t-${T}))`;
+    return `gte(t\\,${T})*lt(t-${T}\\,${dur})*0.30*exp(-7*(t-${T}))*sin(2*PI*(${f0}+${k}*(t-${T}))*(t-${T}))`;
   });
   const expr = terms.join('+');
   return `aevalsrc='${expr}':s=44100:d=${totalDur.toFixed(3)}`;

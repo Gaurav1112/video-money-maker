@@ -103,7 +103,14 @@ Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour,
   // overlays. The 80px lift puts the active-word strip above the
   // bigText shelf, eliminating the visual collision when both fire
   // on the same scene.
-Style: Default,DejaVu Sans,96,&H0000FFFF,&H00FFFFFF,&H00000000,&H80000000,1,0,0,0,100,100,0,0,1,4,6,2,10,10,560,1
+  // Panel-15 Ret P1 (Linus): MarginV 560 → 600. With fontsize=96 the
+  // glyph cap-height is ~80px, so MarginV=560 leaves only ~20px gap
+  // above the drawtext shelf at y=h-text_h-580. Bumping to 600 lifts
+  // the karaoke baseline to PlayResY-600=1320, glyph top ~1240 — a
+  // clean ~60px gap above the shelf for visual breathing room without
+  // pushing captions into the bigText hook band (top of bigText sits
+  // around y=420).
+Style: Default,DejaVu Sans,96,&H0000FFFF,&H00FFFFFF,&H00000000,&H80000000,1,0,0,0,100,100,0,0,1,4,6,2,10,10,600,1
 
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
