@@ -32,6 +32,7 @@ import { synthesize as ttsSynthesize } from '../src/voice/tts.js';
 import { generateShortMetadata, BRAND_AT, BRAND_HANDLE_RAW } from '../src/services/short-metadata.js';
 import { findTopicBankEntry } from '../src/data/topic-bank-loader.js';
 import { rotateBankHook } from '../src/data/hook-rotator.js';
+import { hookTextFor } from '../src/lib/thumbnail-text.js';
 import { execFile } from 'node:child_process';
 import { FFMPEG_BIN, FFPROBE_BIN } from '../src/lib/ffmpeg-bin.js';
 import { promisify } from 'node:util';
@@ -532,7 +533,21 @@ async function main(): Promise<void> {
   // zero external assets, and clearly signals "tech short" not "stock
   // landscape". Category drives an accent gradient stop.
   const thumbnailPath = path.join(finalOutDir, 'thumbnail.png');
-  const thumbnailHook = rotated?.shortTitle || bankEntry?.shortTitle?.trim() || hookSpoken || hookHeadline;
+  // Panel-16 Retention R1+R4 (Beast/Bilyeu): the long shortTitle ("The
+  // Kafka Consumer Groups Mistake") is descriptive but inert — it tells
+  // the viewer what the video IS, not why they should stop scrolling.
+  // hookTextFor() returns deterministic 4-word punchy copy from
+  // src/lib/thumbnail-text.ts, designed for Beast/Striver-grade
+  // curiosity-gap thumbnails ("KAFKA TRAP EXPOSED", "FAANG ASKS THIS
+  // DAILY", etc). Same topic → same string, fully deterministic.
+  // shortTitle still survives as fallback if the topic doesn't match
+  // any pattern bank (rare — covers all our CSE/FAANG categories).
+  const punchyHook = hookTextFor(storyboard.topic);
+  const thumbnailHook = punchyHook
+    || rotated?.shortTitle
+    || bankEntry?.shortTitle?.trim()
+    || hookSpoken
+    || hookHeadline;
   await generateThumbnailPng({
     hook: thumbnailHook,
     handle: process.env['CHANNEL_HANDLE'] ?? BRAND_AT,

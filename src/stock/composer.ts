@@ -32,48 +32,68 @@ const VENDORED_BGM_PATH = pathResolve(PACKAGE_ROOT, 'assets/audio/bgm/tense-susp
 const VENDORED_HOOK_STING_PATH = pathResolve(PACKAGE_ROOT, 'assets/audio/sfx/hook-sting.mp3');
 const VENDORED_END_CARD_SFX_PATH = pathResolve(PACKAGE_ROOT, 'assets/audio/sfx/end-card-uplift.mp3');
 
-function discoverVendoredAudio(): {
+// Panel-16 Eng E2 Hejlsberg: end-card SFX offset was a duplicated magic
+// literal (1.6) used by both the SFX delay computation and the totalDur
+// extension. Naming it makes the relationship explicit and prevents
+// silent drift if one is changed without the other.
+const END_CARD_OFFSET_S = 1.6;
+
+// Panel-16 Eng E2 Hejlsberg: discoverVendoredAudio was called twice per
+// render (once from compose, once from the metadata writer downstream).
+// Each call hit existsSync three times. Memoise — paths are package-root
+// constants, the answer cannot change within a process lifetime.
+type VendoredAudioPaths = {
   bgm: string | undefined;
   hookSting: string | undefined;
   endCardSfx: string | undefined;
-} {
-  return {
+};
+let vendoredAudioCache: VendoredAudioPaths | null = null;
+function discoverVendoredAudio(): VendoredAudioPaths {
+  if (vendoredAudioCache) return vendoredAudioCache;
+  vendoredAudioCache = {
     bgm: existsSync(VENDORED_BGM_PATH) ? VENDORED_BGM_PATH : undefined,
     hookSting: existsSync(VENDORED_HOOK_STING_PATH) ? VENDORED_HOOK_STING_PATH : undefined,
     endCardSfx: existsSync(VENDORED_END_CARD_SFX_PATH) ? VENDORED_END_CARD_SFX_PATH : undefined,
   };
+  return vendoredAudioCache;
 }
 
 
 // Memoised filter-availability probes. Some ffmpeg builds (e.g. macOS
 // homebrew default) ship without libass; we skip captions gracefully
 // rather than failing the whole render.
-let assAvailableCache: boolean | null = null;
-async function isAssFilterAvailable(): Promise<boolean> {
-  if (assAvailableCache !== null) return assAvailableCache;
+//
+// Panel-16 Eng E3 Linus: the previous implementation shelled out to
+// `ffmpeg -hide_banner -filters` TWICE per render (once for `ass`, once
+// for `drawtext`) — same command, parsed for different rows. Collapsed
+// to a single shared list-fetch that both probes consume.
+let availableFiltersCache: Set<string> | null = null;
+async function getAvailableFilters(): Promise<Set<string>> {
+  if (availableFiltersCache) return availableFiltersCache;
+  const set = new Set<string>();
   try {
     const { stdout } = await execFileP(FFMPEG_BIN, ['-hide_banner', '-filters'], {
       maxBuffer: 4 * 1024 * 1024,
     });
-    assAvailableCache = /^\s*\S+\s+ass\s/m.test(stdout);
+    // Each row of `-filters` output looks like ` T.. ass    Render text…`
+    // — the filter name is the second whitespace-separated column.
+    for (const line of stdout.split('\n')) {
+      const m = line.match(/^\s*\S+\s+(\S+)\s/);
+      if (m) set.add(m[1]);
+    }
   } catch {
-    assAvailableCache = false;
+    // leave set empty — both probes return false
   }
-  return assAvailableCache;
+  availableFiltersCache = set;
+  return availableFiltersCache;
 }
 
-let drawtextAvailableCache: boolean | null = null;
+async function isAssFilterAvailable(): Promise<boolean> {
+  return (await getAvailableFilters()).has('ass');
+}
+
 async function isDrawtextAvailable(): Promise<boolean> {
-  if (drawtextAvailableCache !== null) return drawtextAvailableCache;
-  try {
-    const { stdout } = await execFileP(FFMPEG_BIN, ['-hide_banner', '-filters'], {
-      maxBuffer: 4 * 1024 * 1024,
-    });
-    drawtextAvailableCache = /^\s*\S+\s+drawtext\s/m.test(stdout);
-  } catch {
-    drawtextAvailableCache = false;
-  }
-  return drawtextAvailableCache;
+  return (await getAvailableFilters()).has('drawtext');
 }
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -846,10 +866,10 @@ async function mixBgmBed(
   if (endCardSfxPath && existsSync(endCardSfxPath)) {
     const endIdx = nextIdx++;
     inputs.push('-i', endCardSfxPath);
-    const delayMs = Math.max(0, Math.round((totalDur - 1.6) * 1000));
+    const delayMs = Math.max(0, Math.round((totalDur - END_CARD_OFFSET_S) * 1000));
     filters.push(
       `[${endIdx}:a]aformat=channel_layouts=stereo,` +
-        `atrim=duration=1.6,asetpts=PTS-STARTPTS,volume=-6dB,` +
+        `atrim=duration=${END_CARD_OFFSET_S},asetpts=PTS-STARTPTS,volume=-6dB,` +
         `adelay=${delayMs}|${delayMs},apad=whole_dur=${totalDurStr}[endsfx]`,
     );
     endCardLabel = '[endsfx]';
@@ -906,7 +926,17 @@ async function mixBgmBed(
     `:duration=longest:dropout_transition=2` +
     `:weights=${weights.join(' ')}[mix]`;
   filters.push(mixSpec);
-  filters.push('[mix]loudnorm=I=-14:LRA=11:tp=-1.0[aout]');
+  // Panel-16 Audio P1 #2 (Beato/Huang): single-pass loudnorm landed at
+  // I=-14.9 LUFS (target -14.0) and LRA=3.5 LU — half the broadcast
+  // floor (7-9 LU). Narrow LRA = "loud-but-flat" which streaming
+  // listeners read as podcast-grade not viral-Short-grade.
+  // dynaudnorm before loudnorm expands per-frame dynamics within a
+  // sliding window without colouring tone (f=200ms frame, g=11 frames
+  // gauss = ~2.2s context). This lifts LRA toward 6-8 LU and gives the
+  // master a more musical envelope. dynaudnorm is fully deterministic
+  // on identical input — no internal randomness.
+  filters.push('[mix]dynaudnorm=f=200:g=11:p=0.95:m=10[mixexp]');
+  filters.push('[mixexp]loudnorm=I=-14:LRA=11:tp=-1.0[aout]');
 
   await runFfmpeg([
     ...inputs,
@@ -928,8 +958,27 @@ async function probeDuration(videoPath: string): Promise<number> {
         videoPath,
       ],
       (err, stdout) => {
-        if (err) reject(err);
-        else resolve(parseFloat(stdout.trim()) || 0);
+        if (err) {
+          reject(err);
+          return;
+        }
+        const dur = parseFloat(stdout.trim());
+        // Panel-16 Eng E1 Eich P0: previous implementation `parseFloat(...) || 0`
+        // silently returned 0 on parse failure or NaN. A 0 totalDur poisons
+        // downstream computations: end-card adelay becomes negative-clamped
+        // to 0 (SFX fires at t=0, masking voice), apad whole_dur=0 produces
+        // an empty audio stream, and the final `-t 0` flag would emit a
+        // zero-frame mp4 that still passes the meanVariance gate as garbage.
+        // Throw loud rather than silently corrupt the render.
+        if (!Number.isFinite(dur) || dur <= 0) {
+          reject(new Error(
+            `probeDuration(${videoPath}): ffprobe returned non-finite or non-positive ` +
+            `duration (raw stdout: ${JSON.stringify(stdout)}). Refusing to render with ` +
+            `corrupted timing — the upstream concat/encode step likely failed silently.`,
+          ));
+          return;
+        }
+        resolve(dur);
       }
     );
   });

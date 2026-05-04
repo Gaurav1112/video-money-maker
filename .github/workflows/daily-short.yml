@@ -6,10 +6,15 @@ name: Daily Short (Render + Upload)
 
 on:
   schedule:
-    # Pre-render at 3:00 PM IST (9:30 UTC) — 4h buffer before upload
-    - cron: '30 9 * * *'
-    # Upload at 9:30 PM IST (4:00 PM UTC) — peak India viewing time
-    - cron: '0 16 * * *'
+    # Panel-16 Distribution P0 #2 (Schiffer): YouTube Shorts shelf peak
+    # impression density for India is 7-9 PM IST. Previous schedule put
+    # uploads at 9:30 PM IST — tail of prime-time. New: render at 12:30
+    # PM IST (07:00 UTC), upload at 7:00 PM IST (13:30 UTC).
+    # Pre-render at 12:30 PM IST (7:00 UTC) — 6.5h buffer before upload
+    - cron: '0 7 * * *'
+    # Upload at 7:00 PM IST (1:30 PM UTC) — first 30-min impression-
+    # budget cycle starts inside peak browse window.
+    - cron: '30 13 * * *'
 
   workflow_dispatch:
     inputs:
