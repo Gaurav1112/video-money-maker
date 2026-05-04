@@ -249,6 +249,20 @@ export interface SceneInput {
    * silence between voice EOF and end-card reveal.
    */
   tombstoneText?: string;
+  /**
+   * Panel-20 Retention P0-A (Bilyeu/MrBeast): mid-point promise text.
+   * Drawn for the first 1.8s of this scene's local timeline as a
+   * curiosity-gap line that bridges the algo's 50% completion window
+   * (typically t≈8-10s on a 17.45s short). Without it, viewers hit
+   * the body scene, see "more talking", and swipe before the payoff
+   * lands. The promise injects a stake reset: "ruko, last 5 sec mein
+   * twist hai" / "Number 2 ne mera offer cancel karaaya tha". Drawn
+   * in the y=480-680 band — between the bigText hook band (240) and
+   * the tombstone band (880) — with a 60% black backdrop and a
+   * yellow accent strip on the left. Set on the body scene (typically
+   * sceneIndex=1) only.
+   */
+  midPromiseText?: string;
 }
 
 export interface ComposeInput {
@@ -503,6 +517,38 @@ async function processScene(
       });
     }
 
+    // ── Mid-point promise (Panel-20 Ret P0-A Bilyeu/MrBeast) ─────────────
+    // Drawn for the first 1.8s of THIS scene's local timeline. Sits in
+    // the y=480-680 band between the hook (240) and tombstone (880).
+    // Yellow accent strip on the left + 60% black backdrop reads as
+    // "stake reset / important promise" without colliding with caption
+    // band. enable= is scoped to scene-local time so the promise fires
+    // exactly when the viewer enters the body scene — straddling the
+    // algo's 50% checkpoint with a "wait, the payoff is coming" signal.
+    if (scene.midPromiseText) {
+      const promiseEnd = Math.min(1.8, scene.durationSec - 0.5);
+      const promiseEnable = `enable='lt(t,${promiseEnd.toFixed(3)})'`;
+      const promiseFade = `alpha='if(lt(t,${promiseEnd.toFixed(3)}),1-(t/${promiseEnd.toFixed(3)})*0.0,0)'`;
+      const promLines = wrapText(scene.midPromiseText, 26).split('\n').slice(0, 2);
+      const PFS = 50;
+      const PLH = 70;
+      const promStartY = 500;
+      filters.push(
+        `drawbox=x=0:y=480:w=1080:h=200:color=black@0.62:t=fill:${promiseEnable}`,
+      );
+      filters.push(
+        `drawbox=x=24:y=480:w=10:h=200:color=#FFEB3B@0.95:t=fill:${promiseEnable}`,
+      );
+      promLines.forEach((line, idx) => {
+        const escaped = escapeDrawtext(line);
+        filters.push(
+          `drawtext=text='${escaped}'${fontArgFor(line)}:fontcolor=white:fontsize=${PFS}:` +
+          `borderw=3:bordercolor=black@0.85:${promiseFade}:` +
+          `x=70:y=${Math.round(promStartY + idx * PLH)}:${promiseEnable}`,
+        );
+      });
+    }
+
     // ── End-card loop CTA (last 1.5s of last scene only) ──────────────────
     // Panel-8 Dist P0 (Roberto Blake): Shorts feed promotion is gated
     // on loop-rate in the first 48-hour cold-start window. We draw a
@@ -548,16 +594,16 @@ async function processScene(
     console.warn('[composer] ffmpeg lacks drawtext — skipping text overlays');
   }
 
-  // Panel-19 Eng/Eich P2 (brightness pulse scope): the pulse was added
-  // for the SYNTHETIC LAST SCENE dead zone (the 7-10s tombstone window
-  // where voice has ended and the algo's 50% checkpoint falls). Gating
-  // on `isSynthetic` alone leaks the pulse into hook/body synthetic
-  // scenes, where it (a) fights the hook's static high-contrast attention
-  // grab and (b) compounds with the existing `eq=brightness=0.30:enable=
-  // 'lt(t,0.167)'` pattern-interrupt flash on odd sceneIndex synthetics.
-  // The actual signal for "this is the dead-zone scene" is the presence
-  // of tombstoneText — the orchestrator only sets it on the last scene.
-  const filterChain = isSynthetic && scene.tombstoneText
+  // Panel-19 Eng/Eich P2 + Panel-20 Eng P1-4 (brightness pulse scope):
+  // the pulse was added for the dead-zone tombstone scene. The previous
+  // gate `isSynthetic && tombstoneText` excluded a real B-roll clip
+  // that the orchestrator might mark with tombstoneText (perfectly
+  // valid case post-B24 since render-stock-short.ts now recycles a
+  // real clip onto the last scene). Drop the isSynthetic clause so
+  // the brightness pulse applies whenever the scene is acting as the
+  // dead-zone bridge, regardless of whether the underlying clip is
+  // synthetic or real B-roll.
+  const filterChain = scene.tombstoneText
     ? `eq=brightness='0.06*sin(2*PI*t/2.5)':eval=frame,${filters.join(',')}`
     : filters.join(',');
 
@@ -1007,7 +1053,7 @@ async function mixBgmBed(
     const delayMs = Math.max(0, Math.round((totalDur - END_CARD_OFFSET_S) * 1000));
     filters.push(
       `[${endIdx}:a]aformat=channel_layouts=stereo,` +
-        `atrim=duration=${END_CARD_OFFSET_S},asetpts=PTS-STARTPTS,volume=-6dB,` +
+        `atrim=duration=${END_CARD_OFFSET_S},asetpts=PTS-STARTPTS,volume=-9dB,` +
         `adelay=${delayMs}|${delayMs},apad=whole_dur=${totalDurStr}[endsfx]`,
     );
     endCardLabel = '[endsfx]';

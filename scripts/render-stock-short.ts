@@ -484,6 +484,21 @@ async function main(): Promise<void> {
         const lastSpace = trimmed.lastIndexOf(' ');
         return lastSpace > 18 ? trimmed.slice(0, lastSpace) : trimmed;
       })();
+
+      // Panel-20 Retention P0-A (Bilyeu/MrBeast): mid-point promise on
+      // the BODY scene (sceneIndex=1 in a 3-scene structure). Straddles
+      // the algo's 50% completion checkpoint with a stake reset that
+      // pushes viewers past the "should I swipe?" decision. Topic-bank
+      // salaryBand (₹35-55LPA / ₹40-65LPA) anchors the stake when
+      // available — Edge's "salary anchor in audio/video" finding —
+      // otherwise falls back to the generic curiosity-gap promise.
+      const isBody = !isHook && !isLast;
+      const midPromiseText = isBody
+        ? (bankEntry?.salaryBand
+            ? `Last 5 sec mein ${bankEntry.salaryBand} ka twist`
+            : 'Ruko — last 5 sec mein twist hai')
+        : undefined;
+
       return {
         clipPath: clipPaths[i],
         durationSec: scene.durationFrames / storyboard.fps,
@@ -492,6 +507,7 @@ async function main(): Promise<void> {
         captionText,
         endCardText,
         tombstoneText,
+        midPromiseText,
       };
     }),
     voicePath: hasVoice ? voicePath : undefined,
@@ -649,9 +665,25 @@ async function main(): Promise<void> {
       },
       linkedin: {
         title: metadata.title.replace(/\s*#\w+\s*/g, '').trim(),
-        body: metadata.description
-          .replace(/utm_source=yt_shorts/g, 'utm_source=linkedin')
-          .split('\n').slice(0, 8).join('\n'),
+        // Panel-20 Dist P0-1 (Moore): the YT description has the
+        // hashtag wall on line index 1; without filtering it that
+        // block leaks into the LinkedIn post body and reads as
+        // low-effort SEO spam to the professional-network audience.
+        // Drop line 1 specifically (the hashtag block) and the
+        // following blank line, then keep the next 6 prose lines.
+        body: (() => {
+          const raw = metadata.description.replace(/utm_source=yt_shorts/g, 'utm_source=linkedin');
+          const lines = raw.split('\n');
+          // Strip any line that is purely hashtags (or hashtag-spam).
+          const cleaned = lines.filter(line => {
+            const trimmed = line.trim();
+            if (!trimmed) return true;
+            const tokens = trimmed.split(/\s+/);
+            const tagRatio = tokens.filter(t => t.startsWith('#')).length / tokens.length;
+            return tagRatio < 0.7;
+          });
+          return cleaned.slice(0, 7).join('\n').trim();
+        })(),
       },
       telegram: {
         text: `🆕 ${metadata.title}\n\n${metadata.description.replace(/utm_source=yt_shorts/g, 'utm_source=telegram').split('\n').slice(0, 4).join('\n')}`,

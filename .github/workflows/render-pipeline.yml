@@ -78,7 +78,7 @@ jobs:
           set -euo pipefail
           npx remotion browser ensure
           pip install --break-system-packages edge-tts 2>/dev/null || pip install edge-tts
-          sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
+          sudo apt-get update -qq && sudo apt-get install -y -qq "ffmpeg=7:*" fonts-dejavu fonts-noto fonts-lohit-devanagari
           python3 -c "import edge_tts; print('edge_tts OK')"
           ffmpeg -version | head -1
 

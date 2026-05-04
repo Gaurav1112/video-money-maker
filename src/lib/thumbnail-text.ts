@@ -118,12 +118,13 @@ const ARCHITECTURE_PATTERNS: PatternBank = [
 
 const NETWORKING_PATTERNS: PatternBank = [
   '{TECH} WRONG? FIX NOW',
-  // Panel-19 Dist P2 (Schiffer): 'FAANG USES {TECH} THIS' is the same
-  // awkward English fragment class as MESSAGING[3] was — surfaces on
-  // gRPC/REST/HTTP topics and reads as low-production noise. Replaced
-  // with a natural-rhythm interrogative that keeps the FAANG salary
-  // trigger and the {TECH} slot.
-  'WHY FAANG PICKS {TECH}',
+  // Panel-20 Dist P1-2 (Schiffer): 'WHY FAANG PICKS {TECH}' was a
+  // near-duplicate of MESSAGING_PATTERNS[3] 'WHY FAANG RUNS {TECH}'
+  // — viewers seeing "WHY FAANG <verb> X" on every other Shorts in
+  // their feed = pattern fatigue. Replace with a hidden-cost angle
+  // that still lands on threat/curiosity but doesn't share the
+  // "WHY FAANG" prefix with any other bank.
+  '{TECH} HIDDEN COST HERE',
   '{TECH} VS REST WINNER',
   'NEVER DO THIS {TECH}',
   '{TECH} IN 60 SECS',
@@ -172,7 +173,11 @@ const FRONTEND_PATTERNS: PatternBank = [
 ];
 
 const GENERIC_PATTERNS: PatternBank = [
-  'FAANG ASKS THIS DAILY',
+  // Panel-20 Dist P1-1 (Schiffer): was duplicate of DSA_PATTERNS[0]
+  // ('FAANG ASKS THIS DAILY') — same string surfacing on 2 banks
+  // = thumbnail fatigue across the channel feed. Replaced with a
+  // shared-trigger phrase that fits any tech topic.
+  'ONE CONCEPT CHANGES ALL',
   '90% GET THIS WRONG',
   'SENIOR DEV TRICK HERE',
   'STOP DOING THIS NOW',

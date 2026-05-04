@@ -18,7 +18,7 @@
  * GH-Actions compatible: exits non-zero on failure so the workflow step fails.
  */
 
-import { spawnSync } from 'child_process';
+import { spawnSync, execFile } from 'child_process';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -39,6 +39,8 @@ export interface LufsVerifyOptions {
    * when target is -1.0 dBTP.
    */
   toleranceTp?: number;
+  /** Minimum required loudness range in LU (default 0 — disabled). */
+  minLra?: number;
 }
 
 export interface LufsMeasurement {
@@ -48,8 +50,31 @@ export interface LufsMeasurement {
 }
 
 // ---------------------------------------------------------------------------
-// measureLufs: run ffmpeg ebur128 and return parsed measurement
+// measureLufsAsync: run ffmpeg ebur128 truly async (Panel-20 Eng P0-1
+// Carmack — the prior spawnSync version blocked the Node.js event loop
+// for the full ebur128 measurement duration (~5-12s on a 17s short),
+// silently bypassing any AbortSignal/timeout the caller had set on
+// the render pipeline.
 // ---------------------------------------------------------------------------
+export function measureLufsAsync(filePath: string): Promise<LufsMeasurement> {
+  return new Promise((resolve, reject) => {
+    execFile(
+      'ffmpeg',
+      ['-nostats', '-i', filePath, '-af', 'ebur128=peak=true', '-f', 'null', '-'],
+      { maxBuffer: 8 * 1024 * 1024 },
+      (_err, stdout, stderr) => {
+        try {
+          resolve(parseEbur128((stderr ?? '') + (stdout ?? ''), filePath));
+        } catch (e) {
+          reject(e);
+        }
+      },
+    );
+  });
+}
+
+// Retained as legacy sync entry point (unit tests + CLI wrapper). Internal
+// async pipeline calls measureLufsAsync via verifyLufs.
 export function measureLufs(filePath: string): LufsMeasurement {
   // ffmpeg ebur128 prints a summary block to stderr on exit:
   //   Integrated loudness:
@@ -71,7 +96,11 @@ export function measureLufs(filePath: string): LufsMeasurement {
   );
 
   const stderr = (result.stderr ?? '') + (result.stdout ?? '');
+  return parseEbur128(stderr, filePath);
+}
 
+// Internal: shared parser for both sync and async paths.
+function parseEbur128(stderr: string, filePath: string): LufsMeasurement {
   // Panel-19 Audio P0 (Katz): ebur128 streams running measurements
   // throughout the file (e.g. `t: 0.40   M: -70.0 S: -70.0 I: -70.0
   // LUFS LRA: 0.0 LU`) before printing the FINAL "Integrated loudness"
@@ -108,9 +137,12 @@ export async function verifyLufs(
   filePath: string,
   opts: LufsVerifyOptions,
 ): Promise<LufsMeasurement> {
-  const { targetLufs, targetTruePeak, toleranceLu = 0.5, toleranceTp = 0.2 } = opts;
+  const { targetLufs, targetTruePeak, toleranceLu = 0.5, toleranceTp = 0.2, minLra = 0 } = opts;
 
-  const m = measureLufs(filePath);
+  // Panel-20 Eng P0-1 (Carmack): use the truly-async measurement path
+  // so the render pipeline's event loop stays responsive during the
+  // 5-12s ebur128 measurement window.
+  const m = await measureLufsAsync(filePath);
 
   const lufsLow  = targetLufs - toleranceLu;
   const lufsHigh = targetLufs + toleranceLu;
@@ -133,6 +165,20 @@ export async function verifyLufs(
       (m.truePeakDbtp > 0
         ? ' — HARD CLIPPING: digital distortion will be audible'
         : ''),
+    );
+  }
+
+  // Panel-20 Audio P1-3 (Katz): LRA gate. A dead-flat mix (LRA<3 LU)
+  // signals over-compression — the master sounds "loud but lifeless"
+  // and Loudness Range standards (EBU R128 + AES) recommend ≥6 LU for
+  // narrative content. We don't enforce ≥6 yet (current renders sit
+  // around LRA=3.5), but minLra=0 disables, and callers can opt-in to
+  // a floor.
+  if (minLra > 0 && Number.isFinite(m.loudnessRangeLu) && m.loudnessRangeLu < minLra) {
+    errors.push(
+      `Loudness range ${m.loudnessRangeLu.toFixed(1)} LU is below floor ${minLra} LU ` +
+      `— mix is over-compressed (no inter-syllable variance, ` +
+      `EBU R128 narrative content target ≥6 LU)`,
     );
   }
 
@@ -164,7 +210,18 @@ export async function verifyLufs(
 // CLI wrapper: node lufs-verify.js <file> [targetLufs] [targetTruePeak]
 // Used by smoke-test.sh and GH Actions audio-gate step
 // ---------------------------------------------------------------------------
-if (require.main === module) {
+// Panel-20 Eng P1-5 (Eich): match the ESM guard pattern used by the
+// rest of the codebase; require.main === module silently no-ops when
+// loaded as ESM (which the tsx loader does), and would ReferenceError
+// in stricter loaders.
+const _isMain = (() => {
+  try {
+    return import.meta.url === `file://${process.argv[1]}`;
+  } catch {
+    return false;
+  }
+})();
+if (_isMain) {
   const [, , filePath, lufsArg, peakArg] = process.argv;
   if (!filePath) {
     console.error('Usage: npx ts-node src/audio/lufs-verify.ts <file> [targetLufs=-14] [targetTruePeak=-1.0]');

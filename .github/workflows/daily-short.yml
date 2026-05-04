@@ -148,7 +148,7 @@ jobs:
           # it is because we're currently on a stable Jammy/Noble
           # cycle. ffmpeg=7:* anchors the major version while still
           # accepting security patches.
-          sudo apt-get update && sudo apt-get install -y "ffmpeg=7:*" fonts-dejavu
+          sudo apt-get update && sudo apt-get install -y "ffmpeg=7:*" fonts-dejavu fonts-noto fonts-lohit-devanagari
           python3 -c "import edge_tts; print('edge_tts OK')"
           ffmpeg -version | head -1
           fc-list | grep -i "dejavu sans" | head -1
@@ -387,7 +387,7 @@ jobs:
         run: |
           npx remotion browser ensure
           pip install --break-system-packages edge-tts==${EDGE_TTS_VERSION} 2>/dev/null || pip install edge-tts==${EDGE_TTS_VERSION}
-          sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
+          sudo apt-get update -qq && sudo apt-get install -y -qq "ffmpeg=7:*" fonts-dejavu fonts-noto fonts-lohit-devanagari
 
       - name: "[FALLBACK] Clone content repo"
         if: steps.check.outputs.found != 'true' && inputs.dry_run != 'true'
@@ -531,10 +531,18 @@ jobs:
         run: |
           VIDEO_ID="${{ steps.upload.outputs.video_id }}"
           META_PATH="${{ steps.upload.outputs.metadata_path }}"
+          # Panel-20 Eng/Dist P1-3 (Carmack/Moore): drop `|| true`.
+          # `continue-on-error: true` already makes the step non-blocking
+          # while preserving step.outcome=failure visibility — the prior
+          # `|| true` collapsed every 401/403/422/429 into exit-0 with
+          # zero observability, hiding LinkedIn token expiry, rate-limit
+          # storms, and malformed payloads from CI surface. The script
+          # itself surfaces non-fatal "secrets missing" via exit-0 with
+          # warning so this is safe.
           if [ -n "$META_PATH" ] && [ -f "$META_PATH" ]; then
-            npx tsx scripts/post-linkedin.ts "$VIDEO_ID" --metadata "$META_PATH" || true
+            npx tsx scripts/post-linkedin.ts "$VIDEO_ID" --metadata "$META_PATH"
           else
-            npx tsx scripts/post-linkedin.ts "$VIDEO_ID" || true
+            npx tsx scripts/post-linkedin.ts "$VIDEO_ID"
           fi
 
       # ── B4: record this publish in the ledger so we don't repeat the topic
