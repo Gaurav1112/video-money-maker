@@ -771,12 +771,35 @@ async function mixBgmBed(
   const filters: string[] = [];
   let nextIdx = 1;
 
+  // Voice rate-normalize: Edge-TTS emits 24kHz mono. The vendored BGM is
+  // 44.1kHz stereo; the procedural lavfi inputs are 44.1kHz. amix
+  // auto-resamples internally, but the sidechain compressor evaluates
+  // attack/release envelopes against its CONTROL input's native rate --
+  // so a 24kHz voice control → 44.1kHz BGM target effectively scales
+  // attack=10ms to ~18.4ms and release=400ms to ~735ms (Panel-16 Eng E4
+  // Carmack: ducking digs in slower and recovers faster than spec).
+  // Pre-resampling voice to 44.1kHz fixes the envelope timing AND keeps
+  // the procedural-pad path (which was previously coincidentally
+  // matched) byte-identical.
+  // asplit fans out the resampled voice to two consumers: the sidechain
+  // compressor (control input) AND the final amix (mix dominant). A
+  // single labelled stream cannot feed two filters; this is the
+  // canonical ffmpeg pattern for shared signals.
+  filters.push('[0:a]aresample=44100,asplit=2[voice44k][voice44k_sc]');
+
   // Source 1: BGM bed (always present — file or procedural).
+  // Panel-16 Audio A1+A4 P0 (Huang+Beato): prior `volume=-26dB` × amix
+  // weight=0.35 gave effective -35 dBr below voice -- silence-detect
+  // confirmed BGM was below the audible floor on consumer earbuds.
+  // Bumped to -18dB for vendored BGM (× 0.35 = -27 dBr, in the
+  // broadcast "felt-but-not-heard" range). Procedural pad stays at
+  // -26dB because aevalsrc triad-sine has a much higher peak-to-RMS
+  // ratio (closer to a pure tone) and would mask voice if matched.
   const bgmIdx = nextIdx++;
   if (bgmPath && existsSync(bgmPath)) {
     inputs.push('-stream_loop', '-1', '-i', bgmPath);
     filters.push(
-      `[${bgmIdx}:a]aformat=channel_layouts=stereo,volume=-26dB,` +
+      `[${bgmIdx}:a]aformat=channel_layouts=stereo,volume=-18dB,` +
         `atrim=duration=${totalDurStr},asetpts=PTS-STARTPTS[bgm]`,
     );
   } else {
@@ -842,9 +865,11 @@ async function mixBgmBed(
     whooshLabel = '[whoosh]';
   }
 
-  // Sidechain duck BGM under voice (always).
+  // Sidechain duck BGM under voice (always). Uses the rate-normalized
+  // voice signal as the sidechain control so attack/release envelopes
+  // are calibrated correctly (Panel-16 Eng E4 Carmack Gap 2).
   filters.push(
-    '[bgm][0:a]sidechaincompress=threshold=0.04:ratio=6:' +
+    '[bgm][voice44k_sc]sidechaincompress=threshold=0.04:ratio=6:' +
       'attack=10:release=400[ducked]',
   );
 
@@ -852,7 +877,21 @@ async function mixBgmBed(
   // [end-card], [whoosh]. Weights tuned so voice dominates, BGM sits
   // ~9 dB under, hook ~5 dB under, end-card ~6 dB under, whoosh ~6 dB
   // under.
-  const mixLabels: string[] = ['[0:a]', '[ducked]', '[hooksfx]'];
+  // Panel-16 Eng E4 Carmack Gap 1: was `duration=first` which terminated
+  // amix when the FIRST input ([voice44k]) ended. Voice EOF (~14s) lands
+  // BEFORE totalDur (~17s after end-card-pad extension), so the entire
+  // last 2-3s -- the CTA window the end-card uplift SFX was *designed*
+  // to hit -- played in dead silence. The outer apad step then masked
+  // the kill with silence so the bug was sha1-stable and meanVariance
+  // gate-passing -- only audible. `duration=longest` keeps amix running
+  // until ALL inputs end (BGM/hooksfx/endsfx/whoosh are all bounded to
+  // totalDur), which restores the end-card uplift and BGM tail. Voice
+  // contributes silence after EOF (amix fills exhausted inputs with
+  // silence), and the sidechain compressor responds correctly (no
+  // signal → no ducking → BGM at base -26dB during CTA tail).
+  // dropout_transition=2 prevents the hard cut that would click the
+  // loudnorm pass.
+  const mixLabels: string[] = ['[voice44k]', '[ducked]', '[hooksfx]'];
   const weights: number[] = [1, 0.35, 0.6];
   if (endCardLabel) {
     mixLabels.push(endCardLabel);
@@ -864,7 +903,7 @@ async function mixBgmBed(
   }
   const mixSpec =
     `${mixLabels.join('')}amix=inputs=${mixLabels.length}` +
-    `:duration=first:dropout_transition=0` +
+    `:duration=longest:dropout_transition=2` +
     `:weights=${weights.join(' ')}[mix]`;
   filters.push(mixSpec);
   filters.push('[mix]loudnorm=I=-14:LRA=11:tp=-1.0[aout]');

@@ -829,18 +829,45 @@ export async function generateThumbnailPng(opts: {
   outPath: string;
 }): Promise<void> {
   const { hook, handle, category, outPath } = opts;
-  // Word-wrap the hook to ≤14 chars/line, max 3 lines, draw each line as
-  // its own drawtext filter (newline-glyph workaround consistent with
-  // composer.ts hook rendering).
+  // ─── Safe-zone-aware wrap + adaptive font-size ────────────────────────────
+  // Panel-16 Dist P0 (Schiffer/Bilyeu): the prior `<=14 chars/line @ FS=165`
+  // produced lines ~1340px wide on a 1080px canvas, clipping both edges
+  // on long titles like "The Kafka Consumer Groups Mistake". CTR
+  // collapsed to ~0.5% vs the 4-5% needed for first-cycle Shorts-shelf
+  // expansion -- effectively a CTR kill that compounded the algorithm
+  // trust ceiling.
+  //
+  // New contract: 90% safe-zone (972px max line width) at all times.
+  // Strategy: cap chars/line at MAX_LINE_CHARS @ baseline FS; allow up
+  // to 4 lines (was 3); if a single word exceeds MAX_LINE_CHARS, scale
+  // the *effective* FS down proportionally so even an unbreakable
+  // string fits inside the 90% safe-zone.
+  //
+  // Char-width estimate for Arial Bold sans-serif: width(px) ≈ 0.58 × FS.
+  // At FS=140, a 11-char line ≈ 11 × 81.2 = 893px (under 972 target).
+  const MAX_LINE_CHARS = 11;
+  const BASELINE_FS = 140;
+  const LH = 160;
+  const MAX_LINES = 4;
+  const SAFE_WIDTH_PX = 972; // 90% of 1080 canvas
+
   const words = hook.replace(/\s+/g, ' ').trim().split(' ');
   const lines: string[] = [];
   let cur = '';
   for (const w of words) {
     if (!cur) { cur = w; continue; }
-    if ((cur + ' ' + w).length <= 14) cur += ' ' + w; else { lines.push(cur); cur = w; }
+    if ((cur + ' ' + w).length <= MAX_LINE_CHARS) cur += ' ' + w; else { lines.push(cur); cur = w; }
   }
   if (cur) lines.push(cur);
-  const hookLines = lines.slice(0, 3);
+  const hookLines = lines.slice(0, MAX_LINES);
+
+  // If the wrap produced a single word longer than MAX_LINE_CHARS (e.g.,
+  // a topic with a 14-char canonical name like "elasticsearch"), shrink
+  // the effective font size so it still fits in the safe zone.
+  const widestChars = hookLines.length === 0 ? 1 : Math.max(...hookLines.map(l => l.length));
+  const FS = widestChars > MAX_LINE_CHARS
+    ? Math.floor(BASELINE_FS * MAX_LINE_CHARS / widestChars)
+    : BASELINE_FS;
 
   // Discover a font (Latin) for drawtext.
   const candidates = [
@@ -867,11 +894,7 @@ export async function generateThumbnailPng(opts: {
   const cat = (category ?? '').toLowerCase();
   const palette = PALETTES[cat] ?? { top: '0x1e3a8a', bottom: '0x0a0a23', accent: '0xfbbf24' };
 
-  // Type sizing: at the 120×210-px shelf size, 165-px text on a
-  // 1080×1920 canvas renders ~18 px tall — legible. (Carried forward
-  // from the prior generator after Panel-8 Dist P1.)
-  const FS = 165;
-  const LH = 188;
+  // Type sizing already computed safe-zone-aware FS above.
   const totalH = hookLines.length * LH;
   const startY = 460 + Math.max(0, (640 - totalH) / 2);
 
