@@ -427,6 +427,12 @@ async function main(): Promise<void> {
     scenes: storyboard.scenes.map((scene, i) => {
       const isHook = i === 0;
       const isLast = i === storyboard.scenes.length - 1;
+      const isBody = !isHook && !isLast;
+      // Diagram lives on body + closing scenes for cross-cut persistence.
+      // Defined here at the top so downstream tombstone/midPromise can
+      // make placement decisions that DEPEND on whether the diagram is
+      // claiming the y=200..1060 region this scene.
+      const wantsDiagram = isBody || isLast;
       // Hook scene: short, punchy 4-6 word hook in giant text.
       // Body scenes: narration sentence as caption strip — but only when
       // ASS karaoke captions are NOT active, otherwise we double-stack.
@@ -486,6 +492,16 @@ async function main(): Promise<void> {
       // word boundary so the 2-line wrap doesn't end mid-word.
       const tombstoneText = (() => {
         if (!isLast) return undefined;
+        // Panel-21 follow-up (user-reported): on the closing scene the
+        // tombstone band y=860-1060 collides with the concept-diagram's
+        // consumer row y=880-960. The diagram IS the visual recap, so
+        // when a diagram is rendered on the last scene we suppress the
+        // tombstone — keeping ONE clean recap signal instead of two
+        // overlapping ones. The tombstone path remains in place for
+        // topics that ever ship without a diagram (currently every
+        // topic resolves via the generic fallback, but the guard is
+        // future-proof).
+        if (wantsDiagram) return undefined;
         const raw = (rotated?.shortTitle || bankEntry?.shortTitle || '').trim();
         if (!raw) return undefined;
         if (raw.length <= 36) return raw;
@@ -501,25 +517,31 @@ async function main(): Promise<void> {
       // salaryBand (₹35-55LPA / ₹40-65LPA) anchors the stake when
       // available — Edge's "salary anchor in audio/video" finding —
       // otherwise falls back to the generic curiosity-gap promise.
-      const isBody = !isHook && !isLast;
       const midPromiseText = isBody
         ? (bankEntry?.salaryBand
             ? `Last 5 sec mein ${bankEntry.salaryBand} ka twist`
             : 'Ruko — last 5 sec mein twist hai')
         : undefined;
 
-      // Panel-21 Retention P0 (user-reported teaching gap): topic-keyed
-      // concept diagram on body scenes only. Hook scene owns the
-      // bigText hook band (y=240..720), the closing scene owns the
-      // end-card y=680..1080 region during the last 2s; the body
-      // scene's y=200..1060 was previously empty pixels behind a
-      // gradient — now it shows the actual architecture graph
-      // (producer → partitions → consumer group for kafka, etc).
-      // Slug fuzzy-matches a registry of templates with a generic
-      // 3-point fallback so EVERY topic gets a visual.
-      const conceptDiagram = isBody
+      // Panel-21 Retention P0 (user follow-up: "graphic should stay,
+      // it is going away in 1 sec or 2"): render the diagram on the
+      // BODY scene AND on the CLOSING scene so it persists across
+      // the cut. Body scene paces stages early (startT=0.4 — right
+      // after the brightness pulse + scene-flash) so the diagram is
+      // fully assembled before the body cut. Closing scene reveals
+      // INSTANTLY at t=0.05 (instant=true skips paceStage) so the
+      // diagram appears already-built the moment the cut lands —
+      // visually it reads as a continuous element. Hides at
+      // sceneDur-2.0 so the end-card CTA owns the last 2s.
+      const conceptDiagram = wantsDiagram
         ? getConceptDiagram(storyboard.topic, bankEntry?.shortTitle ?? rotated?.shortTitle)
         : undefined;
+      const sceneSec = scene.durationFrames / storyboard.fps;
+      const conceptDiagramOptions = isLast
+        ? { startT: 0.05, hideAfter: Math.max(0, sceneSec - 2.0), instant: true }
+        : isBody
+          ? { startT: 0.4 }
+          : undefined;
 
       // Brand subline appears on EVERY scene below the watermark
       // handle stack (drawn in composer scene-overlay path). Off-
@@ -536,6 +558,7 @@ async function main(): Promise<void> {
         tombstoneText,
         midPromiseText,
         conceptDiagram,
+        conceptDiagramOptions,
         brandSubline,
       };
     }),

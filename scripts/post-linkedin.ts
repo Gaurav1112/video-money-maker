@@ -77,14 +77,14 @@ export function buildLinkedInPostBody(args: {
     specificContent: {
       'com.linkedin.ugc.ShareContent': {
         shareCommentary: { text },
-        shareMediaCategory: 'ARTICLE',
-        media: [
-          {
-            status: 'READY',
-            originalUrl: url,
-            title: { text: title.slice(0, 200) },
-          },
-        ],
+        // Panel-21 P1-1: 'ARTICLE' shareMediaCategory triggers
+        // LinkedIn's link-card preview, which shrinks reach 40-60% vs
+        // pure text/image posts (algo deprioritizes outbound links).
+        // 'NONE' keeps the URL inline as plain text so the post is
+        // treated as a standard update — the URL is already present
+        // at the top of `text` ("▶ Watch (60 sec): ...") so users still
+        // get the link, the algorithm just doesn't penalize us for it.
+        shareMediaCategory: 'NONE',
       },
     },
     visibility: { 'com.linkedin.ugc.MemberNetworkVisibility': 'PUBLIC' },

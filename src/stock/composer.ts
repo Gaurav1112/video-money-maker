@@ -284,6 +284,20 @@ export interface SceneInput {
    */
   conceptDiagram?: import('./concept-diagram.js').ConceptDiagram;
   /**
+   * Per-scene options for the diagram renderer. On a body scene the
+   * diagram paces stages across t=startT..sceneDur*0.6. On the
+   * closing scene we want the FULL diagram to land instantly when
+   * the cut hits (it's already been built up during the body scene
+   * — viewers expect it to persist across the cut, not rebuild),
+   * and to hide before the end-card window — pass `{ instant: true,
+   * startT: 0.05, hideAfter: sceneDur - 2.0 }` for that case.
+   */
+  conceptDiagramOptions?: {
+    startT?: number;
+    hideAfter?: number;
+    instant?: boolean;
+  };
+  /**
    * Panel-21 Distribution P0 (user-reported brand gap): the watermark
    * showed only @GuruSishya-India — no off-platform funnel, no value
    * promise. `brandSubline` (e.g. "guru-sishya.in · Interview Ready
@@ -619,6 +633,7 @@ async function processScene(
       const diagramFilters = buildDiagramFilters(scene.conceptDiagram, scene.durationSec, {
         fontArg,
         fontArgFor,
+        ...(scene.conceptDiagramOptions ?? {}),
       });
       filters.push(...diagramFilters);
     }

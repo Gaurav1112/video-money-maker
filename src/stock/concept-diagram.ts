@@ -288,14 +288,23 @@ function escapeDrawtext(s: string): string {
 /**
  * Compute the absolute reveal time (in seconds, scene-local) for a
  * given stage index, given the scene's total duration. Stages start
- * at t=1.9s (right after the mid-promise drawer at t=1.8s) and pace
- * evenly through to (sceneDur - 0.3) so the diagram is fully assembled
- * before the scene ends. Clamped so we never schedule a reveal past
- * the scene's duration (would collapse into an instant pop-in).
+ * at t=1.9s on the body scene (right after the mid-promise drawer at
+ * t=1.8s) — but on the closing scene (no mid-promise drawer) we can
+ * start at t=0.3 since the diagram region is empty out of the gate.
+ *
+ * Reveal pacing aims for "fully built by scene-mid" so the assembled
+ * graph holds visible for the back half. If the entire scene is
+ * shorter than ~3s, stages collapse onto a single early reveal —
+ * better than half the diagram getting cut off mid-build.
  */
-function paceStage(stage: number, totalStages: number, sceneDur: number): number {
-  const start = 1.9;
-  const end = Math.max(start + 0.6, sceneDur - 0.3);
+function paceStage(stage: number, totalStages: number, sceneDur: number, startT: number): number {
+  const start = startT;
+  // Pack all reveals into the first 60% of the post-startT window so
+  // the diagram is fully assembled with ~40% of the scene left to
+  // hold. Was: reveal-window=full-scene which left only ~0.3s of
+  // "fully-built hold" before the cut.
+  const revealWindowEnd = start + Math.max(0.6, (sceneDur - start) * 0.6);
+  const end = Math.max(start + 0.4, Math.min(revealWindowEnd, sceneDur - 0.2));
   if (totalStages <= 1) return start;
   const span = end - start;
   const t = start + (span * (stage - 1)) / (totalStages - 1);
@@ -311,6 +320,29 @@ export interface DiagramFilterOptions {
    * to the lohit/noto font when a sublabel contains Hindi script.
    */
   fontArgFor: (line: string) => string;
+  /**
+   * Earliest scene-local time (sec) at which stage 0 may reveal.
+   * On a body scene that carries a mid-promise drawer (t=0..1.8s)
+   * pass startT=1.9 so the diagram doesn't compete with the drawer.
+   * On the closing scene (no drawer) pass startT=0.3 to maximize
+   * on-screen visibility. Default 1.9.
+   */
+  startT?: number;
+  /**
+   * Scene-local time (sec) at which the diagram should hide. Used on
+   * the closing scene to cede the y=200..1060 region to the end-card
+   * CTA in the last 2s. Pass `sceneDur - 2.0` for the closing scene;
+   * omit on body scenes (diagram visible to end of scene).
+   */
+  hideAfter?: number;
+  /**
+   * If true, ALL stages reveal at `startT` instead of pacing across
+   * the scene. Used on the closing scene where the diagram has
+   * already "lived" through the body scene — the viewer expects to
+   * see it fully assembled the moment the scene cut lands, not to
+   * watch it rebuild stage-by-stage.
+   */
+  instant?: boolean;
 }
 
 /**
@@ -318,16 +350,15 @@ export interface DiagramFilterOptions {
  * scene video. Returns an array of filter strings ready to be pushed
  * into the existing `filters` array in composer.processScene.
  *
- * Render order (per stage):
- *   1. Title bar (always stage 0, fades in at t=1.9s)
- *   2. Per-node: shadow drawbox → fill drawbox → border drawbox →
- *                 highlight ring (if highlightStage set) →
- *                 label drawtext → optional sublabel drawtext
- *   3. Per-edge: vertical drawbox line + arrowhead drawtext
- *
- * Every primitive carries an `enable='gte(t,REVEAL)'` gate scoped to
- * the scene's local timestamp so the diagram BUILDS as the narration
- * progresses instead of dumping in a single frame.
+ * Background panels are TRANSPARENT (no fill drawboxes) — the viewer
+ * sees the underlying B-roll/synthetic gradient through the diagram,
+ * with each node defined by a colored 3-px border ring. Labels carry
+ * a thick black stroke (borderw=5) so text stays legible against any
+ * background luminance. Per Panel-21 user feedback: solid drawbox
+ * fills made the diagram feel like a static slide overlaid on top of
+ * the video — losing the "live teaching" feel. Transparent borders
+ * keep the diagram structurally clear while the footage breathes
+ * through.
  */
 export function buildDiagramFilters(
   diagram: ConceptDiagram,
@@ -335,6 +366,8 @@ export function buildDiagramFilters(
   opts: DiagramFilterOptions,
 ): string[] {
   const filters: string[] = [];
+  const startT = opts.startT ?? 1.9;
+  const hideAfter = opts.hideAfter;
   const allStages = [
     0,
     ...diagram.nodes.map(n => n.stage),
@@ -344,33 +377,37 @@ export function buildDiagramFilters(
   const maxStage = Math.max(...allStages);
 
   const enableFor = (stage: number): string => {
-    const t = paceStage(stage, maxStage + 1, sceneDurationSec);
+    const t = opts.instant
+      ? startT
+      : paceStage(stage, maxStage + 1, sceneDurationSec, startT);
+    if (hideAfter !== undefined) {
+      return `enable='gte(t,${t.toFixed(3)})*lt(t,${hideAfter.toFixed(3)})'`;
+    }
     return `enable='gte(t,${t.toFixed(3)})'`;
   };
 
-  // Title bar at top of diagram region.
+  // Title bar: TRANSPARENT — only a 3-px yellow border ring + the text
+  // itself with a heavy black outline. No fill drawbox so the underlying
+  // footage shows through. Was: 0E1B2C@0.92 fill, which created an
+  // opaque "slide overlay" feel that the user explicitly called out.
   const titleEnable = enableFor(0);
-  filters.push(`drawbox=x=60:y=${DIAGRAM_TOP}:w=960:h=80:color=0x${TITLE_FILL}@0.92:t=fill:${titleEnable}`);
   filters.push(`drawbox=x=60:y=${DIAGRAM_TOP}:w=960:h=80:color=0x${TITLE_BORDER}@0.95:t=3:${titleEnable}`);
   filters.push(
     `drawtext=text='${escapeDrawtext(diagram.title)}'${opts.fontArgFor(diagram.title)}:` +
-    `fontcolor=white:fontsize=44:borderw=3:bordercolor=black@0.9:` +
+    `fontcolor=white:fontsize=44:borderw=5:bordercolor=black@0.95:` +
     `x=(w-text_w)/2:y=${DIAGRAM_TOP + 18}:${titleEnable}`,
   );
 
-  // Nodes.
+  // Nodes: transparent fill, colored border ring, label with thick
+  // black stroke. Highlight ring stays (it's a visual punchline cue,
+  // not a fill). Drop-shadow removed — it leaks dark blobs under the
+  // transparent borders and reads as a render artifact.
   for (const n of diagram.nodes) {
     if (n.y < DIAGRAM_TOP || n.y + n.h > DIAGRAM_BOTTOM) {
-      // Skip nodes that would render outside the safe zone — the template
-      // author should fix the coords; silent drop here keeps the renderer
-      // resilient (no half-overlap on the caption band).
       continue;
     }
     const enable = enableFor(n.stage);
-    // Subtle drop-shadow (offset 4px down-right, dark) → fill → border.
-    filters.push(`drawbox=x=${n.x + 4}:y=${n.y + 4}:w=${n.w}:h=${n.h}:color=black@0.45:t=fill:${enable}`);
-    filters.push(`drawbox=x=${n.x}:y=${n.y}:w=${n.w}:h=${n.h}:color=0x${n.fill}@0.92:t=fill:${enable}`);
-    filters.push(`drawbox=x=${n.x}:y=${n.y}:w=${n.w}:h=${n.h}:color=0x${n.border}@0.85:t=2:${enable}`);
+    filters.push(`drawbox=x=${n.x}:y=${n.y}:w=${n.w}:h=${n.h}:color=0x${n.fill}@0.95:t=3:${enable}`);
 
     if (n.highlightStage !== undefined) {
       const hEnable = enableFor(n.highlightStage);
@@ -381,13 +418,13 @@ export function buildDiagramFilters(
     const labelY = n.sublabel ? n.y + 12 : n.y + Math.round((n.h - labelFs) / 2) - 4;
     filters.push(
       `drawtext=text='${escapeDrawtext(n.label)}'${opts.fontArgFor(n.label)}:` +
-      `fontcolor=white:fontsize=${labelFs}:borderw=2:bordercolor=black@0.85:` +
+      `fontcolor=white:fontsize=${labelFs}:borderw=5:bordercolor=black@0.95:` +
       `x=${n.x}+(${n.w}-text_w)/2:y=${labelY}:${enable}`,
     );
     if (n.sublabel) {
       filters.push(
         `drawtext=text='${escapeDrawtext(n.sublabel)}'${opts.fontArgFor(n.sublabel)}:` +
-        `fontcolor=white:fontsize=22:borderw=2:bordercolor=black@0.85:` +
+        `fontcolor=white:fontsize=22:borderw=4:bordercolor=black@0.95:` +
         `x=${n.x}+(${n.w}-text_w)/2:y=${n.y + n.h - 30}:${enable}`,
       );
     }

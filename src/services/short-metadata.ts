@@ -341,14 +341,17 @@ export function generateShortMetadata(
     ? '💼 FAANG India SDE band: ₹14L (entry) → ₹26L (mid) → ₹45L+ (senior)'
     : null;
 
-  // Panel-10 Dist P1 (Schiffer): description structure tuned for both
-  // the algorithm (hashtags above the YT mobile fold for niche signal)
-  // AND the human reader (lead with the hook, not a hashtag soup).
-  // Order: ⚡hook → hashtags → stake → spoken Hinglish hook (SEO) → CTAs.
-  // Hashtags also still appear at the bottom for legacy parsers.
+  // Panel-21 Dist P0-A (Schiffer/Moore): pre-B28 the hashtag wall sat
+  // on line 2 — directly after the hook — which placed 11 hashtags
+  // ABOVE the YT mobile "see more" fold and visibly suppressed
+  // cold-start CTR (Schiffer 6.5, Moore 6.5). Reorganized to lead-
+  // with-value: hook → stake → spoken Hinglish → CTAs → topic
+  // narrative → ladder → PRO/sessions → THEN the hashtag block at the
+  // very bottom. YT only needs the FIRST 3 hashtags to count as topic
+  // signal — keeping the full wall at the foot still gives legacy
+  // parsers something to chew on without burning the fold.
   const description = [
     `⚡ ${hook}`,
-    `${NICHE_HASHTAGS} ${BROAD_HASHTAGS}`,
     ...(stakeLine ? [stakeLine] : []),
     ...(fallbackSalaryLine ? [fallbackSalaryLine] : []),
     ...(hookHinglish ? [`🎙️ "${hookHinglish}"`] : []),
@@ -368,11 +371,14 @@ export function generateShortMetadata(
     `👉 Mock interviews + 1:1 mentoring (limited slots this week) → ${sessionsUrl}`,
     `👉 Comment karo agla topic — top-voted topic 7 din me ship hota hai.`,
     '',
-    // Panel-12 Dist P1 (Schiffer): trailing `${NICHE_HASHTAGS} ${BROAD_HASHTAGS}`
-    // line was duplicating the above-fold block — YT counts hashtags
-    // beyond the first 3 against video relevance signal. License credits
-    // (when present) close the description.
+    // License credits (when present) sit just above the hashtag block.
     ...(credits ? [credits, ''] : []),
+    // Panel-21 P0-A: hashtag block now lives at the BOTTOM of the
+    // description. YT counts only the first 3 hashtags (top of the
+    // string OR hashtags adjacent to the title) as topic signal — the
+    // full wall here serves legacy parsers + accessibility tools
+    // without consuming above-fold real estate.
+    `${NICHE_HASHTAGS} ${BROAD_HASHTAGS}`,
   ].join('\n');
 
   return { title, description, tags };
