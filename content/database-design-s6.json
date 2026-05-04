@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "fps": 30,
+  "width": 1080,
+  "height": 1920,
+  "topic": "Database Design",
+  "session": 6,
+  "totalSessions": 10,
+  "siteTopicSlug": "database-design",
+  "siteSessionSlug": "transactions-isolation-levels",
+  "siteSessionTitle": "Transactions & Isolation Levels",
+  "siteSessionFocus": "ACID deep dive, read phenomena, MVCC",
+  "durationInFrames": 1500,
+  "audioFile": "assets/voice/database-design-s6.mp3",
+  "scenes": [
+    {
+      "sceneIndex": 0,
+      "startFrame": 0,
+      "endFrame": 150,
+      "durationFrames": 150,
+      "type": "hook",
+      "narration": "Dirty read, phantom read, lost update — ACID transaction isolation levels ka ek bhi mistake FAANG system design mein disqualify karta hai.",
+      "templateId": "DatabaseDesignArch"
+    },
+    {
+      "sceneIndex": 1,
+      "startFrame": 150,
+      "endFrame": 600,
+      "durationFrames": 450,
+      "type": "body",
+      "narration": "ACID: Atomicity (all or nothing), Consistency (valid state), Isolation (concurrent transactions don't interfere), Durability (committed data persists). Read phenomena: Dirty Read (read uncommitted data), Non-Repeatable Read (same row, different value in same transaction), Phantom Read (new rows appear in same query). Isolation levels: READ UNCOMMITTED (all problems), READ COMMITTED (no dirty reads — PostgreSQL default), REPEATABLE READ (no dirty, no non-repeatable — MySQL default), SERIALIZABLE (all phenomena prevented, slowest). MVCC (Multi-Version Concurrency Control): readers don't block writers — PostgreSQL, Oracle implementation.",
+      "templateId": "DatabaseDesignArch"
+    },
+    {
+      "sceneIndex": 2,
+      "startFrame": 600,
+      "endFrame": 1050,
+      "durationFrames": 450,
+      "type": "body",
+      "narration": "MVCC snapshot isolation vs serializable trap: snapshot isolation prevents most read phenomena but NOT write skew. Write skew: two concurrent transactions read same data, make decisions based on it, write conflicting updates. Example: doctor on-call system — two doctors simultaneously check \"is anyone else on call?\" both see yes, both mark themselves \"off-call\" — nobody on call. Solution: SELECT FOR UPDATE (pessimistic locking) or SERIALIZABLE isolation. PostgreSQL SSI (Serializable Snapshot Isolation) detects write skew without full locking.",
+      "templateId": "DatabaseDesignArch"
+    },
+    {
+      "sceneIndex": 3,
+      "startFrame": 1050,
+      "endFrame": 1500,
+      "durationFrames": 450,
+      "type": "outro",
+      "narration": "Isolation level choose karo based on correctness requirements: READ COMMITTED for most web apps, SERIALIZABLE for financial transactions. MVCC for read concurrency, explicit locks for write skew prevention. Guru-sishya.in pe transaction design problems practice karo.",
+      "templateId": "DatabaseDesignArch"
+    }
+  ]
+}

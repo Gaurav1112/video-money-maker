@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "fps": 30,
+  "width": 1080,
+  "height": 1920,
+  "topic": "API Gateway",
+  "session": 5,
+  "totalSessions": 10,
+  "siteTopicSlug": "api-gateway",
+  "siteSessionSlug": "api-versioning-strategies",
+  "siteSessionTitle": "API Versioning Strategies",
+  "siteSessionFocus": "URL vs header versioning, backward compatibility",
+  "durationInFrames": 1500,
+  "audioFile": "assets/voice/api-gateway-s5.mp3",
+  "scenes": [
+    {
+      "sceneIndex": 0,
+      "startFrame": 0,
+      "endFrame": 150,
+      "durationFrames": 150,
+      "type": "hook",
+      "narration": "V2 API launch kiya — V1 clients sab break ho gaye. API versioning strategy nahi socha? FAANG mein backward compatibility critical hai.",
+      "templateId": "ApiGatewayArch"
+    },
+    {
+      "sceneIndex": 1,
+      "startFrame": 150,
+      "endFrame": 600,
+      "durationFrames": 450,
+      "type": "body",
+      "narration": "URL versioning: /api/v1/users, /api/v2/users — explicit, cacheable, easy to understand. Header versioning: Accept: application/vnd.company.v2+json — clean URLs but harder to test in browser. Query parameter versioning: /api/users?version=2 — easy but messy. Semantic versioning principles: major version = breaking changes, minor = backward-compatible features, patch = bug fixes. API version lifecycle: current, deprecated (with sunset date), retired. Backward compatibility rules: add fields OK, remove/rename fields = breaking change. Additive-only changes prevent version proliferation.",
+      "templateId": "ApiGatewayArch"
+    },
+    {
+      "sceneIndex": 2,
+      "startFrame": 600,
+      "endFrame": 1050,
+      "durationFrames": 450,
+      "type": "body",
+      "narration": "Sunset header trap: deprecated API pe `Sunset: Sat, 31 Dec 2025 23:59:59 GMT` header return karo — clients should read this and migrate. Reality: clients ignore headers. Solution: aggressive communication — email, docs, status page, error messages in response body warning about deprecation. Also: traffic monitoring — agar koi v1 use kar raha hai 1 day before sunset, proactively contact them. FAANG: \"How do you safely retire an API version?\" — sunset header + monitoring + client communication plan.",
+      "templateId": "ApiGatewayArch"
+    },
+    {
+      "sceneIndex": 3,
+      "startFrame": 1050,
+      "endFrame": 1500,
+      "durationFrames": 450,
+      "type": "outro",
+      "narration": "URL versioning for external APIs (explicit), header versioning for internal APIs. Additive-only changes to minimize version count. Sunset + monitor + communicate for safe deprecation. Guru-sishya.in pe API lifecycle management dekho.",
+      "templateId": "ApiGatewayArch"
+    }
+  ]
+}

@@ -126,4 +126,35 @@ describe('compose', () => {
     });
     expect(fs.existsSync(outFallback)).toBe(true);
   }, 120_000);
+
+  it('composes closing scene with brandSubline + endCardText without error', async () => {
+    const outBrand = path.join(WORK_ROOT, 'out-brand.mp4');
+    await compose({
+      scenes: [{
+        clipPath: CLIP_PATH,
+        durationSec: 2,
+        sceneIndex: 0,
+        brandSubline: 'www.guru-sishya.in · Interview Ready in 21 Days',
+        endCardText: 'Subscribe\n@GuruSishya-India',
+      }],
+      outputPath: outBrand,
+      workDir: path.join(WORK_ROOT, 'work-brand'),
+    });
+    expect(fs.existsSync(outBrand)).toBe(true);
+  }, 120_000);
+
+  it('composes body scene with brandSubline (no endCard) without error', async () => {
+    const outBodyBrand = path.join(WORK_ROOT, 'out-body-brand.mp4');
+    await compose({
+      scenes: [{
+        clipPath: CLIP_PATH,
+        durationSec: 2,
+        sceneIndex: 0,
+        brandSubline: 'www.guru-sishya.in · Interview Ready in 21 Days',
+      }],
+      outputPath: outBodyBrand,
+      workDir: path.join(WORK_ROOT, 'work-body-brand'),
+    });
+    expect(fs.existsSync(outBodyBrand)).toBe(true);
+  }, 120_000);
 });

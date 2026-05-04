@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "fps": 30,
+  "width": 1080,
+  "height": 1920,
+  "topic": "Load Balancing",
+  "session": 8,
+  "totalSessions": 10,
+  "siteTopicSlug": "load-balancing",
+  "siteSessionSlug": "global-server-load-balancing",
+  "siteSessionTitle": "Global Server Load Balancing (GSLB)",
+  "siteSessionFocus": "GeoDNS, multi-region, latency-based routing",
+  "durationInFrames": 1500,
+  "audioFile": "assets/voice/load-balancing-s8.mp3",
+  "scenes": [
+    {
+      "sceneIndex": 0,
+      "startFrame": 0,
+      "endFrame": 150,
+      "durationFrames": 150,
+      "type": "hook",
+      "narration": "Indian users ko US server pe route kar rahe ho — 300ms extra latency. GSLB nahi implement kiya? System design mein yeh basic miss hai.",
+      "templateId": "LoadBalancingArch"
+    },
+    {
+      "sceneIndex": 1,
+      "startFrame": 150,
+      "endFrame": 600,
+      "durationFrames": 450,
+      "type": "body",
+      "narration": "GSLB kaam kaise karta hai: DNS response mein nearest region ka IP return karo. GeoDNS: user IP dekh ke closest datacenter ka IP return. Latency-based routing: AWS Route 53 actual latency measurements use karta hai — sirf geography nahi, real RTT. Anycast: same IP address multiple regions mein BGP se advertise karo, routing automatically closest PE. Health propagation: region down hua, DNS TTL expire pe traffic next region pe shift. TTL tuning critical: 60s vs 300s tradeoff between failover speed aur DNS amplification risk.",
+      "templateId": "LoadBalancingArch"
+    },
+    {
+      "sceneIndex": 2,
+      "startFrame": 600,
+      "endFrame": 1050,
+      "durationFrames": 450,
+      "type": "body",
+      "narration": "DNS TTL ka failover trap: TTL 300 seconds aur datacenter suddenly down — 5 minutes tak users 5xx dekhenge. Lekin TTL 30 seconds karo — DNS resolver overload, costs shoot up, amplification attack surface badh jaata hai. Production solution: AWS Route 53 health-check integration ke saath TTL dynamically reduce karo — healthy state mein 300s, health-check fail pe 30s. Yeh latency vs availability tradeoff FAANG mein explicitly poochha jaata hai.",
+      "templateId": "LoadBalancingArch"
+    },
+    {
+      "sceneIndex": 3,
+      "startFrame": 1050,
+      "endFrame": 1500,
+      "durationFrames": 450,
+      "type": "outro",
+      "narration": "GSLB multi-region architecture ka glue hai. GeoDNS + health-aware TTL adjustment = resilient global system. Single-region se multi-region evolution ka answer isi pe hota hai. Guru-sishya.in pe architecture practice karo.",
+      "templateId": "LoadBalancingArch"
+    }
+  ]
+}

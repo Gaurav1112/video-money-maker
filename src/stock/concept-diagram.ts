@@ -359,6 +359,25 @@ export interface DiagramFilterOptions {
    * watch it rebuild stage-by-stage.
    */
   instant?: boolean;
+  /**
+   * Panel-22 MrBeast P1 — hook visual anchor. When true, skip all
+   * stage/node/edge rendering and emit only a centered title-bar card:
+   * a yellow-bordered rect + thin accent bar + concept name in large
+   * white text. Designed for scene 0 where bigText already fills
+   * y=240-720 — the card anchors below at y=760-920 so the eye locks
+   * on the concept name immediately. Persistent from startT to end of
+   * scene (no paceStage). Byte-deterministic.
+   */
+  titleOnly?: boolean;
+  /**
+   * Panel-22 Beggs P1 — closing tombstone co-render. Short recap text
+   * (≤ 36 chars, ≤ 6 words) overlaid ON the closing diagram during its
+   * last [max(0,hideAfter-2.5), hideAfter] window so tombstone and
+   * diagram disappear together when the end-card fades in — one visual
+   * layer, not two separate overlays. Requires `hideAfter` to be set;
+   * silently ignored when hideAfter is undefined.
+   */
+  tombstoneText?: string;
 }
 
 /**
@@ -384,6 +403,36 @@ export function buildDiagramFilters(
   const filters: string[] = [];
   const startT = opts.startT ?? 1.9;
   const hideAfter = opts.hideAfter;
+
+  // ── titleOnly mode: hook-scene visual anchor (Panel-22 MrBeast P1) ──
+  // Emit ONLY a centered card — yellow-bordered rect + accent bar + the
+  // concept title in large text. No stages, no nodes, no edges. Sits in
+  // y=760-920, below the bigText hook band (y=240-720), persistent for
+  // the full hook scene. Byte-deterministic: all coords are constants.
+  if (opts.titleOnly) {
+    const t0 = startT;
+    const enableExpr = hideAfter !== undefined
+      ? `enable='gte(t,${t0.toFixed(3)})*lt(t,${hideAfter.toFixed(3)})'`
+      : `enable='gte(t,${t0.toFixed(3)})'`;
+    const cardX = 60, cardY = 760, cardW = 960, cardH = 160;
+    const accentX = Math.round((1080 - 200) / 2); // 440 — centred
+    const accentY = cardY + cardH - 18;           // near bottom of card
+    filters.push(
+      `drawbox=x=${cardX}:y=${cardY}:w=${cardW}:h=${cardH}:` +
+      `color=0x${TITLE_BORDER}@0.95:t=3:${enableExpr}`,
+    );
+    filters.push(
+      `drawbox=x=${accentX}:y=${accentY}:w=200:h=6:` +
+      `color=0x${TITLE_BORDER}@0.95:t=fill:${enableExpr}`,
+    );
+    filters.push(
+      `drawtext=text='${escapeDrawtext(diagram.title)}'${opts.fontArgFor(diagram.title)}:` +
+      `fontcolor=white:fontsize=48:borderw=5:bordercolor=black@0.95:` +
+      `x=(w-text_w)/2:y=${cardY + 52}:${enableExpr}`,
+    );
+    return filters;
+  }
+
   // Panel-22 Carmack P2: previous code did `Math.max(...allStages)` and
   // passed `maxStage + 1` as `totalStages` to paceStage. That assumes
   // contiguous stages 0..N. If a template ever uses non-contiguous
@@ -494,6 +543,29 @@ export function buildDiagramFilters(
     filters.push(`drawbox=x=${x2 - 12}:y=${y2 - 10}:w=24:h=4:color=0xFFEB3B@0.95:t=fill:${enable}`);
     filters.push(`drawbox=x=${x2 - 8}:y=${y2 - 6}:w=16:h=4:color=0xFFEB3B@0.95:t=fill:${enable}`);
     filters.push(`drawbox=x=${x2 - 4}:y=${y2 - 2}:w=8:h=4:color=0xFFEB3B@0.95:t=fill:${enable}`);
+  }
+
+  // ── Tombstone co-render on closing diagram (Panel-22 Beggs P1) ──────
+  // Short recap text overlaid ON the diagram during its last
+  // [hideAfter-2.5, hideAfter] window so both disappear together when
+  // the end-card fades in — visually unified, not two separate layers.
+  // Positioned in the mid-promise notch (y=490-600) which is vacant on
+  // the closing scene (no mid-promise drawer on isLast). 0.4s fade-in.
+  if (opts.tombstoneText && hideAfter !== undefined) {
+    const tombStart = Math.max(0, hideAfter - 2.5);
+    const tombEnable = `enable='gte(t,${tombStart.toFixed(3)})*lt(t,${hideAfter.toFixed(3)})'`;
+    const tombFade =
+      `alpha='if(lt(t,${tombStart.toFixed(3)}),0,` +
+      `min((t-${tombStart.toFixed(3)})/0.4,1))'`;
+    const tombText = escapeDrawtext(opts.tombstoneText);
+    filters.push(
+      `drawbox=x=0:y=490:w=1080:h=110:color=black@0.70:t=fill:${tombEnable}`,
+    );
+    filters.push(
+      `drawtext=text='${tombText}'${opts.fontArgFor(opts.tombstoneText)}:` +
+      `fontcolor=#FFEB3B:fontsize=48:borderw=4:bordercolor=black@0.95:` +
+      `${tombFade}:x=(w-text_w)/2:y=516:${tombEnable}`,
+    );
   }
 
   return filters;

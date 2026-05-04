@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "fps": 30,
+  "width": 1080,
+  "height": 1920,
+  "topic": "Caching",
+  "session": 1,
+  "totalSessions": 10,
+  "siteTopicSlug": "caching",
+  "siteSessionSlug": "what-is-caching-why-every",
+  "siteSessionTitle": "What is Caching & Why Every System Needs It",
+  "siteSessionFocus": "fundamentals, latency reduction, cache hit/miss",
+  "durationInFrames": 1500,
+  "audioFile": "assets/voice/caching-s1.mp3",
+  "scenes": [
+    {
+      "sceneIndex": 0,
+      "startFrame": 0,
+      "endFrame": 150,
+      "durationFrames": 150,
+      "type": "hook",
+      "narration": "Database pe har request ja rahi hai — 200ms per call, 10,000 users. Caching basics miss karna FAANG mein instant reject hai.",
+      "templateId": "CachingArch"
+    },
+    {
+      "sceneIndex": 1,
+      "startFrame": 150,
+      "endFrame": 600,
+      "durationFrames": 450,
+      "type": "body",
+      "narration": "Caching kya hai: frequently accessed data ko fast storage mein store karo — memory mein — taaki slow storage (DB, network) pe baar baar jaane ki zaroorat na pade. Cache hit: data cache mein mila — microseconds. Cache miss: cache mein nahi mila — DB pe jaao, cache mein store karo, return karo — milliseconds. Hit rate = hits / (hits + misses). Target: 80%+ hit rate. Cache types: in-process (JVM heap), distributed (Redis, Memcached), CDN (static assets). Latency reduction: DB 10ms, Redis 0.1ms — 100x faster.",
+      "templateId": "CachingArch"
+    },
+    {
+      "sceneIndex": 2,
+      "startFrame": 600,
+      "endFrame": 1050,
+      "durationFrames": 450,
+      "type": "body",
+      "narration": "Cache aur database consistency ka fundamental trap: cache mein stale data hai, DB mein fresh data. User ne profile update kiya — DB updated but cache nahi. Read-your-own-write consistency fail. Solution strategy: TTL-based expiry (simple but stale window), write-through (update cache aur DB simultaneously), cache invalidation on write (complex but consistent). FAANG mein yeh tradeoff clearly articulate karna zaroori hai.",
+      "templateId": "CachingArch"
+    },
+    {
+      "sceneIndex": 3,
+      "startFrame": 1050,
+      "endFrame": 1500,
+      "durationFrames": 450,
+      "type": "outro",
+      "narration": "Caching sirf performance hack nahi — yeh system design ka core building block hai. Cache hit rate, eviction policy, consistency model — teeno ka balance samajhna zaroori hai. Guru-sishya.in pe session 1 ke practice questions karo.",
+      "templateId": "CachingArch"
+    }
+  ]
+}

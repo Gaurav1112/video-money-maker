@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "fps": 30,
+  "width": 1080,
+  "height": 1920,
+  "topic": "Caching",
+  "session": 3,
+  "totalSessions": 10,
+  "siteTopicSlug": "caching",
+  "siteSessionSlug": "writethrough-writebehind",
+  "siteSessionTitle": "Write-Through, Write-Behind & Cache-Aside",
+  "siteSessionFocus": "write strategies, consistency patterns",
+  "durationInFrames": 1500,
+  "audioFile": "assets/voice/caching-s3.mp3",
+  "scenes": [
+    {
+      "sceneIndex": 0,
+      "startFrame": 0,
+      "endFrame": 150,
+      "durationFrames": 150,
+      "type": "hook",
+      "narration": "Cache mein write kiya, DB mein nahi — data loss ho gaya. Write strategy galat chose karna production disaster hai aur FAANG trap bhi.",
+      "templateId": "CachingArch"
+    },
+    {
+      "sceneIndex": 1,
+      "startFrame": 150,
+      "endFrame": 600,
+      "durationFrames": 450,
+      "type": "body",
+      "narration": "Write-Through: cache aur DB ko simultaneously update karo — consistency guaranteed but write latency doubles. Good for read-heavy, write-important data. Write-Behind (Write-Back): cache mein write karo immediately, DB ko asynchronously update karo — fast writes, lekin data loss risk if cache crashes before flush. Good for high write throughput. Cache-Aside (Lazy Loading): application khud DB se read karta hai cache miss pe, cache mein store karta hai. Most flexible, most common. Pattern: get from cache → miss → get from DB → write to cache → return.",
+      "templateId": "CachingArch"
+    },
+    {
+      "sceneIndex": 2,
+      "startFrame": 600,
+      "endFrame": 1050,
+      "durationFrames": 450,
+      "type": "body",
+      "narration": "Cache-Aside ka race condition: do requests simultaneously miss karte hain, dono DB se read karte hain, dono cache mein write karte hain — potential stale overwrite. Solution: distributed lock ya probabilistic early expiration. Write-behind ka durability trap: cache node crash kiya aur unflushed writes lost. Solution: write-behind queue Redis Streams pe persist karo. FAANG interviews mein consistency vs performance tradeoff yahan central question hai.",
+      "templateId": "CachingArch"
+    },
+    {
+      "sceneIndex": 3,
+      "startFrame": 1050,
+      "endFrame": 1500,
+      "durationFrames": 450,
+      "type": "outro",
+      "narration": "Write-Through for consistency, Write-Behind for throughput, Cache-Aside for flexibility. Hybrid: Cache-Aside read + Write-Through write = balance. Real systems usually cache-aside pattern use karte hain. Guru-sishya.in pe patterns practice karo.",
+      "templateId": "CachingArch"
+    }
+  ]
+}

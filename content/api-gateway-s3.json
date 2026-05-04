@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "fps": 30,
+  "width": 1080,
+  "height": 1920,
+  "topic": "API Gateway",
+  "session": 3,
+  "totalSessions": 10,
+  "siteTopicSlug": "api-gateway",
+  "siteSessionSlug": "authentication-authorization",
+  "siteSessionTitle": "Authentication & Authorization at the Gateway",
+  "siteSessionFocus": "JWT, OAuth2, API keys, zero-trust",
+  "durationInFrames": 1500,
+  "audioFile": "assets/voice/api-gateway-s3.mp3",
+  "scenes": [
+    {
+      "sceneIndex": 0,
+      "startFrame": 0,
+      "endFrame": 150,
+      "durationFrames": 150,
+      "type": "hook",
+      "narration": "JWT secret leaked — attacker har user ka token forge kar sakta hai. Auth gateway mein galat implement karna FAANG security interview mein fail hai.",
+      "templateId": "ApiGatewayArch"
+    },
+    {
+      "sceneIndex": 1,
+      "startFrame": 150,
+      "endFrame": 600,
+      "durationFrames": 450,
+      "type": "body",
+      "narration": "JWT (JSON Web Token): header.payload.signature — stateless, self-contained. Gateway pe verify karo signature without calling auth service. RS256 (asymmetric): auth service private key se sign karta hai, gateway public key se verify — secret distribute nahi karna. HS256 (symmetric): same secret — all services need the secret. OAuth2: authorization framework — access token, refresh token, authorization code flow. API Keys: simple but no expiry by default, rotatable, good for server-to-server. Zero-trust architecture: verify every request, no implicit trust even internal. mTLS for service-to-service authentication.",
+      "templateId": "ApiGatewayArch"
+    },
+    {
+      "sceneIndex": 2,
+      "startFrame": 600,
+      "endFrame": 1050,
+      "durationFrames": 450,
+      "type": "body",
+      "narration": "JWT expiry trap: long-lived JWT tokens — user account disabled kiya but token still valid for 24 hours. Solution: short expiry (15 min) + refresh tokens, or maintain token blacklist (but then stateful). Better: token introspection — gateway calls auth service to validate token — adds latency but real-time revocation. FAANG: \"How do you implement immediate JWT revocation?\" — token blacklist in Redis (check per request), short expiry + refresh token rotation, or opaque tokens with token store.",
+      "templateId": "ApiGatewayArch"
+    },
+    {
+      "sceneIndex": 3,
+      "startFrame": 1050,
+      "endFrame": 1500,
+      "durationFrames": 450,
+      "type": "outro",
+      "narration": "JWT for stateless auth, OAuth2 for delegated authorization, mTLS for service mesh. Token revocation is the hard problem — short expiry + refresh tokens is production best practice. Guru-sishya.in pe auth flow diagrams hain.",
+      "templateId": "ApiGatewayArch"
+    }
+  ]
+}

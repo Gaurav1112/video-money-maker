@@ -102,3 +102,127 @@ describe('buildDiagramFilters', () => {
     });
   });
 });
+
+describe('buildDiagramFilters — titleOnly mode (Panel-22 MrBeast P1)', () => {
+  const opts = { fontArg: '', fontArgFor: (_: string) => '' };
+
+  it('emits exactly 3 filters (border box, accent bar, title text)', () => {
+    const d = getConceptDiagram('kafka-consumer-groups');
+    const filters = buildDiagramFilters(d, 3.0, { ...opts, titleOnly: true, startT: 0 });
+    expect(filters).toHaveLength(3);
+  });
+
+  it('first filter is a drawbox with yellow border', () => {
+    const d = getConceptDiagram('kafka-consumer-groups');
+    const [box] = buildDiagramFilters(d, 3.0, { ...opts, titleOnly: true, startT: 0 });
+    expect(box).toContain('drawbox');
+    expect(box).toContain('FFEB3B');
+  });
+
+  it('last filter is a drawtext with concept title', () => {
+    const d = getConceptDiagram('kafka-consumer-groups');
+    const filters = buildDiagramFilters(d, 3.0, { ...opts, titleOnly: true, startT: 0 });
+    const last = filters[filters.length - 1];
+    expect(last).toContain('drawtext');
+    expect(last).toContain('KAFKA CONSUMER GROUPS');
+  });
+
+  it('enable expression is persistent from startT=0 (gte(t,0.000))', () => {
+    const d = getConceptDiagram('kafka-consumer-groups');
+    const filters = buildDiagramFilters(d, 3.0, { ...opts, titleOnly: true, startT: 0 });
+    for (const f of filters) {
+      expect(f).toContain("enable='gte(t,0.000)'");
+    }
+  });
+
+  it('does NOT emit node or edge filters', () => {
+    const d = getConceptDiagram('kafka-consumer-groups');
+    const filters = buildDiagramFilters(d, 3.0, { ...opts, titleOnly: true, startT: 0 });
+    // Nodes emit labels like 'Producer', 'P0', 'C1'; edges emit arrowheads.
+    const hasNodeContent = filters.some(f => f.includes('Producer') || f.includes("text='P0'"));
+    expect(hasNodeContent).toBe(false);
+  });
+
+  it('is byte-deterministic in titleOnly mode', () => {
+    const d = getConceptDiagram('kafka-consumer-groups');
+    const a = buildDiagramFilters(d, 3.0, { ...opts, titleOnly: true, startT: 0 });
+    const b = buildDiagramFilters(d, 3.0, { ...opts, titleOnly: true, startT: 0 });
+    expect(a).toEqual(b);
+  });
+
+  it('respects hideAfter in enable expression when provided', () => {
+    const d = getConceptDiagram('kafka-consumer-groups');
+    const filters = buildDiagramFilters(d, 3.0, { ...opts, titleOnly: true, startT: 0, hideAfter: 2.5 });
+    for (const f of filters) {
+      expect(f).toContain("enable='gte(t,0.000)*lt(t,2.500)'");
+    }
+  });
+});
+
+describe('buildDiagramFilters — tombstoneText co-render (Panel-22 Beggs P1)', () => {
+  const opts = { fontArg: '', fontArgFor: (_: string) => '' };
+
+  it('emits tombstone drawtext when tombstoneText + hideAfter are set', () => {
+    const d = getConceptDiagram('kafka-consumer-groups');
+    const filters = buildDiagramFilters(d, 6.84, {
+      ...opts, startT: 0.05, instant: true, hideAfter: 3.84,
+      tombstoneText: 'Consumer groups = parallel processing',
+    });
+    const tombFilter = filters.find(f => f.includes('Consumer groups'));
+    expect(tombFilter).toBeDefined();
+    expect(tombFilter).toContain('drawtext');
+  });
+
+  it('tombstone enable expression matches [hideAfter-2.5, hideAfter] window', () => {
+    const d = getConceptDiagram('kafka-consumer-groups');
+    const filters = buildDiagramFilters(d, 6.84, {
+      ...opts, startT: 0.05, instant: true, hideAfter: 3.84,
+      tombstoneText: 'Consumer groups = parallel processing',
+    });
+    const tombFilter = filters.find(f => f.includes('Consumer groups'));
+    // tombStart = max(0, 3.84 - 2.5) = 1.34 → enable='gte(t,1.340)*lt(t,3.840)'
+    expect(tombFilter).toContain("enable='gte(t,1.340)*lt(t,3.840)'");
+  });
+
+  it('tombstone is NOT emitted without hideAfter', () => {
+    const d = getConceptDiagram('kafka-consumer-groups');
+    const filters = buildDiagramFilters(d, 6.84, {
+      ...opts, startT: 0.05, instant: true,
+      tombstoneText: 'Consumer groups = parallel processing',
+    });
+    const tombFilter = filters.find(f => f.includes('Consumer groups'));
+    expect(tombFilter).toBeUndefined();
+  });
+
+  it('tombstoneText backdrop appears in diagram filter chain (drawbox)', () => {
+    const d = getConceptDiagram('kafka-consumer-groups');
+    const filters = buildDiagramFilters(d, 6.84, {
+      ...opts, startT: 0.05, instant: true, hideAfter: 3.84,
+      tombstoneText: 'Consumer groups = parallel processing',
+    });
+    const backdropFilter = filters.find(
+      f => f.includes('drawbox') && f.includes('y=490') && f.includes('black@0.70'),
+    );
+    expect(backdropFilter).toBeDefined();
+  });
+
+  it('tombstoneText is byte-deterministic', () => {
+    const d = getConceptDiagram('kafka-consumer-groups');
+    const makeFilters = () => buildDiagramFilters(d, 6.84, {
+      ...opts, startT: 0.05, instant: true, hideAfter: 3.84,
+      tombstoneText: 'Consumer groups = parallel processing',
+    });
+    expect(makeFilters()).toEqual(makeFilters());
+  });
+
+  it('clamps tombStart to 0 when hideAfter < 2.5', () => {
+    const d = getConceptDiagram('kafka-consumer-groups');
+    const filters = buildDiagramFilters(d, 3.5, {
+      ...opts, startT: 0.05, instant: true, hideAfter: 2.0,
+      tombstoneText: 'short scene tombstone',
+    });
+    const tombFilter = filters.find(f => f.includes('short scene tombstone'));
+    // tombStart = max(0, 2.0 - 2.5) = 0 → enable='gte(t,0.000)*lt(t,2.000)'
+    expect(tombFilter).toContain("enable='gte(t,0.000)*lt(t,2.000)'");
+  });
+});

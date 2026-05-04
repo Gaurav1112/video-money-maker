@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "fps": 30,
+  "width": 1080,
+  "height": 1920,
+  "topic": "Caching",
+  "session": 5,
+  "totalSessions": 10,
+  "siteTopicSlug": "caching",
+  "siteSessionSlug": "memcached-vs-redis-the-real",
+  "siteSessionTitle": "Memcached vs Redis — The Real Difference",
+  "siteSessionFocus": "comparison, when to use which, benchmarks",
+  "durationInFrames": 1500,
+  "audioFile": "assets/voice/caching-s5.mp3",
+  "scenes": [
+    {
+      "sceneIndex": 0,
+      "startFrame": 0,
+      "endFrame": 150,
+      "durationFrames": 150,
+      "type": "hook",
+      "narration": "Memcached ya Redis — interview mein galat choose kiya toh follow-up questions mein expose ho jaoge. Yeh comparison FAANG ka classic hai.",
+      "templateId": "CachingArch"
+    },
+    {
+      "sceneIndex": 1,
+      "startFrame": 150,
+      "endFrame": 600,
+      "durationFrames": 450,
+      "type": "body",
+      "narration": "Memcached: pure in-memory key-value store. Simple, fast, multi-threaded (true parallelism). No persistence, no data structures beyond strings, no replication built-in. Best for: simple distributed caching where you need raw speed aur horizontal scale. Redis: single-threaded core, rich data structures, optional persistence (RDB/AOF), built-in replication, Lua scripting, pub-sub, cluster mode. More features but more complexity. Benchmarks: Memcached slightly faster for simple get/set, Redis comparable. Facebook aur Twitter dono historically Memcached use karte the — ab Redis prefer karte hain.",
+      "templateId": "CachingArch"
+    },
+    {
+      "sceneIndex": 2,
+      "startFrame": 600,
+      "endFrame": 1050,
+      "durationFrames": 450,
+      "type": "body",
+      "narration": "Memcached multi-threading advantage ka hidden cost: cache stampede mein multiple threads simultaneously same key ko DB se fetch karte hain. Redis single-threaded model mein yeh problem kam hai kyunki ek hi thread processes sequentially. Memcached mein explicit application-level locking zaroori hai stampede prevent karne ke liye. Interview mein: \"Kyun Twitter ne Memcached se Redis migrate kiya?\" — answer: rich data structures (sorted sets for timeline ranking) aur atomic operations.",
+      "templateId": "CachingArch"
+    },
+    {
+      "sceneIndex": 3,
+      "startFrame": 1050,
+      "endFrame": 1500,
+      "durationFrames": 450,
+      "type": "outro",
+      "narration": "Simple distributed cache = Memcached. Rich features, persistence, advanced data structures = Redis. New projects almost always Redis choose karte hain. Guru-sishya.in pe benchmark data aur decision framework dekho.",
+      "templateId": "CachingArch"
+    }
+  ]
+}

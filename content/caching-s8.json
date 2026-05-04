@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "fps": 30,
+  "width": 1080,
+  "height": 1920,
+  "topic": "Caching",
+  "session": 8,
+  "totalSessions": 10,
+  "siteTopicSlug": "caching",
+  "siteSessionSlug": "distributed-caching-at-scale",
+  "siteSessionTitle": "Distributed Caching at Scale",
+  "siteSessionFocus": "consistent hashing, replication, partition tolerance",
+  "durationInFrames": 1500,
+  "audioFile": "assets/voice/caching-s8.mp3",
+  "scenes": [
+    {
+      "sceneIndex": 0,
+      "startFrame": 0,
+      "endFrame": 150,
+      "durationFrames": 150,
+      "type": "hook",
+      "narration": "Single Redis node — ek point of failure, memory limit, no true scale. Distributed caching fail karna FAANG se direct reject hai.",
+      "templateId": "CachingArch"
+    },
+    {
+      "sceneIndex": 1,
+      "startFrame": 150,
+      "endFrame": 600,
+      "durationFrames": 450,
+      "type": "body",
+      "narration": "Distributed caching patterns: consistent hashing — keys ko ring pe distribute karo across nodes. Redis Cluster: 16384 hash slots, minimum 3 primary + 3 replica nodes. Replication: primary-replica setup — primary writes, replicas serve reads. Asynchronous replication — eventual consistency. Partition tolerance: network partition mein split-brain possible. Redis Sentinel: automatic failover, no cluster. Twemproxy (Twitter): lightweight proxy for sharding Memcached/Redis. Key patterns: read replicas for read-heavy, pipeline writes for throughput.",
+      "templateId": "CachingArch"
+    },
+    {
+      "sceneIndex": 2,
+      "startFrame": 600,
+      "endFrame": 1050,
+      "durationFrames": 450,
+      "type": "body",
+      "narration": "Redis Cluster ka cross-slot transaction limitation: MULTI/EXEC transactions sirf single slot ke keys pe work karti hain — multi-key operations fail hoti hain agar keys alag slots pe hain. Solution: hash tags — {user}.session aur {user}.profile same slot pe jaate hain because hash tag {user} same hash. Yeh Redis Cluster mein advanced pattern hai jo most candidates miss karte hain. FAANG mein distributed transaction mein yahi trap aata hai.",
+      "templateId": "CachingArch"
+    },
+    {
+      "sceneIndex": 3,
+      "startFrame": 1050,
+      "endFrame": 1500,
+      "durationFrames": 450,
+      "type": "outro",
+      "narration": "Distributed caching = consistent hashing + replication + partition handling. Redis Cluster production ke liye, Sentinel simpler failover ke liye. Hash tags for co-located keys. Guru-sishya.in pe Redis Cluster architecture explore karo.",
+      "templateId": "CachingArch"
+    }
+  ]
+}

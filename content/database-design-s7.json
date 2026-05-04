@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "fps": 30,
+  "width": 1080,
+  "height": 1920,
+  "topic": "Database Design",
+  "session": 7,
+  "totalSessions": 10,
+  "siteTopicSlug": "database-design",
+  "siteSessionSlug": "nosql-deep-dive-mongodb",
+  "siteSessionTitle": "NoSQL Deep Dive — MongoDB, Cassandra, DynamoDB",
+  "siteSessionFocus": "document, wide-column, key-value stores",
+  "durationInFrames": 1500,
+  "audioFile": "assets/voice/database-design-s7.mp3",
+  "scenes": [
+    {
+      "sceneIndex": 0,
+      "startFrame": 0,
+      "endFrame": 150,
+      "durationFrames": 150,
+      "type": "hook",
+      "narration": "MongoDB ya Cassandra ya DynamoDB — galat choose kiya aur production mein performance disaster. NoSQL choice framework jaante ho?",
+      "templateId": "DatabaseDesignArch"
+    },
+    {
+      "sceneIndex": 1,
+      "startFrame": 150,
+      "endFrame": 600,
+      "durationFrames": 450,
+      "type": "body",
+      "narration": "MongoDB (Document): flexible schema, BSON documents, rich query language, secondary indexes, ACID transactions (4.0+). Best for: content management, product catalogs, user profiles with variable schema. Cassandra (Wide-Column): masterless distributed architecture, tunable consistency, excellent write throughput, time-series data. Best for: IoT sensor data, activity feeds, time-ordered data. Linear scaling. DynamoDB (Key-Value + Document): AWS managed, single-digit millisecond latency, auto-scaling, on-demand pricing. Best for: serverless applications, gaming leaderboards, session stores. Global Tables for multi-region.",
+      "templateId": "DatabaseDesignArch"
+    },
+    {
+      "sceneIndex": 2,
+      "startFrame": 600,
+      "endFrame": 1050,
+      "durationFrames": 450,
+      "type": "body",
+      "narration": "Cassandra anti-pattern: using it like a relational database with complex queries. Cassandra is optimized for known access patterns — table design around queries, not entities. Query-first design: \"What questions will I ask?\" determines table structure. Anti-pattern: SELECT * with multiple filters without partition key — full table scan. DynamoDB anti-pattern: hot partitions — same partition key for all writes (e.g., using current date as partition key). All writes go to same partition, throughput limited to 1000 WCU per partition.",
+      "templateId": "DatabaseDesignArch"
+    },
+    {
+      "sceneIndex": 3,
+      "startFrame": 1050,
+      "endFrame": 1500,
+      "durationFrames": 450,
+      "type": "outro",
+      "narration": "MongoDB for flexibility + queries, Cassandra for write-heavy time-series, DynamoDB for AWS-native serverless. Wrong choice = schema migration nightmare. Query-first design for NoSQL. Guru-sishya.in pe NoSQL data modeling workshop hai.",
+      "templateId": "DatabaseDesignArch"
+    }
+  ]
+}

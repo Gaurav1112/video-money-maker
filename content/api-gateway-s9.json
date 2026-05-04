@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "fps": 30,
+  "width": 1080,
+  "height": 1920,
+  "topic": "API Gateway",
+  "session": 9,
+  "totalSessions": 10,
+  "siteTopicSlug": "api-gateway",
+  "siteSessionSlug": "api-gateway-at-netflix-amazon",
+  "siteSessionTitle": "API Gateway at Netflix, Amazon & Spotify",
+  "siteSessionFocus": "Zuul, API Gateway, real-world patterns",
+  "durationInFrames": 1500,
+  "audioFile": "assets/voice/api-gateway-s9.mp3",
+  "scenes": [
+    {
+      "sceneIndex": 0,
+      "startFrame": 0,
+      "endFrame": 150,
+      "durationFrames": 150,
+      "type": "hook",
+      "narration": "Netflix Zuul — 2 billion requests per day. Amazon API Gateway — trillions of API calls. Yeh real architectures FAANG interview mein direct answer deti hain.",
+      "templateId": "ApiGatewayArch"
+    },
+    {
+      "sceneIndex": 1,
+      "startFrame": 150,
+      "endFrame": 600,
+      "durationFrames": 450,
+      "type": "body",
+      "narration": "Netflix Zuul (open-source): edge service, filters (pre, route, post, error), async Zuul 2 for non-blocking IO. Spring Cloud Gateway ne mostly replace kiya for newer services. Amazon API Gateway: 800+ AWS services exposed as APIs, regional + edge-optimized endpoints, WebSocket API support, HTTP API (lower latency, lower cost than REST API). Spotify: Backstage developer portal + internal API gateway for 300+ microservices. Key lessons: gateway must be stateless for horizontal scaling, async processing for high throughput, feature flags for gradual rollouts, comprehensive observability (distributed tracing per request).",
+      "templateId": "ApiGatewayArch"
+    },
+    {
+      "sceneIndex": 2,
+      "startFrame": 600,
+      "endFrame": 1050,
+      "durationFrames": 450,
+      "type": "body",
+      "narration": "Zuul thread pool exhaustion (Zuul 1): synchronous blocking IO — each connection holds a thread. 10,000 connections = 10,000 threads — memory exhaustion. Netflix solution: Zuul 2 async non-blocking architecture using Netty. FAANG lesson: gateway must use async IO at high traffic. Spring WebFlux / Vert.x / Netty for reactive gateways. Thread-per-connection model dies at 10K+ concurrent connections. FAANG: \"How does Netflix handle 2 billion daily requests through Zuul?\" — async IO, horizontal scaling, circuit breakers, canary deployments.",
+      "templateId": "ApiGatewayArch"
+    },
+    {
+      "sceneIndex": 3,
+      "startFrame": 1050,
+      "endFrame": 1500,
+      "durationFrames": 450,
+      "type": "outro",
+      "narration": "Real gateway patterns: async IO, stateless horizontal scaling, observability at every layer, gradual rollouts. Netflix, Amazon, Spotify sab yahi patterns use karte hain. Guru-sishya.in pe case study deep-dives hain.",
+      "templateId": "ApiGatewayArch"
+    }
+  ]
+}

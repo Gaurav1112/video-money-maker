@@ -431,10 +431,13 @@ async function main(): Promise<void> {
       const isHook = i === 0;
       const isLast = i === storyboard.scenes.length - 1;
       const isBody = !isHook && !isLast;
-      // Diagram lives on body + closing scenes for cross-cut persistence.
-      // Defined here at the top so downstream tombstone/midPromise can
-      // make placement decisions that DEPEND on whether the diagram is
-      // claiming the y=200..1060 region this scene.
+      // Full architecture diagram on body + closing scenes for cross-cut
+      // persistence. Hook scene gets a titleOnly visual anchor card instead
+      // (Panel-22 MrBeast P1) — just the concept name in a bordered frame
+      // so the eye locks immediately without competing with bigText.
+      // Defined here so downstream tombstone/midPromise can make placement
+      // decisions that DEPEND on whether the diagram is claiming the
+      // y=200..1060 region this scene.
       const wantsDiagram = isBody || isLast;
       // Hook scene: short, punchy 4-6 word hook in giant text.
       // Body scenes: narration sentence as caption strip — but only when
@@ -493,18 +496,15 @@ async function main(): Promise<void> {
       // is the descriptive sentence form already curated in topic-bank;
       // perfect for a recap tombstone. Truncate to ≤36 chars at last
       // word boundary so the 2-line wrap doesn't end mid-word.
-      const tombstoneText = (() => {
+      const tombstoneCandidate: string | undefined = (() => {
         if (!isLast) return undefined;
         // Panel-21 follow-up (user-reported): on the closing scene the
         // tombstone band y=860-1060 collides with the concept-diagram's
-        // consumer row y=880-960. The diagram IS the visual recap, so
-        // when a diagram is rendered on the last scene we suppress the
-        // tombstone — keeping ONE clean recap signal instead of two
-        // overlapping ones. The tombstone path remains in place for
-        // topics that ever ship without a diagram (currently every
-        // topic resolves via the generic fallback, but the guard is
-        // future-proof).
-        if (wantsDiagram) return undefined;
+        // consumer row y=880-960. Panel-22 Beggs P1 refinement: instead
+        // of suppressing tombstone entirely, pass the text through
+        // conceptDiagramOptions so buildDiagramFilters co-renders it ON
+        // the diagram (visually unified). Old tombstone path retained for
+        // topics that ever ship without a diagram.
         const raw = (rotated?.shortTitle || bankEntry?.shortTitle || '').trim();
         if (!raw) return undefined;
         if (raw.length <= 36) return raw;
@@ -512,6 +512,9 @@ async function main(): Promise<void> {
         const lastSpace = trimmed.lastIndexOf(' ');
         return lastSpace > 18 ? trimmed.slice(0, lastSpace) : trimmed;
       })();
+      // Route tombstone: through diagram (visually coupled) when diagram
+      // is present; through the old standalone tombstone path otherwise.
+      const tombstoneText = wantsDiagram ? undefined : tombstoneCandidate;
 
       // Panel-20 Retention P0-A (Bilyeu/MrBeast): mid-point promise on
       // the BODY scene that straddles the algo's 50% completion
@@ -538,21 +541,10 @@ async function main(): Promise<void> {
       // Panel-21 Retention P0 (user follow-up: "graphic should stay,
       // it is going away in 1 sec or 2"): render the diagram on the
       // BODY scene AND on the CLOSING scene so it persists across
-      // the cut.
-      // Panel-22 MrBeast/Beggs P0: body-scene `startT=0.4` was making
-      // the diagram reveal stages compete with the mid-promise
-      // drawer (t=0..1.8s). Spec at concept-diagram.ts:DiagramFilter-
-      // Options says "pass startT=1.95" on body scenes carrying the
-      // drawer; implementation now matches the spec — diagram begins
-      // assembling at t=1.95s (just after the mid-promise window
-      // closes), giving the 50% checkpoint defense its full saliency.
-      // Closing-scene reveal stays INSTANT at t=0.05 (instant=true
-      // skips paceStage) so the diagram appears already-built the
-      // moment the cut lands. Panel-22 MrBeast P1: hideAfter floored
-      // at 2.0s so the diagram is visible for ≥2.0s even when the
-      // closing scene hits the PER_SCENE_HARD_CAP=3.5s ceiling
-      // (eye-tracking minimum for a 4-stage architecture graph).
-      const conceptDiagram = wantsDiagram
+      // the cut. Panel-22 MrBeast P1: also rendered on the HOOK scene
+      // in titleOnly mode — a compact visual anchor card showing just
+      // the concept name, persistent for the full hook duration.
+      const conceptDiagram = wantsDiagram || isHook
         ? getConceptDiagram(storyboard.topic, bankEntry?.shortTitle ?? rotated?.shortTitle)
         : undefined;
       const sceneSec = scene.durationFrames / storyboard.fps;
@@ -570,10 +562,19 @@ async function main(): Promise<void> {
             // assembled time before the CTA takes over.
             hideAfter: Math.max(2.0, sceneSec - END_CARD_WINDOW),
             instant: true,
+            // Tombstone co-rendered ON the diagram (Panel-22 Beggs P1):
+            // appears in the last 1.0-2.5s of diagram visibility so
+            // both disappear together with the end-card fade-in.
+            tombstoneText: tombstoneCandidate,
           }
         : isBody
           ? { startT: 1.95 }
-          : undefined;
+          : isHook
+            // Panel-22 MrBeast P1: titleOnly card for hook scene visual
+            // anchor. startT=0 → persistent from frame 0 for the full
+            // hook duration (up to 4.0s HOOK_HARD_CAP).
+            ? { titleOnly: true, startT: 0 }
+            : undefined;
 
       // Brand subline appears on EVERY scene below the watermark
       // handle stack (drawn in composer scene-overlay path). Off-
@@ -832,10 +833,6 @@ async function main(): Promise<void> {
         // that read as a hashtag wall (tagRatio≥0.7) — same threshold
         // applied in seed-telegram.ts so the Telegram + LinkedIn
         // bodies derive from a consistent definition of "hashtag spam".
-        // Pre-B28 the YT description had hashtags on line index 1;
-        // post-B28 they live at the bottom — so this filter
-        // preserves prose anywhere in the file regardless of position
-        // (no positional slicing).
         body: (() => {
           const raw = metadata.description.replace(/utm_source=yt_shorts/g, 'utm_source=linkedin');
           const lines = raw.split('\n');

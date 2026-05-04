@@ -296,6 +296,10 @@ export interface SceneInput {
     startT?: number;
     hideAfter?: number;
     instant?: boolean;
+    /** Panel-22 MrBeast P1: see DiagramFilterOptions.titleOnly. */
+    titleOnly?: boolean;
+    /** Panel-22 Beggs P1: see DiagramFilterOptions.tombstoneText. */
+    tombstoneText?: string;
   };
   /**
    * Panel-21 Distribution P0 (user-reported brand gap): the watermark
@@ -491,20 +495,24 @@ async function processScene(
     // Off-platform funnel + value-prop tagline pinned at y=1545 — the
     // 25px gap between the caption band ceiling (1540) and the YT
     // Shorts like-strip safe-zone floor (1570). Fontsize 22 fits in
-    // 25px with proper border. Suppressed during the end-card window
-    // on the closing scene so the CTA owns the full frame; visible
-    // every other second. This is the FIRST off-platform funnel signal
-    // the channel has shipped — viewers can read "guru-sishya.in" the
-    // entire ~15s body and have a typeable URL to take with them.
+    // 25px with proper border.
+    //
+    // Panel-22 Beggs P2: suppress brand subline during the body teach
+    // window (diagram builds at t=1.95-3.5s) and show ONLY during the
+    // end-card window so the CTA owns the subline real-estate when
+    // viewers are primed to act. Non-endCard scenes (hook, body) hide
+    // the subline entirely — enable='0'. Closing scene shows subline
+    // in [endCardStart, endCardStart+3.0] only.
     if (scene.brandSubline) {
       const brandY = 1545;
       const brandFs = 22;
-      // If this scene also carries an endCardText (i.e. closing scene),
-      // suppress the subline during the end-card window so the CTA
-      // text doesn't compete with the persistent watermark line.
       const brandEnable = scene.endCardText
-        ? `:enable='lt(t,${Math.max(0, scene.durationSec - 3.0).toFixed(3)})'`
-        : '';
+        ? (() => {
+            const ecStart = Math.max(0, scene.durationSec - 3.0);
+            const ecEnd = ecStart + 3.0;
+            return `:enable='if(gte(t,${ecStart.toFixed(3)}),1,0)*if(lt(t,${ecEnd.toFixed(3)}),1,0)'`;
+          })()
+        : `:enable='0'`;
       filters.push(
         `drawtext=text='${escapeDrawtext(scene.brandSubline)}'${fontArgFor(scene.brandSubline)}:` +
         `fontcolor=white:fontsize=${brandFs}:borderw=3:bordercolor=black@0.95:` +

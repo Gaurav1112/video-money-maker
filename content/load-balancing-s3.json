@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "fps": 30,
+  "width": 1080,
+  "height": 1920,
+  "topic": "Load Balancing",
+  "session": 3,
+  "totalSessions": 10,
+  "siteTopicSlug": "load-balancing",
+  "siteSessionSlug": "least-connections-ip-hash",
+  "siteSessionTitle": "Least Connections & IP Hash",
+  "siteSessionFocus": "advanced algorithms, session persistence",
+  "durationInFrames": 1500,
+  "audioFile": "assets/voice/load-balancing-s3.mp3",
+  "scenes": [
+    {
+      "sceneIndex": 0,
+      "startFrame": 0,
+      "endFrame": 150,
+      "durationFrames": 150,
+      "type": "hook",
+      "narration": "Session persistence bina IP hash ke kya hoga? User ka cart clear ho jaayega. Yeh L4 design question mein aksar FAANG poochha jaata hai.",
+      "templateId": "LoadBalancingArch"
+    },
+    {
+      "sceneIndex": 1,
+      "startFrame": 150,
+      "endFrame": 600,
+      "durationFrames": 450,
+      "type": "body",
+      "narration": "Least Connections: nayi request us server ko bhejo jiske paas abhi sabse kam active connections hain. Min-heap se O(log N) track karo. Best for long-lived connections — WebSockets, database connections, file uploads. IP Hash: client IP ka hash leke consistent server pe route karo — same client always same server. Sticky sessions ka simplest implementation. Nginx mein: ip_hash directive. Drawback: agar ek corporate NAT se 10,000 users aayein, unka IP same dikhega — ek hi server pe saara load.",
+      "templateId": "LoadBalancingArch"
+    },
+    {
+      "sceneIndex": 2,
+      "startFrame": 600,
+      "endFrame": 1050,
+      "durationFrames": 450,
+      "type": "body",
+      "narration": "IP Hash ka NAT hotspot problem: large enterprise networks mein thousands of users ek IP se aate hain. Solution: IP hash ki jagah consistent hashing with user_id cookie use karo. FAANG interview mein yeh distinction critical hai: IP hash simple hai but unfair distribution ka risk hai, consistent hashing more uniform. Dono \"hash-based\" hain but fundamentally different problems solve karte hain.",
+      "templateId": "LoadBalancingArch"
+    },
+    {
+      "sceneIndex": 3,
+      "startFrame": 1050,
+      "endFrame": 1500,
+      "durationFrames": 450,
+      "type": "outro",
+      "narration": "Least connections dynamic load ke liye, IP hash session persistence ke liye, consistent hashing distributed scale ke liye. Yeh session 3 — algorithms build hote jaate hain. Guru-sishya.in pe code examples dekho.",
+      "templateId": "LoadBalancingArch"
+    }
+  ]
+}

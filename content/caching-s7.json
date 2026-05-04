@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "fps": 30,
+  "width": 1080,
+  "height": 1920,
+  "topic": "Caching",
+  "session": 7,
+  "totalSessions": 10,
+  "siteTopicSlug": "caching",
+  "siteSessionSlug": "cdn-caching-edge-computing",
+  "siteSessionTitle": "CDN Caching & Edge Computing",
+  "siteSessionFocus": "CloudFront, Cloudflare, edge caching strategies",
+  "durationInFrames": 1500,
+  "audioFile": "assets/voice/caching-s7.mp3",
+  "scenes": [
+    {
+      "sceneIndex": 0,
+      "startFrame": 0,
+      "endFrame": 150,
+      "durationFrames": 150,
+      "type": "hook",
+      "narration": "Static assets har baar origin server se serve ho rahe hain — CDN miss. 500ms latency jab 50ms ho sakti thi. Yeh FAANG design review mein red flag hai.",
+      "templateId": "CachingArch"
+    },
+    {
+      "sceneIndex": 1,
+      "startFrame": 150,
+      "endFrame": 600,
+      "durationFrames": 450,
+      "type": "body",
+      "narration": "CDN caching: origin server se content pull karke globally distributed edge servers pe cache karo. Push vs Pull CDN: push — content explicitly upload karo, pull — first request pe origin se fetch aur edge pe cache. Cache-Control headers: max-age, s-maxage (CDN-specific), no-store, no-cache, must-revalidate. CloudFront: AWS ka CDN, 450+ PoPs. Cloudflare: 300+ PoPs, DDoS protection built-in. Edge computing: Cloudflare Workers, AWS Lambda@Edge — code run karo at edge, not just static cache.",
+      "templateId": "CachingArch"
+    },
+    {
+      "sceneIndex": 2,
+      "startFrame": 600,
+      "endFrame": 1050,
+      "durationFrames": 450,
+      "type": "body",
+      "narration": "CDN cache poisoning attack: attacker manipulate karta hai cached response — ek malicious response cache mein store ho jaati hai, all users ko serve hoti hai. Prevention: strict Cache-Control headers, vary headers correctly set karo, cache key include karo Host header. Dynamic content caching trap: personalized content (user-specific) CDN pe cache nahi karni chahiye — vary: Cookie header use karo to exclude personalized responses from CDN cache.",
+      "templateId": "CachingArch"
+    },
+    {
+      "sceneIndex": 3,
+      "startFrame": 1050,
+      "endFrame": 1500,
+      "durationFrames": 450,
+      "type": "outro",
+      "narration": "CDN sirf static assets ke liye nahi — API responses bhi cache karo (public, non-user-specific). Edge computing CDN ko compute platform bana deta hai. Cache-Control headers master karo. Guru-sishya.in pe CDN configuration examples dekho.",
+      "templateId": "CachingArch"
+    }
+  ]
+}

@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "fps": 30,
+  "width": 1080,
+  "height": 1920,
+  "topic": "Load Balancing",
+  "session": 9,
+  "totalSessions": 10,
+  "siteTopicSlug": "load-balancing",
+  "siteSessionSlug": "load-balancing-at-netflix-uber",
+  "siteSessionTitle": "Load Balancing at Netflix, Uber & Google",
+  "siteSessionFocus": "real-world architectures, case studies, lessons",
+  "durationInFrames": 1500,
+  "audioFile": "assets/voice/load-balancing-s9.mp3",
+  "scenes": [
+    {
+      "sceneIndex": 0,
+      "startFrame": 0,
+      "endFrame": 150,
+      "durationFrames": 150,
+      "type": "hook",
+      "narration": "Netflix pe 247 million users — load balancer kaise design kiya? Yeh case study FAANG interview mein direct score karta hai.",
+      "templateId": "LoadBalancingArch"
+    },
+    {
+      "sceneIndex": 1,
+      "startFrame": 150,
+      "endFrame": 600,
+      "durationFrames": 450,
+      "type": "body",
+      "narration": "Netflix: Zuul L7 gateway at edge + Ribbon client-side load balancer for internal services. Eureka service registry se server list lete hain, Ribbon client pe hi load balance karta hai — no central bottleneck. Uber: Frontier gateway, Ringpop consistent hashing, per-trip affinity routing. Google: Maglev software load balancer — commodity hardware pe 1 million RPS per machine, ECMP routing. Modern trend: service mesh (Envoy/Istio) — direct pod-to-pod communication via sidecar proxy, central LB ki zaroorat nahi for east-west traffic.",
+      "templateId": "LoadBalancingArch"
+    },
+    {
+      "sceneIndex": 2,
+      "startFrame": 600,
+      "endFrame": 1050,
+      "durationFrames": 450,
+      "type": "body",
+      "narration": "Service mesh vs load balancer confusion: \"Netflix service mesh use karta hai — toh LB ki zaroorat nahi?\" Wrong. Edge load balancer (Zuul) external internet traffic handle karta hai, service mesh internal microservice communication. Two separate layers — dono zaroori hain. Client-side load balancing fail tab hota hai jab stale Eureka cache hoti hai — Netflix solution: short TTL + heartbeat aur fallback to last-known-good list.",
+      "templateId": "LoadBalancingArch"
+    },
+    {
+      "sceneIndex": 3,
+      "startFrame": 1050,
+      "endFrame": 1500,
+      "durationFrames": 450,
+      "type": "outro",
+      "narration": "Real FAANG systems hybrid approach: edge LB + internal service mesh + client-side load balancing. Koi ek magic solution nahi hai. Case studies sikhte waqt yeh layering samajhna zaroori hai. Guru-sishya.in pe complete diagrams hain.",
+      "templateId": "LoadBalancingArch"
+    }
+  ]
+}

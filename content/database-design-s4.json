@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "fps": 30,
+  "width": 1080,
+  "height": 1920,
+  "topic": "Database Design",
+  "session": 4,
+  "totalSessions": 10,
+  "siteTopicSlug": "database-design",
+  "siteSessionSlug": "database-replication-high",
+  "siteSessionTitle": "Database Replication & High Availability",
+  "siteSessionFocus": "master-slave, multi-master, consensus protocols",
+  "durationInFrames": 1500,
+  "audioFile": "assets/voice/database-design-s4.mp3",
+  "scenes": [
+    {
+      "sceneIndex": 0,
+      "startFrame": 0,
+      "endFrame": 150,
+      "durationFrames": 150,
+      "type": "hook",
+      "narration": "Primary database down — 5 minutes downtime, data loss possible. Replication aur high availability properly design nahi kiya? FAANG mein yeh critical topic hai.",
+      "templateId": "DatabaseDesignArch"
+    },
+    {
+      "sceneIndex": 1,
+      "startFrame": 150,
+      "endFrame": 600,
+      "durationFrames": 450,
+      "type": "body",
+      "narration": "Master-Slave (Primary-Replica) replication: primary writes karta hai, replicas reads serve karte hain. Asynchronous replication: primary commit karta hai, replica ko asynchronously update karta hai — fast but replication lag. Synchronous replication: primary waits for replica acknowledgment — consistent but slower writes. Semi-synchronous: at least one replica acknowledge kare. Multi-master: multiple nodes accept writes — conflict resolution complex. Consensus protocols: Raft (etcd, CockroachDB) aur Paxos — leader election, log replication, quorum-based commits.",
+      "templateId": "DatabaseDesignArch"
+    },
+    {
+      "sceneIndex": 2,
+      "startFrame": 600,
+      "endFrame": 1050,
+      "durationFrames": 450,
+      "type": "body",
+      "narration": "Replication lag trap: read-your-own-write consistency. User ne post kiya → primary pe write → immediately apna profile read kiya → replica se serve hua with replication lag → \"Post not found\" error. Solution: read from primary for the user who just wrote, others from replica. Session consistency: sticky reads — same user consistently reads from same replica or primary. FAANG mein: \"How do you ensure read-your-own-write consistency with async replication?\" — yeh answer directly differentiate karta hai.",
+      "templateId": "DatabaseDesignArch"
+    },
+    {
+      "sceneIndex": 3,
+      "startFrame": 1050,
+      "endFrame": 1500,
+      "durationFrames": 450,
+      "type": "outro",
+      "narration": "Replication for availability aur read scaling, consensus protocols for strong consistency aur leader election. Asynchronous fast hai, synchronous consistent hai — choose based on data criticality. Guru-sishya.in pe HA patterns practice karo.",
+      "templateId": "DatabaseDesignArch"
+    }
+  ]
+}

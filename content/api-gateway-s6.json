@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "fps": 30,
+  "width": 1080,
+  "height": 1920,
+  "topic": "API Gateway",
+  "session": 6,
+  "totalSessions": 10,
+  "siteTopicSlug": "api-gateway",
+  "siteSessionSlug": "circuit-breaker-retry-patterns",
+  "siteSessionTitle": "Circuit Breaker & Retry Patterns",
+  "siteSessionFocus": "resilience patterns, fallbacks, bulkhead isolation",
+  "durationInFrames": 1500,
+  "audioFile": "assets/voice/api-gateway-s6.mp3",
+  "scenes": [
+    {
+      "sceneIndex": 0,
+      "startFrame": 0,
+      "endFrame": 150,
+      "durationFrames": 150,
+      "type": "hook",
+      "narration": "Downstream service slow — gateway thread pool exhausted — gateway itself down. Circuit breaker nahi lagaya? Cascading failure FAANG resilience interview ka core hai.",
+      "templateId": "ApiGatewayArch"
+    },
+    {
+      "sceneIndex": 1,
+      "startFrame": 150,
+      "endFrame": 600,
+      "durationFrames": 450,
+      "type": "body",
+      "narration": "Circuit Breaker pattern: closed state (normal operations), open state (requests immediately fail, no downstream calls), half-open state (test requests to check if service recovered). Hystrix (Netflix), Resilience4j (Java), Polly (.NET). Retry pattern: transient failures pe retry karo — but with exponential backoff to avoid thundering herd. Fallback: circuit open hai toh fallback response return karo — cached data, default value, graceful degradation. Bulkhead isolation: separate thread pools for different downstream services — ek service slow hoti hai toh sirf uska thread pool exhausted hota hai, dusre services unaffected.",
+      "templateId": "ApiGatewayArch"
+    },
+    {
+      "sceneIndex": 2,
+      "startFrame": 600,
+      "endFrame": 1050,
+      "durationFrames": 450,
+      "type": "body",
+      "narration": "Retry amplification trap: 3 service instances, each retries 3 times on failure — 9 requests to already-struggling service. Exponential backoff with jitter: wait 1s, 2s, 4s + random jitter. Retry-After header respect karo. Idempotency requirement: retry safe hai sirf agar request idempotent ho — GET always safe, POST needs idempotency key. FAANG: \"How do you prevent retry storms?\" — circuit breaker + exponential backoff + jitter + bulkhead isolation — all four together.",
+      "templateId": "ApiGatewayArch"
+    },
+    {
+      "sceneIndex": 3,
+      "startFrame": 1050,
+      "endFrame": 1500,
+      "durationFrames": 450,
+      "type": "outro",
+      "narration": "Circuit breaker + retry with backoff + fallback + bulkhead = resilient gateway. Each pattern solves different failure mode. Netflix Hystrix pioneered all of this — study their patterns. Guru-sishya.in pe resilience patterns workshop hai.",
+      "templateId": "ApiGatewayArch"
+    }
+  ]
+}

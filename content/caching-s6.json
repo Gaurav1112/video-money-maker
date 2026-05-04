@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "fps": 30,
+  "width": 1080,
+  "height": 1920,
+  "topic": "Caching",
+  "session": 6,
+  "totalSessions": 10,
+  "siteTopicSlug": "caching",
+  "siteSessionSlug": "cache-invalidation-the-hardest",
+  "siteSessionTitle": "Cache Invalidation — The Hardest Problem",
+  "siteSessionFocus": "TTL, event-driven, versioning, stampede prevention",
+  "durationInFrames": 1500,
+  "audioFile": "assets/voice/caching-s6.mp3",
+  "scenes": [
+    {
+      "sceneIndex": 0,
+      "startFrame": 0,
+      "endFrame": 150,
+      "durationFrames": 150,
+      "type": "hook",
+      "narration": "\"There are only two hard things in CS — cache invalidation and naming things.\" Phil Karlton ka yeh quote FAANG interviews mein real hai.",
+      "templateId": "CachingArch"
+    },
+    {
+      "sceneIndex": 1,
+      "startFrame": 150,
+      "endFrame": 600,
+      "durationFrames": 450,
+      "type": "body",
+      "narration": "Cache invalidation strategies: TTL-based — data automatically expire hota hai. Simple but stale window. Event-driven invalidation — DB write pe cache entry invalidate karo. Consistent but complex. Version key — cache key mein version number include karo: \"user:123:v5\". Stale-while-revalidate — stale data serve karo jab TTL expire ho, background mein refresh karo. Thundering herd prevention: mutex lock, probabilistic early expiration, request coalescing. Cache stampede: TTL same time pe expire hoti hai multiple keys ki — DB overload. Solution: random jitter add karo TTL mein.",
+      "templateId": "CachingArch"
+    },
+    {
+      "sceneIndex": 2,
+      "startFrame": 600,
+      "endFrame": 1050,
+      "durationFrames": 450,
+      "type": "body",
+      "narration": "Distributed cache invalidation race condition: user ne profile update kiya → DB updated → cache invalidation event publish hua → meanwhile another request ne stale data cache mein load kar liya (cache miss pe DB se) → invalidation event process hua lekin cache already refreshed with old data? No — event ordering ensures: invalidate first, then the next cache miss will fetch fresh. Lekin event queue delay mein stale data serve ho sakta hai. Solution: strong consistency ke liye write-through + versioned keys.",
+      "templateId": "CachingArch"
+    },
+    {
+      "sceneIndex": 3,
+      "startFrame": 1050,
+      "endFrame": 1500,
+      "durationFrames": 450,
+      "type": "outro",
+      "narration": "Cache invalidation hard hai kyunki distributed systems mein no global clock aur no atomic operations across DB + cache. TTL + event-driven hybrid approach production mein best practice hai. Guru-sishya.in pe stampede patterns practice karo.",
+      "templateId": "CachingArch"
+    }
+  ]
+}

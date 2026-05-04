@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "fps": 30,
+  "width": 1080,
+  "height": 1920,
+  "topic": "Load Balancing",
+  "session": 5,
+  "totalSessions": 10,
+  "siteTopicSlug": "load-balancing",
+  "siteSessionSlug": "health-checks-failover",
+  "siteSessionTitle": "Health Checks & Failover Strategies",
+  "siteSessionFocus": "passive, active, deep health checks, circuit breakers",
+  "durationInFrames": 1500,
+  "audioFile": "assets/voice/load-balancing-s5.mp3",
+  "scenes": [
+    {
+      "sceneIndex": 0,
+      "startFrame": 0,
+      "endFrame": 150,
+      "durationFrames": 150,
+      "type": "hook",
+      "narration": "Server down hai lekin load balancer traffic bhej raha hai — 5xx errors barsaat ki tarah aa rahe hain. Health check configure nahi kiya? Interview mein bhi yahi trap hai.",
+      "templateId": "LoadBalancingArch"
+    },
+    {
+      "sceneIndex": 1,
+      "startFrame": 150,
+      "endFrame": 600,
+      "durationFrames": 450,
+      "type": "body",
+      "narration": "Passive health check: actual traffic failures se detect karta hai — slow aur reactive. Active health check: load balancer khud /health endpoint pe ping karta hai — proactive. Deep health check: sirf HTTP 200 nahi, downstream dependencies bhi check karo — DB connection pool, cache, third-party APIs. Active-active failover: dono servers traffic handle karte hain. Active-passive: secondary sirf standby mein rehta hai, primary fail pe takeover karta hai. Circuit breaker: failure rate threshold par open state mein jaata hai — 30 seconds ke liye traffic block karta hai.",
+      "templateId": "LoadBalancingArch"
+    },
+    {
+      "sceneIndex": 2,
+      "startFrame": 600,
+      "endFrame": 1050,
+      "durationFrames": 450,
+      "type": "body",
+      "narration": "Deep health check ka thundering herd trap: agar /health endpoint database query karta hai, toh har load balancer instance simultaneously sab servers ko hit karega. Ek hi time pe 10 LBs × 100 backends = 1000 DB queries per health-check interval. Solution: health check lightweight rakho, sirf connection pool status check karo, ya synthetic transaction use karo jo DB pe direct hit na kare.",
+      "templateId": "LoadBalancingArch"
+    },
+    {
+      "sceneIndex": 3,
+      "startFrame": 1050,
+      "endFrame": 1500,
+      "durationFrames": 450,
+      "type": "outro",
+      "narration": "Health checks + circuit breakers = resilient system. Bina inke, ek server failure poore cluster ko drain kar sakta hai. Active deep checks lagao lekin lightweight rakho. Guru-sishya.in pe design patterns practice karo.",
+      "templateId": "LoadBalancingArch"
+    }
+  ]
+}
