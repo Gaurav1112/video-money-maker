@@ -9,11 +9,15 @@ track audio path. Replaces the never-published `edge-tts-node` npm package
 that earlier code mistakenly tried to import.
 
 Usage:
-    edge-tts-synth.py --voice <voice> [--rate <rate>] --out <path.mp3> < input.txt
+    edge-tts-synth.py --voice <voice> [--rate <rate>] [--pitch <pitch>] --out <path.mp3> < input.txt
 
-Determinism: same (voice, rate, text) → same MP3 bytes (Edge TTS CDN-hosted
-neural model is stable across short windows; cache layer in TS code keys on
-SHA-256 of `voice::text` to avoid repeat calls).
+    --pitch  Hz delta from voice baseline, e.g. "+5Hz" (energetic hook),
+             "-3Hz" (gravitas/CTA closing), "+0Hz" (neutral body). Matches the
+             pitchPercent→Hz conversion in edge-tts-hinglish.ts where 1% ≈ 1Hz.
+
+Determinism: same (voice, rate, pitch, text) → same MP3 bytes (Edge TTS CDN-
+hosted neural model is stable across short windows; cache layer in TS code keys
+on SHA-256 of `voice::rate::pitch::text` to avoid repeat calls).
 """
 from __future__ import annotations
 
@@ -25,8 +29,8 @@ from pathlib import Path
 import edge_tts
 
 
-async def synth(voice: str, rate: str, text: str, out_path: Path) -> None:
-    communicate = edge_tts.Communicate(text, voice=voice, rate=rate)
+async def synth(voice: str, rate: str, pitch: str, text: str, out_path: Path) -> None:
+    communicate = edge_tts.Communicate(text, voice=voice, rate=rate, pitch=pitch)
     with out_path.open("wb") as fh:
         async for chunk in communicate.stream():
             if chunk["type"] == "audio":
@@ -37,13 +41,18 @@ def main() -> int:
     p = argparse.ArgumentParser()
     p.add_argument("--voice", required=True)
     p.add_argument("--rate", default="+0%", help="e.g. +0%% or -5%%")
+    p.add_argument(
+        "--pitch",
+        default="+0Hz",
+        help="Hz delta from baseline, e.g. +5Hz (hook) or -3Hz (closing). Default +0Hz.",
+    )
     p.add_argument("--out", required=True)
     args = p.parse_args()
     text = sys.stdin.read()
     if not text.strip():
         print("[edge-tts-synth] empty stdin text", file=sys.stderr)
         return 2
-    asyncio.run(synth(args.voice, args.rate, text, Path(args.out)))
+    asyncio.run(synth(args.voice, args.rate, args.pitch, text, Path(args.out)))
     return 0
 
 

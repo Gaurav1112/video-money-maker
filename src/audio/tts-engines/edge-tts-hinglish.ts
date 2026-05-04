@@ -146,19 +146,35 @@ const TECH_TERM_SET = new Set(TECH_TERMS.map((t) => t.toLowerCase()));
 // Python edge_tts subprocess helper (replaces fictional edge-tts-node import)
 // ---------------------------------------------------------------------------
 
+/**
+ * Converts a pitchPercent value (-10..+10) to Edge TTS Hz delta notation.
+ *
+ * Convention: pitchPercent is a signed integer in the range -10..+10.
+ * Edge TTS uses Hz delta from baseline (e.g. "+5Hz", "-3Hz", "+0Hz").
+ * We map 1 percent ≈ 1 Hz, which approximates the perceptual effect on a
+ * ~100 Hz male baseline voice (hi-IN-MadhurNeural). This is documented here
+ * so any future batch that adjusts the mapping can do so in one place.
+ */
+function pitchPercentToHz(pitchPercent: number): string {
+  const hz = Math.round(pitchPercent);
+  return hz >= 0 ? `+${hz}Hz` : `${hz}Hz`;
+}
+
 function runPythonEdgeTTS(args: {
   voice: string;
   ratePercent: number;
+  pitchPercent?: number;
   ssml: string;
   outPath: string;
 }): Promise<void> {
   const ratePercent = args.ratePercent ?? 0;
   const rate = ratePercent >= 0 ? `+${ratePercent}%` : `${ratePercent}%`;
+  const pitch = pitchPercentToHz(args.pitchPercent ?? 0);
   const helper = path.resolve(__dirname, "../../../scripts/edge-tts-synth.py");
   return new Promise((resolve, reject) => {
     const proc = spawn(
       "python3",
-      [helper, "--voice", args.voice, "--rate", rate, "--out", args.outPath],
+      [helper, "--voice", args.voice, "--rate", rate, "--pitch", pitch, "--out", args.outPath],
       { stdio: ["pipe", "pipe", "pipe"] },
     );
     let stderr = "";
@@ -185,17 +201,24 @@ void OUTPUT_FORMAT;
  *   - Wraps tech terms in <lang xml:lang="en-IN"> so the Hindi TTS engine
  *     uses English phonemes for those words
  *   - Keeps surrounding narration in Hindi phoneme space
+ *
+ * @param pitchPercent  Optional pitch offset in -10..+10 range.
+ *   Hook scene: +5 (energetic), body scenes: 0 (neutral),
+ *   mid-promise: +3 (re-engagement), closing: -3 (gravitas/CTA).
+ *   Converted to Edge TTS Hz delta via pitchPercentToHz().
  */
 export function buildSSML(
   text: string,
   voice: string,
-  ratePercent: number = -5 // slightly slower for educational delivery
+  ratePercent: number = -5, // slightly slower for educational delivery
+  pitchPercent: number = 0
 ): string {
   const protectedText = protectTechTerms(text);
   const rate = ratePercent >= 0 ? `+${ratePercent}%` : `${ratePercent}%`;
+  const pitch = pitchPercentToHz(pitchPercent);
   return `<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xml:lang="hi-IN">
   <voice name="${voice}">
-    <prosody rate="${rate}" pitch="+0Hz">
+    <prosody rate="${rate}" pitch="${pitch}">
       ${protectedText}
     </prosody>
   </voice>
@@ -240,12 +263,18 @@ export interface HinglishTTSOptions {
   cacheDir?: string | false;
   /** Speaking rate offset in percent. Negative = slower. Default -5 (educational pace). */
   ratePercent?: number;
+  /**
+   * Pitch offset in -10..+10 range (per-call override).
+   * Converted to Edge TTS Hz delta: +5 → "+5Hz", -3 → "-3Hz".
+   * Scene guidance: hook +5, body 0, mid-promise +3, closing -3.
+   */
+  pitchPercent?: number;
 }
 
 export interface HinglishTTSResult {
   audioPath: string;
   voice: string;
-  /** SHA-256 of the input text — used as cache key */
+  /** SHA-256 of `voice::rate::pitch::text` — used as cache key */
   textHash: string;
   durationMs?: number;
   fromCache: boolean;
@@ -255,8 +284,12 @@ export interface HinglishTTSResult {
  * Synthesizes Hinglish text to MP3 using Edge TTS hi-IN-MadhurNeural.
  *
  * Caching: if cacheDir is set (default: outputDir/.tts-cache), a previously
- * rendered file for identical (text + voice) is reused. This makes the pipeline
- * deterministic across re-runs and saves API round-trips.
+ * rendered file for identical (text + voice + rate + pitch) is reused. This
+ * makes the pipeline deterministic across re-runs and saves API round-trips.
+ *
+ * Cache key: SHA-256 of `voice::rate::pitch::text` — changing any of voice,
+ * rate, or pitch yields a different cache entry, preventing silent audio reuse
+ * across scenes with different prosody settings.
  */
 export async function synthesizeHinglish(
   text: string,
@@ -267,12 +300,17 @@ export async function synthesizeHinglish(
     outputDir = "output/hinglish-audio",
     cacheDir = path.join(outputDir, ".tts-cache"),
     ratePercent = -5,
+    pitchPercent = 0,
   } = options;
 
   const resolvedVoice = VOICE_MAP[voice];
+  const rate = ratePercent >= 0 ? `+${ratePercent}%` : `${ratePercent}%`;
+  const pitch = pitchPercentToHz(pitchPercent);
+  // Cache key includes voice, rate, pitch, and text so a scene with +5% pitch
+  // gets a different cached file than one with +0% (same voice/rate/text).
   const textHash = crypto
     .createHash("sha256")
-    .update(`${resolvedVoice}::${text}`)
+    .update(`${resolvedVoice}::${rate}::${pitch}::${text}`)
     .digest("hex")
     .slice(0, 16);
 
@@ -296,7 +334,7 @@ export async function synthesizeHinglish(
       ? path.join(cacheDir as string, `${textHash}.mp3`)
       : path.join(outputDir, `hinglish-${textHash}.mp3`);
 
-  const ssml = buildSSML(text, resolvedVoice, ratePercent);
+  const ssml = buildSSML(text, resolvedVoice, ratePercent, pitchPercent);
 
   // Pre-B30 this code statically imported a fictional `edge-tts-node`
   // npm package that was never published — typecheck failed and CI
@@ -304,10 +342,12 @@ export async function synthesizeHinglish(
   // Python `edge_tts` library used by `scripts/edge-tts-words.py` via
   // the small `scripts/edge-tts-synth.py` helper which accepts SSML on
   // stdin and writes MP3 to --out. Determinism: same (voice, rate,
-  // text) → same MP3 bytes; cache key above is SHA-256 of voice::text.
+  // pitch, text) → same MP3 bytes; cache key above is SHA-256 of
+  // voice::rate::pitch::text.
   await runPythonEdgeTTS({
     voice: resolvedVoice,
     ratePercent,
+    pitchPercent,
     ssml,
     outPath: outputPath,
   });
@@ -331,17 +371,43 @@ export interface SceneAudio {
   fromCache: boolean;
 }
 
+export interface SynthesizeScenesOptions extends HinglishTTSOptions {
+  /**
+   * Per-scene pitch overrides in -10..+10 range. Index must match scene index.
+   * If provided, overrides the global `pitchPercent` for that scene.
+   *
+   * Recommended per-scene values (CDawgVA retention tuning):
+   *   [0] hook:        +5  (energetic, grabs attention)
+   *   [1..n-2] body:    0  (neutral, focused delivery)
+   *   [mid] mid-promise: +3 (re-engagement bump)
+   *   [last] closing:  -3  (gravitas, drives CTA)
+   */
+  pitchPerScene?: number[];
+}
+
 /**
  * Synthesizes audio for each scene's narration in parallel.
  * Returns an ordered array of SceneAudio matching the input scenes array.
+ *
+ * Per-scene pitch overrides can be supplied via `options.pitchPerScene[i]`.
+ * Falls back to `options.pitchPercent` (or 0) when no per-scene value is set.
  */
 export async function synthesizeScenes(
   scenes: Array<{ narration: string }>,
-  options: HinglishTTSOptions = {}
+  options: SynthesizeScenesOptions = {}
 ): Promise<SceneAudio[]> {
+  const { pitchPerScene, ...baseOptions } = options;
   const results = await Promise.all(
     scenes.map(async (scene, i) => {
-      const result = await synthesizeHinglish(scene.narration, options);
+      const scenePitch =
+        pitchPerScene !== undefined && pitchPerScene[i] !== undefined
+          ? pitchPerScene[i]
+          : undefined;
+      const sceneOptions: HinglishTTSOptions =
+        scenePitch !== undefined
+          ? { ...baseOptions, pitchPercent: scenePitch }
+          : baseOptions;
+      const result = await synthesizeHinglish(scene.narration, sceneOptions);
       return {
         sceneIndex: i,
         narration: scene.narration,
