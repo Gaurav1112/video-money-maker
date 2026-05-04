@@ -634,10 +634,24 @@ async function generateWatermarkPng(outPath: string): Promise<void> {
   });
 }
 
-main().catch((err: unknown) => {
-  console.error('[orchestrator] fatal:', err);
-  process.exit(1);
-});
+// Only run the orchestrator when this file is invoked directly (CLI),
+// NOT when it is imported (e.g. by the thumbnail-render.test.ts smoke
+// test which only needs the exported `generateThumbnailPng`).
+const isDirectInvocation = (() => {
+  try {
+    const invokedPath = process.argv[1] ? path.resolve(process.argv[1]) : '';
+    const thisPath = fileURLToPath(import.meta.url);
+    return invokedPath === thisPath;
+  } catch {
+    return false;
+  }
+})();
+if (isDirectInvocation) {
+  main().catch((err: unknown) => {
+    console.error('[orchestrator] fatal:', err);
+    process.exit(1);
+  });
+}
 
 /**
  * Generates per-scene narration via Edge-TTS, concatenates into a single
@@ -748,7 +762,7 @@ async function generateNarrationForScenes(
  * deep-blue → indigo for unknown/empty category. Each palette is tuned
  * for ≥4.5:1 WCAG contrast against pure white (#ffffff) hook text.
  */
-async function generateThumbnailPng(opts: {
+export async function generateThumbnailPng(opts: {
   hook: string;
   handle: string;
   category?: string;
@@ -828,10 +842,15 @@ async function generateThumbnailPng(opts: {
     );
     chain = next;
   });
-  // Channel handle bottom-right (yellow accent) — sits above the accent stripe.
+  // Channel handle bottom-right (yellow accent). Panel-13 Eng P0 (Maeda):
+  // y=h-text_h-160 collided with the YT Shorts subscribe-button overlay
+  // zone — the button is rendered ~120-180px from the bottom on the
+  // mobile shelf, so the handle was being either obscured or visually
+  // double-stamped. Bumped to y=h-text_h-300 to clear the entire YT
+  // UI overlay band (subscribe + scroll affordance + like/share row).
   filters.push(
     `${chain}drawtext=text='${escapeDrawtext(handle)}'${fontfile}:fontcolor=#FFEB3B:fontsize=64:` +
-    `borderw=5:bordercolor=black@0.95:x=w-text_w-40:y=h-text_h-160[out]`
+    `borderw=5:bordercolor=black@0.95:x=w-text_w-40:y=h-text_h-300[out]`
   );
 
   await execFileAsync(FFMPEG_BIN, [

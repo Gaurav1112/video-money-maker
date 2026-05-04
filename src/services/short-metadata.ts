@@ -199,23 +199,37 @@ export function generateShortMetadata(
   const title = `${baseHook} #Shorts`.slice(0, TITLE_MAX);
 
   // Tag set: topic-derived + ICP-search + brand + caller extras + category-
-  // aware additions. Panel-12 Dist P1 (Schiffer): expand from ~15 ICP_TAGS
-  // to ≥25 unique tags after merge — YT allows up to 30 free indexable
-  // signals, leaving them empty is foregone SEO surface area. Each
-  // category bucket appends 5-7 high-volume Indian-CSE search terms.
+  // aware additions. Panel-12 Dist P1 (Schiffer) + Panel-13 Aud/Dist P0:
+  // expand to ≥25 unique tags after merge — YT allows up to 30 free
+  // indexable signals, leaving them empty is foregone SEO surface area.
+  // BUT: tags must be category-coherent. Panel-13 flagged that
+  // `gate2026`, `tier1college`, `campusplacement`, and `leetcode` route
+  // system-design / db-internals videos into the wrong recommendation
+  // bucket (academic exam-prep grind vs senior-dev / global-backend).
+  // These are now gated on category just like `strivergrind` was in P11.
   const baseTags = topicToTags(storyboard.topic);
-  // Panel-11 Aud P1 (Striver): `strivergrind` only signals coherently
-  // for DSA content — including it on behavioral/system-design videos
-  // surfaces them to the wrong ICP and poisons the recommendation
-  // graph for future DSA uploads. Conditional on category.
   const cat = (category ?? '').toLowerCase();
+  const isFresherFunnel = cat === 'dsa' || cat === 'behavioral' || cat === '';
+  const isDsaSurface = cat === 'dsa' || cat === '';
+  // Core tags safe across every category (true cross-funnel CSE / FAANG
+  // search anchors that don't bias the recommendation graph).
   const CORE_ICP_TAGS = [
-    'faang', 'leetcode', 'dsa', 'systemdesign', 'placement',
+    'faang', 'dsa', 'systemdesign', 'placement',
     'interviewprep', 'codingshorts', 'cseducation', 'lowleveldesign',
-    'softwareengineer', 'computerscience', 'gate2026',
-    'campusplacement', 'tier1college', 'apnacollege',
-    ...(cat === 'dsa' || cat === '' ? ['strivergrind'] : []),
+    'softwareengineer', 'computerscience', 'apnacollege',
   ];
+  // India-academic / fresher-funnel tags — only attach to dsa /
+  // behavioral / empty category. On system-design + db-internals
+  // they suppress global / senior-dev discovery (Kunal + Harkirat ICP).
+  const FRESHER_FUNNEL_TAGS = isFresherFunnel
+    ? ['gate2026', 'tier1college', 'campusplacement']
+    : [];
+  // Panel-13 Dist P0 (Schiffer): `leetcode` is a DSA-platform signal,
+  // identical pollution risk to the `strivergrind` problem fixed in
+  // P11 — gate identically on dsa / empty category.
+  const DSA_PLATFORM_TAGS = isDsaSurface
+    ? ['leetcode', 'strivergrind']
+    : [];
   // Panel-12 Dist P1 (Schiffer): category-aware high-volume tag
   // expansion. Uses verifiably high-volume Indian-CSE search terms
   // (validated via Apna College / Striver / Take U Forward tag clouds).
@@ -241,7 +255,12 @@ export function generateShortMetadata(
       'indexing', 'queryoptimization',
     ],
   };
-  const ICP_TAGS = [...CORE_ICP_TAGS, ...(CATEGORY_TAGS[cat] ?? [])];
+  const ICP_TAGS = [
+    ...CORE_ICP_TAGS,
+    ...FRESHER_FUNNEL_TAGS,
+    ...DSA_PLATFORM_TAGS,
+    ...(CATEGORY_TAGS[cat] ?? []),
+  ];
   const tags = Array.from(
     new Set([...baseTags, ...extraTags, ...ICP_TAGS, 'shorts', BRAND_TAG])
   ).slice(0, 30);
