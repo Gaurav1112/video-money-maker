@@ -1,6 +1,7 @@
 {
   "topicId": 49,
   "topic": "Trie (Prefix Tree) for Search Autocomplete",
+  "quality": "placeholder",
   "scenes": [
     {
       "type": "hook",
@@ -8,27 +9,27 @@
     },
     {
       "type": "problem",
-      "narration": "Without understanding Trie (Prefix Tree) for Search Autocomplete, systems fail at scale. Here's why it matters."
+      "narration": "Why Trie (Prefix Tree) for Search Autocomplete matters: pending hand-authoring."
     },
     {
       "type": "intuition",
-      "narration": "Think of Trie (Prefix Tree) for Search Autocomplete like a traffic cop at a busy intersection — directing flow efficiently."
+      "narration": "Intuition for Trie (Prefix Tree) for Search Autocomplete: pending hand-authoring."
     },
     {
       "type": "mechanism",
-      "narration": "The core mechanism of Trie (Prefix Tree) for Search Autocomplete: it distributes work, manages state, and handles failures gracefully."
+      "narration": "Mechanism for Trie (Prefix Tree) for Search Autocomplete: pending hand-authoring."
     },
     {
       "type": "mechanism-detail",
-      "narration": "Key properties of Trie (Prefix Tree) for Search Autocomplete: fault tolerance, horizontal scalability, and low latency."
+      "narration": "Details for Trie (Prefix Tree) for Search Autocomplete: pending hand-authoring."
     },
     {
       "type": "example",
-      "narration": "Real-world example: companies like Netflix and Uber use Trie (Prefix Tree) for Search Autocomplete to serve millions of users daily."
+      "narration": "Real-world Trie (Prefix Tree) for Search Autocomplete example: pending hand-authoring."
     },
     {
       "type": "recap",
-      "narration": "Quick recap: Trie (Prefix Tree) for Search Autocomplete solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+      "narration": "Trie (Prefix Tree) for Search Autocomplete recap: pending hand-authoring."
     }
   ]
 }

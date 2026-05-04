@@ -1,6 +1,7 @@
 {
   "topicId": 28,
   "topic": "gRPC vs REST vs GraphQL",
+  "quality": "placeholder",
   "scenes": [
     {
       "type": "hook",
@@ -8,27 +9,27 @@
     },
     {
       "type": "problem",
-      "narration": "Without understanding gRPC vs REST vs GraphQL, systems fail at scale. Here's why it matters."
+      "narration": "Why gRPC vs REST vs GraphQL matters: pending hand-authoring."
     },
     {
       "type": "intuition",
-      "narration": "Think of gRPC vs REST vs GraphQL like a traffic cop at a busy intersection — directing flow efficiently."
+      "narration": "Intuition for gRPC vs REST vs GraphQL: pending hand-authoring."
     },
     {
       "type": "mechanism",
-      "narration": "The core mechanism of gRPC vs REST vs GraphQL: it distributes work, manages state, and handles failures gracefully."
+      "narration": "Mechanism for gRPC vs REST vs GraphQL: pending hand-authoring."
     },
     {
       "type": "mechanism-detail",
-      "narration": "Key properties of gRPC vs REST vs GraphQL: fault tolerance, horizontal scalability, and low latency."
+      "narration": "Details for gRPC vs REST vs GraphQL: pending hand-authoring."
     },
     {
       "type": "example",
-      "narration": "Real-world example: companies like Netflix and Uber use gRPC vs REST vs GraphQL to serve millions of users daily."
+      "narration": "Real-world gRPC vs REST vs GraphQL example: pending hand-authoring."
     },
     {
       "type": "recap",
-      "narration": "Quick recap: gRPC vs REST vs GraphQL solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+      "narration": "gRPC vs REST vs GraphQL recap: pending hand-authoring."
     }
   ]
 }

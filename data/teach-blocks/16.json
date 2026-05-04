@@ -1,34 +1,42 @@
 {
   "topicId": 16,
   "topic": "Back-of-Envelope Estimation Formula",
+  "quality": "authored",
+  "mechanismKeywords": [
+    "QPS",
+    "storage",
+    "bandwidth",
+    "order of magnitude"
+  ],
+  "mistakeKeyword": "units",
   "scenes": [
     {
       "type": "hook",
-      "narration": "Bhai sun, ye Back-of-Envelope Estimation Formula ki ek mistake teri ₹40-65LPA ki Google offer cancel kara dega."
+      "narration": "System design round me numbers galat bole? Bhai, units bhul gaya — ek decimal place ne offer khaaya."
     },
     {
       "type": "problem",
-      "narration": "Without understanding Back-of-Envelope Estimation Formula, systems fail at scale. Here's why it matters."
+      "narration": "Mistake: KB vs MB confuse, per-day vs per-second confuse, peak vs average confuse. Interviewer ko 100 GB/day storage bola but actually 10 TB/day tha — sharding ka entire design galat ho gaya. Numbers ki granularity matters."
     },
     {
       "type": "intuition",
-      "narration": "Think of Back-of-Envelope Estimation Formula like a traffic cop at a busy intersection — directing flow efficiently."
+      "narration": "Estimation matlab order-of-magnitude — exact nahi, but 10x galat nahi. Soch — DAU se start, har user kitne actions, har action kitna data, peak/avg ratio 3x, 86400 seconds in day. Yahi 4 multiplications se QPS, storage, bandwidth nikalte hain."
     },
     {
       "type": "mechanism",
-      "narration": "The core mechanism of Back-of-Envelope Estimation Formula: it distributes work, manages state, and handles failures gracefully."
+      "narration": "Formula: QPS = DAU × actions_per_user × peak_factor / 86400. Storage = DAU × actions × bytes × retention_days. Bandwidth = QPS × avg_payload_size. Yaad rakh: 1 day = 86400 sec ≈ 10^5. 1M = 10^6, 1B = 10^9. RAM ~100ns, SSD ~100μs, network ~1ms intra-DC, 100ms cross-region."
     },
     {
       "type": "mechanism-detail",
-      "narration": "Key properties of Back-of-Envelope Estimation Formula: fault tolerance, horizontal scalability, and low latency."
+      "narration": "Power-of-2 cheat sheet: 2^10=1K, 2^20=1M, 2^30=1B (1GB). UTF-8 char ~2 bytes avg. Tweet ~280 char ~ 600 bytes + metadata ~ 1KB. Image ~200KB compressed. Video minute ~ 50MB at 720p. Peak factor 2-3x average. Read:write ratio 100:1 for social, 10:1 for ecom."
     },
     {
       "type": "example",
-      "narration": "Real-world example: companies like Netflix and Uber use Back-of-Envelope Estimation Formula to serve millions of users daily."
+      "narration": "Twitter sizing: 500M DAU × 5 tweets/day = 2.5B tweets/day = 30K writes/sec avg, 100K peak. Read 30K × 100 = 3M reads/sec. Storage 1KB × 2.5B × 365 = 900 TB/year. Cassandra cluster 100 nodes × 10TB SSD."
     },
     {
       "type": "recap",
-      "narration": "Quick recap: Back-of-Envelope Estimation Formula solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+      "narration": "Interview line: DAU → QPS via 86400, storage via retention, bandwidth via payload, peak factor 3x. Power-of-2 yaad rakh, units double-check."
     }
   ]
 }

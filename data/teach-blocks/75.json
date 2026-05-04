@@ -1,6 +1,7 @@
 {
   "topicId": 75,
   "topic": "Google Behavioral Round: Strict STAR",
+  "quality": "placeholder",
   "scenes": [
     {
       "type": "hook",
@@ -8,27 +9,27 @@
     },
     {
       "type": "problem",
-      "narration": "Without understanding Google Behavioral Round: Strict STAR, systems fail at scale. Here's why it matters."
+      "narration": "Why Google Behavioral Round: Strict STAR matters: pending hand-authoring."
     },
     {
       "type": "intuition",
-      "narration": "Think of Google Behavioral Round: Strict STAR like a traffic cop at a busy intersection — directing flow efficiently."
+      "narration": "Intuition for Google Behavioral Round: Strict STAR: pending hand-authoring."
     },
     {
       "type": "mechanism",
-      "narration": "The core mechanism of Google Behavioral Round: Strict STAR: it distributes work, manages state, and handles failures gracefully."
+      "narration": "Mechanism for Google Behavioral Round: Strict STAR: pending hand-authoring."
     },
     {
       "type": "mechanism-detail",
-      "narration": "Key properties of Google Behavioral Round: Strict STAR: fault tolerance, horizontal scalability, and low latency."
+      "narration": "Details for Google Behavioral Round: Strict STAR: pending hand-authoring."
     },
     {
       "type": "example",
-      "narration": "Real-world example: companies like Netflix and Uber use Google Behavioral Round: Strict STAR to serve millions of users daily."
+      "narration": "Real-world Google Behavioral Round: Strict STAR example: pending hand-authoring."
     },
     {
       "type": "recap",
-      "narration": "Quick recap: Google Behavioral Round: Strict STAR solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+      "narration": "Google Behavioral Round: Strict STAR recap: pending hand-authoring."
     }
   ]
 }

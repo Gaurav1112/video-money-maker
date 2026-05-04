@@ -1,6 +1,7 @@
 {
   "topicId": 86,
   "topic": "HTTP/2 Multiplexing vs HTTP/1.1",
+  "quality": "placeholder",
   "scenes": [
     {
       "type": "hook",
@@ -8,27 +9,27 @@
     },
     {
       "type": "problem",
-      "narration": "Without understanding HTTP/2 Multiplexing vs HTTP/1.1, systems fail at scale. Here's why it matters."
+      "narration": "Why HTTP/2 Multiplexing vs HTTP/1.1 matters: pending hand-authoring."
     },
     {
       "type": "intuition",
-      "narration": "Think of HTTP/2 Multiplexing vs HTTP/1.1 like a traffic cop at a busy intersection — directing flow efficiently."
+      "narration": "Intuition for HTTP/2 Multiplexing vs HTTP/1.1: pending hand-authoring."
     },
     {
       "type": "mechanism",
-      "narration": "The core mechanism of HTTP/2 Multiplexing vs HTTP/1.1: it distributes work, manages state, and handles failures gracefully."
+      "narration": "Mechanism for HTTP/2 Multiplexing vs HTTP/1.1: pending hand-authoring."
     },
     {
       "type": "mechanism-detail",
-      "narration": "Key properties of HTTP/2 Multiplexing vs HTTP/1.1: fault tolerance, horizontal scalability, and low latency."
+      "narration": "Details for HTTP/2 Multiplexing vs HTTP/1.1: pending hand-authoring."
     },
     {
       "type": "example",
-      "narration": "Real-world example: companies like Netflix and Uber use HTTP/2 Multiplexing vs HTTP/1.1 to serve millions of users daily."
+      "narration": "Real-world HTTP/2 Multiplexing vs HTTP/1.1 example: pending hand-authoring."
     },
     {
       "type": "recap",
-      "narration": "Quick recap: HTTP/2 Multiplexing vs HTTP/1.1 solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+      "narration": "HTTP/2 Multiplexing vs HTTP/1.1 recap: pending hand-authoring."
     }
   ]
 }

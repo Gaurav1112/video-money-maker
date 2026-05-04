@@ -1,6 +1,7 @@
 {
   "topicId": 51,
   "topic": "Segment Trees for Range Queries",
+  "quality": "placeholder",
   "scenes": [
     {
       "type": "hook",
@@ -8,27 +9,27 @@
     },
     {
       "type": "problem",
-      "narration": "Without understanding Segment Trees for Range Queries, systems fail at scale. Here's why it matters."
+      "narration": "Why Segment Trees for Range Queries matters: pending hand-authoring."
     },
     {
       "type": "intuition",
-      "narration": "Think of Segment Trees for Range Queries like a traffic cop at a busy intersection — directing flow efficiently."
+      "narration": "Intuition for Segment Trees for Range Queries: pending hand-authoring."
     },
     {
       "type": "mechanism",
-      "narration": "The core mechanism of Segment Trees for Range Queries: it distributes work, manages state, and handles failures gracefully."
+      "narration": "Mechanism for Segment Trees for Range Queries: pending hand-authoring."
     },
     {
       "type": "mechanism-detail",
-      "narration": "Key properties of Segment Trees for Range Queries: fault tolerance, horizontal scalability, and low latency."
+      "narration": "Details for Segment Trees for Range Queries: pending hand-authoring."
     },
     {
       "type": "example",
-      "narration": "Real-world example: companies like Netflix and Uber use Segment Trees for Range Queries to serve millions of users daily."
+      "narration": "Real-world Segment Trees for Range Queries example: pending hand-authoring."
     },
     {
       "type": "recap",
-      "narration": "Quick recap: Segment Trees for Range Queries solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+      "narration": "Segment Trees for Range Queries recap: pending hand-authoring."
     }
   ]
 }

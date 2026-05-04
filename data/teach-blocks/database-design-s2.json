@@ -1,0 +1,43 @@
+{
+  "slug": "database-design",
+  "session": 2,
+  "totalSessions": 10,
+  "topic": "Database Design",
+  "quality": "authored",
+  "mechanismKeywords": [
+    "B-tree",
+    "composite",
+    "covering index"
+  ],
+  "mistakeKeyword": "no index",
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "Ye Session 2 of 10 hai Database Design series me — aaj focus: database indexing. Bhai, ek mistake jo 90% engineers karte hain — 8 second me batata hu."
+    },
+    {
+      "type": "problem",
+      "narration": "Common mistake: no index samjhe bina production me lagaya — scale pe pakda gaya. Aaj ke session me exact reason aur fix dono dekhenge."
+    },
+    {
+      "type": "intuition",
+      "narration": "Database ek warehouse hai. Schema = shelf layout. Index = catalog. Sharding = multi-warehouse. Replication = backup branch. Transactions = receipt-trail. Sab ek ecosystem."
+    },
+    {
+      "type": "mechanism",
+      "narration": "Core mechanism: B-tree, composite, covering index — ye sab terms aaj clear karenge with concrete examples. Yaad rakh, Database Design ka design choice = scale + cost trade-off."
+    },
+    {
+      "type": "mechanism-detail",
+      "narration": "Tunables: shard-key high-cardinality + uniform distribution; indexes ≤ 5 per table; replication-lag SLA <100ms; isolation level READ_COMMITTED default, REPEATABLE_READ for financial. Concepts: B-tree, composite, covering index."
+    },
+    {
+      "type": "example",
+      "narration": "Real example: Uber moved monolith Postgres → Schemaless on MySQL — sharded by trip-id. Stripe Postgres + read-replicas + Vitess sharding. Airbnb migrated MongoDB → MySQL for booking integrity."
+    },
+    {
+      "type": "recap",
+      "narration": "Interview line: B-tree, composite, covering index — ye yaad rakh. Session 2/10 complete. agle session me hum database design ka next layer dekhenge."
+    }
+  ]
+}

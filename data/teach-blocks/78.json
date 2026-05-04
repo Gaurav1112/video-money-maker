@@ -1,6 +1,7 @@
 {
   "topicId": 78,
   "topic": "Notice Period Buyout Negotiation",
+  "quality": "placeholder",
   "scenes": [
     {
       "type": "hook",
@@ -8,27 +9,27 @@
     },
     {
       "type": "problem",
-      "narration": "Without understanding Notice Period Buyout Negotiation, systems fail at scale. Here's why it matters."
+      "narration": "Why Notice Period Buyout Negotiation matters: pending hand-authoring."
     },
     {
       "type": "intuition",
-      "narration": "Think of Notice Period Buyout Negotiation like a traffic cop at a busy intersection — directing flow efficiently."
+      "narration": "Intuition for Notice Period Buyout Negotiation: pending hand-authoring."
     },
     {
       "type": "mechanism",
-      "narration": "The core mechanism of Notice Period Buyout Negotiation: it distributes work, manages state, and handles failures gracefully."
+      "narration": "Mechanism for Notice Period Buyout Negotiation: pending hand-authoring."
     },
     {
       "type": "mechanism-detail",
-      "narration": "Key properties of Notice Period Buyout Negotiation: fault tolerance, horizontal scalability, and low latency."
+      "narration": "Details for Notice Period Buyout Negotiation: pending hand-authoring."
     },
     {
       "type": "example",
-      "narration": "Real-world example: companies like Netflix and Uber use Notice Period Buyout Negotiation to serve millions of users daily."
+      "narration": "Real-world Notice Period Buyout Negotiation example: pending hand-authoring."
     },
     {
       "type": "recap",
-      "narration": "Quick recap: Notice Period Buyout Negotiation solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+      "narration": "Notice Period Buyout Negotiation recap: pending hand-authoring."
     }
   ]
 }

@@ -1,6 +1,7 @@
 {
   "topicId": 20,
   "topic": "Design: YouTube/Netflix Video Streaming",
+  "quality": "placeholder",
   "scenes": [
     {
       "type": "hook",
@@ -8,27 +9,27 @@
     },
     {
       "type": "problem",
-      "narration": "Without understanding Design: YouTube/Netflix Video Streaming, systems fail at scale. Here's why it matters."
+      "narration": "Why Design: YouTube/Netflix Video Streaming matters: pending hand-authoring."
     },
     {
       "type": "intuition",
-      "narration": "Think of Design: YouTube/Netflix Video Streaming like a traffic cop at a busy intersection — directing flow efficiently."
+      "narration": "Intuition for Design: YouTube/Netflix Video Streaming: pending hand-authoring."
     },
     {
       "type": "mechanism",
-      "narration": "The core mechanism of Design: YouTube/Netflix Video Streaming: it distributes work, manages state, and handles failures gracefully."
+      "narration": "Mechanism for Design: YouTube/Netflix Video Streaming: pending hand-authoring."
     },
     {
       "type": "mechanism-detail",
-      "narration": "Key properties of Design: YouTube/Netflix Video Streaming: fault tolerance, horizontal scalability, and low latency."
+      "narration": "Details for Design: YouTube/Netflix Video Streaming: pending hand-authoring."
     },
     {
       "type": "example",
-      "narration": "Real-world example: companies like Netflix and Uber use Design: YouTube/Netflix Video Streaming to serve millions of users daily."
+      "narration": "Real-world Design: YouTube/Netflix Video Streaming example: pending hand-authoring."
     },
     {
       "type": "recap",
-      "narration": "Quick recap: Design: YouTube/Netflix Video Streaming solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+      "narration": "Design: YouTube/Netflix Video Streaming recap: pending hand-authoring."
     }
   ]
 }

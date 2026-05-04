@@ -1,6 +1,7 @@
 {
   "topicId": 82,
   "topic": "Deadlock: Detect, Prevent, Avoid",
+  "quality": "placeholder",
   "scenes": [
     {
       "type": "hook",
@@ -8,27 +9,27 @@
     },
     {
       "type": "problem",
-      "narration": "Without understanding Deadlock: Detect, Prevent, Avoid, systems fail at scale. Here's why it matters."
+      "narration": "Why Deadlock: Detect, Prevent, Avoid matters: pending hand-authoring."
     },
     {
       "type": "intuition",
-      "narration": "Think of Deadlock: Detect, Prevent, Avoid like a traffic cop at a busy intersection — directing flow efficiently."
+      "narration": "Intuition for Deadlock: Detect, Prevent, Avoid: pending hand-authoring."
     },
     {
       "type": "mechanism",
-      "narration": "The core mechanism of Deadlock: Detect, Prevent, Avoid: it distributes work, manages state, and handles failures gracefully."
+      "narration": "Mechanism for Deadlock: Detect, Prevent, Avoid: pending hand-authoring."
     },
     {
       "type": "mechanism-detail",
-      "narration": "Key properties of Deadlock: Detect, Prevent, Avoid: fault tolerance, horizontal scalability, and low latency."
+      "narration": "Details for Deadlock: Detect, Prevent, Avoid: pending hand-authoring."
     },
     {
       "type": "example",
-      "narration": "Real-world example: companies like Netflix and Uber use Deadlock: Detect, Prevent, Avoid to serve millions of users daily."
+      "narration": "Real-world Deadlock: Detect, Prevent, Avoid example: pending hand-authoring."
     },
     {
       "type": "recap",
-      "narration": "Quick recap: Deadlock: Detect, Prevent, Avoid solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+      "narration": "Deadlock: Detect, Prevent, Avoid recap: pending hand-authoring."
     }
   ]
 }

@@ -1,6 +1,7 @@
 {
   "topicId": 74,
   "topic": "Cold Outreach to Hiring Manager (Template)",
+  "quality": "placeholder",
   "scenes": [
     {
       "type": "hook",
@@ -8,27 +9,27 @@
     },
     {
       "type": "problem",
-      "narration": "Without understanding Cold Outreach to Hiring Manager (Template), systems fail at scale. Here's why it matters."
+      "narration": "Why Cold Outreach to Hiring Manager (Template) matters: pending hand-authoring."
     },
     {
       "type": "intuition",
-      "narration": "Think of Cold Outreach to Hiring Manager (Template) like a traffic cop at a busy intersection — directing flow efficiently."
+      "narration": "Intuition for Cold Outreach to Hiring Manager (Template): pending hand-authoring."
     },
     {
       "type": "mechanism",
-      "narration": "The core mechanism of Cold Outreach to Hiring Manager (Template): it distributes work, manages state, and handles failures gracefully."
+      "narration": "Mechanism for Cold Outreach to Hiring Manager (Template): pending hand-authoring."
     },
     {
       "type": "mechanism-detail",
-      "narration": "Key properties of Cold Outreach to Hiring Manager (Template): fault tolerance, horizontal scalability, and low latency."
+      "narration": "Details for Cold Outreach to Hiring Manager (Template): pending hand-authoring."
     },
     {
       "type": "example",
-      "narration": "Real-world example: companies like Netflix and Uber use Cold Outreach to Hiring Manager (Template) to serve millions of users daily."
+      "narration": "Real-world Cold Outreach to Hiring Manager (Template) example: pending hand-authoring."
     },
     {
       "type": "recap",
-      "narration": "Quick recap: Cold Outreach to Hiring Manager (Template) solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+      "narration": "Cold Outreach to Hiring Manager (Template) recap: pending hand-authoring."
     }
   ]
 }

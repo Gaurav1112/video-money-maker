@@ -1,34 +1,42 @@
 {
   "topicId": 5,
   "topic": "Rate Limiting: Token Bucket vs Leaky Bucket",
+  "quality": "authored",
+  "mechanismKeywords": [
+    "token bucket",
+    "leaky bucket",
+    "refill rate",
+    "burst"
+  ],
+  "mistakeKeyword": "burst",
   "scenes": [
     {
       "type": "hook",
-      "narration": "Bhai sun, ye Rate Limiting: Token Bucket vs Leaky Bucket ki ek mistake teri ₹30-50LPA ki Razorpay offer cancel kara dega."
+      "narration": "Tu fixed-window rate limit laga raha hai aur burst traffic se API gir rahi hai? Bhai, token bucket lagana tha."
     },
     {
       "type": "problem",
-      "narration": "Without understanding Rate Limiting: Token Bucket vs Leaky Bucket, systems fail at scale. Here's why it matters."
+      "narration": "Mistake: fixed-window 1000 req/min ne burst allow kar diya — second 59 pe 1000 hits, second 61 pe 1000 hits, effectively 2000 req/2sec. Server fat gaya. Burst-friendly chahiye to token bucket use kar, strict rate chahiye to leaky bucket."
     },
     {
       "type": "intuition",
-      "narration": "Think of Rate Limiting: Token Bucket vs Leaky Bucket like a traffic cop at a busy intersection — directing flow efficiently."
+      "narration": "Token bucket — drip-fill bucket hai. Tokens fixed rate se gir rahe hain bucket me, max capacity bucket-size. Tu bolna chahta hai to ek token kharcha. Bucket khali hua to ruk. Burst karna hai? Bucket bhar lo phir spend kar lo. Leaky bucket ulta — tu daal raha hai, neeche se constant rate se nikal raha hai."
     },
     {
       "type": "mechanism",
-      "narration": "The core mechanism of Rate Limiting: Token Bucket vs Leaky Bucket: it distributes work, manages state, and handles failures gracefully."
+      "narration": "Token bucket algorithm: rate R tokens/sec, capacity B. Har request ek token consume karta hai. Tokens refill: min(B, current + R*delta_t). Empty hua to reject ya queue. Leaky bucket: requests queue me daal, fixed rate se serve kar — overflow drop. Token bucket bursts allow karta hai upto B, leaky never."
     },
     {
       "type": "mechanism-detail",
-      "narration": "Key properties of Rate Limiting: Token Bucket vs Leaky Bucket: fault tolerance, horizontal scalability, and low latency."
+      "narration": "Distributed setup me: Redis INCR + EXPIRE atomic se sliding-window approximate kar sakte hain. Stripe sliding-window-counter use karta hai — fixed-window se accurate, sliding-log se memory-cheap. GCRA (generic cell rate algorithm) ek tokenless variant hai jo timestamp se nikalta hai — Stripe ka actual production algorithm."
     },
     {
       "type": "example",
-      "narration": "Real-world example: companies like Netflix and Uber use Rate Limiting: Token Bucket vs Leaky Bucket to serve millions of users daily."
+      "narration": "Stripe API: 100 req/sec sustained, 200 burst capacity — token bucket. Razorpay payment-gateway leaky bucket use karta hai outgoing webhook delivery pe — partner systems ko slam nahi karna chahiye, isliye constant drain rate."
     },
     {
       "type": "recap",
-      "narration": "Quick recap: Rate Limiting: Token Bucket vs Leaky Bucket solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+      "narration": "Interview line: burst-friendly chahiye → token bucket; smooth output chahiye → leaky bucket; distributed → Redis sliding-window-counter ya GCRA. Agla session: distributed rate limit at 1M RPS."
     }
   ]
 }

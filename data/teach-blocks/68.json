@@ -1,6 +1,7 @@
 {
   "topicId": 68,
   "topic": "Working Under a Tight Deadline — STAR",
+  "quality": "placeholder",
   "scenes": [
     {
       "type": "hook",
@@ -8,27 +9,27 @@
     },
     {
       "type": "problem",
-      "narration": "Without understanding Working Under a Tight Deadline — STAR, systems fail at scale. Here's why it matters."
+      "narration": "Why Working Under a Tight Deadline — STAR matters: pending hand-authoring."
     },
     {
       "type": "intuition",
-      "narration": "Think of Working Under a Tight Deadline — STAR like a traffic cop at a busy intersection — directing flow efficiently."
+      "narration": "Intuition for Working Under a Tight Deadline — STAR: pending hand-authoring."
     },
     {
       "type": "mechanism",
-      "narration": "The core mechanism of Working Under a Tight Deadline — STAR: it distributes work, manages state, and handles failures gracefully."
+      "narration": "Mechanism for Working Under a Tight Deadline — STAR: pending hand-authoring."
     },
     {
       "type": "mechanism-detail",
-      "narration": "Key properties of Working Under a Tight Deadline — STAR: fault tolerance, horizontal scalability, and low latency."
+      "narration": "Details for Working Under a Tight Deadline — STAR: pending hand-authoring."
     },
     {
       "type": "example",
-      "narration": "Real-world example: companies like Netflix and Uber use Working Under a Tight Deadline — STAR to serve millions of users daily."
+      "narration": "Real-world Working Under a Tight Deadline — STAR example: pending hand-authoring."
     },
     {
       "type": "recap",
-      "narration": "Quick recap: Working Under a Tight Deadline — STAR solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+      "narration": "Working Under a Tight Deadline — STAR recap: pending hand-authoring."
     }
   ]
 }

@@ -1,6 +1,7 @@
 {
   "topicId": 43,
   "topic": "BFS vs DFS — Which One in Interviews",
+  "quality": "placeholder",
   "scenes": [
     {
       "type": "hook",
@@ -8,27 +9,27 @@
     },
     {
       "type": "problem",
-      "narration": "Without understanding BFS vs DFS — Which One in Interviews, systems fail at scale. Here's why it matters."
+      "narration": "Why BFS vs DFS — Which One in Interviews matters: pending hand-authoring."
     },
     {
       "type": "intuition",
-      "narration": "Think of BFS vs DFS — Which One in Interviews like a traffic cop at a busy intersection — directing flow efficiently."
+      "narration": "Intuition for BFS vs DFS — Which One in Interviews: pending hand-authoring."
     },
     {
       "type": "mechanism",
-      "narration": "The core mechanism of BFS vs DFS — Which One in Interviews: it distributes work, manages state, and handles failures gracefully."
+      "narration": "Mechanism for BFS vs DFS — Which One in Interviews: pending hand-authoring."
     },
     {
       "type": "mechanism-detail",
-      "narration": "Key properties of BFS vs DFS — Which One in Interviews: fault tolerance, horizontal scalability, and low latency."
+      "narration": "Details for BFS vs DFS — Which One in Interviews: pending hand-authoring."
     },
     {
       "type": "example",
-      "narration": "Real-world example: companies like Netflix and Uber use BFS vs DFS — Which One in Interviews to serve millions of users daily."
+      "narration": "Real-world BFS vs DFS — Which One in Interviews example: pending hand-authoring."
     },
     {
       "type": "recap",
-      "narration": "Quick recap: BFS vs DFS — Which One in Interviews solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+      "narration": "BFS vs DFS — Which One in Interviews recap: pending hand-authoring."
     }
   ]
 }

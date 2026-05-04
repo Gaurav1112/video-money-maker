@@ -1,6 +1,7 @@
 {
   "topicId": 80,
   "topic": "Asking the Interviewer the RIGHT Questions",
+  "quality": "placeholder",
   "scenes": [
     {
       "type": "hook",
@@ -8,27 +9,27 @@
     },
     {
       "type": "problem",
-      "narration": "Without understanding Asking the Interviewer the RIGHT Questions, systems fail at scale. Here's why it matters."
+      "narration": "Why Asking the Interviewer the RIGHT Questions matters: pending hand-authoring."
     },
     {
       "type": "intuition",
-      "narration": "Think of Asking the Interviewer the RIGHT Questions like a traffic cop at a busy intersection — directing flow efficiently."
+      "narration": "Intuition for Asking the Interviewer the RIGHT Questions: pending hand-authoring."
     },
     {
       "type": "mechanism",
-      "narration": "The core mechanism of Asking the Interviewer the RIGHT Questions: it distributes work, manages state, and handles failures gracefully."
+      "narration": "Mechanism for Asking the Interviewer the RIGHT Questions: pending hand-authoring."
     },
     {
       "type": "mechanism-detail",
-      "narration": "Key properties of Asking the Interviewer the RIGHT Questions: fault tolerance, horizontal scalability, and low latency."
+      "narration": "Details for Asking the Interviewer the RIGHT Questions: pending hand-authoring."
     },
     {
       "type": "example",
-      "narration": "Real-world example: companies like Netflix and Uber use Asking the Interviewer the RIGHT Questions to serve millions of users daily."
+      "narration": "Real-world Asking the Interviewer the RIGHT Questions example: pending hand-authoring."
     },
     {
       "type": "recap",
-      "narration": "Quick recap: Asking the Interviewer the RIGHT Questions solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+      "narration": "Asking the Interviewer the RIGHT Questions recap: pending hand-authoring."
     }
   ]
 }

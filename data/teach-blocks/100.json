@@ -1,6 +1,7 @@
 {
   "topicId": 100,
   "topic": "SQL N+1 Problem And How To Fix It",
+  "quality": "placeholder",
   "scenes": [
     {
       "type": "hook",
@@ -8,27 +9,27 @@
     },
     {
       "type": "problem",
-      "narration": "Without understanding SQL N+1 Problem And How To Fix It, systems fail at scale. Here's why it matters."
+      "narration": "Why SQL N+1 Problem And How To Fix It matters: pending hand-authoring."
     },
     {
       "type": "intuition",
-      "narration": "Think of SQL N+1 Problem And How To Fix It like a traffic cop at a busy intersection — directing flow efficiently."
+      "narration": "Intuition for SQL N+1 Problem And How To Fix It: pending hand-authoring."
     },
     {
       "type": "mechanism",
-      "narration": "The core mechanism of SQL N+1 Problem And How To Fix It: it distributes work, manages state, and handles failures gracefully."
+      "narration": "Mechanism for SQL N+1 Problem And How To Fix It: pending hand-authoring."
     },
     {
       "type": "mechanism-detail",
-      "narration": "Key properties of SQL N+1 Problem And How To Fix It: fault tolerance, horizontal scalability, and low latency."
+      "narration": "Details for SQL N+1 Problem And How To Fix It: pending hand-authoring."
     },
     {
       "type": "example",
-      "narration": "Real-world example: companies like Netflix and Uber use SQL N+1 Problem And How To Fix It to serve millions of users daily."
+      "narration": "Real-world SQL N+1 Problem And How To Fix It example: pending hand-authoring."
     },
     {
       "type": "recap",
-      "narration": "Quick recap: SQL N+1 Problem And How To Fix It solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+      "narration": "SQL N+1 Problem And How To Fix It recap: pending hand-authoring."
     }
   ]
 }

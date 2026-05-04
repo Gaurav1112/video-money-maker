@@ -1,34 +1,42 @@
 {
   "topicId": 50,
   "topic": "Union-Find: Connected Components",
+  "quality": "authored",
+  "mechanismKeywords": [
+    "path compression",
+    "union by rank",
+    "parent",
+    "root"
+  ],
+  "mistakeKeyword": "naive",
   "scenes": [
     {
       "type": "hook",
-      "narration": "Yaar, Google ne mujhe Union-Find: Connected Components pe yahi question poocha tha — 90% log yahi galat dete hain."
+      "narration": "Union-Find me naive Find lagaya aur LeetCode TLE? Bhai, path compression bhul gaya — nearly-O(1) hota hai."
     },
     {
       "type": "problem",
-      "narration": "Without understanding Union-Find: Connected Components, systems fail at scale. Here's why it matters."
+      "narration": "Mistake: naive Find recursively parent traverse karta hai O(N). N=10^5 pe TLE pakka. Without path compression and union-by-rank, tree degenerate ho jaata hai linked list me. Striver bhi yahi pehle batata hai — dono optimization mandatory."
     },
     {
       "type": "intuition",
-      "narration": "Think of Union-Find: Connected Components like a traffic cop at a busy intersection — directing flow efficiently."
+      "narration": "Tree-of-friends soch — har node ka ek parent hai, ultimate root group ka leader. Find(x) matlab — leader kaun? Recursively parent jaa. Union(a,b) matlab — a aur b ke leaders ko ek karo. Path compression: jab Find karta hai, raste ke saare nodes ka direct parent root bana de — agli baar O(1)."
     },
     {
       "type": "mechanism",
-      "narration": "The core mechanism of Union-Find: Connected Components: it distributes work, manages state, and handles failures gracefully."
+      "narration": "Mechanism: parent[] array, rank[] array. Find(x): if parent[x] != x, parent[x] = Find(parent[x]); return parent[x]. Union(a,b): rootA=Find(a), rootB=Find(b); attach smaller-rank to larger-rank; if equal rank, increment. Inverse Ackermann α(n) — nearly-O(1) amortized."
     },
     {
       "type": "mechanism-detail",
-      "narration": "Key properties of Union-Find: Connected Components: fault tolerance, horizontal scalability, and low latency."
+      "narration": "Path compression alone: O(log n) amortized. Union by rank alone: O(log n). Both combined: O(α(n)) — α is inverse Ackermann, < 5 for n < 10^80. Practical: Find aur Union almost-constant time. Use cases: Kruskal MST, dynamic connectivity, percolation, redundant edge in graph."
     },
     {
       "type": "example",
-      "narration": "Real-world example: companies like Netflix and Uber use Union-Find: Connected Components to serve millions of users daily."
+      "narration": "Kruskal MST algorithm Union-Find pe chalti hai — edges sort kar, har edge ke endpoints ke roots check, alag groups me to union, same group to skip. LeetCode 547 (Number of Provinces), 200 (Islands), 684 (Redundant Connection) — sab Union-Find pattern."
     },
     {
       "type": "recap",
-      "narration": "Quick recap: Union-Find: Connected Components solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+      "narration": "Interview line: Union-Find = parent array + rank + path compression + union-by-rank = O(α(n)) amortized. Kruskal, dynamic connectivity, redundant edge — pattern recognize kar."
     }
   ]
 }

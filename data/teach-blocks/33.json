@@ -1,6 +1,7 @@
 {
   "topicId": 33,
   "topic": "Leader Election with Raft",
+  "quality": "placeholder",
   "scenes": [
     {
       "type": "hook",
@@ -8,27 +9,27 @@
     },
     {
       "type": "problem",
-      "narration": "Without understanding Leader Election with Raft, systems fail at scale. Here's why it matters."
+      "narration": "Why Leader Election with Raft matters: pending hand-authoring."
     },
     {
       "type": "intuition",
-      "narration": "Think of Leader Election with Raft like a traffic cop at a busy intersection — directing flow efficiently."
+      "narration": "Intuition for Leader Election with Raft: pending hand-authoring."
     },
     {
       "type": "mechanism",
-      "narration": "The core mechanism of Leader Election with Raft: it distributes work, manages state, and handles failures gracefully."
+      "narration": "Mechanism for Leader Election with Raft: pending hand-authoring."
     },
     {
       "type": "mechanism-detail",
-      "narration": "Key properties of Leader Election with Raft: fault tolerance, horizontal scalability, and low latency."
+      "narration": "Details for Leader Election with Raft: pending hand-authoring."
     },
     {
       "type": "example",
-      "narration": "Real-world example: companies like Netflix and Uber use Leader Election with Raft to serve millions of users daily."
+      "narration": "Real-world Leader Election with Raft example: pending hand-authoring."
     },
     {
       "type": "recap",
-      "narration": "Quick recap: Leader Election with Raft solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+      "narration": "Leader Election with Raft recap: pending hand-authoring."
     }
   ]
 }

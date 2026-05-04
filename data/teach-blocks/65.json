@@ -1,6 +1,7 @@
 {
   "topicId": 65,
   "topic": "Amazon LP: Bias for Action",
+  "quality": "placeholder",
   "scenes": [
     {
       "type": "hook",
@@ -8,27 +9,27 @@
     },
     {
       "type": "problem",
-      "narration": "Without understanding Amazon LP: Bias for Action, systems fail at scale. Here's why it matters."
+      "narration": "Why Amazon LP: Bias for Action matters: pending hand-authoring."
     },
     {
       "type": "intuition",
-      "narration": "Think of Amazon LP: Bias for Action like a traffic cop at a busy intersection — directing flow efficiently."
+      "narration": "Intuition for Amazon LP: Bias for Action: pending hand-authoring."
     },
     {
       "type": "mechanism",
-      "narration": "The core mechanism of Amazon LP: Bias for Action: it distributes work, manages state, and handles failures gracefully."
+      "narration": "Mechanism for Amazon LP: Bias for Action: pending hand-authoring."
     },
     {
       "type": "mechanism-detail",
-      "narration": "Key properties of Amazon LP: Bias for Action: fault tolerance, horizontal scalability, and low latency."
+      "narration": "Details for Amazon LP: Bias for Action: pending hand-authoring."
     },
     {
       "type": "example",
-      "narration": "Real-world example: companies like Netflix and Uber use Amazon LP: Bias for Action to serve millions of users daily."
+      "narration": "Real-world Amazon LP: Bias for Action example: pending hand-authoring."
     },
     {
       "type": "recap",
-      "narration": "Quick recap: Amazon LP: Bias for Action solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+      "narration": "Amazon LP: Bias for Action recap: pending hand-authoring."
     }
   ]
 }

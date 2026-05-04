@@ -1,34 +1,43 @@
 {
   "topicId": 56,
   "topic": "HashMap Internals: Collision + Chaining",
+  "quality": "authored",
+  "mechanismKeywords": [
+    "bucket",
+    "collision",
+    "chaining",
+    "load factor",
+    "resize"
+  ],
+  "mistakeKeyword": "collision",
   "scenes": [
     {
       "type": "hook",
-      "narration": "Yaar, Amazon ne mujhe HashMap Internals: Collision + Chaining pe yahi question poocha tha — 90% log yahi galat dete hain."
+      "narration": "HashMap O(1) hai? Bhai, worst case O(N) ho sakta hai — collision strategy galat samjha."
     },
     {
       "type": "problem",
-      "narration": "Without understanding HashMap Internals: Collision + Chaining, systems fail at scale. Here's why it matters."
+      "narration": "Mistake: HashMap ko constant-time samjh ke deep dive nahi kiya. Worst case sab keys same bucket me — O(N) lookup. Java 8 me chain length 8 cross hua to red-black tree me convert hota hai — O(log N) worst case. Ye exact line interview me poochi jaati hai."
     },
     {
       "type": "intuition",
-      "narration": "Think of HashMap Internals: Collision + Chaining like a traffic cop at a busy intersection — directing flow efficiently."
+      "narration": "Library shelves soch — har shelf ek bucket. Hash function decide karta hai book kis shelf pe. Same shelf pe multiple books = collision. Chaining matlab us shelf pe linked-list rakhna. Open addressing matlab agla shelf try karna. Load factor 0.75 cross hua to library expand kar — double shelves."
     },
     {
       "type": "mechanism",
-      "narration": "The core mechanism of HashMap Internals: Collision + Chaining: it distributes work, manages state, and handles failures gracefully."
+      "narration": "Java HashMap: array of buckets, default 16, load factor 0.75. hash(key) = key.hashCode() XOR (hashCode >>> 16) — high bits ko low bits me mix. Bucket index = hash & (n-1). Collision pe linked list, length ≥ 8 to TreeNode (red-black tree). Resize: 2x array, all entries rehash."
     },
     {
       "type": "mechanism-detail",
-      "narration": "Key properties of HashMap Internals: Collision + Chaining: fault tolerance, horizontal scalability, and low latency."
+      "narration": "Treeification threshold 8, untreeify 6, min-tree-capacity 64. Resize O(N) but amortized O(1). Hash distribution important — bad hashCode (e.g. always 0) defeats everything. equals() + hashCode() contract: equal objects must have equal hashCodes. ConcurrentHashMap uses CAS + segment locks for thread-safety."
     },
     {
       "type": "example",
-      "narration": "Real-world example: companies like Netflix and Uber use HashMap Internals: Collision + Chaining to serve millions of users daily."
+      "narration": "Java 7 HashMap ek classic CVE tha — DoS via hash collisions, attacker same-bucket keys send karta tha O(N^2) processing. Java 8 me red-black tree fallback aur randomized hash seed se fix hua. Production grade Map: Caffeine cache uses W-TinyLFU + similar internals."
     },
     {
       "type": "recap",
-      "narration": "Quick recap: HashMap Internals: Collision + Chaining solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+      "narration": "Interview line: HashMap = array + chaining + load factor 0.75 + treeify at 8 (Java 8) + resize 2x. hashCode/equals contract mandatory. Worst case O(log N) post-Java-8."
     }
   ]
 }

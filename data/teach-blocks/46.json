@@ -1,6 +1,7 @@
 {
   "topicId": 46,
   "topic": "Linked List Reversal Patterns",
+  "quality": "placeholder",
   "scenes": [
     {
       "type": "hook",
@@ -8,27 +9,27 @@
     },
     {
       "type": "problem",
-      "narration": "Without understanding Linked List Reversal Patterns, systems fail at scale. Here's why it matters."
+      "narration": "Why Linked List Reversal Patterns matters: pending hand-authoring."
     },
     {
       "type": "intuition",
-      "narration": "Think of Linked List Reversal Patterns like a traffic cop at a busy intersection — directing flow efficiently."
+      "narration": "Intuition for Linked List Reversal Patterns: pending hand-authoring."
     },
     {
       "type": "mechanism",
-      "narration": "The core mechanism of Linked List Reversal Patterns: it distributes work, manages state, and handles failures gracefully."
+      "narration": "Mechanism for Linked List Reversal Patterns: pending hand-authoring."
     },
     {
       "type": "mechanism-detail",
-      "narration": "Key properties of Linked List Reversal Patterns: fault tolerance, horizontal scalability, and low latency."
+      "narration": "Details for Linked List Reversal Patterns: pending hand-authoring."
     },
     {
       "type": "example",
-      "narration": "Real-world example: companies like Netflix and Uber use Linked List Reversal Patterns to serve millions of users daily."
+      "narration": "Real-world Linked List Reversal Patterns example: pending hand-authoring."
     },
     {
       "type": "recap",
-      "narration": "Quick recap: Linked List Reversal Patterns solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+      "narration": "Linked List Reversal Patterns recap: pending hand-authoring."
     }
   ]
 }

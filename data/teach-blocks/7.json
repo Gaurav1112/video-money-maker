@@ -1,34 +1,42 @@
 {
   "topicId": 7,
   "topic": "Consistent Hashing & Why Virtual Nodes",
+  "quality": "authored",
+  "mechanismKeywords": [
+    "ring",
+    "virtual node",
+    "hash ring",
+    "minimal disruption"
+  ],
+  "mistakeKeyword": "rehash",
   "scenes": [
     {
       "type": "hook",
-      "narration": "Bhai sun, ye Consistent Hashing & Why Virtual Nodes ki ek mistake teri ₹40-60LPA ki Amazon offer cancel kara dega."
+      "narration": "Server add kiya aur 90% cache miss ho gaya? Bhai, modulo hashing use kar raha tha — full rehash ho gaya."
     },
     {
       "type": "problem",
-      "narration": "Without understanding Consistent Hashing & Why Virtual Nodes, systems fail at scale. Here's why it matters."
+      "narration": "Mistake: hash(key) % N use kiya. N badla — har key ka mapping change. Cache stampede, DB pe load 10x. Solution: consistent hashing. Server add hone pe sirf 1/N keys redistribute hote hain, baaki untouched."
     },
     {
       "type": "intuition",
-      "narration": "Think of Consistent Hashing & Why Virtual Nodes like a traffic cop at a busy intersection — directing flow efficiently."
+      "narration": "Ring soch — 0 se 2^32 ka circle. Servers ko hash karke ring pe place kar. Key bhi hash karke ring pe gir — clockwise jo first server mile, wahi owner. Server add hua to sirf uske aur uske predecessor ke beech wale keys move hote hain — neighbors disturb hote hain, baaki nahi."
     },
     {
       "type": "mechanism",
-      "narration": "The core mechanism of Consistent Hashing & Why Virtual Nodes: it distributes work, manages state, and handles failures gracefully."
+      "narration": "Plain consistent hashing me ek server ek point pe baithta hai — load skew aata hai. Virtual nodes solution: har physical server ko 100-200 virtual points pe place kar ring pe. Ab load uniformly distributed hai. Server crash hua to uske 200 virtual points ke saare keys uniformly other servers pe redistribute hote hain."
     },
     {
       "type": "mechanism-detail",
-      "narration": "Key properties of Consistent Hashing & Why Virtual Nodes: fault tolerance, horizontal scalability, and low latency."
+      "narration": "Lookup: TreeMap.ceilingKey(hash(key)) — O(log V) where V = total virtual nodes. Add server: 200 points insert, ~K/N keys move. Remove: 200 points delete. Replication: ring pe next R-1 servers ko bhi same key bhej — Cassandra, DynamoDB yahi karte hain."
     },
     {
       "type": "example",
-      "narration": "Real-world example: companies like Netflix and Uber use Consistent Hashing & Why Virtual Nodes to serve millions of users daily."
+      "narration": "Discord apne 5M concurrent users ke session-state ko consistent hashing ring pe shard karta hai — 4096 virtual nodes per server. Server add hone pe migration time 12 second from 4 minute (modulo era). DynamoDB ka partition assignment bhi yahi algorithm."
     },
     {
       "type": "recap",
-      "narration": "Quick recap: Consistent Hashing & Why Virtual Nodes solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+      "narration": "Interview line: consistent hashing ring + virtual nodes (100-200 per server) + clockwise lookup = minimal disruption + uniform load. Ye Session 4 of 10 — agla: data replication on the ring."
     }
   ]
 }

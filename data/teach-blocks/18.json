@@ -1,6 +1,7 @@
 {
   "topicId": 18,
   "topic": "Design: WhatsApp Chat System",
+  "quality": "placeholder",
   "scenes": [
     {
       "type": "hook",
@@ -8,27 +9,27 @@
     },
     {
       "type": "problem",
-      "narration": "Without understanding Design: WhatsApp Chat System, systems fail at scale. Here's why it matters."
+      "narration": "Why Design: WhatsApp Chat System matters: pending hand-authoring."
     },
     {
       "type": "intuition",
-      "narration": "Think of Design: WhatsApp Chat System like a traffic cop at a busy intersection — directing flow efficiently."
+      "narration": "Intuition for Design: WhatsApp Chat System: pending hand-authoring."
     },
     {
       "type": "mechanism",
-      "narration": "The core mechanism of Design: WhatsApp Chat System: it distributes work, manages state, and handles failures gracefully."
+      "narration": "Mechanism for Design: WhatsApp Chat System: pending hand-authoring."
     },
     {
       "type": "mechanism-detail",
-      "narration": "Key properties of Design: WhatsApp Chat System: fault tolerance, horizontal scalability, and low latency."
+      "narration": "Details for Design: WhatsApp Chat System: pending hand-authoring."
     },
     {
       "type": "example",
-      "narration": "Real-world example: companies like Netflix and Uber use Design: WhatsApp Chat System to serve millions of users daily."
+      "narration": "Real-world Design: WhatsApp Chat System example: pending hand-authoring."
     },
     {
       "type": "recap",
-      "narration": "Quick recap: Design: WhatsApp Chat System solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+      "narration": "Design: WhatsApp Chat System recap: pending hand-authoring."
     }
   ]
 }

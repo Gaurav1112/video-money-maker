@@ -1,6 +1,7 @@
 {
   "topicId": 93,
   "topic": "ACID Properties With Real Examples",
+  "quality": "placeholder",
   "scenes": [
     {
       "type": "hook",
@@ -8,27 +9,27 @@
     },
     {
       "type": "problem",
-      "narration": "Without understanding ACID Properties With Real Examples, systems fail at scale. Here's why it matters."
+      "narration": "Why ACID Properties With Real Examples matters: pending hand-authoring."
     },
     {
       "type": "intuition",
-      "narration": "Think of ACID Properties With Real Examples like a traffic cop at a busy intersection — directing flow efficiently."
+      "narration": "Intuition for ACID Properties With Real Examples: pending hand-authoring."
     },
     {
       "type": "mechanism",
-      "narration": "The core mechanism of ACID Properties With Real Examples: it distributes work, manages state, and handles failures gracefully."
+      "narration": "Mechanism for ACID Properties With Real Examples: pending hand-authoring."
     },
     {
       "type": "mechanism-detail",
-      "narration": "Key properties of ACID Properties With Real Examples: fault tolerance, horizontal scalability, and low latency."
+      "narration": "Details for ACID Properties With Real Examples: pending hand-authoring."
     },
     {
       "type": "example",
-      "narration": "Real-world example: companies like Netflix and Uber use ACID Properties With Real Examples to serve millions of users daily."
+      "narration": "Real-world ACID Properties With Real Examples example: pending hand-authoring."
     },
     {
       "type": "recap",
-      "narration": "Quick recap: ACID Properties With Real Examples solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+      "narration": "ACID Properties With Real Examples recap: pending hand-authoring."
     }
   ]
 }

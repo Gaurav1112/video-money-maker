@@ -1,6 +1,7 @@
 {
   "topicId": 95,
   "topic": "PostgreSQL MVCC Explained",
+  "quality": "placeholder",
   "scenes": [
     {
       "type": "hook",
@@ -8,27 +9,27 @@
     },
     {
       "type": "problem",
-      "narration": "Without understanding PostgreSQL MVCC Explained, systems fail at scale. Here's why it matters."
+      "narration": "Why PostgreSQL MVCC Explained matters: pending hand-authoring."
     },
     {
       "type": "intuition",
-      "narration": "Think of PostgreSQL MVCC Explained like a traffic cop at a busy intersection — directing flow efficiently."
+      "narration": "Intuition for PostgreSQL MVCC Explained: pending hand-authoring."
     },
     {
       "type": "mechanism",
-      "narration": "The core mechanism of PostgreSQL MVCC Explained: it distributes work, manages state, and handles failures gracefully."
+      "narration": "Mechanism for PostgreSQL MVCC Explained: pending hand-authoring."
     },
     {
       "type": "mechanism-detail",
-      "narration": "Key properties of PostgreSQL MVCC Explained: fault tolerance, horizontal scalability, and low latency."
+      "narration": "Details for PostgreSQL MVCC Explained: pending hand-authoring."
     },
     {
       "type": "example",
-      "narration": "Real-world example: companies like Netflix and Uber use PostgreSQL MVCC Explained to serve millions of users daily."
+      "narration": "Real-world PostgreSQL MVCC Explained example: pending hand-authoring."
     },
     {
       "type": "recap",
-      "narration": "Quick recap: PostgreSQL MVCC Explained solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+      "narration": "PostgreSQL MVCC Explained recap: pending hand-authoring."
     }
   ]
 }

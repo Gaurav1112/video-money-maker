@@ -1,6 +1,7 @@
 {
   "topicId": 85,
   "topic": "DNS Resolution Step-By-Step",
+  "quality": "placeholder",
   "scenes": [
     {
       "type": "hook",
@@ -8,27 +9,27 @@
     },
     {
       "type": "problem",
-      "narration": "Without understanding DNS Resolution Step-By-Step, systems fail at scale. Here's why it matters."
+      "narration": "Why DNS Resolution Step-By-Step matters: pending hand-authoring."
     },
     {
       "type": "intuition",
-      "narration": "Think of DNS Resolution Step-By-Step like a traffic cop at a busy intersection — directing flow efficiently."
+      "narration": "Intuition for DNS Resolution Step-By-Step: pending hand-authoring."
     },
     {
       "type": "mechanism",
-      "narration": "The core mechanism of DNS Resolution Step-By-Step: it distributes work, manages state, and handles failures gracefully."
+      "narration": "Mechanism for DNS Resolution Step-By-Step: pending hand-authoring."
     },
     {
       "type": "mechanism-detail",
-      "narration": "Key properties of DNS Resolution Step-By-Step: fault tolerance, horizontal scalability, and low latency."
+      "narration": "Details for DNS Resolution Step-By-Step: pending hand-authoring."
     },
     {
       "type": "example",
-      "narration": "Real-world example: companies like Netflix and Uber use DNS Resolution Step-By-Step to serve millions of users daily."
+      "narration": "Real-world DNS Resolution Step-By-Step example: pending hand-authoring."
     },
     {
       "type": "recap",
-      "narration": "Quick recap: DNS Resolution Step-By-Step solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+      "narration": "DNS Resolution Step-By-Step recap: pending hand-authoring."
     }
   ]
 }

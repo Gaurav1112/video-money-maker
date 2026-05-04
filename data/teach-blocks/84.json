@@ -1,34 +1,43 @@
 {
   "topicId": 84,
   "topic": "TCP 3-Way Handshake + TLS",
+  "quality": "authored",
+  "mechanismKeywords": [
+    "SYN",
+    "SYN-ACK",
+    "ACK",
+    "ClientHello",
+    "handshake"
+  ],
+  "mistakeKeyword": "round trip",
   "scenes": [
     {
       "type": "hook",
-      "narration": "Bhai, Cloudflare ke SDE-2 round mein TCP 3-Way Handshake + TLS pe ye trick poochhi jati hai. 30 second sun le."
+      "narration": "API call slow hai mobile pe? Bhai, har request 4 round-trips le raha — TCP+TLS handshake ka cost samjho."
     },
     {
       "type": "problem",
-      "narration": "Without understanding TCP 3-Way Handshake + TLS, systems fail at scale. Here's why it matters."
+      "narration": "Mistake: connection-per-request lagaya. Har request: TCP SYN, SYN-ACK, ACK (1 RTT), TLS ClientHello/ServerHello (1-2 RTT), then HTTP. 4G pe RTT ~100ms = 400ms before first byte. Solution: keep-alive + HTTP/2 + TLS 1.3 + 0-RTT."
     },
     {
       "type": "intuition",
-      "narration": "Think of TCP 3-Way Handshake + TLS like a traffic cop at a busy intersection — directing flow efficiently."
+      "narration": "Phone call soch — TCP handshake matlab 'hello? hello sun raha? haan sun raha' — teen baar bolne ke baad asli baat. TLS handshake matlab 'tu vishwasyog hai? certificate dikha. theek hai, ye raha shared key.' Phir actual data. Har naya call ye sab repeat — isliye keep-alive."
     },
     {
       "type": "mechanism",
-      "narration": "The core mechanism of TCP 3-Way Handshake + TLS: it distributes work, manages state, and handles failures gracefully."
+      "narration": "TCP: client SYN(seq=x) → server SYN-ACK(seq=y, ack=x+1) → client ACK(ack=y+1). Connection established. TLS 1.2: ClientHello → ServerHello + cert + key exchange → ClientKeyExchange + Finished → 2 RTT. TLS 1.3: 1 RTT (ClientHello+keyshare upfront), 0-RTT for resumption (early-data)."
     },
     {
       "type": "mechanism-detail",
-      "narration": "Key properties of TCP 3-Way Handshake + TLS: fault tolerance, horizontal scalability, and low latency."
+      "narration": "QUIC (HTTP/3) merges TCP+TLS into UDP-based — 1 RTT new connection, 0 RTT resumption. Connection pooling, TCP keep-alive (SO_KEEPALIVE), HTTP/2 multiplexing same connection. Session resumption ticket reuses key — avoid full handshake."
     },
     {
       "type": "example",
-      "narration": "Real-world example: companies like Netflix and Uber use TCP 3-Way Handshake + TLS to serve millions of users daily."
+      "narration": "Cloudflare 0-RTT TLS 1.3 enabled karke API latency 30% gira diya — repeat client connections instant data send karte hain. Google QUIC pe shift kiya 2018 — YouTube buffer time 5% reduced. Mobile India me 4G pe ye 200ms differences matter."
     },
     {
       "type": "recap",
-      "narration": "Quick recap: TCP 3-Way Handshake + TLS solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+      "narration": "Interview line: TCP = SYN/SYN-ACK/ACK (1 RTT), TLS 1.3 = 1 RTT new + 0-RTT resume, HTTP/2 multiplex same conn, QUIC merges all in UDP. Keep-alive mandatory for low latency."
     }
   ]
 }

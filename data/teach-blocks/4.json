@@ -1,34 +1,42 @@
 {
   "topicId": 4,
   "topic": "Health Checks & Circuit Breakers",
+  "quality": "authored",
+  "mechanismKeywords": [
+    "open",
+    "half-open",
+    "closed",
+    "failure threshold"
+  ],
+  "mistakeKeyword": "shallow",
   "scenes": [
     {
       "type": "hook",
-      "narration": "Bhai sun, ye Health Checks & Circuit Breakers ki ek mistake teri ₹30-50LPA ki Amazon offer cancel kara dega."
+      "narration": "Tera health-check 200 OK return kar raha hai but DB connection toot chuki hai? Bhai, shallow health-check ne tera prod gira diya."
     },
     {
       "type": "problem",
-      "narration": "Without understanding Health Checks & Circuit Breakers, systems fail at scale. Here's why it matters."
+      "narration": "Mistake: shallow health-check sirf process zinda hai check karta hai — DB pool exhausted, downstream API down, ye nahi pakadta. Load balancer traffic bhejta rahega ek dead-but-running server pe. Cascade failure 30 second me."
     },
     {
       "type": "intuition",
-      "narration": "Think of Health Checks & Circuit Breakers like a traffic cop at a busy intersection — directing flow efficiently."
+      "narration": "Circuit breaker electrical breaker jaisa hai — current threshold cross hua, breaker trip ho gaya, downstream protect. Thodi der baad ek test current bhejta hai — sahi hai to reset, varna trip rakh. Health-check ka deep variant pulse-check hai — actual DB query maar ke dekh."
     },
     {
       "type": "mechanism",
-      "narration": "The core mechanism of Health Checks & Circuit Breakers: it distributes work, manages state, and handles failures gracefully."
+      "narration": "Circuit breaker ke teen states: closed (sab calls pass, failures count ho rahe), open (sab calls instantly fail, downstream ko breath de), half-open (ek test call bhej, success to closed, fail to open). Failure threshold (e.g. 50% in 10s window) aur reset-timeout (e.g. 30s) tuneable hote hain."
     },
     {
       "type": "mechanism-detail",
-      "narration": "Key properties of Health Checks & Circuit Breakers: fault tolerance, horizontal scalability, and low latency."
+      "narration": "Health-check ke teen levels: liveness (process zinda?), readiness (traffic le sakta?), startup (init complete?). Kubernetes me teeno alag endpoints chahiye. Deep health-check me DB ping + downstream HEAD + cache ping — but har 5 second pe nahi, har 30 second pe — varna self-DDOS."
     },
     {
       "type": "example",
-      "narration": "Real-world example: companies like Netflix and Uber use Health Checks & Circuit Breakers to serve millions of users daily."
+      "narration": "Netflix Hystrix se Resilience4j pe shift kiya — 100ms latency budget me circuit breaker decision lena pad raha tha. Resilience4j ka ring buffer O(1) failure-rate calculate karta hai — ab unka payment service 99.99% available hai cascade failure zero."
     },
     {
       "type": "recap",
-      "narration": "Quick recap: Health Checks & Circuit Breakers solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+      "narration": "Interview line: liveness ≠ readiness, deep health-checks but rate-limited, circuit breaker = closed/open/half-open with failure threshold + reset timeout. Ye Session 5 of 10 Load Balancing series — agla: layer 4 vs layer 7."
     }
   ]
 }

@@ -1,6 +1,7 @@
 {
   "topicId": 73,
   "topic": "FAANG Referral Strategy via LinkedIn",
+  "quality": "placeholder",
   "scenes": [
     {
       "type": "hook",
@@ -8,27 +9,27 @@
     },
     {
       "type": "problem",
-      "narration": "Without understanding FAANG Referral Strategy via LinkedIn, systems fail at scale. Here's why it matters."
+      "narration": "Why FAANG Referral Strategy via LinkedIn matters: pending hand-authoring."
     },
     {
       "type": "intuition",
-      "narration": "Think of FAANG Referral Strategy via LinkedIn like a traffic cop at a busy intersection — directing flow efficiently."
+      "narration": "Intuition for FAANG Referral Strategy via LinkedIn: pending hand-authoring."
     },
     {
       "type": "mechanism",
-      "narration": "The core mechanism of FAANG Referral Strategy via LinkedIn: it distributes work, manages state, and handles failures gracefully."
+      "narration": "Mechanism for FAANG Referral Strategy via LinkedIn: pending hand-authoring."
     },
     {
       "type": "mechanism-detail",
-      "narration": "Key properties of FAANG Referral Strategy via LinkedIn: fault tolerance, horizontal scalability, and low latency."
+      "narration": "Details for FAANG Referral Strategy via LinkedIn: pending hand-authoring."
     },
     {
       "type": "example",
-      "narration": "Real-world example: companies like Netflix and Uber use FAANG Referral Strategy via LinkedIn to serve millions of users daily."
+      "narration": "Real-world FAANG Referral Strategy via LinkedIn example: pending hand-authoring."
     },
     {
       "type": "recap",
-      "narration": "Quick recap: FAANG Referral Strategy via LinkedIn solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+      "narration": "FAANG Referral Strategy via LinkedIn recap: pending hand-authoring."
     }
   ]
 }

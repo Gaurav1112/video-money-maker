@@ -1,6 +1,7 @@
 {
   "topicId": 106,
   "topic": "Data Structures",
+  "quality": "placeholder",
   "scenes": [
     {
       "type": "hook",
@@ -8,27 +9,27 @@
     },
     {
       "type": "problem",
-      "narration": "Without understanding Data Structures, systems fail at scale. Here's why it matters."
+      "narration": "Why Data Structures matters: pending hand-authoring."
     },
     {
       "type": "intuition",
-      "narration": "Think of Data Structures like a traffic cop at a busy intersection — directing flow efficiently."
+      "narration": "Intuition for Data Structures: pending hand-authoring."
     },
     {
       "type": "mechanism",
-      "narration": "The core mechanism of Data Structures: it distributes work, manages state, and handles failures gracefully."
+      "narration": "Mechanism for Data Structures: pending hand-authoring."
     },
     {
       "type": "mechanism-detail",
-      "narration": "Key properties of Data Structures: fault tolerance, horizontal scalability, and low latency."
+      "narration": "Details for Data Structures: pending hand-authoring."
     },
     {
       "type": "example",
-      "narration": "Real-world example: companies like Netflix and Uber use Data Structures to serve millions of users daily."
+      "narration": "Real-world Data Structures example: pending hand-authoring."
     },
     {
       "type": "recap",
-      "narration": "Quick recap: Data Structures solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+      "narration": "Data Structures recap: pending hand-authoring."
     }
   ]
 }

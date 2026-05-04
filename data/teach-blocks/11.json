@@ -1,34 +1,43 @@
 {
   "topicId": 11,
   "topic": "Message Queues: Kafka vs RabbitMQ vs SQS",
+  "quality": "authored",
+  "mechanismKeywords": [
+    "log",
+    "broker",
+    "partition",
+    "queue",
+    "fanout"
+  ],
+  "mistakeKeyword": "wrong tool",
   "scenes": [
     {
       "type": "hook",
-      "narration": "Bhai sun, ye Message Queues: Kafka vs RabbitMQ vs SQS ki ek mistake teri ₹35-55LPA ki Amazon offer cancel kara dega."
+      "narration": "Tu RabbitMQ pe trillion messages bhejne ki koshish kar raha hai? Bhai, wrong tool — Kafka chahiye."
     },
     {
       "type": "problem",
-      "narration": "Without understanding Message Queues: Kafka vs RabbitMQ vs SQS, systems fail at scale. Here's why it matters."
+      "narration": "Mistake: Kafka, RabbitMQ aur SQS ko interchangeable samjha. Kafka = ordered durable log (analytics, event-sourcing), RabbitMQ = smart routing broker (work queues, RPC), SQS = managed simple queue (decoupling, no ops). Galat chuna to scale ya feature dono fail."
     },
     {
       "type": "intuition",
-      "narration": "Think of Message Queues: Kafka vs RabbitMQ vs SQS like a traffic cop at a busy intersection — directing flow efficiently."
+      "narration": "Kafka ek diary hai — har page numbered, kabhi delete nahi, multiple log padhne wale apne-apne bookmark rakhte hain. RabbitMQ post-office hai — letters routing rules ke hisaab se sahi mailbox me, padha gaya to gaya. SQS plain inbox hai — cloud-managed, simple, par ordering aur fanout limited."
     },
     {
       "type": "mechanism",
-      "narration": "The core mechanism of Message Queues: Kafka vs RabbitMQ vs SQS: it distributes work, manages state, and handles failures gracefully."
+      "narration": "Kafka: append-only log per partition, consumers offset track karte hain, retention time-based (7 din default). RabbitMQ: exchange + binding + queue model, ack-based delivery, message gone after consume. SQS: standard (at-least-once, no order) ya FIFO (order, dedup), 14-day retention max."
     },
     {
       "type": "mechanism-detail",
-      "narration": "Key properties of Message Queues: Kafka vs RabbitMQ vs SQS: fault tolerance, horizontal scalability, and low latency."
+      "narration": "Throughput: Kafka 1M+ msg/sec per broker, RabbitMQ 50K, SQS 3K standard (300 FIFO). Ordering: Kafka per-partition, RabbitMQ per-queue, SQS-FIFO per-message-group. Replay: Kafka native, RabbitMQ no, SQS no. Pick by workload — analytics → Kafka, microservice tasks → RabbitMQ, AWS-only decoupling → SQS."
     },
     {
       "type": "example",
-      "narration": "Real-world example: companies like Netflix and Uber use Message Queues: Kafka vs RabbitMQ vs SQS to serve millions of users daily."
+      "narration": "LinkedIn 7 trillion msg/day Kafka pe. Instacart RabbitMQ pe order routing — driver matching needs flexible exchange rules. Airbnb internal SQS pe email/notification fanout — managed, zero-ops."
     },
     {
       "type": "recap",
-      "narration": "Quick recap: Message Queues: Kafka vs RabbitMQ vs SQS solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+      "narration": "Interview line: ordered durable log → Kafka, smart routing → RabbitMQ, AWS managed simple → SQS. Tool fits workload, not the other way."
     }
   ]
 }

@@ -1,6 +1,7 @@
 {
   "topicId": 32,
   "topic": "Two-Phase Commit Problem",
+  "quality": "placeholder",
   "scenes": [
     {
       "type": "hook",
@@ -8,27 +9,27 @@
     },
     {
       "type": "problem",
-      "narration": "Without understanding Two-Phase Commit Problem, systems fail at scale. Here's why it matters."
+      "narration": "Why Two-Phase Commit Problem matters: pending hand-authoring."
     },
     {
       "type": "intuition",
-      "narration": "Think of Two-Phase Commit Problem like a traffic cop at a busy intersection — directing flow efficiently."
+      "narration": "Intuition for Two-Phase Commit Problem: pending hand-authoring."
     },
     {
       "type": "mechanism",
-      "narration": "The core mechanism of Two-Phase Commit Problem: it distributes work, manages state, and handles failures gracefully."
+      "narration": "Mechanism for Two-Phase Commit Problem: pending hand-authoring."
     },
     {
       "type": "mechanism-detail",
-      "narration": "Key properties of Two-Phase Commit Problem: fault tolerance, horizontal scalability, and low latency."
+      "narration": "Details for Two-Phase Commit Problem: pending hand-authoring."
     },
     {
       "type": "example",
-      "narration": "Real-world example: companies like Netflix and Uber use Two-Phase Commit Problem to serve millions of users daily."
+      "narration": "Real-world Two-Phase Commit Problem example: pending hand-authoring."
     },
     {
       "type": "recap",
-      "narration": "Quick recap: Two-Phase Commit Problem solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+      "narration": "Two-Phase Commit Problem recap: pending hand-authoring."
     }
   ]
 }

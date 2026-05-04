@@ -1,6 +1,7 @@
 {
   "topicId": 8,
   "topic": "CAP Theorem: What It Actually Means",
+  "quality": "placeholder",
   "scenes": [
     {
       "type": "hook",
@@ -8,27 +9,27 @@
     },
     {
       "type": "problem",
-      "narration": "Without understanding CAP Theorem: What It Actually Means, systems fail at scale. Here's why it matters."
+      "narration": "Why CAP Theorem: What It Actually Means matters: pending hand-authoring."
     },
     {
       "type": "intuition",
-      "narration": "Think of CAP Theorem: What It Actually Means like a traffic cop at a busy intersection — directing flow efficiently."
+      "narration": "Intuition for CAP Theorem: What It Actually Means: pending hand-authoring."
     },
     {
       "type": "mechanism",
-      "narration": "The core mechanism of CAP Theorem: What It Actually Means: it distributes work, manages state, and handles failures gracefully."
+      "narration": "Mechanism for CAP Theorem: What It Actually Means: pending hand-authoring."
     },
     {
       "type": "mechanism-detail",
-      "narration": "Key properties of CAP Theorem: What It Actually Means: fault tolerance, horizontal scalability, and low latency."
+      "narration": "Details for CAP Theorem: What It Actually Means: pending hand-authoring."
     },
     {
       "type": "example",
-      "narration": "Real-world example: companies like Netflix and Uber use CAP Theorem: What It Actually Means to serve millions of users daily."
+      "narration": "Real-world CAP Theorem: What It Actually Means example: pending hand-authoring."
     },
     {
       "type": "recap",
-      "narration": "Quick recap: CAP Theorem: What It Actually Means solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+      "narration": "CAP Theorem: What It Actually Means recap: pending hand-authoring."
     }
   ]
 }

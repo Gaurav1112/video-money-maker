@@ -1,6 +1,7 @@
 {
   "topicId": 59,
   "topic": "Greedy Algorithms: Activity Selection",
+  "quality": "placeholder",
   "scenes": [
     {
       "type": "hook",
@@ -8,27 +9,27 @@
     },
     {
       "type": "problem",
-      "narration": "Without understanding Greedy Algorithms: Activity Selection, systems fail at scale. Here's why it matters."
+      "narration": "Why Greedy Algorithms: Activity Selection matters: pending hand-authoring."
     },
     {
       "type": "intuition",
-      "narration": "Think of Greedy Algorithms: Activity Selection like a traffic cop at a busy intersection — directing flow efficiently."
+      "narration": "Intuition for Greedy Algorithms: Activity Selection: pending hand-authoring."
     },
     {
       "type": "mechanism",
-      "narration": "The core mechanism of Greedy Algorithms: Activity Selection: it distributes work, manages state, and handles failures gracefully."
+      "narration": "Mechanism for Greedy Algorithms: Activity Selection: pending hand-authoring."
     },
     {
       "type": "mechanism-detail",
-      "narration": "Key properties of Greedy Algorithms: Activity Selection: fault tolerance, horizontal scalability, and low latency."
+      "narration": "Details for Greedy Algorithms: Activity Selection: pending hand-authoring."
     },
     {
       "type": "example",
-      "narration": "Real-world example: companies like Netflix and Uber use Greedy Algorithms: Activity Selection to serve millions of users daily."
+      "narration": "Real-world Greedy Algorithms: Activity Selection example: pending hand-authoring."
     },
     {
       "type": "recap",
-      "narration": "Quick recap: Greedy Algorithms: Activity Selection solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+      "narration": "Greedy Algorithms: Activity Selection recap: pending hand-authoring."
     }
   ]
 }

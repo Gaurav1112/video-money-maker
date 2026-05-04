@@ -1,6 +1,7 @@
 {
   "topicId": 94,
   "topic": "Database Isolation Levels & Read Phenomena",
+  "quality": "placeholder",
   "scenes": [
     {
       "type": "hook",
@@ -8,27 +9,27 @@
     },
     {
       "type": "problem",
-      "narration": "Without understanding Database Isolation Levels & Read Phenomena, systems fail at scale. Here's why it matters."
+      "narration": "Why Database Isolation Levels & Read Phenomena matters: pending hand-authoring."
     },
     {
       "type": "intuition",
-      "narration": "Think of Database Isolation Levels & Read Phenomena like a traffic cop at a busy intersection — directing flow efficiently."
+      "narration": "Intuition for Database Isolation Levels & Read Phenomena: pending hand-authoring."
     },
     {
       "type": "mechanism",
-      "narration": "The core mechanism of Database Isolation Levels & Read Phenomena: it distributes work, manages state, and handles failures gracefully."
+      "narration": "Mechanism for Database Isolation Levels & Read Phenomena: pending hand-authoring."
     },
     {
       "type": "mechanism-detail",
-      "narration": "Key properties of Database Isolation Levels & Read Phenomena: fault tolerance, horizontal scalability, and low latency."
+      "narration": "Details for Database Isolation Levels & Read Phenomena: pending hand-authoring."
     },
     {
       "type": "example",
-      "narration": "Real-world example: companies like Netflix and Uber use Database Isolation Levels & Read Phenomena to serve millions of users daily."
+      "narration": "Real-world Database Isolation Levels & Read Phenomena example: pending hand-authoring."
     },
     {
       "type": "recap",
-      "narration": "Quick recap: Database Isolation Levels & Read Phenomena solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+      "narration": "Database Isolation Levels & Read Phenomena recap: pending hand-authoring."
     }
   ]
 }

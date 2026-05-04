@@ -1,34 +1,43 @@
 {
   "topicId": 91,
   "topic": "B-Tree vs LSM Tree (Why RocksDB Uses LSM)",
+  "quality": "authored",
+  "mechanismKeywords": [
+    "B-tree",
+    "LSM",
+    "SSTable",
+    "compaction",
+    "memtable"
+  ],
+  "mistakeKeyword": "write-heavy",
   "scenes": [
     {
       "type": "hook",
-      "narration": "Tu agar B-Tree vs LSM Tree (Why RocksDB Uses LSM) samajh nahi paya, toh Google ka ₹40-65LPA ka offer bhool ja."
+      "narration": "Write-heavy workload pe Postgres slow ho raha? Bhai, B-tree write-amplification ka shikar — LSM dekho."
     },
     {
       "type": "problem",
-      "narration": "Without understanding B-Tree vs LSM Tree (Why RocksDB Uses LSM), systems fail at scale. Here's why it matters."
+      "narration": "Mistake: write-heavy time-series ya analytics workload pe B-tree DB use kiya. B-tree har write me random disk page update karta hai — write amplification 10-30x. RocksDB / Cassandra LSM use karte hain — sequential writes only, 10x faster on SSD."
     },
     {
       "type": "intuition",
-      "narration": "Think of B-Tree vs LSM Tree (Why RocksDB Uses LSM) like a traffic cop at a busy intersection — directing flow efficiently."
+      "narration": "B-tree — book ka index, sorted always, page edit me wahi page rewrite. Random IO heavy. LSM — naya entry hamesha latest notebook me likhte ho (memtable), purane notebooks (SSTables) immutable, kabhi-kabhi merge karke clean copy banate ho (compaction). Writes always sequential — fastest path."
     },
     {
       "type": "mechanism",
-      "narration": "The core mechanism of B-Tree vs LSM Tree (Why RocksDB Uses LSM): it distributes work, manages state, and handles failures gracefully."
+      "narration": "LSM mechanism: writes → in-memory memtable (skiplist). Memtable full → flush to immutable SSTable on disk (sorted). Multiple SSTables levels (L0, L1, ... LN), each level 10x larger. Background compaction merges overlapping SSTables. Read: memtable + bloom-filtered SSTable scan, k-way merge."
     },
     {
       "type": "mechanism-detail",
-      "narration": "Key properties of B-Tree vs LSM Tree (Why RocksDB Uses LSM): fault tolerance, horizontal scalability, and low latency."
+      "narration": "Write amplification: B-tree ~10-30x, LSM leveled ~10x but can tune. Read amplification: LSM higher (multiple levels), Bloom filters help. Space amplification: LSM ~1.1x leveled, ~2x tiered. RocksDB tunables: level_compaction vs universal_compaction, write_buffer_size, max_background_jobs."
     },
     {
       "type": "example",
-      "narration": "Real-world example: companies like Netflix and Uber use B-Tree vs LSM Tree (Why RocksDB Uses LSM) to serve millions of users daily."
+      "narration": "Cassandra, ScyllaDB, HBase, RocksDB — all LSM. CockroachDB uses RocksDB (now Pebble) under the hood. MyRocks = MySQL on RocksDB — Facebook saved 50% storage vs InnoDB on chat metadata. Postgres / MySQL InnoDB are B-tree — better for read-heavy OLTP."
     },
     {
       "type": "recap",
-      "narration": "Quick recap: B-Tree vs LSM Tree (Why RocksDB Uses LSM) solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+      "narration": "Interview line: B-tree = read-optimized, in-place updates, OLTP. LSM = write-optimized, sequential, compaction overhead, time-series + analytics. Choose by workload write:read ratio."
     }
   ]
 }

@@ -1,34 +1,43 @@
 {
   "topicId": 12,
   "topic": "Circuit Breaker Pattern (Resilience4j in real life)",
+  "quality": "authored",
+  "mechanismKeywords": [
+    "open",
+    "half-open",
+    "closed",
+    "failure threshold",
+    "reset"
+  ],
+  "mistakeKeyword": "cascade",
   "scenes": [
     {
       "type": "hook",
-      "narration": "Bhai sun, ye Circuit Breaker Pattern (Resilience4j in real life) ki ek mistake teri ₹30-50LPA ki PhonePe offer cancel kara dega."
+      "narration": "Ek service down hui aur 5 aur down ho gayi? Bhai, ye cascade failure hai — Resilience4j 4 line me rok deta hai."
     },
     {
       "type": "problem",
-      "narration": "Without understanding Circuit Breaker Pattern (Resilience4j in real life), systems fail at scale. Here's why it matters."
+      "narration": "Mistake: payment-service down hua, naive retry+timeout ne thread pool exhaust kar diya, upstream services hang ho gaye, cascade failure 90 second me 5 services down. Solution: circuit breaker — fail-fast, downstream ko breath dene ka time."
     },
     {
       "type": "intuition",
-      "narration": "Think of Circuit Breaker Pattern (Resilience4j in real life) like a traffic cop at a busy intersection — directing flow efficiently."
+      "narration": "Electrical breaker yaad kar — ghar me current threshold cross hua, breaker trip ho gaya, sab off. Thodi der baad tu manual reset karta hai. Circuit breaker pattern wahi hai — failures threshold cross hua to open, downstream ko request bhejna band, kuch der baad half-open me ek test request, success hua to closed reset."
     },
     {
       "type": "mechanism",
-      "narration": "The core mechanism of Circuit Breaker Pattern (Resilience4j in real life): it distributes work, manages state, and handles failures gracefully."
+      "narration": "Teen states: CLOSED (calls pass, failures count in sliding window), OPEN (calls instantly fail with CircuitBreakerOpenException, no downstream load), HALF_OPEN (one trial call, success → CLOSED, failure → OPEN). Resilience4j config: failureRateThreshold=50%, slidingWindowSize=10, waitDurationInOpenState=30s."
     },
     {
       "type": "mechanism-detail",
-      "narration": "Key properties of Circuit Breaker Pattern (Resilience4j in real life): fault tolerance, horizontal scalability, and low latency."
+      "narration": "Resilience4j ka ring-bit-buffer O(1) failure-rate calculate karta hai — Hystrix se 5x faster. Fallback function lagana mandatory — circuit open hone pe cached response, default value, ya queued retry. Bulkhead pattern combine kar — alag thread pool per dependency, ek service down ne saare threads na khaye."
     },
     {
       "type": "example",
-      "narration": "Real-world example: companies like Netflix and Uber use Circuit Breaker Pattern (Resilience4j in real life) to serve millions of users daily."
+      "narration": "Netflix internal services Hystrix se Resilience4j pe shift hue 2019 me — Hystrix maintenance mode me gaya. Aaj unka API gateway Zuul + Resilience4j combo hai, 99.99% availability cascade failures se. PhonePe production me yahi pattern — UPI flow me payment partner timeout pe instant fallback."
     },
     {
       "type": "recap",
-      "narration": "Quick recap: Circuit Breaker Pattern (Resilience4j in real life) solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+      "narration": "Interview line: circuit breaker = CLOSED/OPEN/HALF_OPEN state machine + failure threshold + reset timeout + fallback function + bulkhead. Resilience4j > Hystrix in 2024."
     }
   ]
 }

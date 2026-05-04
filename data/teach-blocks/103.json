@@ -1,6 +1,7 @@
 {
   "topicId": 103,
   "topic": "Computer Organization & Architecture",
+  "quality": "placeholder",
   "scenes": [
     {
       "type": "hook",
@@ -8,27 +9,27 @@
     },
     {
       "type": "problem",
-      "narration": "Without understanding Computer Organization & Architecture, systems fail at scale. Here's why it matters."
+      "narration": "Why Computer Organization & Architecture matters: pending hand-authoring."
     },
     {
       "type": "intuition",
-      "narration": "Think of Computer Organization & Architecture like a traffic cop at a busy intersection — directing flow efficiently."
+      "narration": "Intuition for Computer Organization & Architecture: pending hand-authoring."
     },
     {
       "type": "mechanism",
-      "narration": "The core mechanism of Computer Organization & Architecture: it distributes work, manages state, and handles failures gracefully."
+      "narration": "Mechanism for Computer Organization & Architecture: pending hand-authoring."
     },
     {
       "type": "mechanism-detail",
-      "narration": "Key properties of Computer Organization & Architecture: fault tolerance, horizontal scalability, and low latency."
+      "narration": "Details for Computer Organization & Architecture: pending hand-authoring."
     },
     {
       "type": "example",
-      "narration": "Real-world example: companies like Netflix and Uber use Computer Organization & Architecture to serve millions of users daily."
+      "narration": "Real-world Computer Organization & Architecture example: pending hand-authoring."
     },
     {
       "type": "recap",
-      "narration": "Quick recap: Computer Organization & Architecture solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+      "narration": "Computer Organization & Architecture recap: pending hand-authoring."
     }
   ]
 }

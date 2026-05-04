@@ -1,34 +1,42 @@
 {
   "topicId": 101,
   "topic": "Operating Systems",
+  "quality": "authored",
+  "mechanismKeywords": [
+    "kernel",
+    "scheduler",
+    "virtual memory",
+    "system call"
+  ],
+  "mistakeKeyword": "GATE",
   "scenes": [
     {
       "type": "hook",
-      "narration": "GATE 2026 mein Operating Systems ke 8-10 marks pakke. Padh lo abhi."
+      "narration": "GATE me OS scoring topic hai par tu basics pe atak raha hai? Bhai, ek mental model se 5 chapters clear."
     },
     {
       "type": "problem",
-      "narration": "Without understanding Operating Systems, systems fail at scale. Here's why it matters."
+      "narration": "Mistake: GATE OS ko isolated topics ki tarah ratta marte ho — process, memory, file system alag-alag. Actually OS ek hi controller hai jo CPU, memory, IO ko competing processes me share karta hai. Ek mental model — sab connected."
     },
     {
       "type": "intuition",
-      "narration": "Think of Operating Systems like a traffic cop at a busy intersection — directing flow efficiently."
+      "narration": "OS traffic-controller hai — par traffic-cop (load balancer) se alag. Yahaan controller decide karta hai konsa process ko CPU mile (scheduler), kitni RAM mile (paging), kab disk-IO ho (block IO scheduler), kab network packet bhejna hai (sockets). Ek hi resource manager 4 angles se."
     },
     {
       "type": "mechanism",
-      "narration": "The core mechanism of Operating Systems: it distributes work, manages state, and handles failures gracefully."
+      "narration": "Core mechanisms: scheduler (CFS in Linux — red-black tree of vruntime), virtual memory (page tables, TLB, demand paging), system calls (user→kernel via trap), file system (inode + data blocks + dentry cache), IPC (pipes, signals, shared mem). Sab kernel data structures pe revolve karte hain."
     },
     {
       "type": "mechanism-detail",
-      "narration": "Key properties of Operating Systems: fault tolerance, horizontal scalability, and low latency."
+      "narration": "GATE-specific weighted topics: process synchronization (semaphore, monitor, deadlock conditions = mutual-exclusion + hold-wait + no-preempt + circular-wait), memory (FIFO/LRU/Optimal page replacement, calculate page faults), disk scheduling (SSTF/SCAN/C-SCAN), file allocation (contiguous/linked/indexed)."
     },
     {
       "type": "example",
-      "narration": "Real-world example: companies like Netflix and Uber use Operating Systems to serve millions of users daily."
+      "narration": "Linux CFS scheduler: each task ka vruntime (virtual runtime) red-black tree me, lowest vruntime next runs. Demand paging: page fault → kernel disk se load → MMU TLB update. Modern CPUs: 4-level page table (PML4/PDPT/PD/PT) on x86-64."
     },
     {
       "type": "recap",
-      "narration": "Quick recap: Operating Systems solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+      "narration": "Interview/GATE line: OS = resource manager for CPU/memory/IO/network across competing processes. CFS scheduler + virtual memory paging + system call trap + IPC = 80% of GATE marks."
     }
   ]
 }

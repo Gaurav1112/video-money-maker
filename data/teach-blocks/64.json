@@ -1,6 +1,7 @@
 {
   "topicId": 64,
   "topic": "Amazon LP: Invent and Simplify",
+  "quality": "placeholder",
   "scenes": [
     {
       "type": "hook",
@@ -8,27 +9,27 @@
     },
     {
       "type": "problem",
-      "narration": "Without understanding Amazon LP: Invent and Simplify, systems fail at scale. Here's why it matters."
+      "narration": "Why Amazon LP: Invent and Simplify matters: pending hand-authoring."
     },
     {
       "type": "intuition",
-      "narration": "Think of Amazon LP: Invent and Simplify like a traffic cop at a busy intersection — directing flow efficiently."
+      "narration": "Intuition for Amazon LP: Invent and Simplify: pending hand-authoring."
     },
     {
       "type": "mechanism",
-      "narration": "The core mechanism of Amazon LP: Invent and Simplify: it distributes work, manages state, and handles failures gracefully."
+      "narration": "Mechanism for Amazon LP: Invent and Simplify: pending hand-authoring."
     },
     {
       "type": "mechanism-detail",
-      "narration": "Key properties of Amazon LP: Invent and Simplify: fault tolerance, horizontal scalability, and low latency."
+      "narration": "Details for Amazon LP: Invent and Simplify: pending hand-authoring."
     },
     {
       "type": "example",
-      "narration": "Real-world example: companies like Netflix and Uber use Amazon LP: Invent and Simplify to serve millions of users daily."
+      "narration": "Real-world Amazon LP: Invent and Simplify example: pending hand-authoring."
     },
     {
       "type": "recap",
-      "narration": "Quick recap: Amazon LP: Invent and Simplify solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+      "narration": "Amazon LP: Invent and Simplify recap: pending hand-authoring."
     }
   ]
 }

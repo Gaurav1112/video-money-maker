@@ -1,6 +1,7 @@
 {
   "topicId": 52,
   "topic": "Bit Manipulation Tricks",
+  "quality": "placeholder",
   "scenes": [
     {
       "type": "hook",
@@ -8,27 +9,27 @@
     },
     {
       "type": "problem",
-      "narration": "Without understanding Bit Manipulation Tricks, systems fail at scale. Here's why it matters."
+      "narration": "Why Bit Manipulation Tricks matters: pending hand-authoring."
     },
     {
       "type": "intuition",
-      "narration": "Think of Bit Manipulation Tricks like a traffic cop at a busy intersection — directing flow efficiently."
+      "narration": "Intuition for Bit Manipulation Tricks: pending hand-authoring."
     },
     {
       "type": "mechanism",
-      "narration": "The core mechanism of Bit Manipulation Tricks: it distributes work, manages state, and handles failures gracefully."
+      "narration": "Mechanism for Bit Manipulation Tricks: pending hand-authoring."
     },
     {
       "type": "mechanism-detail",
-      "narration": "Key properties of Bit Manipulation Tricks: fault tolerance, horizontal scalability, and low latency."
+      "narration": "Details for Bit Manipulation Tricks: pending hand-authoring."
     },
     {
       "type": "example",
-      "narration": "Real-world example: companies like Netflix and Uber use Bit Manipulation Tricks to serve millions of users daily."
+      "narration": "Real-world Bit Manipulation Tricks example: pending hand-authoring."
     },
     {
       "type": "recap",
-      "narration": "Quick recap: Bit Manipulation Tricks solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+      "narration": "Bit Manipulation Tricks recap: pending hand-authoring."
     }
   ]
 }

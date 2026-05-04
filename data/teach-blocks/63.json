@@ -1,6 +1,7 @@
 {
   "topicId": 63,
   "topic": "Amazon LP: Ownership (Real Story)",
+  "quality": "placeholder",
   "scenes": [
     {
       "type": "hook",
@@ -8,27 +9,27 @@
     },
     {
       "type": "problem",
-      "narration": "Without understanding Amazon LP: Ownership (Real Story), systems fail at scale. Here's why it matters."
+      "narration": "Why Amazon LP: Ownership (Real Story) matters: pending hand-authoring."
     },
     {
       "type": "intuition",
-      "narration": "Think of Amazon LP: Ownership (Real Story) like a traffic cop at a busy intersection — directing flow efficiently."
+      "narration": "Intuition for Amazon LP: Ownership (Real Story): pending hand-authoring."
     },
     {
       "type": "mechanism",
-      "narration": "The core mechanism of Amazon LP: Ownership (Real Story): it distributes work, manages state, and handles failures gracefully."
+      "narration": "Mechanism for Amazon LP: Ownership (Real Story): pending hand-authoring."
     },
     {
       "type": "mechanism-detail",
-      "narration": "Key properties of Amazon LP: Ownership (Real Story): fault tolerance, horizontal scalability, and low latency."
+      "narration": "Details for Amazon LP: Ownership (Real Story): pending hand-authoring."
     },
     {
       "type": "example",
-      "narration": "Real-world example: companies like Netflix and Uber use Amazon LP: Ownership (Real Story) to serve millions of users daily."
+      "narration": "Real-world Amazon LP: Ownership (Real Story) example: pending hand-authoring."
     },
     {
       "type": "recap",
-      "narration": "Quick recap: Amazon LP: Ownership (Real Story) solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+      "narration": "Amazon LP: Ownership (Real Story) recap: pending hand-authoring."
     }
   ]
 }

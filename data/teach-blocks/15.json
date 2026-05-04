@@ -1,6 +1,7 @@
 {
   "topicId": 15,
   "topic": "Event Sourcing in Production",
+  "quality": "placeholder",
   "scenes": [
     {
       "type": "hook",
@@ -8,27 +9,27 @@
     },
     {
       "type": "problem",
-      "narration": "Without understanding Event Sourcing in Production, systems fail at scale. Here's why it matters."
+      "narration": "Why Event Sourcing in Production matters: pending hand-authoring."
     },
     {
       "type": "intuition",
-      "narration": "Think of Event Sourcing in Production like a traffic cop at a busy intersection — directing flow efficiently."
+      "narration": "Intuition for Event Sourcing in Production: pending hand-authoring."
     },
     {
       "type": "mechanism",
-      "narration": "The core mechanism of Event Sourcing in Production: it distributes work, manages state, and handles failures gracefully."
+      "narration": "Mechanism for Event Sourcing in Production: pending hand-authoring."
     },
     {
       "type": "mechanism-detail",
-      "narration": "Key properties of Event Sourcing in Production: fault tolerance, horizontal scalability, and low latency."
+      "narration": "Details for Event Sourcing in Production: pending hand-authoring."
     },
     {
       "type": "example",
-      "narration": "Real-world example: companies like Netflix and Uber use Event Sourcing in Production to serve millions of users daily."
+      "narration": "Real-world Event Sourcing in Production example: pending hand-authoring."
     },
     {
       "type": "recap",
-      "narration": "Quick recap: Event Sourcing in Production solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+      "narration": "Event Sourcing in Production recap: pending hand-authoring."
     }
   ]
 }

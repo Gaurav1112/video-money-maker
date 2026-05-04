@@ -1,6 +1,7 @@
 {
   "topicId": 69,
   "topic": "Cross-Team Collaboration at a Startup",
+  "quality": "placeholder",
   "scenes": [
     {
       "type": "hook",
@@ -8,27 +9,27 @@
     },
     {
       "type": "problem",
-      "narration": "Without understanding Cross-Team Collaboration at a Startup, systems fail at scale. Here's why it matters."
+      "narration": "Why Cross-Team Collaboration at a Startup matters: pending hand-authoring."
     },
     {
       "type": "intuition",
-      "narration": "Think of Cross-Team Collaboration at a Startup like a traffic cop at a busy intersection — directing flow efficiently."
+      "narration": "Intuition for Cross-Team Collaboration at a Startup: pending hand-authoring."
     },
     {
       "type": "mechanism",
-      "narration": "The core mechanism of Cross-Team Collaboration at a Startup: it distributes work, manages state, and handles failures gracefully."
+      "narration": "Mechanism for Cross-Team Collaboration at a Startup: pending hand-authoring."
     },
     {
       "type": "mechanism-detail",
-      "narration": "Key properties of Cross-Team Collaboration at a Startup: fault tolerance, horizontal scalability, and low latency."
+      "narration": "Details for Cross-Team Collaboration at a Startup: pending hand-authoring."
     },
     {
       "type": "example",
-      "narration": "Real-world example: companies like Netflix and Uber use Cross-Team Collaboration at a Startup to serve millions of users daily."
+      "narration": "Real-world Cross-Team Collaboration at a Startup example: pending hand-authoring."
     },
     {
       "type": "recap",
-      "narration": "Quick recap: Cross-Team Collaboration at a Startup solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+      "narration": "Cross-Team Collaboration at a Startup recap: pending hand-authoring."
     }
   ]
 }

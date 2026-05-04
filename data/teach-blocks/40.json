@@ -1,6 +1,7 @@
 {
   "topicId": 40,
   "topic": "Bulkhead & Retry Patterns",
+  "quality": "placeholder",
   "scenes": [
     {
       "type": "hook",
@@ -8,27 +9,27 @@
     },
     {
       "type": "problem",
-      "narration": "Without understanding Bulkhead & Retry Patterns, systems fail at scale. Here's why it matters."
+      "narration": "Why Bulkhead & Retry Patterns matters: pending hand-authoring."
     },
     {
       "type": "intuition",
-      "narration": "Think of Bulkhead & Retry Patterns like a traffic cop at a busy intersection — directing flow efficiently."
+      "narration": "Intuition for Bulkhead & Retry Patterns: pending hand-authoring."
     },
     {
       "type": "mechanism",
-      "narration": "The core mechanism of Bulkhead & Retry Patterns: it distributes work, manages state, and handles failures gracefully."
+      "narration": "Mechanism for Bulkhead & Retry Patterns: pending hand-authoring."
     },
     {
       "type": "mechanism-detail",
-      "narration": "Key properties of Bulkhead & Retry Patterns: fault tolerance, horizontal scalability, and low latency."
+      "narration": "Details for Bulkhead & Retry Patterns: pending hand-authoring."
     },
     {
       "type": "example",
-      "narration": "Real-world example: companies like Netflix and Uber use Bulkhead & Retry Patterns to serve millions of users daily."
+      "narration": "Real-world Bulkhead & Retry Patterns example: pending hand-authoring."
     },
     {
       "type": "recap",
-      "narration": "Quick recap: Bulkhead & Retry Patterns solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+      "narration": "Bulkhead & Retry Patterns recap: pending hand-authoring."
     }
   ]
 }

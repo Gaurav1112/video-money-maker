@@ -1,6 +1,7 @@
 {
   "topicId": 71,
   "topic": "Technical Decision With Incomplete Data",
+  "quality": "placeholder",
   "scenes": [
     {
       "type": "hook",
@@ -8,27 +9,27 @@
     },
     {
       "type": "problem",
-      "narration": "Without understanding Technical Decision With Incomplete Data, systems fail at scale. Here's why it matters."
+      "narration": "Why Technical Decision With Incomplete Data matters: pending hand-authoring."
     },
     {
       "type": "intuition",
-      "narration": "Think of Technical Decision With Incomplete Data like a traffic cop at a busy intersection — directing flow efficiently."
+      "narration": "Intuition for Technical Decision With Incomplete Data: pending hand-authoring."
     },
     {
       "type": "mechanism",
-      "narration": "The core mechanism of Technical Decision With Incomplete Data: it distributes work, manages state, and handles failures gracefully."
+      "narration": "Mechanism for Technical Decision With Incomplete Data: pending hand-authoring."
     },
     {
       "type": "mechanism-detail",
-      "narration": "Key properties of Technical Decision With Incomplete Data: fault tolerance, horizontal scalability, and low latency."
+      "narration": "Details for Technical Decision With Incomplete Data: pending hand-authoring."
     },
     {
       "type": "example",
-      "narration": "Real-world example: companies like Netflix and Uber use Technical Decision With Incomplete Data to serve millions of users daily."
+      "narration": "Real-world Technical Decision With Incomplete Data example: pending hand-authoring."
     },
     {
       "type": "recap",
-      "narration": "Quick recap: Technical Decision With Incomplete Data solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+      "narration": "Technical Decision With Incomplete Data recap: pending hand-authoring."
     }
   ]
 }

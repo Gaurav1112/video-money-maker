@@ -1,0 +1,43 @@
+{
+  "slug": "api-gateway",
+  "session": 8,
+  "totalSessions": 10,
+  "topic": "API Gateway",
+  "quality": "authored",
+  "mechanismKeywords": [
+    "GraphQL",
+    "BFF",
+    "federation"
+  ],
+  "mistakeKeyword": "over-fetching",
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "Ye Session 8 of 10 hai API Gateway series me — aaj focus: GraphQL gateway & BFF. Bhai, ek mistake jo 90% engineers karte hain — 8 second me batata hu."
+    },
+    {
+      "type": "problem",
+      "narration": "Common mistake: over-fetching samjhe bina production me lagaya — scale pe pakda gaya. Aaj ke session me exact reason aur fix dono dekhenge."
+    },
+    {
+      "type": "intuition",
+      "narration": "API Gateway = building ka security guard + receptionist. Sab requests ek door se, ID-check karta hai, sahi office me bhejta hai, suspicious requests reject. Microservices isi door pe sit karte hain."
+    },
+    {
+      "type": "mechanism",
+      "narration": "Core mechanism: GraphQL, BFF, federation — ye sab terms aaj clear karenge with concrete examples. Yaad rakh, API Gateway ka design choice = scale + cost trade-off."
+    },
+    {
+      "type": "mechanism-detail",
+      "narration": "Tunables: rate limit per-user-per-endpoint, JWT TTL 5-15min + refresh, circuit-breaker failure-threshold 50%/10s, request-timeout 5-30s. Latency budget: gateway adds 1-5ms. Concepts: GraphQL, BFF, federation."
+    },
+    {
+      "type": "example",
+      "narration": "Real example: Netflix Zuul gateway 100B req/day, Resilience4j circuit-breakers per dep. Amazon API Gateway managed service, scales to 10K req/sec out-of-box. PhonePe Kong on-prem for UPI."
+    },
+    {
+      "type": "recap",
+      "narration": "Interview line: GraphQL, BFF, federation — ye yaad rakh. Session 8/10 complete. agle session me hum api gateway ka next layer dekhenge."
+    }
+  ]
+}

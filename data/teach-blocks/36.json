@@ -1,6 +1,7 @@
 {
   "topicId": 36,
   "topic": "API Gateway vs Load Balancer — When Which",
+  "quality": "placeholder",
   "scenes": [
     {
       "type": "hook",
@@ -8,27 +9,27 @@
     },
     {
       "type": "problem",
-      "narration": "Without understanding API Gateway vs Load Balancer — When Which, systems fail at scale. Here's why it matters."
+      "narration": "Why API Gateway vs Load Balancer — When Which matters: pending hand-authoring."
     },
     {
       "type": "intuition",
-      "narration": "Think of API Gateway vs Load Balancer — When Which like a traffic cop at a busy intersection — directing flow efficiently."
+      "narration": "Intuition for API Gateway vs Load Balancer — When Which: pending hand-authoring."
     },
     {
       "type": "mechanism",
-      "narration": "The core mechanism of API Gateway vs Load Balancer — When Which: it distributes work, manages state, and handles failures gracefully."
+      "narration": "Mechanism for API Gateway vs Load Balancer — When Which: pending hand-authoring."
     },
     {
       "type": "mechanism-detail",
-      "narration": "Key properties of API Gateway vs Load Balancer — When Which: fault tolerance, horizontal scalability, and low latency."
+      "narration": "Details for API Gateway vs Load Balancer — When Which: pending hand-authoring."
     },
     {
       "type": "example",
-      "narration": "Real-world example: companies like Netflix and Uber use API Gateway vs Load Balancer — When Which to serve millions of users daily."
+      "narration": "Real-world API Gateway vs Load Balancer — When Which example: pending hand-authoring."
     },
     {
       "type": "recap",
-      "narration": "Quick recap: API Gateway vs Load Balancer — When Which solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+      "narration": "API Gateway vs Load Balancer — When Which recap: pending hand-authoring."
     }
   ]
 }

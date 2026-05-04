@@ -1,34 +1,42 @@
 {
   "topicId": 2,
   "topic": "Kafka Producer acks=all vs acks=1",
+  "quality": "authored",
+  "mechanismKeywords": [
+    "ISR",
+    "in-sync replica",
+    "min.insync.replicas",
+    "leader"
+  ],
+  "mistakeKeyword": "acks=1",
   "scenes": [
     {
       "type": "hook",
-      "narration": "Bhai sun, ye Kafka Producer acks=all vs acks=1 ki ek mistake teri ₹35-55LPA ki Amazon offer cancel kara dega."
+      "narration": "Tera Kafka producer acks=1 pe chal raha hai? Bhai, payment data lose ho sakta hai — ye exact mistake interview me bhi pakda jata hai."
     },
     {
       "type": "problem",
-      "narration": "Without understanding Kafka Producer acks=all vs acks=1, systems fail at scale. Here's why it matters."
+      "narration": "Mistake: acks=1 leader ke ack ke baad return hota hai — agar leader crash hua before replicas ne copy kiya, tera message gone. Razorpay jaisi payment system me ye unacceptable hai. Aur acks=0 to fire-and-forget hai — production me kabhi mat lagana."
     },
     {
       "type": "intuition",
-      "narration": "Think of Kafka Producer acks=all vs acks=1 like a traffic cop at a busy intersection — directing flow efficiently."
+      "narration": "Soch courier service: acks=0 matlab parcel daal diya, receipt nahi li. acks=1 matlab branch manager ne sign kiya but truck me load nahi hua — manager bhag gaya to parcel gone. acks=all matlab manager + truck driver + delivery boy sab ne sign kiya — tabhi confirm."
     },
     {
       "type": "mechanism",
-      "narration": "The core mechanism of Kafka Producer acks=all vs acks=1: it distributes work, manages state, and handles failures gracefully."
+      "narration": "acks=all matlab leader wait karta hai jab tak min.insync.replicas (ISR set) ne message persist na kar le. ISR me wahi replicas hain jo leader ke saath in-sync hain. min.insync.replicas=2 set kar, replication.factor=3 rakh — ek broker giraye to bhi safe."
     },
     {
       "type": "mechanism-detail",
-      "narration": "Key properties of Kafka Producer acks=all vs acks=1: fault tolerance, horizontal scalability, and low latency."
+      "narration": "Trade-off yaad rakh: acks=all latency badhata hai 5-10ms, throughput 30% gira deta hai. But durability guarantee milta hai. Idempotent producer (enable.idempotence=true) on kar — exactly-once semantics chahiye to. Transactional producer alag chiz hai — multi-partition atomic write ke liye."
     },
     {
       "type": "example",
-      "narration": "Real-world example: companies like Netflix and Uber use Kafka Producer acks=all vs acks=1 to serve millions of users daily."
+      "narration": "Stripe apne payment pipeline me acks=all + min.insync.replicas=2 + idempotence on chalata hai. ₹100 crore daily process hote hain — ek bhi message lose nahi hota. Latency 8ms hai but durability 99.999% guaranteed."
     },
     {
       "type": "recap",
-      "narration": "Quick recap: Kafka Producer acks=all vs acks=1 solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+      "narration": "Interview line: acks=all + min.insync.replicas=2 + replication.factor=3 + idempotence = production-grade durability. Ye Session 2 of 10 hai Kafka series — agla: consumer offset commit strategies."
     }
   ]
 }

@@ -1,6 +1,7 @@
 {
   "topicId": 61,
   "topic": "'Tell Me About Yourself' — Indian Dev Formula",
+  "quality": "placeholder",
   "scenes": [
     {
       "type": "hook",
@@ -8,27 +9,27 @@
     },
     {
       "type": "problem",
-      "narration": "Without understanding 'Tell Me About Yourself' — Indian Dev Formula, systems fail at scale. Here's why it matters."
+      "narration": "Why 'Tell Me About Yourself' — Indian Dev Formula matters: pending hand-authoring."
     },
     {
       "type": "intuition",
-      "narration": "Think of 'Tell Me About Yourself' — Indian Dev Formula like a traffic cop at a busy intersection — directing flow efficiently."
+      "narration": "Intuition for 'Tell Me About Yourself' — Indian Dev Formula: pending hand-authoring."
     },
     {
       "type": "mechanism",
-      "narration": "The core mechanism of 'Tell Me About Yourself' — Indian Dev Formula: it distributes work, manages state, and handles failures gracefully."
+      "narration": "Mechanism for 'Tell Me About Yourself' — Indian Dev Formula: pending hand-authoring."
     },
     {
       "type": "mechanism-detail",
-      "narration": "Key properties of 'Tell Me About Yourself' — Indian Dev Formula: fault tolerance, horizontal scalability, and low latency."
+      "narration": "Details for 'Tell Me About Yourself' — Indian Dev Formula: pending hand-authoring."
     },
     {
       "type": "example",
-      "narration": "Real-world example: companies like Netflix and Uber use 'Tell Me About Yourself' — Indian Dev Formula to serve millions of users daily."
+      "narration": "Real-world 'Tell Me About Yourself' — Indian Dev Formula example: pending hand-authoring."
     },
     {
       "type": "recap",
-      "narration": "Quick recap: 'Tell Me About Yourself' — Indian Dev Formula solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+      "narration": "'Tell Me About Yourself' — Indian Dev Formula recap: pending hand-authoring."
     }
   ]
 }

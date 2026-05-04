@@ -1,6 +1,7 @@
 {
   "topicId": 60,
   "topic": "Recursion to Iteration: Stack Simulation",
+  "quality": "placeholder",
   "scenes": [
     {
       "type": "hook",
@@ -8,27 +9,27 @@
     },
     {
       "type": "problem",
-      "narration": "Without understanding Recursion to Iteration: Stack Simulation, systems fail at scale. Here's why it matters."
+      "narration": "Why Recursion to Iteration: Stack Simulation matters: pending hand-authoring."
     },
     {
       "type": "intuition",
-      "narration": "Think of Recursion to Iteration: Stack Simulation like a traffic cop at a busy intersection — directing flow efficiently."
+      "narration": "Intuition for Recursion to Iteration: Stack Simulation: pending hand-authoring."
     },
     {
       "type": "mechanism",
-      "narration": "The core mechanism of Recursion to Iteration: Stack Simulation: it distributes work, manages state, and handles failures gracefully."
+      "narration": "Mechanism for Recursion to Iteration: Stack Simulation: pending hand-authoring."
     },
     {
       "type": "mechanism-detail",
-      "narration": "Key properties of Recursion to Iteration: Stack Simulation: fault tolerance, horizontal scalability, and low latency."
+      "narration": "Details for Recursion to Iteration: Stack Simulation: pending hand-authoring."
     },
     {
       "type": "example",
-      "narration": "Real-world example: companies like Netflix and Uber use Recursion to Iteration: Stack Simulation to serve millions of users daily."
+      "narration": "Real-world Recursion to Iteration: Stack Simulation example: pending hand-authoring."
     },
     {
       "type": "recap",
-      "narration": "Quick recap: Recursion to Iteration: Stack Simulation solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+      "narration": "Recursion to Iteration: Stack Simulation recap: pending hand-authoring."
     }
   ]
 }

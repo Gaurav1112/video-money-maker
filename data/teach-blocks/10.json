@@ -1,34 +1,42 @@
 {
   "topicId": 10,
   "topic": "Caching: Cache-Aside vs Write-Through vs Write-Behind",
+  "quality": "authored",
+  "mechanismKeywords": [
+    "cache-aside",
+    "write-through",
+    "write-behind",
+    "lazy load"
+  ],
+  "mistakeKeyword": "stale",
   "scenes": [
     {
       "type": "hook",
-      "narration": "Bhai sun, ye Caching: Cache-Aside vs Write-Through vs Write-Behind ki ek mistake teri ₹30-50LPA ki Amazon offer cancel kara dega."
+      "narration": "Tera cache aur DB me data alag hai? Bhai, stale read ho raha hai — pattern galat chuna."
     },
     {
       "type": "problem",
-      "narration": "Without understanding Caching: Cache-Aside vs Write-Through vs Write-Behind, systems fail at scale. Here's why it matters."
+      "narration": "Mistake: cache-aside laga ke DB write ke baad cache invalidate karna bhul gaya — stale data 1 hour tak serve hota raha. Ya write-through laga ke DB down hone pe write fail ho rahe — entire path tight-coupled. Pattern selection matters."
     },
     {
       "type": "intuition",
-      "narration": "Think of Caching: Cache-Aside vs Write-Through vs Write-Behind like a traffic cop at a busy intersection — directing flow efficiently."
+      "narration": "Cache-aside — tu khud market jaata hai (cache check), nahi mila to godown se laata hai (DB), ghar pe rakh leta hai (cache fill). Write-through — tu cashier ko deta hai, cashier ek copy locker me, ek shelf pe — synchronous. Write-behind — tu shelf pe rakhta hai, koi background worker baad me locker me daal deta hai — fast write, durability risk."
     },
     {
       "type": "mechanism",
-      "narration": "The core mechanism of Caching: Cache-Aside vs Write-Through vs Write-Behind: it distributes work, manages state, and handles failures gracefully."
+      "narration": "Cache-aside: read me cache miss → DB se laao → cache me daalo. Write me DB update → cache invalidate (ya update). Write-through: write cache+DB synchronously — slow but consistent. Write-behind (write-back): write cache, DB async batch — fast but data loss if cache crashes."
     },
     {
       "type": "mechanism-detail",
-      "narration": "Key properties of Caching: Cache-Aside vs Write-Through vs Write-Behind: fault tolerance, horizontal scalability, and low latency."
+      "narration": "TTL set kar always — staleness bound chahiye. Cache stampede rokne ke liye probabilistic early refresh use kar (XFetch algorithm). Write-through me retry+timeout chahiye, write-behind me WAL chahiye otherwise crash recovery fail. Read-through alag pattern hai — cache khud DB se fetch karta hai, app ko miss handle nahi karna padta."
     },
     {
       "type": "example",
-      "narration": "Real-world example: companies like Netflix and Uber use Caching: Cache-Aside vs Write-Through vs Write-Behind to serve millions of users daily."
+      "narration": "Instagram feed cache-aside use karta hai — Memcached me posts, miss pe Cassandra. Twitter timeline write-behind — tweet aaya to user-cache update, fanout async. PayPal balance write-through — durability mandatory, latency 5ms acceptable."
     },
     {
       "type": "recap",
-      "narration": "Quick recap: Caching: Cache-Aside vs Write-Through vs Write-Behind solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+      "narration": "Interview line: read-heavy + tolerant staleness → cache-aside; consistency-mandatory → write-through; write-heavy + idempotent → write-behind. Ye Session 3 of 10 Caching series — agla: cache invalidation strategies."
     }
   ]
 }

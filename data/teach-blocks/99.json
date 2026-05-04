@@ -1,6 +1,7 @@
 {
   "topicId": 99,
   "topic": "Database Connection Pooling (HikariCP)",
+  "quality": "placeholder",
   "scenes": [
     {
       "type": "hook",
@@ -8,27 +9,27 @@
     },
     {
       "type": "problem",
-      "narration": "Without understanding Database Connection Pooling (HikariCP), systems fail at scale. Here's why it matters."
+      "narration": "Why Database Connection Pooling (HikariCP) matters: pending hand-authoring."
     },
     {
       "type": "intuition",
-      "narration": "Think of Database Connection Pooling (HikariCP) like a traffic cop at a busy intersection — directing flow efficiently."
+      "narration": "Intuition for Database Connection Pooling (HikariCP): pending hand-authoring."
     },
     {
       "type": "mechanism",
-      "narration": "The core mechanism of Database Connection Pooling (HikariCP): it distributes work, manages state, and handles failures gracefully."
+      "narration": "Mechanism for Database Connection Pooling (HikariCP): pending hand-authoring."
     },
     {
       "type": "mechanism-detail",
-      "narration": "Key properties of Database Connection Pooling (HikariCP): fault tolerance, horizontal scalability, and low latency."
+      "narration": "Details for Database Connection Pooling (HikariCP): pending hand-authoring."
     },
     {
       "type": "example",
-      "narration": "Real-world example: companies like Netflix and Uber use Database Connection Pooling (HikariCP) to serve millions of users daily."
+      "narration": "Real-world Database Connection Pooling (HikariCP) example: pending hand-authoring."
     },
     {
       "type": "recap",
-      "narration": "Quick recap: Database Connection Pooling (HikariCP) solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+      "narration": "Database Connection Pooling (HikariCP) recap: pending hand-authoring."
     }
   ]
 }

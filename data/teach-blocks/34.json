@@ -1,6 +1,7 @@
 {
   "topicId": 34,
   "topic": "Service Discovery: Consul vs Kubernetes",
+  "quality": "placeholder",
   "scenes": [
     {
       "type": "hook",
@@ -8,27 +9,27 @@
     },
     {
       "type": "problem",
-      "narration": "Without understanding Service Discovery: Consul vs Kubernetes, systems fail at scale. Here's why it matters."
+      "narration": "Why Service Discovery: Consul vs Kubernetes matters: pending hand-authoring."
     },
     {
       "type": "intuition",
-      "narration": "Think of Service Discovery: Consul vs Kubernetes like a traffic cop at a busy intersection — directing flow efficiently."
+      "narration": "Intuition for Service Discovery: Consul vs Kubernetes: pending hand-authoring."
     },
     {
       "type": "mechanism",
-      "narration": "The core mechanism of Service Discovery: Consul vs Kubernetes: it distributes work, manages state, and handles failures gracefully."
+      "narration": "Mechanism for Service Discovery: Consul vs Kubernetes: pending hand-authoring."
     },
     {
       "type": "mechanism-detail",
-      "narration": "Key properties of Service Discovery: Consul vs Kubernetes: fault tolerance, horizontal scalability, and low latency."
+      "narration": "Details for Service Discovery: Consul vs Kubernetes: pending hand-authoring."
     },
     {
       "type": "example",
-      "narration": "Real-world example: companies like Netflix and Uber use Service Discovery: Consul vs Kubernetes to serve millions of users daily."
+      "narration": "Real-world Service Discovery: Consul vs Kubernetes example: pending hand-authoring."
     },
     {
       "type": "recap",
-      "narration": "Quick recap: Service Discovery: Consul vs Kubernetes solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+      "narration": "Service Discovery: Consul vs Kubernetes recap: pending hand-authoring."
     }
   ]
 }

@@ -1,6 +1,7 @@
 {
   "topicId": 83,
   "topic": "Virtual Memory & Page Faults",
+  "quality": "placeholder",
   "scenes": [
     {
       "type": "hook",
@@ -8,27 +9,27 @@
     },
     {
       "type": "problem",
-      "narration": "Without understanding Virtual Memory & Page Faults, systems fail at scale. Here's why it matters."
+      "narration": "Why Virtual Memory & Page Faults matters: pending hand-authoring."
     },
     {
       "type": "intuition",
-      "narration": "Think of Virtual Memory & Page Faults like a traffic cop at a busy intersection — directing flow efficiently."
+      "narration": "Intuition for Virtual Memory & Page Faults: pending hand-authoring."
     },
     {
       "type": "mechanism",
-      "narration": "The core mechanism of Virtual Memory & Page Faults: it distributes work, manages state, and handles failures gracefully."
+      "narration": "Mechanism for Virtual Memory & Page Faults: pending hand-authoring."
     },
     {
       "type": "mechanism-detail",
-      "narration": "Key properties of Virtual Memory & Page Faults: fault tolerance, horizontal scalability, and low latency."
+      "narration": "Details for Virtual Memory & Page Faults: pending hand-authoring."
     },
     {
       "type": "example",
-      "narration": "Real-world example: companies like Netflix and Uber use Virtual Memory & Page Faults to serve millions of users daily."
+      "narration": "Real-world Virtual Memory & Page Faults example: pending hand-authoring."
     },
     {
       "type": "recap",
-      "narration": "Quick recap: Virtual Memory & Page Faults solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+      "narration": "Virtual Memory & Page Faults recap: pending hand-authoring."
     }
   ]
 }

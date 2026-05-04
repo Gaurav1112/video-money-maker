@@ -1,6 +1,7 @@
 {
   "topicId": 92,
   "topic": "SQL Query Execution Plan (EXPLAIN)",
+  "quality": "placeholder",
   "scenes": [
     {
       "type": "hook",
@@ -8,27 +9,27 @@
     },
     {
       "type": "problem",
-      "narration": "Without understanding SQL Query Execution Plan (EXPLAIN), systems fail at scale. Here's why it matters."
+      "narration": "Why SQL Query Execution Plan (EXPLAIN) matters: pending hand-authoring."
     },
     {
       "type": "intuition",
-      "narration": "Think of SQL Query Execution Plan (EXPLAIN) like a traffic cop at a busy intersection — directing flow efficiently."
+      "narration": "Intuition for SQL Query Execution Plan (EXPLAIN): pending hand-authoring."
     },
     {
       "type": "mechanism",
-      "narration": "The core mechanism of SQL Query Execution Plan (EXPLAIN): it distributes work, manages state, and handles failures gracefully."
+      "narration": "Mechanism for SQL Query Execution Plan (EXPLAIN): pending hand-authoring."
     },
     {
       "type": "mechanism-detail",
-      "narration": "Key properties of SQL Query Execution Plan (EXPLAIN): fault tolerance, horizontal scalability, and low latency."
+      "narration": "Details for SQL Query Execution Plan (EXPLAIN): pending hand-authoring."
     },
     {
       "type": "example",
-      "narration": "Real-world example: companies like Netflix and Uber use SQL Query Execution Plan (EXPLAIN) to serve millions of users daily."
+      "narration": "Real-world SQL Query Execution Plan (EXPLAIN) example: pending hand-authoring."
     },
     {
       "type": "recap",
-      "narration": "Quick recap: SQL Query Execution Plan (EXPLAIN) solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+      "narration": "SQL Query Execution Plan (EXPLAIN) recap: pending hand-authoring."
     }
   ]
 }

@@ -1,6 +1,7 @@
 {
   "topicId": 77,
   "topic": "'Where Do You See Yourself in 5 Years' — India",
+  "quality": "placeholder",
   "scenes": [
     {
       "type": "hook",
@@ -8,27 +9,27 @@
     },
     {
       "type": "problem",
-      "narration": "Without understanding 'Where Do You See Yourself in 5 Years' — India, systems fail at scale. Here's why it matters."
+      "narration": "Why 'Where Do You See Yourself in 5 Years' — India matters: pending hand-authoring."
     },
     {
       "type": "intuition",
-      "narration": "Think of 'Where Do You See Yourself in 5 Years' — India like a traffic cop at a busy intersection — directing flow efficiently."
+      "narration": "Intuition for 'Where Do You See Yourself in 5 Years' — India: pending hand-authoring."
     },
     {
       "type": "mechanism",
-      "narration": "The core mechanism of 'Where Do You See Yourself in 5 Years' — India: it distributes work, manages state, and handles failures gracefully."
+      "narration": "Mechanism for 'Where Do You See Yourself in 5 Years' — India: pending hand-authoring."
     },
     {
       "type": "mechanism-detail",
-      "narration": "Key properties of 'Where Do You See Yourself in 5 Years' — India: fault tolerance, horizontal scalability, and low latency."
+      "narration": "Details for 'Where Do You See Yourself in 5 Years' — India: pending hand-authoring."
     },
     {
       "type": "example",
-      "narration": "Real-world example: companies like Netflix and Uber use 'Where Do You See Yourself in 5 Years' — India to serve millions of users daily."
+      "narration": "Real-world 'Where Do You See Yourself in 5 Years' — India example: pending hand-authoring."
     },
     {
       "type": "recap",
-      "narration": "Quick recap: 'Where Do You See Yourself in 5 Years' — India solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+      "narration": "'Where Do You See Yourself in 5 Years' — India recap: pending hand-authoring."
     }
   ]
 }

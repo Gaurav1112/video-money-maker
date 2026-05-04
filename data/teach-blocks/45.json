@@ -1,6 +1,7 @@
 {
   "topicId": 45,
   "topic": "Binary Search Variants: Find First / Find Last",
+  "quality": "placeholder",
   "scenes": [
     {
       "type": "hook",
@@ -8,27 +9,27 @@
     },
     {
       "type": "problem",
-      "narration": "Without understanding Binary Search Variants: Find First / Find Last, systems fail at scale. Here's why it matters."
+      "narration": "Why Binary Search Variants: Find First / Find Last matters: pending hand-authoring."
     },
     {
       "type": "intuition",
-      "narration": "Think of Binary Search Variants: Find First / Find Last like a traffic cop at a busy intersection — directing flow efficiently."
+      "narration": "Intuition for Binary Search Variants: Find First / Find Last: pending hand-authoring."
     },
     {
       "type": "mechanism",
-      "narration": "The core mechanism of Binary Search Variants: Find First / Find Last: it distributes work, manages state, and handles failures gracefully."
+      "narration": "Mechanism for Binary Search Variants: Find First / Find Last: pending hand-authoring."
     },
     {
       "type": "mechanism-detail",
-      "narration": "Key properties of Binary Search Variants: Find First / Find Last: fault tolerance, horizontal scalability, and low latency."
+      "narration": "Details for Binary Search Variants: Find First / Find Last: pending hand-authoring."
     },
     {
       "type": "example",
-      "narration": "Real-world example: companies like Netflix and Uber use Binary Search Variants: Find First / Find Last to serve millions of users daily."
+      "narration": "Real-world Binary Search Variants: Find First / Find Last example: pending hand-authoring."
     },
     {
       "type": "recap",
-      "narration": "Quick recap: Binary Search Variants: Find First / Find Last solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+      "narration": "Binary Search Variants: Find First / Find Last recap: pending hand-authoring."
     }
   ]
 }

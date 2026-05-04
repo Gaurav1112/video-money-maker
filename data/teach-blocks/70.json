@@ -1,6 +1,7 @@
 {
   "topicId": 70,
   "topic": "Mentoring a Junior Dev — STAR Story",
+  "quality": "placeholder",
   "scenes": [
     {
       "type": "hook",
@@ -8,27 +9,27 @@
     },
     {
       "type": "problem",
-      "narration": "Without understanding Mentoring a Junior Dev — STAR Story, systems fail at scale. Here's why it matters."
+      "narration": "Why Mentoring a Junior Dev — STAR Story matters: pending hand-authoring."
     },
     {
       "type": "intuition",
-      "narration": "Think of Mentoring a Junior Dev — STAR Story like a traffic cop at a busy intersection — directing flow efficiently."
+      "narration": "Intuition for Mentoring a Junior Dev — STAR Story: pending hand-authoring."
     },
     {
       "type": "mechanism",
-      "narration": "The core mechanism of Mentoring a Junior Dev — STAR Story: it distributes work, manages state, and handles failures gracefully."
+      "narration": "Mechanism for Mentoring a Junior Dev — STAR Story: pending hand-authoring."
     },
     {
       "type": "mechanism-detail",
-      "narration": "Key properties of Mentoring a Junior Dev — STAR Story: fault tolerance, horizontal scalability, and low latency."
+      "narration": "Details for Mentoring a Junior Dev — STAR Story: pending hand-authoring."
     },
     {
       "type": "example",
-      "narration": "Real-world example: companies like Netflix and Uber use Mentoring a Junior Dev — STAR Story to serve millions of users daily."
+      "narration": "Real-world Mentoring a Junior Dev — STAR Story example: pending hand-authoring."
     },
     {
       "type": "recap",
-      "narration": "Quick recap: Mentoring a Junior Dev — STAR Story solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+      "narration": "Mentoring a Junior Dev — STAR Story recap: pending hand-authoring."
     }
   ]
 }

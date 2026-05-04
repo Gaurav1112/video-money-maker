@@ -1,34 +1,42 @@
 {
   "topicId": 81,
   "topic": "Process vs Thread vs Goroutine",
+  "quality": "authored",
+  "mechanismKeywords": [
+    "address space",
+    "kernel thread",
+    "M:N scheduler",
+    "context switch"
+  ],
+  "mistakeKeyword": "OS thread",
   "scenes": [
     {
       "type": "hook",
-      "narration": "Bhai, Google ke SDE-2 round mein Process vs Thread vs Goroutine pe ye trick poochhi jati hai. 30 second sun le."
+      "narration": "Tu 10000 OS threads bana raha hai concurrent requests handle karne? Bhai, RAM khaa jayega — goroutine soch."
     },
     {
       "type": "problem",
-      "narration": "Without understanding Process vs Thread vs Goroutine, systems fail at scale. Here's why it matters."
+      "narration": "Mistake: thread-per-request model lagaya 10K connections pe. Each OS thread 1MB stack — 10GB RAM gone, context-switch overhead se CPU choked. Goroutines 2KB se start hote hain, M:N scheduler kernel threads pe multiplex karta hai — same hardware pe 1M concurrent."
     },
     {
       "type": "intuition",
-      "narration": "Think of Process vs Thread vs Goroutine like a traffic cop at a busy intersection — directing flow efficiently."
+      "narration": "Process — alag flat (address space), kitchen-bedroom-bathroom apna. Thread — same flat, alag table pe kaam, par kitchen shared (memory shared). Goroutine — same table pe alag-alag tasks rotate karte hain, manager (Go runtime) decide karta hai kab swap. OS ko goroutines dikhte hi nahi."
     },
     {
       "type": "mechanism",
-      "narration": "The core mechanism of Process vs Thread vs Goroutine: it distributes work, manages state, and handles failures gracefully."
+      "narration": "Process: separate address space, IPC via pipes/sockets/shared-memory, context-switch ~1-10μs (TLB flush). Thread: shared memory within process, context-switch ~1μs. Goroutine: user-space, M:N scheduler — M goroutines on N OS threads, switch ~200ns, no kernel involved."
     },
     {
       "type": "mechanism-detail",
-      "narration": "Key properties of Process vs Thread vs Goroutine: fault tolerance, horizontal scalability, and low latency."
+      "narration": "Go runtime scheduler: GMP model — G (goroutine), M (OS thread), P (processor/context). Work-stealing across P's. Goroutine stack starts 2KB, grows by copy-and-resize. Channels = built-in CSP. Java 21 virtual threads same idea (Project Loom) — JVM-level M:N."
     },
     {
       "type": "example",
-      "narration": "Real-world example: companies like Netflix and Uber use Process vs Thread vs Goroutine to serve millions of users daily."
+      "narration": "Discord migrated Go ke 5M concurrent WebSocket users handle kiye on 850 servers — Erlang se Go pe shift, latency 100ms se 30ms. Cloudflare workers V8 isolates use karte hain (process-like isolation, thread-like cost). Linux kernel itself has clone() — process/thread are same syscall, flags decide."
     },
     {
       "type": "recap",
-      "narration": "Quick recap: Process vs Thread vs Goroutine solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+      "narration": "Interview line: process = isolated mem, thread = shared mem same process, goroutine = user-space M:N multiplexed on threads. Context-switch cost: μs/μs/ns. 10K concurrent → goroutines/virtual-threads, not OS threads."
     }
   ]
 }

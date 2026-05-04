@@ -1,34 +1,42 @@
 {
   "topicId": 3,
   "topic": "Load Balancer Algorithms: Round Robin vs Least Connections",
+  "quality": "authored",
+  "mechanismKeywords": [
+    "round robin",
+    "least connections",
+    "weighted",
+    "session affinity"
+  ],
+  "mistakeKeyword": "long-running",
   "scenes": [
     {
       "type": "hook",
-      "narration": "Bhai sun, ye Load Balancer Algorithms: Round Robin vs Least Connections ki ek mistake teri ₹30-50LPA ki Amazon offer cancel kara dega."
+      "narration": "Tu round-robin laga raha hai aur ek server hamesha 80% CPU pe stuck hai? Bhai, algorithm galat chuna — 8 second me reason."
     },
     {
       "type": "problem",
-      "narration": "Without understanding Load Balancer Algorithms: Round Robin vs Least Connections, systems fail at scale. Here's why it matters."
+      "narration": "Mistake: long-running connections (WebSocket, video upload, AI inference) pe round-robin lagaya. Round-robin sirf request count distribute karta hai — server load nahi dekhta. Ek slow request 30 second chal raha hai, naya request usi server pe gir gaya — overload."
     },
     {
       "type": "intuition",
-      "narration": "Think of Load Balancer Algorithms: Round Robin vs Least Connections like a traffic cop at a busy intersection — directing flow efficiently."
+      "narration": "Soch traffic cop chauraha pe khada hai (haan, ye topic literally load balancer hai isliye traffic-cop sahi hai). Round-robin matlab cop bina dekhe har lane ko bari-bari signal deta hai. Least-connections matlab cop dekhta hai kis lane me kam gaadiyan hain — usko priority deta hai."
     },
     {
       "type": "mechanism",
-      "narration": "The core mechanism of Load Balancer Algorithms: Round Robin vs Least Connections: it distributes work, manages state, and handles failures gracefully."
+      "narration": "Round-robin: counter increment, modulo N — O(1), stateless. Least-connections: har backend ka active-connection count maintain karta hai, min find karta hai — O(N) ya min-heap se O(log N). Weighted variants: capacity ke hisaab se weight de, server-A 2x faster hai to weight-2."
     },
     {
       "type": "mechanism-detail",
-      "narration": "Key properties of Load Balancer Algorithms: Round Robin vs Least Connections: fault tolerance, horizontal scalability, and low latency."
+      "narration": "Kab kya: stateless short requests (REST API <100ms) → round-robin enough. Long-lived connections (WebSocket, gRPC streaming) → least-connections must. Heterogeneous fleet (different CPU) → weighted variant. Stateful (session in memory) → consistent hashing ya IP-hash."
     },
     {
       "type": "example",
-      "narration": "Real-world example: companies like Netflix and Uber use Load Balancer Algorithms: Round Robin vs Least Connections to serve millions of users daily."
+      "narration": "Cloudflare apne edge me power-of-two-choices use karta hai — random 2 servers pick karta hai, jiska connection-count kam hai uspe bhejta hai. O(1) hai aur worst-case load skew exponentially kam karta hai vs pure random."
     },
     {
       "type": "recap",
-      "narration": "Quick recap: Load Balancer Algorithms: Round Robin vs Least Connections solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+      "narration": "Interview line: short stateless = round-robin, long connections = least-connections, mixed capacity = weighted, stateful = consistent hash. Ye Session 3 of 10 — agla session: consistent hashing aur virtual nodes."
     }
   ]
 }

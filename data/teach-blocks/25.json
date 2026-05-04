@@ -1,6 +1,7 @@
 {
   "topicId": 25,
   "topic": "Design: Google Drive / Dropbox",
+  "quality": "placeholder",
   "scenes": [
     {
       "type": "hook",
@@ -8,27 +9,27 @@
     },
     {
       "type": "problem",
-      "narration": "Without understanding Design: Google Drive / Dropbox, systems fail at scale. Here's why it matters."
+      "narration": "Why Design: Google Drive / Dropbox matters: pending hand-authoring."
     },
     {
       "type": "intuition",
-      "narration": "Think of Design: Google Drive / Dropbox like a traffic cop at a busy intersection — directing flow efficiently."
+      "narration": "Intuition for Design: Google Drive / Dropbox: pending hand-authoring."
     },
     {
       "type": "mechanism",
-      "narration": "The core mechanism of Design: Google Drive / Dropbox: it distributes work, manages state, and handles failures gracefully."
+      "narration": "Mechanism for Design: Google Drive / Dropbox: pending hand-authoring."
     },
     {
       "type": "mechanism-detail",
-      "narration": "Key properties of Design: Google Drive / Dropbox: fault tolerance, horizontal scalability, and low latency."
+      "narration": "Details for Design: Google Drive / Dropbox: pending hand-authoring."
     },
     {
       "type": "example",
-      "narration": "Real-world example: companies like Netflix and Uber use Design: Google Drive / Dropbox to serve millions of users daily."
+      "narration": "Real-world Design: Google Drive / Dropbox example: pending hand-authoring."
     },
     {
       "type": "recap",
-      "narration": "Quick recap: Design: Google Drive / Dropbox solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+      "narration": "Design: Google Drive / Dropbox recap: pending hand-authoring."
     }
   ]
 }

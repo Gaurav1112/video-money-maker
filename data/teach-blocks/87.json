@@ -1,6 +1,7 @@
 {
   "topicId": 87,
   "topic": "Linux Process Scheduling (CFS)",
+  "quality": "placeholder",
   "scenes": [
     {
       "type": "hook",
@@ -8,27 +9,27 @@
     },
     {
       "type": "problem",
-      "narration": "Without understanding Linux Process Scheduling (CFS), systems fail at scale. Here's why it matters."
+      "narration": "Why Linux Process Scheduling (CFS) matters: pending hand-authoring."
     },
     {
       "type": "intuition",
-      "narration": "Think of Linux Process Scheduling (CFS) like a traffic cop at a busy intersection — directing flow efficiently."
+      "narration": "Intuition for Linux Process Scheduling (CFS): pending hand-authoring."
     },
     {
       "type": "mechanism",
-      "narration": "The core mechanism of Linux Process Scheduling (CFS): it distributes work, manages state, and handles failures gracefully."
+      "narration": "Mechanism for Linux Process Scheduling (CFS): pending hand-authoring."
     },
     {
       "type": "mechanism-detail",
-      "narration": "Key properties of Linux Process Scheduling (CFS): fault tolerance, horizontal scalability, and low latency."
+      "narration": "Details for Linux Process Scheduling (CFS): pending hand-authoring."
     },
     {
       "type": "example",
-      "narration": "Real-world example: companies like Netflix and Uber use Linux Process Scheduling (CFS) to serve millions of users daily."
+      "narration": "Real-world Linux Process Scheduling (CFS) example: pending hand-authoring."
     },
     {
       "type": "recap",
-      "narration": "Quick recap: Linux Process Scheduling (CFS) solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+      "narration": "Linux Process Scheduling (CFS) recap: pending hand-authoring."
     }
   ]
 }

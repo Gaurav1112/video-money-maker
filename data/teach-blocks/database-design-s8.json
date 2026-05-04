@@ -1,0 +1,43 @@
+{
+  "slug": "database-design",
+  "session": 8,
+  "totalSessions": 10,
+  "topic": "Database Design",
+  "quality": "authored",
+  "mechanismKeywords": [
+    "HikariCP",
+    "pool size",
+    "N+1"
+  ],
+  "mistakeKeyword": "N+1 query",
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "Ye Session 8 of 10 hai Database Design series me — aaj focus: connection pooling & N+1. Bhai, ek mistake jo 90% engineers karte hain — 8 second me batata hu."
+    },
+    {
+      "type": "problem",
+      "narration": "Common mistake: N+1 query samjhe bina production me lagaya — scale pe pakda gaya. Aaj ke session me exact reason aur fix dono dekhenge."
+    },
+    {
+      "type": "intuition",
+      "narration": "Database ek warehouse hai. Schema = shelf layout. Index = catalog. Sharding = multi-warehouse. Replication = backup branch. Transactions = receipt-trail. Sab ek ecosystem."
+    },
+    {
+      "type": "mechanism",
+      "narration": "Core mechanism: HikariCP, pool size, N+1 — ye sab terms aaj clear karenge with concrete examples. Yaad rakh, Database Design ka design choice = scale + cost trade-off."
+    },
+    {
+      "type": "mechanism-detail",
+      "narration": "Tunables: shard-key high-cardinality + uniform distribution; indexes ≤ 5 per table; replication-lag SLA <100ms; isolation level READ_COMMITTED default, REPEATABLE_READ for financial. Concepts: HikariCP, pool size, N+1."
+    },
+    {
+      "type": "example",
+      "narration": "Real example: Uber moved monolith Postgres → Schemaless on MySQL — sharded by trip-id. Stripe Postgres + read-replicas + Vitess sharding. Airbnb migrated MongoDB → MySQL for booking integrity."
+    },
+    {
+      "type": "recap",
+      "narration": "Interview line: HikariCP, pool size, N+1 — ye yaad rakh. Session 8/10 complete. agle session me hum database design ka next layer dekhenge."
+    }
+  ]
+}

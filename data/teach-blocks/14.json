@@ -1,6 +1,7 @@
 {
   "topicId": 14,
   "topic": "CQRS Pattern Done Right",
+  "quality": "placeholder",
   "scenes": [
     {
       "type": "hook",
@@ -8,27 +9,27 @@
     },
     {
       "type": "problem",
-      "narration": "Without understanding CQRS Pattern Done Right, systems fail at scale. Here's why it matters."
+      "narration": "Why CQRS Pattern Done Right matters: pending hand-authoring."
     },
     {
       "type": "intuition",
-      "narration": "Think of CQRS Pattern Done Right like a traffic cop at a busy intersection — directing flow efficiently."
+      "narration": "Intuition for CQRS Pattern Done Right: pending hand-authoring."
     },
     {
       "type": "mechanism",
-      "narration": "The core mechanism of CQRS Pattern Done Right: it distributes work, manages state, and handles failures gracefully."
+      "narration": "Mechanism for CQRS Pattern Done Right: pending hand-authoring."
     },
     {
       "type": "mechanism-detail",
-      "narration": "Key properties of CQRS Pattern Done Right: fault tolerance, horizontal scalability, and low latency."
+      "narration": "Details for CQRS Pattern Done Right: pending hand-authoring."
     },
     {
       "type": "example",
-      "narration": "Real-world example: companies like Netflix and Uber use CQRS Pattern Done Right to serve millions of users daily."
+      "narration": "Real-world CQRS Pattern Done Right example: pending hand-authoring."
     },
     {
       "type": "recap",
-      "narration": "Quick recap: CQRS Pattern Done Right solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+      "narration": "CQRS Pattern Done Right recap: pending hand-authoring."
     }
   ]
 }

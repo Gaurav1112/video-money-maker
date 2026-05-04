@@ -1,34 +1,42 @@
 {
   "topicId": 31,
   "topic": "Bloom Filters Explained",
+  "quality": "authored",
+  "mechanismKeywords": [
+    "hash",
+    "bit array",
+    "false positive",
+    "k hash functions"
+  ],
+  "mistakeKeyword": "false negative",
   "scenes": [
     {
       "type": "hook",
-      "narration": "Bhai sun, ye Bloom Filters Explained ki ek mistake teri ₹40-60LPA ki Google offer cancel kara dega."
+      "narration": "Memory 100x kam karna hai aur lookup O(1)? Bhai, Bloom filter — ek genius trick — sun."
     },
     {
       "type": "problem",
-      "narration": "Without understanding Bloom Filters Explained, systems fail at scale. Here's why it matters."
+      "narration": "Mistake: log tabhi soch lete hain Bloom filter false negative deta hai — galat. Bloom filter sirf false positive deta hai, false negative kabhi nahi. Definite-no, probable-yes. Cache se pehle Bloom check kar le — DB hits 90% kam."
     },
     {
       "type": "intuition",
-      "narration": "Think of Bloom Filters Explained like a traffic cop at a busy intersection — directing flow efficiently."
+      "narration": "Stamp-pad soch — har naya document aata hai, k alag jagah pe stamp lagate ho. Lookup me wahi k positions check karte ho — saare stamped to maybe seen, ek bhi nahi to definitely not seen. Stamps overlap ho sakte hain (false positive), but not-stamped means definitely-not-inserted."
     },
     {
       "type": "mechanism",
-      "narration": "The core mechanism of Bloom Filters Explained: it distributes work, manages state, and handles failures gracefully."
+      "narration": "Mechanism: m-bit array (initially zeros), k independent hash functions. Insert: k hashes calculate kar, k positions pe bit set kar. Lookup: same k positions check — saare 1 to maybe-present, ek bhi 0 to definitely-absent. False positive rate: (1 - e^(-kn/m))^k where n = inserted items."
     },
     {
       "type": "mechanism-detail",
-      "narration": "Key properties of Bloom Filters Explained: fault tolerance, horizontal scalability, and low latency."
+      "narration": "Optimal k = (m/n) × ln(2). Typical: 10 bits per element, k=7, false-positive 1%. Cannot delete from standard Bloom — counting Bloom filter use kar (counter per slot instead of bit). Scalable Bloom filter dynamic capacity ke liye. Memory savings: 1 billion items in 1.2 GB vs 30+ GB hash set."
     },
     {
       "type": "example",
-      "narration": "Real-world example: companies like Netflix and Uber use Bloom Filters Explained to serve millions of users daily."
+      "narration": "Google Bigtable / Cassandra SSTable Bloom filter use karte hain — disk read avoid karne ke liye. Medium ka 'have you read this article' check Bloom filter pe hai — 200M articles 240MB me. Chrome's safe browsing — malicious URL list compressed via Bloom."
     },
     {
       "type": "recap",
-      "narration": "Quick recap: Bloom Filters Explained solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+      "narration": "Interview line: Bloom filter = m-bit array + k hashes, false-positive yes false-negative no, ~10 bits/element 1% FPR, use before expensive lookup. Counting Bloom for deletion."
     }
   ]
 }

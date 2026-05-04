@@ -1,6 +1,7 @@
 {
   "topicId": 102,
   "topic": "DBMS",
+  "quality": "placeholder",
   "scenes": [
     {
       "type": "hook",
@@ -8,27 +9,27 @@
     },
     {
       "type": "problem",
-      "narration": "Without understanding DBMS, systems fail at scale. Here's why it matters."
+      "narration": "Why DBMS matters: pending hand-authoring."
     },
     {
       "type": "intuition",
-      "narration": "Think of DBMS like a traffic cop at a busy intersection — directing flow efficiently."
+      "narration": "Intuition for DBMS: pending hand-authoring."
     },
     {
       "type": "mechanism",
-      "narration": "The core mechanism of DBMS: it distributes work, manages state, and handles failures gracefully."
+      "narration": "Mechanism for DBMS: pending hand-authoring."
     },
     {
       "type": "mechanism-detail",
-      "narration": "Key properties of DBMS: fault tolerance, horizontal scalability, and low latency."
+      "narration": "Details for DBMS: pending hand-authoring."
     },
     {
       "type": "example",
-      "narration": "Real-world example: companies like Netflix and Uber use DBMS to serve millions of users daily."
+      "narration": "Real-world DBMS example: pending hand-authoring."
     },
     {
       "type": "recap",
-      "narration": "Quick recap: DBMS solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+      "narration": "DBMS recap: pending hand-authoring."
     }
   ]
 }

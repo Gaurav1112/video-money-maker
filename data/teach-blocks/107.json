@@ -1,6 +1,7 @@
 {
   "topicId": 107,
   "topic": "Theory of Computation",
+  "quality": "placeholder",
   "scenes": [
     {
       "type": "hook",
@@ -8,27 +9,27 @@
     },
     {
       "type": "problem",
-      "narration": "Without understanding Theory of Computation, systems fail at scale. Here's why it matters."
+      "narration": "Why Theory of Computation matters: pending hand-authoring."
     },
     {
       "type": "intuition",
-      "narration": "Think of Theory of Computation like a traffic cop at a busy intersection — directing flow efficiently."
+      "narration": "Intuition for Theory of Computation: pending hand-authoring."
     },
     {
       "type": "mechanism",
-      "narration": "The core mechanism of Theory of Computation: it distributes work, manages state, and handles failures gracefully."
+      "narration": "Mechanism for Theory of Computation: pending hand-authoring."
     },
     {
       "type": "mechanism-detail",
-      "narration": "Key properties of Theory of Computation: fault tolerance, horizontal scalability, and low latency."
+      "narration": "Details for Theory of Computation: pending hand-authoring."
     },
     {
       "type": "example",
-      "narration": "Real-world example: companies like Netflix and Uber use Theory of Computation to serve millions of users daily."
+      "narration": "Real-world Theory of Computation example: pending hand-authoring."
     },
     {
       "type": "recap",
-      "narration": "Quick recap: Theory of Computation solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+      "narration": "Theory of Computation recap: pending hand-authoring."
     }
   ]
 }

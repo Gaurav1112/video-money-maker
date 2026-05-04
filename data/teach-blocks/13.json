@@ -1,6 +1,7 @@
 {
   "topicId": 13,
   "topic": "Saga Pattern for Distributed Transactions",
+  "quality": "placeholder",
   "scenes": [
     {
       "type": "hook",
@@ -8,27 +9,27 @@
     },
     {
       "type": "problem",
-      "narration": "Without understanding Saga Pattern for Distributed Transactions, systems fail at scale. Here's why it matters."
+      "narration": "Why Saga Pattern for Distributed Transactions matters: pending hand-authoring."
     },
     {
       "type": "intuition",
-      "narration": "Think of Saga Pattern for Distributed Transactions like a traffic cop at a busy intersection — directing flow efficiently."
+      "narration": "Intuition for Saga Pattern for Distributed Transactions: pending hand-authoring."
     },
     {
       "type": "mechanism",
-      "narration": "The core mechanism of Saga Pattern for Distributed Transactions: it distributes work, manages state, and handles failures gracefully."
+      "narration": "Mechanism for Saga Pattern for Distributed Transactions: pending hand-authoring."
     },
     {
       "type": "mechanism-detail",
-      "narration": "Key properties of Saga Pattern for Distributed Transactions: fault tolerance, horizontal scalability, and low latency."
+      "narration": "Details for Saga Pattern for Distributed Transactions: pending hand-authoring."
     },
     {
       "type": "example",
-      "narration": "Real-world example: companies like Netflix and Uber use Saga Pattern for Distributed Transactions to serve millions of users daily."
+      "narration": "Real-world Saga Pattern for Distributed Transactions example: pending hand-authoring."
     },
     {
       "type": "recap",
-      "narration": "Quick recap: Saga Pattern for Distributed Transactions solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+      "narration": "Saga Pattern for Distributed Transactions recap: pending hand-authoring."
     }
   ]
 }

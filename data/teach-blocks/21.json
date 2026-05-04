@@ -1,6 +1,7 @@
 {
   "topicId": 21,
   "topic": "Design: Payment System (Razorpay/Stripe)",
+  "quality": "placeholder",
   "scenes": [
     {
       "type": "hook",
@@ -8,27 +9,27 @@
     },
     {
       "type": "problem",
-      "narration": "Without understanding Design: Payment System (Razorpay/Stripe), systems fail at scale. Here's why it matters."
+      "narration": "Why Design: Payment System (Razorpay/Stripe) matters: pending hand-authoring."
     },
     {
       "type": "intuition",
-      "narration": "Think of Design: Payment System (Razorpay/Stripe) like a traffic cop at a busy intersection — directing flow efficiently."
+      "narration": "Intuition for Design: Payment System (Razorpay/Stripe): pending hand-authoring."
     },
     {
       "type": "mechanism",
-      "narration": "The core mechanism of Design: Payment System (Razorpay/Stripe): it distributes work, manages state, and handles failures gracefully."
+      "narration": "Mechanism for Design: Payment System (Razorpay/Stripe): pending hand-authoring."
     },
     {
       "type": "mechanism-detail",
-      "narration": "Key properties of Design: Payment System (Razorpay/Stripe): fault tolerance, horizontal scalability, and low latency."
+      "narration": "Details for Design: Payment System (Razorpay/Stripe): pending hand-authoring."
     },
     {
       "type": "example",
-      "narration": "Real-world example: companies like Netflix and Uber use Design: Payment System (Razorpay/Stripe) to serve millions of users daily."
+      "narration": "Real-world Design: Payment System (Razorpay/Stripe) example: pending hand-authoring."
     },
     {
       "type": "recap",
-      "narration": "Quick recap: Design: Payment System (Razorpay/Stripe) solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+      "narration": "Design: Payment System (Razorpay/Stripe) recap: pending hand-authoring."
     }
   ]
 }

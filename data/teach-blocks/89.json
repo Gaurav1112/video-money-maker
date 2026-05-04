@@ -1,6 +1,7 @@
 {
   "topicId": 89,
   "topic": "TLS Certificate Chain Explained",
+  "quality": "placeholder",
   "scenes": [
     {
       "type": "hook",
@@ -8,27 +9,27 @@
     },
     {
       "type": "problem",
-      "narration": "Without understanding TLS Certificate Chain Explained, systems fail at scale. Here's why it matters."
+      "narration": "Why TLS Certificate Chain Explained matters: pending hand-authoring."
     },
     {
       "type": "intuition",
-      "narration": "Think of TLS Certificate Chain Explained like a traffic cop at a busy intersection — directing flow efficiently."
+      "narration": "Intuition for TLS Certificate Chain Explained: pending hand-authoring."
     },
     {
       "type": "mechanism",
-      "narration": "The core mechanism of TLS Certificate Chain Explained: it distributes work, manages state, and handles failures gracefully."
+      "narration": "Mechanism for TLS Certificate Chain Explained: pending hand-authoring."
     },
     {
       "type": "mechanism-detail",
-      "narration": "Key properties of TLS Certificate Chain Explained: fault tolerance, horizontal scalability, and low latency."
+      "narration": "Details for TLS Certificate Chain Explained: pending hand-authoring."
     },
     {
       "type": "example",
-      "narration": "Real-world example: companies like Netflix and Uber use TLS Certificate Chain Explained to serve millions of users daily."
+      "narration": "Real-world TLS Certificate Chain Explained example: pending hand-authoring."
     },
     {
       "type": "recap",
-      "narration": "Quick recap: TLS Certificate Chain Explained solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+      "narration": "TLS Certificate Chain Explained recap: pending hand-authoring."
     }
   ]
 }

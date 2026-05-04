@@ -1,34 +1,42 @@
 {
   "topicId": 1,
   "topic": "Kafka Consumer Groups",
+  "quality": "authored",
+  "mechanismKeywords": [
+    "partition",
+    "rebalance",
+    "group coordinator",
+    "session.timeout"
+  ],
+  "mistakeKeyword": "consumer count",
   "scenes": [
     {
       "type": "hook",
-      "narration": "Bhai sun, ye Kafka Consumer Groups ki ek mistake teri ₹35-55LPA ki Amazon offer cancel kara dega."
+      "narration": "Bhai sun, ye Kafka Consumer Groups ki ek mistake teri Amazon offer cancel kara dega — 8 second me batata hu kya hai."
     },
     {
       "type": "problem",
-      "narration": "Without understanding Kafka Consumer Groups, systems fail at scale. Here's why it matters."
+      "narration": "Mistake yahi hai: tu consumer count partition count se zyada laga raha hai — extra consumers idle baith ke salary kha rahe hain. Ya phir at-most-once aur at-least-once confuse karke tu duplicate processing kar raha hai. Same group ke do consumers ek partition se read nahi kar sakte — Kafka allow hi nahi karta."
     },
     {
       "type": "intuition",
-      "narration": "Think of Kafka Consumer Groups like a traffic cop at a busy intersection — directing flow efficiently."
+      "narration": "Soch — delivery workers hain, har worker ka apna mailbox route assigned hai. Group coordinator manager hai. Koi worker sick ho gaya, manager turant uska route kisi alive worker ko de deta hai. Ye hi consumer group hai — partitions are routes, consumers are workers, coordinator rebalance karta hai."
     },
     {
       "type": "mechanism",
-      "narration": "The core mechanism of Kafka Consumer Groups: it distributes work, manages state, and handles failures gracefully."
+      "narration": "Mechanism dekh: har partition ka exactly ek consumer hota hai per group. Group coordinator (broker me chalta hai) decide karta hai kaun-sa consumer kis partition ka owner hai. Jab consumer crash hota hai ya session.timeout.ms expire ho jata hai, coordinator rebalance trigger karta hai — partitions ko alive consumers me redistribute karta hai."
     },
     {
       "type": "mechanism-detail",
-      "narration": "Key properties of Kafka Consumer Groups: fault tolerance, horizontal scalability, and low latency."
+      "narration": "Tuning ki teen knobs yaad rakh: session.timeout.ms (kitni der heartbeat miss = dead), heartbeat.interval.ms (kitni baar bolu zinda hu), max.poll.interval.ms (poll ke beech max gap). Galat tune ki to false-failures milenge ya rebalance storm aayega — LinkedIn me 200ms ke beech rakhte hain ad-impression freshness ke liye."
     },
     {
       "type": "example",
-      "narration": "Real-world example: companies like Netflix and Uber use Kafka Consumer Groups to serve millions of users daily."
+      "narration": "LinkedIn Kafka pe roz 7 trillion messages chalata hai — unke ad-impression service ke liye rebalance pause 200 millisecond se zyada nahi ho sakta. Solution: static membership use kiya, group.instance.id set kiya — temporary disconnect pe rebalance skip ho jata hai."
     },
     {
       "type": "recap",
-      "narration": "Quick recap: Kafka Consumer Groups solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+      "narration": "One-liner yaad rakh: Consumers ≤ partitions, at-least-once + idempotent processing rakh, session.timeout tune kar. Ye Session 1 of 10 hai Kafka series me — agle session me producer acks=all vs acks=1 dekhenge."
     }
   ]
 }

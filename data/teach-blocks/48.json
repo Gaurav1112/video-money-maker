@@ -1,6 +1,7 @@
 {
   "topicId": 48,
   "topic": "Heap Tricks: Kth Largest Element",
+  "quality": "placeholder",
   "scenes": [
     {
       "type": "hook",
@@ -8,27 +9,27 @@
     },
     {
       "type": "problem",
-      "narration": "Without understanding Heap Tricks: Kth Largest Element, systems fail at scale. Here's why it matters."
+      "narration": "Why Heap Tricks: Kth Largest Element matters: pending hand-authoring."
     },
     {
       "type": "intuition",
-      "narration": "Think of Heap Tricks: Kth Largest Element like a traffic cop at a busy intersection — directing flow efficiently."
+      "narration": "Intuition for Heap Tricks: Kth Largest Element: pending hand-authoring."
     },
     {
       "type": "mechanism",
-      "narration": "The core mechanism of Heap Tricks: Kth Largest Element: it distributes work, manages state, and handles failures gracefully."
+      "narration": "Mechanism for Heap Tricks: Kth Largest Element: pending hand-authoring."
     },
     {
       "type": "mechanism-detail",
-      "narration": "Key properties of Heap Tricks: Kth Largest Element: fault tolerance, horizontal scalability, and low latency."
+      "narration": "Details for Heap Tricks: Kth Largest Element: pending hand-authoring."
     },
     {
       "type": "example",
-      "narration": "Real-world example: companies like Netflix and Uber use Heap Tricks: Kth Largest Element to serve millions of users daily."
+      "narration": "Real-world Heap Tricks: Kth Largest Element example: pending hand-authoring."
     },
     {
       "type": "recap",
-      "narration": "Quick recap: Heap Tricks: Kth Largest Element solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+      "narration": "Heap Tricks: Kth Largest Element recap: pending hand-authoring."
     }
   ]
 }

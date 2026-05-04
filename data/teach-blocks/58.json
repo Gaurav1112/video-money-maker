@@ -1,6 +1,7 @@
 {
   "topicId": 58,
   "topic": "Merge Sort vs Quick Sort — Interview Choice",
+  "quality": "placeholder",
   "scenes": [
     {
       "type": "hook",
@@ -8,27 +9,27 @@
     },
     {
       "type": "problem",
-      "narration": "Without understanding Merge Sort vs Quick Sort — Interview Choice, systems fail at scale. Here's why it matters."
+      "narration": "Why Merge Sort vs Quick Sort — Interview Choice matters: pending hand-authoring."
     },
     {
       "type": "intuition",
-      "narration": "Think of Merge Sort vs Quick Sort — Interview Choice like a traffic cop at a busy intersection — directing flow efficiently."
+      "narration": "Intuition for Merge Sort vs Quick Sort — Interview Choice: pending hand-authoring."
     },
     {
       "type": "mechanism",
-      "narration": "The core mechanism of Merge Sort vs Quick Sort — Interview Choice: it distributes work, manages state, and handles failures gracefully."
+      "narration": "Mechanism for Merge Sort vs Quick Sort — Interview Choice: pending hand-authoring."
     },
     {
       "type": "mechanism-detail",
-      "narration": "Key properties of Merge Sort vs Quick Sort — Interview Choice: fault tolerance, horizontal scalability, and low latency."
+      "narration": "Details for Merge Sort vs Quick Sort — Interview Choice: pending hand-authoring."
     },
     {
       "type": "example",
-      "narration": "Real-world example: companies like Netflix and Uber use Merge Sort vs Quick Sort — Interview Choice to serve millions of users daily."
+      "narration": "Real-world Merge Sort vs Quick Sort — Interview Choice example: pending hand-authoring."
     },
     {
       "type": "recap",
-      "narration": "Quick recap: Merge Sort vs Quick Sort — Interview Choice solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+      "narration": "Merge Sort vs Quick Sort — Interview Choice recap: pending hand-authoring."
     }
   ]
 }

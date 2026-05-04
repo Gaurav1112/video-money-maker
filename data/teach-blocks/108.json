@@ -1,34 +1,44 @@
 {
   "topicId": 108,
   "topic": "Compiler Design",
+  "quality": "authored",
+  "mechanismKeywords": [
+    "lexer",
+    "parser",
+    "AST",
+    "IR",
+    "codegen",
+    "SSA"
+  ],
+  "mistakeKeyword": "phases",
   "scenes": [
     {
       "type": "hook",
-      "narration": "GATE 2026 mein Compiler Design ke 8-10 marks pakke. Padh lo abhi."
+      "narration": "Compiler Design ko Black-Box samjha? Bhai, 6 phases hain — har phase GATE me 2 marks."
     },
     {
       "type": "problem",
-      "narration": "Without understanding Compiler Design, systems fail at scale. Here's why it matters."
+      "narration": "Mistake: students compiler ko ek monolithic step samajhte hain. Actually 6 phases hain — agar tu phases ko clearly separate kar le, GATE compiler section 12-15 marks pakke. Industry me bhi LLVM/GCC same pipeline pe bani hain."
     },
     {
       "type": "intuition",
-      "narration": "Think of Compiler Design like a traffic cop at a busy intersection — directing flow efficiently."
+      "narration": "Compiler ek translator pipeline hai — English novel ko Hindi me translate karna ho. Pehle words alag karo (tokenize), phir grammar samjho (parse), phir matlab nikalo (semantic), phir simple Hindi me likho (IR), phir polish karo (optimize), phir typeset karo (codegen). Har stage ka apna output, next stage ka input."
     },
     {
       "type": "mechanism",
-      "narration": "The core mechanism of Compiler Design: it distributes work, manages state, and handles failures gracefully."
+      "narration": "Phases: 1) Lexical analysis — source → tokens via DFA/regex. 2) Syntax analysis — tokens → AST via LL/LR parser. 3) Semantic analysis — type checking, symbol table. 4) Intermediate code — AST → IR (3-address code or SSA). 5) Optimization — dead code, loop unroll, constant fold. 6) Code generation — IR → target assembly + register allocation."
     },
     {
       "type": "mechanism-detail",
-      "narration": "Key properties of Compiler Design: fault tolerance, horizontal scalability, and low latency."
+      "narration": "LL(1) parser top-down predictive, no left-recursion allowed. LR(1)/LALR bottom-up, more powerful (yacc/bison). SSA (Static Single Assignment) — har variable exactly ek baar assigned, optimization easy. Register allocation = graph coloring (NP-hard, heuristics use). Peephole optimization — small window pe pattern match."
     },
     {
       "type": "example",
-      "narration": "Real-world example: companies like Netflix and Uber use Compiler Design to serve millions of users daily."
+      "narration": "GCC frontend C++ ko AST me convert karta hai, fir GIMPLE IR generate karke loop-unrolling/inlining apply karta hai, fir RTL me lower karke target assembly emit karta hai. LLVM ka IR famous hai — Clang, Rust, Swift sab LLVM pe target karte hain — ek IR, multiple frontends, multiple backends."
     },
     {
       "type": "recap",
-      "narration": "Quick recap: Compiler Design solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+      "narration": "Interview/GATE line: compiler = lex → parse → semantic → IR → optimize → codegen. SSA, LR parser, register allocation = graph coloring. LLVM model: shared IR is the magic."
     }
   ]
 }

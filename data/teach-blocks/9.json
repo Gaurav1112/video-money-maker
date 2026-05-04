@@ -1,6 +1,7 @@
 {
   "topicId": 9,
   "topic": "Database Sharding Strategies",
+  "quality": "placeholder",
   "scenes": [
     {
       "type": "hook",
@@ -8,27 +9,27 @@
     },
     {
       "type": "problem",
-      "narration": "Without understanding Database Sharding Strategies, systems fail at scale. Here's why it matters."
+      "narration": "Why Database Sharding Strategies matters: pending hand-authoring."
     },
     {
       "type": "intuition",
-      "narration": "Think of Database Sharding Strategies like a traffic cop at a busy intersection — directing flow efficiently."
+      "narration": "Intuition for Database Sharding Strategies: pending hand-authoring."
     },
     {
       "type": "mechanism",
-      "narration": "The core mechanism of Database Sharding Strategies: it distributes work, manages state, and handles failures gracefully."
+      "narration": "Mechanism for Database Sharding Strategies: pending hand-authoring."
     },
     {
       "type": "mechanism-detail",
-      "narration": "Key properties of Database Sharding Strategies: fault tolerance, horizontal scalability, and low latency."
+      "narration": "Details for Database Sharding Strategies: pending hand-authoring."
     },
     {
       "type": "example",
-      "narration": "Real-world example: companies like Netflix and Uber use Database Sharding Strategies to serve millions of users daily."
+      "narration": "Real-world Database Sharding Strategies example: pending hand-authoring."
     },
     {
       "type": "recap",
-      "narration": "Quick recap: Database Sharding Strategies solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+      "narration": "Database Sharding Strategies recap: pending hand-authoring."
     }
   ]
 }

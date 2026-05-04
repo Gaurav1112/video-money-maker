@@ -1,34 +1,42 @@
 {
   "topicId": 17,
   "topic": "Design: URL Shortener (TinyURL)",
+  "quality": "authored",
+  "mechanismKeywords": [
+    "base62",
+    "counter",
+    "hash",
+    "shard"
+  ],
+  "mistakeKeyword": "collision",
   "scenes": [
     {
       "type": "hook",
-      "narration": "Bhai sun, ye Design: URL Shortener (TinyURL) ki ek mistake teri ₹30-50LPA ki Amazon offer cancel kara dega."
+      "narration": "URL shortener me random hash use kar raha? Bhai, collision aayegi — base62 counter use kar."
     },
     {
       "type": "problem",
-      "narration": "Without understanding Design: URL Shortener (TinyURL), systems fail at scale. Here's why it matters."
+      "narration": "Mistake: MD5 ke first 7 chars short URL banate ho — birthday paradox se collision 100 million URLs pe pakka. Solution: distributed counter + base62 encoding — guaranteed unique, predictable length."
     },
     {
       "type": "intuition",
-      "narration": "Think of Design: URL Shortener (TinyURL) like a traffic cop at a busy intersection — directing flow efficiently."
+      "narration": "Soch — har naya URL ek auto-increment number hai (1, 2, 3...). Number ko base62 me convert kar (0-9, a-z, A-Z) — 7 chars me 62^7 = 3.5 trillion URLs. Counter shared rahega across servers — Redis ya Zookeeper se range allocate."
     },
     {
       "type": "mechanism",
-      "narration": "The core mechanism of Design: URL Shortener (TinyURL): it distributes work, manages state, and handles failures gracefully."
+      "narration": "Mechanism: client POST /shorten {url} → service Redis se range fetch (e.g. 10000 IDs), in-memory increment. ID ko base62 encode → short code. Mapping store DB: short_code → long_url, created_at, ttl. GET /<code> → DB lookup → 301 redirect."
     },
     {
       "type": "mechanism-detail",
-      "narration": "Key properties of Design: URL Shortener (TinyURL): fault tolerance, horizontal scalability, and low latency."
+      "narration": "Sharding: short_code hash mod N → shard. Cache: Redis hot URLs LRU. Custom alias: separate flow with collision check. Analytics: click → Kafka → ClickHouse. Estimation: 100M new URLs/day, 10:1 read:write, ~30TB over 5 years. Bloom filter for custom-alias availability check — fast O(1) duplicate check."
     },
     {
       "type": "example",
-      "narration": "Real-world example: companies like Netflix and Uber use Design: URL Shortener (TinyURL) to serve millions of users daily."
+      "narration": "Bit.ly serves 10B clicks/month. Base62 + Redis range allocation + MySQL sharded by short_code prefix. Twitter t.co similar architecture but adds malware-scanning HEAD request before redirect."
     },
     {
       "type": "recap",
-      "narration": "Quick recap: Design: URL Shortener (TinyURL) solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+      "narration": "Interview line: distributed counter (Redis/ZK range) + base62 encode + sharded KV store + cache hot codes. Avoid hash-truncation — collisions bite at scale."
     }
   ]
 }

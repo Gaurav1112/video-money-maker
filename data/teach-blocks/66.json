@@ -1,6 +1,7 @@
 {
   "topicId": 66,
   "topic": "Conflict With a Teammate — STAR Story",
+  "quality": "placeholder",
   "scenes": [
     {
       "type": "hook",
@@ -8,27 +9,27 @@
     },
     {
       "type": "problem",
-      "narration": "Without understanding Conflict With a Teammate — STAR Story, systems fail at scale. Here's why it matters."
+      "narration": "Why Conflict With a Teammate — STAR Story matters: pending hand-authoring."
     },
     {
       "type": "intuition",
-      "narration": "Think of Conflict With a Teammate — STAR Story like a traffic cop at a busy intersection — directing flow efficiently."
+      "narration": "Intuition for Conflict With a Teammate — STAR Story: pending hand-authoring."
     },
     {
       "type": "mechanism",
-      "narration": "The core mechanism of Conflict With a Teammate — STAR Story: it distributes work, manages state, and handles failures gracefully."
+      "narration": "Mechanism for Conflict With a Teammate — STAR Story: pending hand-authoring."
     },
     {
       "type": "mechanism-detail",
-      "narration": "Key properties of Conflict With a Teammate — STAR Story: fault tolerance, horizontal scalability, and low latency."
+      "narration": "Details for Conflict With a Teammate — STAR Story: pending hand-authoring."
     },
     {
       "type": "example",
-      "narration": "Real-world example: companies like Netflix and Uber use Conflict With a Teammate — STAR Story to serve millions of users daily."
+      "narration": "Real-world Conflict With a Teammate — STAR Story example: pending hand-authoring."
     },
     {
       "type": "recap",
-      "narration": "Quick recap: Conflict With a Teammate — STAR Story solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+      "narration": "Conflict With a Teammate — STAR Story recap: pending hand-authoring."
     }
   ]
 }

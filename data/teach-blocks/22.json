@@ -1,6 +1,7 @@
 {
   "topicId": 22,
   "topic": "Design: Uber Ride Sharing",
+  "quality": "placeholder",
   "scenes": [
     {
       "type": "hook",
@@ -8,27 +9,27 @@
     },
     {
       "type": "problem",
-      "narration": "Without understanding Design: Uber Ride Sharing, systems fail at scale. Here's why it matters."
+      "narration": "Why Design: Uber Ride Sharing matters: pending hand-authoring."
     },
     {
       "type": "intuition",
-      "narration": "Think of Design: Uber Ride Sharing like a traffic cop at a busy intersection — directing flow efficiently."
+      "narration": "Intuition for Design: Uber Ride Sharing: pending hand-authoring."
     },
     {
       "type": "mechanism",
-      "narration": "The core mechanism of Design: Uber Ride Sharing: it distributes work, manages state, and handles failures gracefully."
+      "narration": "Mechanism for Design: Uber Ride Sharing: pending hand-authoring."
     },
     {
       "type": "mechanism-detail",
-      "narration": "Key properties of Design: Uber Ride Sharing: fault tolerance, horizontal scalability, and low latency."
+      "narration": "Details for Design: Uber Ride Sharing: pending hand-authoring."
     },
     {
       "type": "example",
-      "narration": "Real-world example: companies like Netflix and Uber use Design: Uber Ride Sharing to serve millions of users daily."
+      "narration": "Real-world Design: Uber Ride Sharing example: pending hand-authoring."
     },
     {
       "type": "recap",
-      "narration": "Quick recap: Design: Uber Ride Sharing solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+      "narration": "Design: Uber Ride Sharing recap: pending hand-authoring."
     }
   ]
 }

@@ -1,6 +1,7 @@
 {
   "topicId": 39,
   "topic": "Design: Swiggy/Zomato Food Delivery",
+  "quality": "placeholder",
   "scenes": [
     {
       "type": "hook",
@@ -8,27 +9,27 @@
     },
     {
       "type": "problem",
-      "narration": "Without understanding Design: Swiggy/Zomato Food Delivery, systems fail at scale. Here's why it matters."
+      "narration": "Why Design: Swiggy/Zomato Food Delivery matters: pending hand-authoring."
     },
     {
       "type": "intuition",
-      "narration": "Think of Design: Swiggy/Zomato Food Delivery like a traffic cop at a busy intersection — directing flow efficiently."
+      "narration": "Intuition for Design: Swiggy/Zomato Food Delivery: pending hand-authoring."
     },
     {
       "type": "mechanism",
-      "narration": "The core mechanism of Design: Swiggy/Zomato Food Delivery: it distributes work, manages state, and handles failures gracefully."
+      "narration": "Mechanism for Design: Swiggy/Zomato Food Delivery: pending hand-authoring."
     },
     {
       "type": "mechanism-detail",
-      "narration": "Key properties of Design: Swiggy/Zomato Food Delivery: fault tolerance, horizontal scalability, and low latency."
+      "narration": "Details for Design: Swiggy/Zomato Food Delivery: pending hand-authoring."
     },
     {
       "type": "example",
-      "narration": "Real-world example: companies like Netflix and Uber use Design: Swiggy/Zomato Food Delivery to serve millions of users daily."
+      "narration": "Real-world Design: Swiggy/Zomato Food Delivery example: pending hand-authoring."
     },
     {
       "type": "recap",
-      "narration": "Quick recap: Design: Swiggy/Zomato Food Delivery solves scale. Remember: distribute, monitor, and failover. That's the pattern."
+      "narration": "Design: Swiggy/Zomato Food Delivery recap: pending hand-authoring."
     }
   ]
 }
