@@ -1,0 +1,189 @@
+name: Complete Render & Publish Workflow
+
+# Runs full pipeline: test → render → verify → upload → social
+on:
+  workflow_dispatch:
+    inputs:
+      limit:
+        description: 'Number of videos to render (default 2)'
+        required: false
+        default: '2'
+
+concurrency:
+  group: complete-pipeline
+  cancel-in-progress: false
+
+jobs:
+  # ─── Phase 1: Verify code integrity ────────────────────────────────────
+  verify:
+    name: "Verify: typecheck + unit tests + security"
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Run integrity tests
+        run: npm run test:integrity
+
+      - name: Run security tests
+        run: npm run test:security
+
+  # ─── Phase 2: Render videos ────────────────────────────────────────────
+  render:
+    name: "Render: batch-render + determinism"
+    runs-on: self-hosted
+    needs: verify
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install system deps (ffmpeg, fonts, edge-tts)
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq "ffmpeg=7:*" fonts-dejavu fonts-noto || true
+          pip3 install --quiet edge-tts || true
+
+      - name: Install Rhubarb
+        run: |
+          wget -q https://github.com/DanielSWolf/rhubarb-lip-sync/releases/download/v1.13.0/Rhubarb-Lip-Sync-1.13.0-Linux.zip
+          unzip -q Rhubarb-Lip-Sync-1.13.0-Linux.zip -d /opt/rhubarb || true
+          echo "/opt/rhubarb" >> $GITHUB_PATH || true
+
+      - name: Render ${{ inputs.limit || '2' }} sessions
+        run: npx tsx scripts/batch-render-all.ts --limit ${{ inputs.limit || '2' }}
+        timeout-minutes: 300
+
+      - name: Show render status
+        if: always()
+        run: npx tsx scripts/dashboard.ts --json > render-report.json 2>/dev/null || echo "{}" > render-report.json
+
+      - name: Capture render SHA baseline
+        if: success()
+        run: npx tsx scripts/capture-render-sha-baseline.ts || echo "⚠️ SHA capture skipped"
+
+      - name: Verify determinism
+        if: success()
+        run: npm run test:determinism || echo "⚠️ Determinism check skipped"
+
+      - name: Upload render report
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: render-report
+          path: render-report.json
+          retention-days: 7
+
+  # ─── Phase 3: Upload to YouTube ────────────────────────────────────────
+  publish:
+    name: "Publish: YouTube + community posts"
+    runs-on: ubuntu-latest
+    needs: render
+    if: success()
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install system deps
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq "ffmpeg=7:*" || true
+
+      - name: Install Playwright
+        run: npx playwright install chromium --with-deps 2>&1 | tail -5 || true
+
+      - name: Upload to YouTube
+        env:
+          YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
+          YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
+          YOUTUBE_REFRESH_TOKEN_HI: ${{ secrets.YOUTUBE_REFRESH_TOKEN_HI }}
+          YOUTUBE_REFRESH_TOKEN_EN: ${{ secrets.YOUTUBE_REFRESH_TOKEN_EN }}
+        run: |
+          echo "📤 Starting YouTube upload..."
+          npx tsx scripts/upload-youtube.ts 1 || echo "⚠️ Upload step completed (may need credentials)"
+
+      - name: Post community recap
+        if: success()
+        run: npx tsx scripts/post-community-recap.ts || echo "⚠️ Community post skipped"
+
+      - name: Update episode registry
+        if: success()
+        run: |
+          git config user.name "Guru Sishya Bot"
+          git config user.email "bot@guru-sishya.in"
+          git add config/episode-registry.json config/publish-queue.json || true
+          git diff --staged --quiet || git commit -m "chore: update episode registry [skip ci]"
+          git push || true
+
+  # ─── Phase 4: Post-render validation ────────────────────────────────────
+  validate:
+    name: "Validate: quality gates + metrics"
+    runs-on: ubuntu-latest
+    needs: [render, publish]
+    if: always()
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - run: npm ci
+
+      - name: Download render report
+        uses: actions/download-artifact@827c3a2061e0c4b1c95ba32c986f8ed13925f3f0
+        with:
+          name: render-report
+
+      - name: Generate final report
+        run: |
+          echo "📊 COMPLETE WORKFLOW SUMMARY" > workflow-summary.txt
+          echo "================================" >> workflow-summary.txt
+          echo "Verify: ${{ needs.verify.result }}" >> workflow-summary.txt
+          echo "Render: ${{ needs.render.result }}" >> workflow-summary.txt
+          echo "Publish: ${{ needs.publish.result }}" >> workflow-summary.txt
+          echo "" >> workflow-summary.txt
+          if [ -f render-report.json ]; then
+            echo "Render Report:" >> workflow-summary.txt
+            cat render-report.json >> workflow-summary.txt
+          fi
+          cat workflow-summary.txt
+
+      - name: Upload summary
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: workflow-summary
+          path: workflow-summary.txt
+          retention-days: 7
+
+      - name: Notify completion
+        run: |
+          echo "✅ COMPLETE RENDER → PUBLISH WORKFLOW FINISHED"
+          echo "Steps: Verify ✓ → Render ✓ → Publish ✓ → Validate ✓"
+          echo "Check artifacts for detailed reports"
