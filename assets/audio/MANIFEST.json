@@ -67,6 +67,32 @@
       "author": "51977681",
       "pixabay_id": 395154,
       "notes": "Reserved for 'wait, what?' mid-scene pattern interrupt. Not yet wired."
+    },
+    {
+      "path": "assets/audio/sfx/pattern-interrupt/vinyl-scratch.wav",
+      "role": "pattern-interrupt-vinyl",
+      "duration_sec": 0.32,
+      "license": "CC0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "source": "procedural",
+      "author": "ffmpeg-aevalsrc",
+      "attribution_required": false,
+      "sha256": "0f670de835525c3c57ced8d1762ad82dcb81f651a7972e37e062e29aace4d209",
+      "synthesis_cmd": "ffmpeg -f lavfi -i 'aevalsrc=0.7*(random(0)*2-1):s=44100:d=0.32' -af 'bandpass=f=2500:width_type=h:w=4000,volume=0.85,afade=t=in:st=0:d=0.008,afade=t=out:st=0.28:d=0.04' -ac 2 -ar 44100 assets/audio/sfx/pattern-interrupt/vinyl-scratch.wav",
+      "notes": "320ms band-limited noise burst mimicking vinyl needle drag. Inserted at mid-promise scene boundary (50ms pre-drawer) to re-engage drift-off attention. Batch-NN Audio P1 Huang."
+    },
+    {
+      "path": "assets/audio/sfx/pattern-interrupt/rimshot.wav",
+      "role": "pattern-interrupt-rimshot",
+      "duration_sec": 0.22,
+      "license": "CC0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "source": "procedural",
+      "author": "ffmpeg-aevalsrc",
+      "attribution_required": false,
+      "sha256": "3cb111869b0d8e8b84e07b9a8881829bd8c422472d20042cbca4609522d0ae6c",
+      "synthesis_cmd": "ffmpeg -f lavfi -i 'aevalsrc=0.85*sin(2*PI*200*t)*exp(-t/0.04)+0.55*(random(0)*2-1)*exp(-t/0.02)|0.85*sin(2*PI*200*t)*exp(-t/0.04)+0.55*(random(1)*2-1)*exp(-t/0.02):s=44100:d=0.22:c=stereo' -af 'volume=0.9,afade=t=in:st=0:d=0.003,afade=t=out:st=0.18:d=0.04' -ac 2 -ar 44100 assets/audio/sfx/pattern-interrupt/rimshot.wav",
+      "notes": "220ms sine-impulse + noise burst. Inserted at closing-scene transition (100ms before end-card opens) to punctuate the reveal. Batch-NN Audio P1 Huang."
     }
   ]
 }

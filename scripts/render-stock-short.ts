@@ -36,6 +36,7 @@ import { rotateBankHook } from '../src/data/hook-rotator.js';
 import { hookTextFor } from '../src/lib/thumbnail-text.js';
 import { execFile } from 'node:child_process';
 import { FFMPEG_BIN, FFPROBE_BIN } from '../src/lib/ffmpeg-bin.js';
+import { getPatternInterruptSfx } from '../src/audio/sfx-pattern-interrupt.js';
 import { promisify } from 'node:util';
 import * as crypto from 'node:crypto';
 
@@ -98,7 +99,7 @@ interface AudioLicenseEntry {
 function collectVendoredAudioLicenses(): AudioLicenseEntry[] {
   const manifestPath = path.join(REPO_ROOT, 'assets', 'audio', 'MANIFEST.json');
   if (!fs.existsSync(manifestPath)) return [];
-  const ACTIVE_ROLES = new Set(['bgm-primary', 'hook-sting', 'end-card-uplift']);
+  const ACTIVE_ROLES = new Set(['bgm-primary', 'hook-sting', 'end-card-uplift', 'pattern-interrupt-vinyl', 'pattern-interrupt-rimshot']);
   try {
     const m = JSON.parse(fs.readFileSync(manifestPath, 'utf8')) as {
       license: string;
@@ -607,6 +608,70 @@ async function main(): Promise<void> {
     workDir,
   });
   console.log(`[orchestrator] ✓ output: ${outputPath}`);
+
+  // ── Pattern-interrupt SFX amix (Audio P1 Huang / Batch-NN) ───────────────
+  // Vinyl scratch: 50ms before mid-promise drawer enables (midpoint scene start).
+  // Rimshot:       100ms before end-card opens (totalDur - END_CARD_WINDOW).
+  // Both channels attenuated -6dB (amix weight=0.5) so they punch without clipping.
+  // Timing is derived entirely from storyboard scene durations — no Date.now/Random.
+  // Skip via DISABLE_PATTERN_INTERRUPT=1 (mirrors DISABLE_BGM for test speed).
+  if (process.env['DISABLE_PATTERN_INTERRUPT'] !== '1') {
+    const vinylSfx = getPatternInterruptSfx('vinyl');
+    const rimshotSfx = getPatternInterruptSfx('rimshot');
+    if (fs.existsSync(vinylSfx.path) && fs.existsSync(rimshotSfx.path)) {
+      // END_CARD_WINDOW must stay in sync with composer.ts and the scene-overlay
+      // endCardStart calculation (both use 3.0s). A named constant here makes the
+      // coupling explicit without importing from composer.ts.
+      const END_CARD_WINDOW_SEC = 3.0;
+      const sceneDursSec = storyboard.scenes.map(
+        (s) => s.durationFrames / storyboard.fps,
+      );
+      const midpointSceneIdx = Math.floor(storyboard.scenes.length / 2);
+      const vinylOffsetMs = Math.max(
+        0,
+        Math.round(
+          sceneDursSec.slice(0, midpointSceneIdx).reduce((a, b) => a + b, 0) * 1000 - 50,
+        ),
+      );
+      const totalDurSec = sceneDursSec.reduce((a, b) => a + b, 0);
+      const rimshotOffsetMs = Math.max(
+        0,
+        Math.round((totalDurSec - END_CARD_WINDOW_SEC - 0.1) * 1000),
+      );
+      const totalDurStr = totalDurSec.toFixed(3);
+      const vinylDurStr = (vinylSfx.durationMs / 1000).toFixed(3);
+      const rimshotDurStr = (rimshotSfx.durationMs / 1000).toFixed(3);
+      const piOut = path.join(workDir, 'output-pi.mp4');
+      await execFileAsync(FFMPEG_BIN, [
+        '-y',
+        '-i', outputPath,
+        '-i', vinylSfx.path,
+        '-i', rimshotSfx.path,
+        '-filter_complex',
+        [
+          `[1:a]aformat=channel_layouts=stereo,` +
+            `atrim=duration=${vinylDurStr},asetpts=PTS-STARTPTS,` +
+            `adelay=${vinylOffsetMs}|${vinylOffsetMs},apad=whole_dur=${totalDurStr}[vinyl_pi]`,
+          `[2:a]aformat=channel_layouts=stereo,` +
+            `atrim=duration=${rimshotDurStr},asetpts=PTS-STARTPTS,` +
+            `adelay=${rimshotOffsetMs}|${rimshotOffsetMs},apad=whole_dur=${totalDurStr}[rimshot_pi]`,
+          `[0:a][vinyl_pi][rimshot_pi]amix=inputs=3:duration=first:` +
+            `dropout_transition=0.5:weights=1 0.5 0.5[outa]`,
+        ].join(';'),
+        '-map', '0:v',
+        '-map', '[outa]',
+        '-c:v', 'copy',
+        '-c:a', 'aac',
+        '-b:a', '192k',
+        '-movflags', '+faststart',
+        piOut,
+      ]);
+      fs.renameSync(piOut, outputPath);
+      console.log(
+        `[orchestrator] ✓ pattern-interrupt SFX: vinyl@${vinylOffsetMs}ms rimshot@${rimshotOffsetMs}ms`,
+      );
+    }
+  }
 
   // ── Quality gate: refuse to ship solid-black / frozen-frame renders ──
   const qg = await runQualityGate(outputPath);
