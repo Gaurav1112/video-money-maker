@@ -1,11 +1,19 @@
 /**
  * Lightweight TTS service.
  *
- * Default engine: Microsoft Edge-TTS (free, unlimited, Indian-English voices)
+ * Default engine: Microsoft Edge-TTS (free, unlimited, Indian voices)
  * via the `python -m edge_tts` subprocess. Picked because:
  *   • zero quota / zero API key
- *   • en-IN-NeerjaNeural is excellent for Hinglish dev-edu narration
+ *   • hi-IN-MadhurNeural is warm & clear for Hinglish dev-edu narration
  *   • outputs streaming mp3 directly to disk
+ *
+ * Hot path (TTS_VOICE_TRACK=hi, the default): uses hi-IN-MadhurNeural with
+ * Hinglish SSML preprocessing (tech-term phonetic protection). This is the
+ * CDawgVA P0 routing — the audience is Indian CSE/FAANG-prep and the Hindi
+ * voice converts substantially better than the English fallback.
+ *
+ * English fallback: set TTS_VOICE_TRACK=en to use en-IN-NeerjaNeural (the
+ * original path). Useful for A/B testing or non-Hinglish storyboards.
  *
  * Optional engine: ElevenLabs — used when ELEVENLABS_API_KEY is set AND
  *   USE_ELEVENLABS=1. Not the default because the free tier (10k chars/mo)
@@ -16,16 +24,17 @@
  * inputs ⇒ byte-identical output across runs and CI machines.
  *
  * Public API:
- *   await synthesize({ text, outPath })  → { durationSec }
+ *   await synthesize({ text, outPath })  → { durationSec, wordTimestamps? }
  */
 
-import { execFile } from 'node:child_process';
+import { execFile, spawn } from 'node:child_process';
 import { existsSync, copyFileSync, mkdirSync, writeFileSync, createReadStream, readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { promisify } from 'node:util';
 import { FFMPEG_BIN, FFPROBE_BIN } from '../lib/ffmpeg-bin.js';
 import * as path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { buildSSML } from '../audio/tts-engines/edge-tts-hinglish.js';
 
 const execFileP = promisify(execFile);
 // Path to the bundled Python helper that calls edge-tts with WordBoundary
@@ -56,14 +65,42 @@ export interface WordStamp {
 }
 
 const DEFAULT_VOICE = process.env['TTS_VOICE'] ?? 'en-IN-NeerjaNeural';
+/** Primary Hinglish voice — warm male, Indian FAANG-prep audience. */
+const HINGLISH_VOICE = 'hi-IN-MadhurNeural';
 const CACHE_DIR =
   process.env['TTS_CACHE_DIR'] ??
   path.join(process.cwd(), 'assets', 'tts-cache');
 
 /**
+ * Resolves the active voice track from `TTS_VOICE_TRACK` env var.
+ *
+ * - `hi` (default, unset): Hinglish path → hi-IN-MadhurNeural
+ * - `en`: English fallback → en-IN-NeerjaNeural (or TTS_VOICE override)
+ *
+ * @internal exported for unit-testing the routing logic without network calls.
+ */
+export function resolveVoiceTrack(track = process.env['TTS_VOICE_TRACK'] ?? 'hi'): {
+  mode: 'hi' | 'en';
+  voice: string;
+} {
+  return track === 'en'
+    ? { mode: 'en', voice: DEFAULT_VOICE }
+    : { mode: 'hi', voice: HINGLISH_VOICE };
+}
+
+/** Parses a rate string like "+8%" or "-5%" to an integer (8 or -5). */
+function parseRatePercent(rate: string): number {
+  const m = rate.match(/^([+-]?\d+)%$/);
+  return m ? parseInt(m[1]!, 10) : 0;
+}
+
+/**
  * Synthesises `text` to mp3 at `outPath`. Returns audio duration in seconds
  * and (when `wantSubtitles`) a list of word-level timestamps suitable for
  * karaoke caption rendering.
+ *
+ * Routes to hi-IN-MadhurNeural (Hinglish) by default (TTS_VOICE_TRACK=hi).
+ * Set TTS_VOICE_TRACK=en to use the English NeerjaNeural fallback.
  *
  * Throws on failure (no silent fallback — caller must decide).
  */
@@ -87,10 +124,23 @@ export async function synthesize(
 
   const useElevenLabs =
     process.env['USE_ELEVENLABS'] === '1' && !!process.env['ELEVENLABS_API_KEY'];
+  const wantSubs = !!opts.wantSubtitles && !useElevenLabs;
+
+  // ── Voice track routing ─────────────────────────────────────────────────
+  // Hinglish hot path: TTS_VOICE_TRACK=hi (default, unset) → MadhurNeural
+  // English fallback:  TTS_VOICE_TRACK=en → NeerjaNeural
+  // ElevenLabs bypasses this routing entirely.
+  if (!useElevenLabs) {
+    const { mode, voice } = resolveVoiceTrack();
+    if (mode === 'hi') {
+      return synthesizeHinglishHotPath({ ...opts, voice }, wantSubs);
+    }
+  }
+
+  // ── English / ElevenLabs path (unchanged) ───────────────────────────────
   const engine = useElevenLabs ? 'elevenlabs' : 'edge';
   const voice = opts.voice ?? DEFAULT_VOICE;
   const rate = opts.rate ?? '';
-  const wantSubs = !!opts.wantSubtitles && !useElevenLabs;
 
   const cacheKey = createHash('sha256')
     .update(`${engine}|${voice}|${rate}|${text}`)
@@ -133,6 +183,99 @@ export async function synthesize(
   }
 
   return { durationSec, wordTimestamps };
+}
+
+/**
+ * Hinglish hot path: synthesizes using hi-IN-MadhurNeural with SSML
+ * tech-term phonetic protection. Word timestamps are produced in the same
+ * synthesis pass via --write-words (no second network call).
+ *
+ * Cache key: SHA-256(edge|hi-IN-MadhurNeural|rate|text) — same namespace as
+ * the English path so cross-track warm hits are impossible by construction.
+ */
+async function synthesizeHinglishHotPath(
+  opts: TtsOptions,
+  wantSubs: boolean,
+): Promise<{ durationSec: number; wordTimestamps?: WordStamp[] }> {
+  const { text, outPath } = opts;
+  const voice = HINGLISH_VOICE;
+  const rate = opts.rate ?? '+0%';
+  const ratePercent = parseRatePercent(rate);
+
+  const cacheKey = createHash('sha256')
+    .update(`edge|${voice}|${rate}|${text}`)
+    .digest('hex');
+  mkdirSync(CACHE_DIR, { recursive: true });
+  const cachePath = path.join(CACHE_DIR, `${cacheKey}.mp3`);
+  const subsCachePath = path.join(CACHE_DIR, `${cacheKey}.words.json`);
+
+  if (!existsSync(cachePath)) {
+    const ssml = buildSSML(text, voice, ratePercent, 0);
+    await runSynthWithStdin({
+      voice,
+      rate,
+      pitch: '+0Hz',
+      ssml,
+      outPath: cachePath,
+      wordsJsonPath: wantSubs ? subsCachePath : undefined,
+    });
+    if (!existsSync(cachePath)) {
+      throw new Error(`TTS (Hinglish) produced no output at ${cachePath}`);
+    }
+  }
+  copyFileSync(cachePath, outPath);
+
+  const durationSec = await probeDurationSec(outPath);
+  if (!Number.isFinite(durationSec) || durationSec <= 0) {
+    throw new Error(`TTS (Hinglish) output has invalid duration: ${durationSec}`);
+  }
+
+  let wordTimestamps: WordStamp[] | undefined;
+  if (wantSubs && existsSync(subsCachePath)) {
+    try {
+      const raw = readFileSync(subsCachePath, 'utf8');
+      const parsed = JSON.parse(raw) as WordStamp[];
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        wordTimestamps = parsed;
+      }
+    } catch (err) {
+      console.warn(`[tts/hi] failed to read words.json (${String(err).slice(0, 120)}); captions will skip`);
+    }
+  }
+
+  return { durationSec, wordTimestamps };
+}
+
+/** Runs edge-tts-synth.py, piping SSML via stdin. */
+function runSynthWithStdin(args: {
+  voice: string;
+  rate: string;
+  pitch: string;
+  ssml: string;
+  outPath: string;
+  wordsJsonPath?: string;
+}): Promise<void> {
+  const helper = path.join(WRAPPER_DIR, 'edge-tts-synth.py');
+  const cliArgs = [
+    helper,
+    '--voice', args.voice,
+    '--rate', args.rate,
+    '--pitch', args.pitch,
+    '--out', args.outPath,
+    ...(args.wordsJsonPath ? ['--write-words', args.wordsJsonPath] : []),
+  ];
+  return new Promise((resolve, reject) => {
+    const proc = spawn('python3', cliArgs, { stdio: ['pipe', 'pipe', 'pipe'] });
+    let stderr = '';
+    proc.stderr?.on('data', (d) => { stderr += String(d); });
+    proc.on('error', reject);
+    proc.on('close', (code) => {
+      if (code === 0) resolve();
+      else reject(new Error(`edge-tts-synth.py exited ${code}: ${stderr.slice(0, 300)}`));
+    });
+    proc.stdin!.write(args.ssml, 'utf8');
+    proc.stdin!.end();
+  });
 }
 
 async function synthesizeEdge(opts: TtsOptions, wordsJsonPath?: string): Promise<void> {

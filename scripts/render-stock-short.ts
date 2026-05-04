@@ -28,6 +28,8 @@ import { FALLBACK_CLIP } from '../src/stock/fallback.js';
 import type { StockStoryboard, PickedClip, StockScene } from '../src/stock/types.js';
 import { generateAssSubtitles } from '../src/stock/captions/ass-generator.js';
 import { runQualityGate } from '../src/stock/quality-gate.js';
+// Hot TTS path: synthesize routes to hi-IN-MadhurNeural (Hinglish) by default.
+// Set TTS_VOICE_TRACK=en to fall back to en-IN-NeerjaNeural. — CDawgVA P0
 import { synthesize as ttsSynthesize } from '../src/voice/tts.js';
 import { generateShortMetadata, BRAND_AT, BRAND_HANDLE_RAW, BRAND_SITE, BRAND_TAGLINE_HINGLISH } from '../src/services/short-metadata.js';
 import { getConceptDiagram } from '../src/stock/concept-diagram.js';
