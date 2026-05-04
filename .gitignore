@@ -52,3 +52,4 @@ assets/tts-cache/
 .qg_*/
 tests/fixtures/.qg_*/
 tests/integration/.e2e-workspace/
+verify all fixes
