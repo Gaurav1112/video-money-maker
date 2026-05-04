@@ -74,7 +74,13 @@ const MESSAGING_PATTERNS: PatternBank = [
   '{TECH} WRONG? WATCH THIS',
   '90% MISS {TECH}',
   '{TECH} TRAP EXPOSED',
-  'FAANG USES {TECH} WHY',
+  // Panel-18 Dist P0 (Schiffer/Blake): 'FAANG USES {TECH} WHY' was a
+  // grammatically incomplete English fragment that read like noise on
+  // the Shorts shelf for 4 consecutive batches (P15-P17 flagged it,
+  // P18 escalated to P0). 'WHY FAANG RUNS {TECH}' restores natural
+  // English question rhythm while keeping the FAANG salary trigger
+  // and {TECH} slot. ≤4 words after substitution.
+  'WHY FAANG RUNS {TECH}',
   '{TECH} KILLS YOUR APP',
   'STOP MISUSING {TECH}',
   '{TECH} IN 60 SECS',

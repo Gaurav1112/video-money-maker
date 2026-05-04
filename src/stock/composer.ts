@@ -446,6 +446,15 @@ async function processScene(
       const LH = 80;
       const startY = 880;
       const tombFade = `alpha='if(lt(t,${tombStart.toFixed(3)}),0,if(gt(t,${endCardStart.toFixed(3)}),0,min((t-${tombStart.toFixed(3)})/0.5,1)))'`;
+      // Panel-18 Retention P2-A (Edge): on a real B-roll last scene the
+      // bare yellow text + 4px border at y=880 becomes nearly unreadable
+      // against complex footage. Add a 60% black drawbox behind the
+      // tombstone band that only fires while the tombstone is visible
+      // — mirrors the pattern already used for bigText (y=240) and the
+      // end-card (y=680). On synthetic navy this is harmless overlap.
+      filters.push(
+        `drawbox=x=0:y=860:w=1080:h=200:color=black@0.60:t=fill:${tombEnable}`,
+      );
       tombLines.forEach((line, idx) => {
         const escaped = escapeDrawtext(line);
         filters.push(
@@ -501,7 +510,20 @@ async function processScene(
     console.warn('[composer] ffmpeg lacks drawtext — skipping text overlays');
   }
 
-  const filterChain = filters.join(',');
+  // Panel-18 Retention P0-A (Bilyeu/Neistat): synthetic last scene
+  // (flat #0d2538 dark navy) renders 7-10s of zero motion at the
+  // exact window where the algo's 50% completion checkpoint falls.
+  // Tombstone text stimulus alone doesn't fix it — Neistat's "is
+  // anything HAPPENING?" test fails outright. A subtle ±6% brightness
+  // oscillation on a 2.5s period is sub-perceptually visible on phone
+  // screens (just enough motion to feel "alive") without distracting
+  // from the tombstone read. eval=frame is required because ffmpeg's
+  // eq filter only re-evaluates time-varying expressions per-frame
+  // when explicitly told. B-roll scenes already have ken-burns
+  // zoompan motion so this is gated to synthetic only.
+  const filterChain = isSynthetic
+    ? `eq=brightness='0.06*sin(2*PI*t/2.5)':eval=frame,${filters.join(',')}`
+    : filters.join(',');
 
   if (isSynthetic) {
     await runFfmpeg([
@@ -844,7 +866,23 @@ async function mixBgmBed(
   // compressor (control input) AND the final amix (mix dominant). A
   // single labelled stream cannot feed two filters; this is the
   // canonical ffmpeg pattern for shared signals.
-  filters.push('[0:a]aresample=44100,asplit=2[voice44k][voice44k_sc]');
+  // Panel-18 Audio P0 (Pensado/Padilla) + P1: voice processing chain
+  // before sidechain split.
+  //  - highpass=80 Hz: PrabhatNeural en-IN ships subsonic/DC content
+  //    that biases loudnorm pass-1 input_i by up to 0.3 LU. Removing
+  //    it also frees up 80-200 Hz where Hindi vowel formants ("wajah",
+  //    "isi") build up muddy resonance on earbuds.
+  //  - equalizer=7500 Hz / -3.5 dB: gentle de-esser on PrabhatNeural's
+  //    sibilance peak (6-8 kHz). On ₹8K phone speakers driven by
+  //    Class-D amps the 7-9 kHz band is the first to distort; without
+  //    this cut, T/K/S consonants land at +3-4 dB above vowel average
+  //    on a -14 LUFS master, which on cheap hardware is physically
+  //    uncomfortable.
+  filters.push(
+    '[0:a]aresample=44100,highpass=f=80:poles=2,' +
+      'equalizer=f=7500:width_type=o:width=1.5:g=-3.5,' +
+      'asplit=2[voice44k][voice44k_sc]',
+  );
 
   // Source 1: BGM bed (always present — file or procedural).
   // Panel-16 Audio A1+A4 P0 (Huang+Beato): prior `volume=-26dB` × amix
@@ -868,8 +906,13 @@ async function mixBgmBed(
     // warmth, removes consonant-masking energy). highshelf -6dB above
     // 3kHz adds a second tier of attenuation on residual harmonics so
     // any leakage past the lowpass slope (12 dB/oct) is also tamed.
+    // Panel-18 Audio P1 (Pensado): tense-suspense.mp3 carries bass
+    // content below 80 Hz that adds to the loudnorm integration window
+    // (wasting headroom) and causes faint woofer resonance on earbuds.
+    // highpass=80 mirrors the voice-side cut so both stems share the
+    // same low-end floor before they meet at the amix.
     filters.push(
-      `[${bgmIdx}:a]aformat=channel_layouts=stereo,volume=-18dB,` +
+      `[${bgmIdx}:a]aformat=channel_layouts=stereo,highpass=f=80:poles=2,volume=-18dB,` +
         `lowpass=f=1000,highshelf=f=3000:width_type=o:width=2:gain=-6,` +
         `atrim=duration=${totalDurStr},asetpts=PTS-STARTPTS[bgm]`,
     );
@@ -1020,7 +1063,12 @@ async function mixBgmBed(
     ...inputs,
     '-filter_complex', filters.join(';'),
     '-map', '[aout_pre]',
-    '-c:a', 'pcm_s16le', '-ar', '48000', '-ac', '2',
+    // Panel-18 Audio P1 (Katz): 24-bit intermediate. With BGM tail
+    // running at -40 dBr after sidechain, 16-bit gives only ~38 dB
+    // headroom above the noise floor for that stem — quantization
+    // noise biases the loudnorm pass-1 measurement by 0.1-0.2 LU.
+    // pcm_s24le eliminates this for free.
+    '-c:a', 'pcm_s24le', '-ar', '48000', '-ac', '2',
     intermediateWav,
   ]);
 
@@ -1083,16 +1131,37 @@ async function measureLoudnorm(wavPath: string): Promise<LoudnormMeasure> {
         }
         try {
           const parsed = JSON.parse(jsonChunk.slice(0, closeBrace + 1));
-          // ffmpeg returns values as strings already (e.g. "-14.9");
-          // pass them through unchanged so the second pass sees the
-          // exact byte representation it expects.
-          resolve({
+          // Panel-18 Engineering+Audio P0 (Eich/Hejlsberg/Katz):
+          // ffmpeg loudnorm emits "-inf" for input_i/input_thresh and
+          // "nan" for target_offset on near-silent input (documented
+          // behavior when the integrated window contains <-70 dBFS
+          // material). Passing these through unchanged into pass-2's
+          // filter string causes either an ffmpeg exit-1 crash or a
+          // silent fallback to single-pass that destroys the ±0.05 dB
+          // accuracy guarantee. Validate finiteness before resolving.
+          const measuredFields = {
             input_i: String(parsed.input_i),
             input_lra: String(parsed.input_lra),
             input_tp: String(parsed.input_tp),
             input_thresh: String(parsed.input_thresh),
             target_offset: String(parsed.target_offset),
-          });
+          };
+          for (const [key, raw] of Object.entries(measuredFields)) {
+            const num = parseFloat(raw);
+            if (!Number.isFinite(num)) {
+              reject(
+                new Error(
+                  `loudnorm pass-1 returned non-finite "${raw}" for ${key} ` +
+                    `(near-silent input?). Full JSON: ${JSON.stringify(parsed)}`,
+                ),
+              );
+              return;
+            }
+          }
+          // ffmpeg returns values as strings already (e.g. "-14.9");
+          // pass them through unchanged so the second pass sees the
+          // exact byte representation it expects.
+          resolve(measuredFields);
         } catch (e) {
           reject(new Error(`loudnorm pass-1 JSON parse failed: ${(e as Error).message}\nchunk: ${jsonChunk}`));
         }

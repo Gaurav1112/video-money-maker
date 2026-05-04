@@ -21,10 +21,13 @@ describe('generateAssSubtitles', () => {
     expect(content).toContain('[Script Info]');
   });
 
-  it('contains MarginV=480 in styles', async () => {
+  it('Style line MarginV is 600 (Panel-15 lift)', async () => {
     const content = readFileSync(OUT, 'utf8');
-    expect(content).toContain('MarginV');
-    expect(content).toContain('480');
+    // Panel-18 Eng P0 (Hejlsberg): assert the actual MarginV field on
+    // the Style: line, not a substring "480" that used to coincidentally
+    // appear in a stray template-literal comment. Format slot 23 is
+    // MarginV per the Format: line; the Style: line is comma-delimited.
+    expect(content).toMatch(/^Style:\s*Default,[^\n]*,600,1$/m);
   });
 
   it('has at least one Dialogue line', async () => {

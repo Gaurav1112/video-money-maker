@@ -425,8 +425,18 @@ async function main(): Promise<void> {
       // DejaVu/NotoSans-Bold has no color-emoji glyphs. Fixed: split
       // into 3 short lines (each ≤22 chars), drop the emoji entirely
       // (Beato: ASCII-only renders crisp at any fontsize, on any font).
+      // Panel-18 Retention P0 (Bilyeu): the prior end-card was a polite
+      // farewell ("Drop a comment / Subscribe / kal milte hain") — zero
+      // open loop, zero unresolved tension. Loop-rate is the #1 cold-
+      // start promotion signal in the 48h window. Replaced line 1 with
+      // a guilt/threat-avoidance question ("Tu ne ye galti ki?") that
+      // plants an unanswered loop right before the cut, and line 3 with
+      // a rewatch-pull ("Rewatch karo phir se") so the viewer has an
+      // explicit reason to either replay or comment. Subscribe sits in
+      // line 2 unchanged. All three lines remain ≤22 chars (no edge
+      // clipping) and are ASCII-only (no emoji glyph fallback).
       const endCardText = isLast
-        ? `Drop a comment\nSubscribe ${BRAND_AT}\nkal milte hain`
+        ? `Tu ne ye galti ki?\nSubscribe ${BRAND_AT}\nRewatch karo phir se`
         : undefined;
       // Panel-17 Retention P0 (Bilyeu): the last scene is extended ~6
       // frames to fit voice tail + 2s end-card pad. Voice EOF lands at

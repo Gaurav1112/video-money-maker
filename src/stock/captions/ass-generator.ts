@@ -116,14 +116,6 @@ export async function generateAssSubtitles(options: AssGeneratorOptions): Promis
   // SecondaryColour = &H00FFFFFF (white — pre-cursor/inactive)
   // OutlineColour   = &H00000000 (black — strong outline for legibility on B-roll)
   // BackColour      = &H80000000 (50% black drop shadow)
-  const header = `[Script Info]
-ScriptType: v4.00+
-PlayResX: 1080
-PlayResY: 1920
-ScaledBorderAndShadow: yes
-
-[V4+ Styles]
-Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
   // Panel-10 Ret P1 (Linus): Fontsize=80 = 4.2% of PlayResY=1920 — below
   // the mobile-shorts legibility sweet spot (5-6%). Bumped to 96 (5.0%)
   // — large enough that captions read at arm's-length on a 6" phone
@@ -140,6 +132,22 @@ Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour,
   // clean ~60px gap above the shelf for visual breathing room without
   // pushing captions into the bigText hook band (top of bigText sits
   // around y=420).
+  // Panel-18 Eng P0 (Torvalds/Hejlsberg): the comment block above used
+  // to live INSIDE the template literal and shipped verbatim into every
+  // rendered .ass file as 16 stray lines between Format: and Style:.
+  // libass tolerates them but it was build-artifact pollution and made
+  // the test `expect(content).toContain('480')` pass for the wrong
+  // reason (the stale "480-pixel margin-V band" comment text rather
+  // than the actual MarginV field, which is 600). Comments are now
+  // outside the template; tests assert the field directly.
+  const header = `[Script Info]
+ScriptType: v4.00+
+PlayResX: 1080
+PlayResY: 1920
+ScaledBorderAndShadow: yes
+
+[V4+ Styles]
+Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
 Style: Default,DejaVu Sans,96,&H0000FFFF,&H00FFFFFF,&H00000000,&H80000000,1,0,0,0,100,100,0,0,1,4,6,2,10,10,600,1
 
 [Events]
