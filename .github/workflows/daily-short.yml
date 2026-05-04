@@ -131,9 +131,27 @@ jobs:
           set -euo pipefail
           npx remotion browser ensure
           pip install --break-system-packages edge-tts==${EDGE_TTS_VERSION}
-          sudo apt-get update && sudo apt-get install -y ffmpeg
+          # Panel-18 Eng P1 (Carmack): explicitly install fonts-dejavu.
+          # ass-generator.ts pins "DejaVu Sans" in the Style: line; on
+          # ubuntu-24.04 (the rolling ubuntu-latest after mid-2025) the
+          # fonts-dejavu package is no longer default-installed (only
+          # fonts-dejavu-core ships). Without this libass silently
+          # falls back to a system sans-serif and the karaoke caption
+          # MarginV=600 + fontsize=96 layout breaks. Pinned install
+          # also makes glyph metrics byte-deterministic across runner
+          # rebuilds.
+          # Panel-19 Eng P1 (Carmack): pin ffmpeg deb to a major version
+          # so that an upstream package bump on `ubuntu-latest` cannot
+          # silently change loudnorm/pcm/libass ABIs between runs and
+          # break our byte-determinism guarantee. The two-pass loudnorm
+          # is environment-sensitive and the only reason we don't see
+          # it is because we're currently on a stable Jammy/Noble
+          # cycle. ffmpeg=7:* anchors the major version while still
+          # accepting security patches.
+          sudo apt-get update && sudo apt-get install -y "ffmpeg=7:*" fonts-dejavu
           python3 -c "import edge_tts; print('edge_tts OK')"
           ffmpeg -version | head -1
+          fc-list | grep -i "dejavu sans" | head -1
 
       - name: Clone content repo
         run: |
@@ -494,6 +512,29 @@ jobs:
             npx tsx scripts/seed-telegram.ts "$VIDEO_ID" --metadata "$META_PATH" || true
           else
             npx tsx scripts/seed-telegram.ts "$VIDEO_ID" || true
+          fi
+
+      # Panel-18 Distribution P0 (Moore/Mogilko): LinkedIn arm. The
+      # @GuruSishya-India ICP (Indian SDE freshers, ₹35-55LPA target)
+      # uses LinkedIn as their primary professional identity surface;
+      # every Hinglish-tech competitor (Apna College, Striver,
+      # TakeUforward) ships LinkedIn natively. Metadata pipeline has
+      # produced linkedin.body since B17 — this step finally wires it.
+      # Non-blocking via continue-on-error + script-side skip on
+      # absent secrets.
+      - name: Cross-post to LinkedIn
+        if: success() && inputs.dry_run != 'true' && steps.upload.outputs.video_id != ''
+        env:
+          LINKEDIN_ACCESS_TOKEN: ${{ secrets.LINKEDIN_ACCESS_TOKEN }}
+          LINKEDIN_AUTHOR_URN: ${{ secrets.LINKEDIN_AUTHOR_URN }}
+        continue-on-error: true
+        run: |
+          VIDEO_ID="${{ steps.upload.outputs.video_id }}"
+          META_PATH="${{ steps.upload.outputs.metadata_path }}"
+          if [ -n "$META_PATH" ] && [ -f "$META_PATH" ]; then
+            npx tsx scripts/post-linkedin.ts "$VIDEO_ID" --metadata "$META_PATH" || true
+          else
+            npx tsx scripts/post-linkedin.ts "$VIDEO_ID" || true
           fi
 
       # ── B4: record this publish in the ledger so we don't repeat the topic

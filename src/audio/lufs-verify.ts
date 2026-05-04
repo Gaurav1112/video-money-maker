@@ -30,6 +30,15 @@ export interface LufsVerifyOptions {
   targetTruePeak: number;
   /** Allowed deviation from targetLufs (default ±0.5 LU) */
   toleranceLu?: number;
+  /**
+   * Allowed overshoot above targetTruePeak in dB (default 0.2 dB).
+   * Panel-19 Audio P0 (Katz): two-pass loudnorm targets TP exactly,
+   * but AAC re-encoding can round true-peak up by ≤0.2 dB versus
+   * the linear-PCM measurement loudnorm sees. Without this margin
+   * the verifyLufs gate hard-fails legitimate masters at -0.9 dBTP
+   * when target is -1.0 dBTP.
+   */
+  toleranceTp?: number;
 }
 
 export interface LufsMeasurement {
@@ -63,9 +72,20 @@ export function measureLufs(filePath: string): LufsMeasurement {
 
   const stderr = (result.stderr ?? '') + (result.stdout ?? '');
 
-  const iMatch    = stderr.match(/I:\s*([-\d.]+)\s*LUFS/);
-  const peakMatch = stderr.match(/Peak:\s*([-\d.]+)\s*dBFS/);
-  const lraMatch  = stderr.match(/LRA:\s*([-\d.]+)\s*LU/);
+  // Panel-19 Audio P0 (Katz): ebur128 streams running measurements
+  // throughout the file (e.g. `t: 0.40   M: -70.0 S: -70.0 I: -70.0
+  // LUFS LRA: 0.0 LU`) before printing the FINAL "Integrated loudness"
+  // / "True peak" / "Loudness range" summary block on exit. A simple
+  // .match() returns the FIRST occurrence — which is the t=0 streaming
+  // value of -70 LUFS for any non-trivial input — not the integrated
+  // total. Use matchAll() and take the LAST occurrence so we always
+  // read the post-EOF integrated summary regardless of file length.
+  const iMatches    = [...stderr.matchAll(/I:\s*([-\d.]+)\s*LUFS/g)];
+  const peakMatches = [...stderr.matchAll(/Peak:\s*([-\d.]+)\s*dBFS/g)];
+  const lraMatches  = [...stderr.matchAll(/LRA:\s*([-\d.]+)\s*LU/g)];
+  const iMatch    = iMatches[iMatches.length - 1];
+  const peakMatch = peakMatches[peakMatches.length - 1];
+  const lraMatch  = lraMatches[lraMatches.length - 1];
 
   if (!iMatch || !peakMatch) {
     throw new Error(
@@ -88,12 +108,13 @@ export async function verifyLufs(
   filePath: string,
   opts: LufsVerifyOptions,
 ): Promise<LufsMeasurement> {
-  const { targetLufs, targetTruePeak, toleranceLu = 0.5 } = opts;
+  const { targetLufs, targetTruePeak, toleranceLu = 0.5, toleranceTp = 0.2 } = opts;
 
   const m = measureLufs(filePath);
 
   const lufsLow  = targetLufs - toleranceLu;
   const lufsHigh = targetLufs + toleranceLu;
+  const tpCeiling = targetTruePeak + toleranceTp;
 
   const errors: string[] = [];
 
@@ -105,9 +126,10 @@ export async function verifyLufs(
     );
   }
 
-  if (m.truePeakDbtp > targetTruePeak) {
+  if (m.truePeakDbtp > tpCeiling) {
     errors.push(
-      `True peak ${m.truePeakDbtp.toFixed(1)} dBTP exceeds ceiling ${targetTruePeak} dBTP` +
+      `True peak ${m.truePeakDbtp.toFixed(1)} dBTP exceeds ceiling ${targetTruePeak} dBTP ` +
+      `(+${toleranceTp} dB AAC rounding margin allowed)` +
       (m.truePeakDbtp > 0
         ? ' — HARD CLIPPING: digital distortion will be audible'
         : ''),

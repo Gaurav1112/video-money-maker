@@ -118,7 +118,12 @@ const ARCHITECTURE_PATTERNS: PatternBank = [
 
 const NETWORKING_PATTERNS: PatternBank = [
   '{TECH} WRONG? FIX NOW',
-  'FAANG USES {TECH} THIS',
+  // Panel-19 Dist P2 (Schiffer): 'FAANG USES {TECH} THIS' is the same
+  // awkward English fragment class as MESSAGING[3] was — surfaces on
+  // gRPC/REST/HTTP topics and reads as low-production noise. Replaced
+  // with a natural-rhythm interrogative that keeps the FAANG salary
+  // trigger and the {TECH} slot.
+  'WHY FAANG PICKS {TECH}',
   '{TECH} VS REST WINNER',
   'NEVER DO THIS {TECH}',
   '{TECH} IN 60 SECS',

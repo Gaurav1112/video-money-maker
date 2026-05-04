@@ -16,6 +16,7 @@ import { join, dirname, resolve as pathResolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 import { FFMPEG_BIN, FFPROBE_BIN } from '../lib/ffmpeg-bin.js';
+import { verifyLufs } from '../audio/lufs-verify.js';
 
 const execFileP = promisify(execFile);
 
@@ -281,21 +282,52 @@ export async function compose(input: ComposeInput): Promise<void> {
 
   // Step 1: process each scene clip → scene-N.mp4
   const scenePaths: string[] = [];
-  for (const scene of input.scenes) {
-    const scenePath = join(workDir, `scene-${scene.sceneIndex}.mp4`);
-    await processScene(scene, scenePath, input.enableZoompan ?? false);
-    scenePaths.push(scenePath);
+  // Panel-18 Eng P1 (Carmack/Torvalds): wrap scene processing + concat
+  // + mux in try/finally so workDir is always reaped even when a step
+  // throws. Without this, a failing pass-1 loudnorm leaves
+  // voice-plus-bgm.pre-loudnorm.wav (~3 MB) on disk, and the CI 3×
+  // retry loop multiplies that 3×.
+  try {
+    for (const scene of input.scenes) {
+      const scenePath = join(workDir, `scene-${scene.sceneIndex}.mp4`);
+      await processScene(scene, scenePath, input.enableZoompan ?? false);
+      scenePaths.push(scenePath);
+    }
+
+    // Step 2: concat all processed scenes
+    const concatPath = join(workDir, 'body.mp4');
+    await concatScenes(scenePaths, workDir, concatPath);
+
+    // Step 3: mux audio + optional watermark + optional captions → final output
+    await muxFinal(concatPath, input, workDir);
+
+    // Panel-18 Audio P0-3 (Katz): post-render LUFS gate. The two-pass
+    // loudnorm in mixBgmBed targets I=-14.0 LUFS / TPK=-1.0 dBFS but
+    // ships without a verification assertion. If pass-1 silently
+    // degrades to single-pass (e.g. measure JSON parse path that
+    // doesn't trigger our finiteness guard), the render passes
+    // quality-gate and uploads a broken master. verifyLufs throws a
+    // descriptive error if I or TPK fall outside spec; toleranceLu=0.5
+    // is conservative — two-pass typically lands within ±0.05 LU.
+    //
+    // Guard: silent-audio test fixtures and renders without a voice
+    // track skip the gate — ebur128 cannot integrate near-DC silence
+    // and the gate would block legitimate determinism tests. Production
+    // path always has voice; SKIP_LUFS_VERIFY=1 escapes for explicit
+    // override.
+    const skipLufs =
+      !input.voicePath || process.env['SKIP_LUFS_VERIFY'] === '1';
+    if (!skipLufs) {
+      await verifyLufs(input.outputPath, {
+        targetLufs: -14,
+        targetTruePeak: -1.0,
+        toleranceLu: 0.5,
+      });
+    }
+  } finally {
+    // Cleanup work dir
+    rmSync(workDir, { recursive: true, force: true });
   }
-
-  // Step 2: concat all processed scenes
-  const concatPath = join(workDir, 'body.mp4');
-  await concatScenes(scenePaths, workDir, concatPath);
-
-  // Step 3: mux audio + optional watermark + optional captions → final output
-  await muxFinal(concatPath, input, workDir);
-
-  // Cleanup work dir
-  rmSync(workDir, { recursive: true, force: true });
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -510,18 +542,16 @@ async function processScene(
     console.warn('[composer] ffmpeg lacks drawtext — skipping text overlays');
   }
 
-  // Panel-18 Retention P0-A (Bilyeu/Neistat): synthetic last scene
-  // (flat #0d2538 dark navy) renders 7-10s of zero motion at the
-  // exact window where the algo's 50% completion checkpoint falls.
-  // Tombstone text stimulus alone doesn't fix it — Neistat's "is
-  // anything HAPPENING?" test fails outright. A subtle ±6% brightness
-  // oscillation on a 2.5s period is sub-perceptually visible on phone
-  // screens (just enough motion to feel "alive") without distracting
-  // from the tombstone read. eval=frame is required because ffmpeg's
-  // eq filter only re-evaluates time-varying expressions per-frame
-  // when explicitly told. B-roll scenes already have ken-burns
-  // zoompan motion so this is gated to synthetic only.
-  const filterChain = isSynthetic
+  // Panel-19 Eng/Eich P2 (brightness pulse scope): the pulse was added
+  // for the SYNTHETIC LAST SCENE dead zone (the 7-10s tombstone window
+  // where voice has ended and the algo's 50% checkpoint falls). Gating
+  // on `isSynthetic` alone leaks the pulse into hook/body synthetic
+  // scenes, where it (a) fights the hook's static high-contrast attention
+  // grab and (b) compounds with the existing `eq=brightness=0.30:enable=
+  // 'lt(t,0.167)'` pattern-interrupt flash on odd sceneIndex synthetics.
+  // The actual signal for "this is the dead-zone scene" is the presence
+  // of tombstoneText — the orchestrator only sets it on the last scene.
+  const filterChain = isSynthetic && scene.tombstoneText
     ? `eq=brightness='0.06*sin(2*PI*t/2.5)':eval=frame,${filters.join(',')}`
     : filters.join(',');
 
@@ -866,21 +896,15 @@ async function mixBgmBed(
   // compressor (control input) AND the final amix (mix dominant). A
   // single labelled stream cannot feed two filters; this is the
   // canonical ffmpeg pattern for shared signals.
-  // Panel-18 Audio P0 (Pensado/Padilla) + P1: voice processing chain
-  // before sidechain split.
-  //  - highpass=80 Hz: PrabhatNeural en-IN ships subsonic/DC content
-  //    that biases loudnorm pass-1 input_i by up to 0.3 LU. Removing
-  //    it also frees up 80-200 Hz where Hindi vowel formants ("wajah",
-  //    "isi") build up muddy resonance on earbuds.
-  //  - equalizer=7500 Hz / -3.5 dB: gentle de-esser on PrabhatNeural's
-  //    sibilance peak (6-8 kHz). On ₹8K phone speakers driven by
-  //    Class-D amps the 7-9 kHz band is the first to distort; without
-  //    this cut, T/K/S consonants land at +3-4 dB above vowel average
-  //    on a -14 LUFS master, which on cheap hardware is physically
-  //    uncomfortable.
+  // Panel-19 Audio P1 (Padilla): width=1.5 octaves over-cuts presence
+  // (4.5-5.6 kHz vowel-formant range) along with sibilance. Narrow to
+  // 0.8 oct + slightly deeper g=-4.0 — surgical de-ess on the 7-9 kHz
+  // band only, restoring intelligibility on PrabhatNeural's vowel
+  // attack. Voice highpass=80 + de-ess chain stays in this order so
+  // sidechain sees the same processed signal as the amix dominant.
   filters.push(
     '[0:a]aresample=44100,highpass=f=80:poles=2,' +
-      'equalizer=f=7500:width_type=o:width=1.5:g=-3.5,' +
+      'equalizer=f=7500:width_type=o:width=0.8:g=-4.0,' +
       'asplit=2[voice44k][voice44k_sc]',
   );
 
@@ -906,15 +930,17 @@ async function mixBgmBed(
     // warmth, removes consonant-masking energy). highshelf -6dB above
     // 3kHz adds a second tier of attenuation on residual harmonics so
     // any leakage past the lowpass slope (12 dB/oct) is also tamed.
-    // Panel-18 Audio P1 (Pensado): tense-suspense.mp3 carries bass
-    // content below 80 Hz that adds to the loudnorm integration window
-    // (wasting headroom) and causes faint woofer resonance on earbuds.
-    // highpass=80 mirrors the voice-side cut so both stems share the
-    // same low-end floor before they meet at the amix.
+    // Panel-19 Audio P1 (Pensado): the highshelf=f=3000:gain=-6 added
+    // in P17 was redundant with `lowpass=f=1000` — the lowpass already
+    // attenuates -24 dB/oct above 1 kHz so by 3 kHz it's at -38 dB,
+    // making the additional -6 dB shelf inaudible. Removing it
+    // simplifies the chain and saves one filter pass.
+    const bgmFadeOutStart = Math.max(0, totalDur - 1.0).toFixed(3);
     filters.push(
       `[${bgmIdx}:a]aformat=channel_layouts=stereo,highpass=f=80:poles=2,volume=-18dB,` +
-        `lowpass=f=1000,highshelf=f=3000:width_type=o:width=2:gain=-6,` +
-        `atrim=duration=${totalDurStr},asetpts=PTS-STARTPTS[bgm]`,
+        `lowpass=f=1000,` +
+        `atrim=duration=${totalDurStr},asetpts=PTS-STARTPTS,` +
+        `afade=t=in:st=0:d=1.5,afade=t=out:st=${bgmFadeOutStart}:d=1.0[bgm]`,
     );
   } else {
     // Procedural pad — three detuned sines (G3 / C4 / E4 = G major triad)
@@ -1153,6 +1179,23 @@ async function measureLoudnorm(wavPath: string): Promise<LoudnormMeasure> {
                 new Error(
                   `loudnorm pass-1 returned non-finite "${raw}" for ${key} ` +
                     `(near-silent input?). Full JSON: ${JSON.stringify(parsed)}`,
+                ),
+              );
+              return;
+            }
+            // Panel-19 Audio P0 (Katz): ffmpeg's loudnorm pass-2
+            // hard-clamps target_offset to ±12 dB and silently
+            // substitutes single-pass behaviour when the measured
+            // offset exceeds that window — which destroys the
+            // ±0.05 dB accuracy guarantee. Reject explicitly so the
+            // caller sees a deterministic failure instead of a quiet
+            // measurement-mode regression.
+            if (key === 'target_offset' && Math.abs(num) > 12) {
+              reject(
+                new Error(
+                  `loudnorm pass-1 target_offset=${num} dB exceeds ffmpeg's ±12 dB clamp window — ` +
+                    `pass-2 will silently fall back to single-pass and break determinism. ` +
+                    `Full JSON: ${JSON.stringify(parsed)}`,
                 ),
               );
               return;

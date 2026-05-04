@@ -209,6 +209,31 @@ async function main(): Promise<void> {
     })
   );
 
+  // Panel-19 Retention P0-A (Bilyeu/Neistat/MrBeast/Edge): the synthetic
+  // last scene (flat #0d2538 navy) creates a 7-10s motion-dead window
+  // exactly at the algo's 50% completion checkpoint. Brightness pulse
+  // (B23) was a temporary stim — the real fix is to never SHIP a
+  // synthetic clip on the last scene. If pickForScene fell back for
+  // the takeaway scene, recycle the first real clip from an earlier
+  // body scene. Deterministic: same storyboard → same first-real-index
+  // pick. Hooked here so the composer downstream sees a real clipPath
+  // and the brightness-pulse gate (now keyed on tombstoneText, not
+  // synthetic flag) stays consistent.
+  if (clipPaths.length > 1) {
+    const lastIdx = clipPaths.length - 1;
+    if (clipPaths[lastIdx]?.startsWith('synthetic://')) {
+      const realIdx = clipPaths.findIndex(
+        (p, i) => i !== lastIdx && !p.startsWith('synthetic://')
+      );
+      if (realIdx >= 0) {
+        console.log(
+          `[orchestrator] last scene was synthetic — recycling clip from scene ${realIdx} for retention`
+        );
+        clipPaths[lastIdx] = clipPaths[realIdx]!;
+      }
+    }
+  }
+
   // 5. Determine voice path
   let voicePath: string | undefined = storyboard.audioFile
     ? path.resolve(path.dirname(sbPath), storyboard.audioFile)
@@ -533,16 +558,35 @@ async function main(): Promise<void> {
       // Panel-17 Distribution P0 (Blake/Schiffer): YT title now leads
       // with the same 4-word punchyHook the thumbnail shows, then the
       // descriptive shortTitle, then `#Shorts` (appended downstream).
-      // Result: shelf shows thumbnail "FAANG USES KAFKA WHY" stacked
-      // directly above title "FAANG USES KAFKA WHY — The Kafka..."
+      // Result: shelf shows thumbnail "WHY FAANG RUNS KAFKA" stacked
+      // directly above title "WHY FAANG RUNS KAFKA — Consumer Groups…"
       // — single coherent hook signal instead of two competing ones.
       // Title cap at 100 chars handled by generateShortMetadata.
+      //
+      // Panel-18 Distribution P1 (Blake): YT Shorts shelf truncates
+      // mobile titles at ~50-60 visible chars. Prior behavior shipped
+      // 100-char titles where the descriptive tail was invisible
+      // without tapping ("WHY FAANG RUNS KAFKA — The Kafka Consumer
+      // Groups Mistake That Costs Freshers Their First Of… #Shorts").
+      // Cap the descriptive suffix to leave the resulting title at
+      // ≤56 chars + " #Shorts" = 64 absolute, well within shelf
+      // visibility. Truncate at last word boundary to avoid mid-word
+      // cuts that read as low-production-value.
       const longTitle = (rotated?.shortTitle || bankEntry?.shortTitle || '').trim();
       if (!punchyHook) return longTitle || undefined;
       if (!longTitle) return punchyHook;
       // Avoid double-prefix when bank already starts with the punchyHook.
       if (longTitle.toUpperCase().startsWith(punchyHook.toUpperCase())) return longTitle;
-      return `${punchyHook} — ${longTitle}`;
+      const SHELF_BUDGET = 56;
+      const SEPARATOR = ' — ';
+      const remaining = SHELF_BUDGET - punchyHook.length - SEPARATOR.length;
+      let suffix = longTitle;
+      if (suffix.length > remaining) {
+        const trimmed = suffix.slice(0, Math.max(8, remaining));
+        const lastSpace = trimmed.lastIndexOf(' ');
+        suffix = lastSpace > 8 ? trimmed.slice(0, lastSpace) : trimmed;
+      }
+      return `${punchyHook}${SEPARATOR}${suffix}`;
     })(),
     salaryBand: bankEntry?.salaryBand,
     stake: bankEntry?.stake,
@@ -568,10 +612,33 @@ async function main(): Promise<void> {
       // For other platforms we rewrite that to the correct source so
       // analytics segments traffic by origin (Aud2 P0 / Dist P0).
       instagram_reels: {
-        caption: `${metadata.title}\n\n${metadata.description.split('\n').slice(0, 6).join('\n')}`
-          .replace(/utm_source=yt_shorts/g, 'utm_source=ig_reels')
-          .slice(0, 2200),
-        hashtags: metadata.tags.slice(0, 30).map((t) => `#${t}`).join(' '),
+        // Panel-18 Distribution P1 (Mogilko): prior IG caption was a
+        // verbatim copy of the YT title + first 6 lines of YT
+        // description. IG feed shows the first 125 chars before the
+        // "more" fold, and that window was burned on a YT-native
+        // string with `#Shorts` (a non-IG hashtag) and raw URLs (which
+        // are not clickable in IG captions). Result: zero hook value
+        // on the IG surface. Native adaptation: open with the
+        // hookHinglish if available (already curated for the brand
+        // voice) → 1-line value → "Link in bio" CTA. Strip raw URLs
+        // and the `#Shorts` tag. Result is a tight IG-native caption
+        // that respects the 125-char fold and uses platform-correct
+        // CTA conventions.
+        caption: (() => {
+          const igHook = (rotated?.hookHinglish || bankEntry?.hookHinglish || metadata.title)
+            .replace(/\s*#\w+\s*/g, '')
+            .trim();
+          const igStake = bankEntry?.salaryBand
+            ? `Yeh galti = ${bankEntry.salaryBand} offer cancel 🔥`
+            : 'Yeh galti = FAANG offer cancel 🔥';
+          const igCta = `Link in bio → free 80-Q FAANG sheet\n${BRAND_AT}`;
+          return [igHook, '', igStake, '', igCta].join('\n').slice(0, 2200);
+        })(),
+        hashtags: metadata.tags
+          .filter((t) => !/^shorts$/i.test(t))
+          .slice(0, 30)
+          .map((t) => `#${t}`)
+          .join(' '),
       },
       x_post: {
         // Panel-17 Distribution P0 (Schiffer): use punchyHook (4-word
