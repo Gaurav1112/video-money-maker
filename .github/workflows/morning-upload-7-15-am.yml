@@ -54,7 +54,9 @@ jobs:
           echo "/opt/rhubarb" >> $GITHUB_PATH || true
 
       - name: "Render (60m)"
-        run: npx tsx scripts/batch-render-all.ts --limit ${{ inputs.limit || '2' }}
+        env:
+          BATCH_LIMIT: ${{ inputs.limit || '2' }}
+        run: npx tsx scripts/batch-render-all.ts --limit "$BATCH_LIMIT"
         timeout-minutes: 90
 
       - name: Capture baseline
