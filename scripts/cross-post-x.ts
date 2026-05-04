@@ -13,6 +13,7 @@ function getArg(name: string): string {
 
 const topic = getArg('topic') || 'Tech Short';
 const hook = getArg('hook') || `Learn about ${topic} in 60 seconds`;
+const explicitText = getArg('text');
 const url = getArg('url') || '';
 
 const token = process.env['X_BEARER_TOKEN'];
@@ -61,7 +62,13 @@ async function postTweet(text: string, replyToId?: string): Promise<string> {
 
 try {
   console.log(`[cross-post-x] Posting thread for "${topic}"...`);
-  const tweet1Id = await postTweet(`🧵 ${hook}\n\nThread 👇`);
+  // When --text is supplied (from metadata.x_post.text), prefer it over
+  // the legacy templated thread so the tweet hook matches the on-screen
+  // hook headline + brand handle + ICP hashtags (Dist3 P0).
+  const tweet1Body = explicitText && explicitText.trim().length > 0
+    ? explicitText.trim()
+    : `🧵 ${hook}\n\nThread 👇`;
+  const tweet1Id = await postTweet(tweet1Body);
   const tweet2Id = await postTweet(`💡 Key insight: Understanding ${topic} is essential for building scalable systems.\n\nWatch the full 60-second explainer below 👇`, tweet1Id);
   await postTweet(`${url}\n\n#${topic.replace(/\s+/g, '')} #TechShorts #SystemDesign #LearnInPublic`, tweet2Id);
   console.log(`[cross-post-x] Thread posted successfully (tweet1=${tweet1Id})`);

@@ -23,6 +23,7 @@ import { execFile } from 'node:child_process';
 import { existsSync, copyFileSync, mkdirSync, writeFileSync, createReadStream } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { promisify } from 'node:util';
+import { FFMPEG_BIN, FFPROBE_BIN } from '../lib/ffmpeg-bin.js';
 import * as path from 'node:path';
 
 const execFileP = promisify(execFile);
@@ -135,7 +136,7 @@ async function synthesizeElevenLabs(opts: TtsOptions): Promise<void> {
 }
 
 async function probeDurationSec(path: string): Promise<number> {
-  const { stdout } = await execFileP('ffprobe', [
+  const { stdout } = await execFileP(FFPROBE_BIN, [
     '-v', 'error',
     '-show_entries', 'format=duration',
     '-of', 'csv=p=0',

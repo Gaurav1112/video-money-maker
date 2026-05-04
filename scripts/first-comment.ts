@@ -72,10 +72,18 @@ function getAuthClient(): InstanceType<typeof google.auth.OAuth2> {
 
 export function buildFirstCommentText(meta: ShortMetadata | null): string {
   const topic = (meta?.topic || 'this concept').trim();
+  const slug = (meta?.slug || '').trim();
+  // Deep-link to the topic page (with UTM attribution to first-comment
+  // surface) when slug is known; otherwise fall back to the homepage so
+  // the comment is never broken (Dist4 P0 first-comment UTM blind fix).
+  const utm = `utm_source=yt_first_comment&utm_medium=comment&utm_campaign=${encodeURIComponent(slug || 'unknown')}&utm_content=cta_first_comment`;
+  const url = slug
+    ? `${SITE_URL}/topics/${slug}?${utm}`
+    : `${SITE_URL}/?${utm}`;
   return [
-    `🎯 Want the FULL ${topic} breakdown (free, with diagrams)?`,
+    `🎯 Aaj ka ${topic} ka FULL deep-dive (free, illustrated):`,
     ``,
-    `👉 ${SITE_URL}`,
+    `👉 ${url}`,
     ``,
     `Drop a 🔥 if this clicked, or comment what topic you want next!`,
   ].join('\n');

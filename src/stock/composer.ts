@@ -14,6 +14,7 @@ import { execFile } from 'node:child_process';
 import { existsSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { promisify } from 'node:util';
+import { FFMPEG_BIN, FFPROBE_BIN } from '../lib/ffmpeg-bin.js';
 
 const execFileP = promisify(execFile);
 
@@ -24,7 +25,7 @@ let assAvailableCache: boolean | null = null;
 async function isAssFilterAvailable(): Promise<boolean> {
   if (assAvailableCache !== null) return assAvailableCache;
   try {
-    const { stdout } = await execFileP('ffmpeg', ['-hide_banner', '-filters'], {
+    const { stdout } = await execFileP(FFMPEG_BIN, ['-hide_banner', '-filters'], {
       maxBuffer: 4 * 1024 * 1024,
     });
     assAvailableCache = /^\s*\S+\s+ass\s/m.test(stdout);
@@ -38,7 +39,7 @@ let drawtextAvailableCache: boolean | null = null;
 async function isDrawtextAvailable(): Promise<boolean> {
   if (drawtextAvailableCache !== null) return drawtextAvailableCache;
   try {
-    const { stdout } = await execFileP('ffmpeg', ['-hide_banner', '-filters'], {
+    const { stdout } = await execFileP(FFMPEG_BIN, ['-hide_banner', '-filters'], {
       maxBuffer: 4 * 1024 * 1024,
     });
     drawtextAvailableCache = /^\s*\S+\s+drawtext\s/m.test(stdout);
@@ -377,15 +378,20 @@ async function muxFinal(
   // Determine total duration from body video
   const totalDur = await probeDuration(bodyPath);
 
-  // If no real voice, generate silent audio of same duration
+  // If no real voice, generate silent audio of same duration. Use a
+  // .m4a container instead of raw .aac (ADTS) — ffmpeg-static decodes
+  // ADTS audio through some mux paths as 0-length, dropping the audio
+  // stream entirely from the final output. .m4a (ISO/MP4) round-trips
+  // cleanly.
   let audioPath: string;
   if (hasVoice) {
     audioPath = input.voicePath!;
   } else {
-    audioPath = join(workDir, 'silence.aac');
+    audioPath = join(workDir, 'silence.m4a');
     await runFfmpeg([
       '-f', 'lavfi',
-      '-i', `aevalsrc=0:channel_layout=stereo:sample_rate=44100:duration=${totalDur}`,
+      '-i', `anullsrc=channel_layout=stereo:sample_rate=44100`,
+      '-t', `${totalDur}`,
       '-c:a', 'aac',
       '-b:a', '128k',
       audioPath,
@@ -465,8 +471,7 @@ async function muxFinal(
 
 async function probeDuration(videoPath: string): Promise<number> {
   return new Promise((resolve, reject) => {
-    execFile(
-      'ffprobe',
+    execFile(FFPROBE_BIN,
       [
         '-v', 'error',
         '-show_entries', 'format=duration',
@@ -483,7 +488,7 @@ async function probeDuration(videoPath: string): Promise<number> {
 
 function runFfmpeg(args: string[]): Promise<void> {
   return new Promise((resolve, reject) => {
-    execFile('ffmpeg', ['-y', ...args], { maxBuffer: 10 * 1024 * 1024 }, (err, _stdout, stderr) => {
+    execFile(FFMPEG_BIN, ['-y', ...args], { maxBuffer: 10 * 1024 * 1024 }, (err, _stdout, stderr) => {
       if (err) {
         reject(new Error(`ffmpeg failed:\n${stderr}`));
       } else {

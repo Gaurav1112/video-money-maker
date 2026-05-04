@@ -1,4 +1,5 @@
 import { execFile } from 'node:child_process';
+import { FFMPEG_BIN, FFPROBE_BIN } from '../lib/ffmpeg-bin.js';
 import { promisify } from 'node:util';
 
 const execFileAsync = promisify(execFile);
@@ -16,7 +17,7 @@ export interface QualityGateResult {
 
 async function getVideoDuration(videoPath: string): Promise<number> {
   try {
-    const { stdout } = await execFileAsync('ffprobe', [
+    const { stdout } = await execFileAsync(FFPROBE_BIN, [
       '-v', 'error',
       '-show_entries', 'format=duration',
       '-of', 'csv=p=0',
@@ -42,7 +43,7 @@ async function getVideoDuration(videoPath: string): Promise<number> {
 async function getFrameVariance(videoPath: string, timeOffset: number): Promise<number> {
   try {
     // Sample 12 consecutive frames so YDIF (needs 2 frames) has values.
-    const { stderr } = await execFileAsync('ffmpeg', [
+    const { stderr } = await execFileAsync(FFMPEG_BIN, [
       '-y',
       '-ss', String(timeOffset),
       '-i', videoPath,

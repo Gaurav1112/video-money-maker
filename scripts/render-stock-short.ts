@@ -29,8 +29,9 @@ import type { StockStoryboard, PickedClip, StockScene } from '../src/stock/types
 import { generateAssSubtitles } from '../src/stock/captions/ass-generator.js';
 import { runQualityGate } from '../src/stock/quality-gate.js';
 import { synthesize as ttsSynthesize } from '../src/voice/tts.js';
-import { generateShortMetadata } from '../src/services/short-metadata.js';
+import { generateShortMetadata, BRAND_AT, BRAND_HANDLE_RAW } from '../src/services/short-metadata.js';
 import { execFile } from 'node:child_process';
+import { FFMPEG_BIN, FFPROBE_BIN } from '../src/lib/ffmpeg-bin.js';
 import { promisify } from 'node:util';
 import * as crypto from 'node:crypto';
 
@@ -292,19 +293,29 @@ async function main(): Promise<void> {
       // Cross-platform contracts so adapters in CI don't have to reverse-
       // engineer the field shape per platform. Each sub-object is a strict
       // subset of YT metadata adapted to platform character/format limits.
+      //
+      // UTM attribution: YT description URLs carry `utm_source=yt_shorts`.
+      // For other platforms we rewrite that to the correct source so
+      // analytics segments traffic by origin (Aud2 P0 / Dist P0).
       instagram_reels: {
-        caption: `${metadata.title}\n\n${metadata.description.split('\n').slice(0, 6).join('\n')}`.slice(0, 2200),
+        caption: `${metadata.title}\n\n${metadata.description.split('\n').slice(0, 6).join('\n')}`
+          .replace(/utm_source=yt_shorts/g, 'utm_source=ig_reels')
+          .slice(0, 2200),
         hashtags: metadata.tags.slice(0, 30).map((t) => `#${t}`).join(' '),
       },
       x_post: {
-        text: `${hookHeadline}\n\n${metadata.tags.slice(0, 4).map((t) => `#${t}`).join(' ')}`.slice(0, 280),
+        // Hook + brand handle + ICP hashtags. cross-post-x.ts appends the
+        // video URL separately so we don't include it in `text`.
+        text: `${hookHeadline}\n\n${BRAND_AT} · ${metadata.tags.slice(0, 4).map((t) => `#${t}`).join(' ')}`.slice(0, 280),
       },
       linkedin: {
         title: metadata.title.replace(/\s*#\w+\s*/g, '').trim(),
-        body: metadata.description.split('\n').slice(0, 8).join('\n'),
+        body: metadata.description
+          .replace(/utm_source=yt_shorts/g, 'utm_source=linkedin')
+          .split('\n').slice(0, 8).join('\n'),
       },
       telegram: {
-        text: `🆕 ${metadata.title}\n\n${metadata.description.split('\n').slice(0, 4).join('\n')}`,
+        text: `🆕 ${metadata.title}\n\n${metadata.description.replace(/utm_source=yt_shorts/g, 'utm_source=telegram').split('\n').slice(0, 4).join('\n')}`,
       },
     }, null, 2),
     'utf8',
@@ -319,7 +330,7 @@ async function main(): Promise<void> {
   await generateThumbnailPng({
     sourceVideoPath: outputPath,
     hook: hookHeadline,
-    handle: process.env['CHANNEL_HANDLE'] ?? '@GuruSishya-India',
+    handle: process.env['CHANNEL_HANDLE'] ?? BRAND_AT,
     outPath: thumbnailPath,
   });
   console.log(`[orchestrator] ✓ thumbnail: ${thumbnailPath}`);
@@ -341,15 +352,15 @@ async function main(): Promise<void> {
  * fits on 3 wrapped lines @ 14 chars on the 1080×1920 hook band.
  */
 const HOOK_TEMPLATES: Array<(topic: string) => string> = [
-  (t) => `${t} in 60s`,                       // baseline keeper for variety
-  (t) => `Most engineers get ${t} wrong`,     // H3 contrarian
-  (t) => `${t} — what FAANG asks`,            // H2 stakes
-  (t) => `Why ${t} matters now`,              // H4 curiosity
-  (t) => `3 things about ${t}`,               // H1 number-lead
-  (t) => `Bhai, ${t} ek line me`,             // H5 Hinglish peer
-  (t) => `Sirf 60 sec me ${t}`,               // H5 Hinglish density
-  (t) => `${t} — placement walo ke liye`,     // H5 Hinglish ICP
-  (t) => `${t} ka asli concept`,              // H5 Hinglish authority
+  (t) => `${t} sirf 60 sec me`,                // H1 density (Hinglish)
+  (t) => `${t} galat samjhe the?`,             // H3 contrarian (Hinglish)
+  (t) => `${t} — FAANG ka favourite`,          // H2 stakes (Hinglish)
+  (t) => `${t} kyun zaruri hai`,               // H4 curiosity (Hinglish)
+  (t) => `3 baatein ${t} ke baare me`,         // H1 number-lead (Hinglish)
+  (t) => `Bhai, ${t} ek line me`,              // H5 peer (Hinglish)
+  (t) => `Sirf 60 sec me ${t}`,                // H5 density (Hinglish)
+  (t) => `${t} — placement walo ke liye`,      // H5 ICP (Hinglish)
+  (t) => `${t} ka asli concept`,               // H5 authority (Hinglish)
 ];
 
 /**
@@ -444,7 +455,7 @@ async function buildMergedAssCaptions(sb: StockStoryboard, outPath: string): Pro
  * env var (CHANNEL_HANDLE; default "@GuruSishya-India").
  */
 async function generateWatermarkPng(outPath: string): Promise<void> {
-  const handle = process.env['CHANNEL_HANDLE'] ?? '@GuruSishya-India';
+  const handle = process.env['CHANNEL_HANDLE'] ?? BRAND_AT;
   const safeHandle = escapeDrawtext(handle.replace(/[^A-Za-z0-9@_\- ]/g, ''));
 
   // Try a few common fontfile locations; fall back to default font.
@@ -465,7 +476,7 @@ async function generateWatermarkPng(outPath: string): Promise<void> {
     } catch { /* ignore */ }
   }
 
-  await execFileAsync('ffmpeg', [
+  await execFileAsync(FFMPEG_BIN, [
     '-y',
     '-f', 'lavfi',
     '-i', 'color=color=black@0.0:s=440x80:d=1',
@@ -512,7 +523,7 @@ async function generateNarrationForScenes(
     if (!text) {
       // Synthesize a 0.5s silent placeholder so concat math stays consistent.
       const silentPath = path.join(workDir, `voice-${i}.mp3`);
-      await execFileAsync('ffmpeg', [
+      await execFileAsync(FFMPEG_BIN, [
         '-y',
         '-f', 'lavfi',
         '-i', 'anullsrc=channel_layout=mono:sample_rate=24000',
@@ -530,7 +541,7 @@ async function generateNarrationForScenes(
     // Per-segment loudnorm so a quiet sentence next to a loud one doesn't
     // jump 4-6 LU after global normalisation. Single-pass loudnorm at
     // segment level is cheap and removes the within-video pump.
-    await execFileAsync('ffmpeg', [
+    await execFileAsync(FFMPEG_BIN, [
       '-y',
       '-i', rawPath,
       '-af', 'loudnorm=I=-16:LRA=11:tp=-1.5',
@@ -552,7 +563,7 @@ async function generateNarrationForScenes(
     'utf8',
   );
   const finalAudio = path.join(workDir, 'voice.mp3');
-  await execFileAsync('ffmpeg', [
+  await execFileAsync(FFMPEG_BIN, [
     '-y',
     '-f', 'concat',
     '-safe', '0',
@@ -626,7 +637,7 @@ async function generateThumbnailPng(opts: {
     `borderw=4:bordercolor=black@0.95:x=w-text_w-40:y=h-text_h-160`
   );
 
-  await execFileAsync('ffmpeg', [
+  await execFileAsync(FFMPEG_BIN, [
     '-y',
     '-ss', '0.5',
     '-i', sourceVideoPath,
