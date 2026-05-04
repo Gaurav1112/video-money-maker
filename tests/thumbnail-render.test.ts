@@ -38,9 +38,10 @@ function hasFfmpeg(): boolean {
 
 function hasGeqFilter(): boolean {
   try {
-    const result = execFileSync('ffmpeg', ['-filters'], { encoding: 'utf-8', timeout: 5000 });
+    const result = execFileSync('ffmpeg', ['-filters'], { encoding: 'utf-8', timeout: 5000, stdio: ['pipe', 'pipe', 'pipe'] });
     return result.includes('geq');
-  } catch {
+  } catch (e) {
+    // If we can't detect, assume not available to be safe
     return false;
   }
 }
