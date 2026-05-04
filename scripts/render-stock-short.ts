@@ -31,6 +31,7 @@ import { runQualityGate } from '../src/stock/quality-gate.js';
 import { synthesize as ttsSynthesize } from '../src/voice/tts.js';
 import { generateShortMetadata, BRAND_AT, BRAND_HANDLE_RAW } from '../src/services/short-metadata.js';
 import { findTopicBankEntry } from '../src/data/topic-bank-loader.js';
+import { rotateBankHook } from '../src/data/hook-rotator.js';
 import { execFile } from 'node:child_process';
 import { FFMPEG_BIN, FFPROBE_BIN } from '../src/lib/ffmpeg-bin.js';
 import { promisify } from 'node:util';
@@ -173,31 +174,39 @@ async function main(): Promise<void> {
   // hook through TTS+title while keeping the visual hook short for the
   // 1080×1920 hook band.
   const bankEntry = findTopicBankEntry(slug);
-  if (bankEntry) {
-    console.log(`[orchestrator] topic-bank hit: ${slug} → "${bankEntry.hookHinglish ?? bankEntry.shortTitle}"`);
+  // Panel-10 Dist/Aud P0 (MrBeast/Casey/Striver/Apna): the raw bank
+  // strings are 100% template-stamped — all 37 system-design hooks
+  // read "Kal Amazon interview hai? Ye {name} mistake mat karna 🔥",
+  // all 37 titles read "90% of Engineers Get {name} WRONG 😳". We
+  // deterministically rotate each topic across a 5-template-per-
+  // category pool keyed on slug-hash, killing shelf-fatigue without
+  // a 110-row JSON rewrite. Original strings kept in the file as a
+  // schema reference but ignored at runtime.
+  const rotated = bankEntry ? rotateBankHook(bankEntry) : null;
+  if (bankEntry && rotated) {
+    console.log(`[orchestrator] topic-bank hit: ${slug} → rotated h/${rotated.hinglishIdx} t/${rotated.titleIdx}: "${rotated.hookHinglish}"`);
   }
 
-  // Hook headline is the SINGLE source of truth for scene-0 visual text,
-  // scene-0 TTS audio, and the YT title — computed once here so all three
-  // surfaces stay in lock-step. Fixes the v9 regression where scene-0 audio
-  // (synthesised from full narration) overran the 3s visual cap and bled
-  // into scene-1 visuals.
   const hookHeadline = buildHookHeadline(
     storyboard.topic,
     storyboard.scenes[0]?.narration ?? '',
   );
-  // hookSpoken: full Hinglish hook for TTS scene-0 audio (longer, urgent).
-  // hookVisual: ≤42-char headline for the on-screen hook band — derived
-  // from hookSpoken so audio/visual carry the SAME words in the first 3s
-  // (Panel-9 Dist P0 — coherence within the algorithm's most-weighted
-  // retention window). When hookSpoken fits, it appears verbatim; when
-  // it overflows, we ellipsis-truncate at a word boundary so the
-  // truncated visual still reads as the start of the spoken hook.
-  const hookSpoken: string = bankEntry?.hookHinglish?.trim() || hookHeadline;
+  // hookSpoken: full Hinglish hook for TTS scene-0 audio.
+  // hookVisual: scene-0 on-screen big text. Panel-10 Dist P0-A (MrBeast
+  // regression fix): visual hook MUST match the thumbnail + YT title or
+  // we ship a click-coherence break. Thumbnail/title both use rotated
+  // shortTitle, so visual hook now also uses rotated shortTitle (English,
+  // matches what the viewer just clicked). Audio stays Hinglish for ICP
+  // authenticity — Indian dev audiences are bilingual; the EN visual +
+  // Hinglish audio combo is normal for the niche (cf. Apna College,
+  // Striver, 100xDevs).
+  const hookSpoken: string = rotated?.hookHinglish || bankEntry?.hookHinglish?.trim() || hookHeadline;
+  const visualSource: string = rotated?.shortTitle || bankEntry?.shortTitle?.trim() || hookSpoken;
   const hookVisual: string = (() => {
-    const trimmed = hookSpoken.replace(/\s+/g, ' ').trim();
+    const trimmed = visualSource.replace(/\s+/g, ' ').trim();
     if (trimmed.length <= 42) return trimmed;
-    // Truncate on a word boundary ≤39 chars + ellipsis.
+    // Panel-10 Dist P1 (Casey): truncate from the END (preserve the punchy
+    // start), not the middle. Word-boundary cut ≤39 chars + ellipsis.
     const cut = trimmed.slice(0, 40);
     const lastSpace = cut.lastIndexOf(' ');
     return (lastSpace > 20 ? cut.slice(0, lastSpace) : cut.slice(0, 39)) + '…';
@@ -221,7 +230,11 @@ async function main(): Promise<void> {
       // production value on Shorts. Hook fires at ≤3s (the algorithm
       // SLA); body scenes are capped at 3.5s — fast enough to feel
       // edited, slow enough that an idea fits.
-      const HOOK_HARD_CAP = Math.round(3.0 * storyboard.fps);    // 3.0s — Dist1 P1
+      // Panel-10 Aud P0 (Kunal/Harkirat): 3.0s mid-syllable cuts on
+      // Hindi sentences ("Kal Amazon interview hai? Ye…" needs ~3.7s
+      // breath). Bumped to 4.0s — still well under the 5s pre-skip
+      // window where YT measures hook attention.
+      const HOOK_HARD_CAP = Math.round(4.0 * storyboard.fps);    // 4.0s — Aud P0
       const PER_SCENE_HARD_CAP = Math.round(3.5 * storyboard.fps); // 3.5s — Ret2 P0
       const TOTAL_HARD_CAP = 55 * storyboard.fps;                  // YT Shorts ≤60s
       let runningTotal = 0;
@@ -252,7 +265,7 @@ async function main(): Promise<void> {
       // half-narrated short.
       const totalAudioSec = ttsResult.sceneDurations.reduce((a, b) => a + (b ?? 0), 0);
       const totalVideoSec = runningTotal / storyboard.fps;
-      const END_CARD_SEC = 1.5;
+      const END_CARD_SEC = 2.0;
       const desiredVideoSec = totalAudioSec + END_CARD_SEC;
       if (desiredVideoSec > totalVideoSec + 0.05) {
         const totalCapSec = TOTAL_HARD_CAP / storyboard.fps;
@@ -392,9 +405,10 @@ async function main(): Promise<void> {
     })),
     siteTopicSlug: bankEntry?.siteTopicSlug ?? slug,
     hookHeadline,
-    shortTitle: bankEntry?.shortTitle,
+    shortTitle: rotated?.shortTitle || bankEntry?.shortTitle,
     salaryBand: bankEntry?.salaryBand,
     stake: bankEntry?.stake,
+    hookHinglish: rotated?.hookHinglish || bankEntry?.hookHinglish,
   });
   const metadataPath = path.join(finalOutDir, 'metadata.json');
   fs.writeFileSync(
@@ -449,7 +463,7 @@ async function main(): Promise<void> {
   // clicks. When a curated bank shortTitle exists we put THAT on the
   // thumbnail; otherwise fall through to hookSpoken (which now also
   // drives the title), and finally to the legacy hookHeadline.
-  const thumbnailHook = bankEntry?.shortTitle?.trim() || hookSpoken || hookHeadline;
+  const thumbnailHook = rotated?.shortTitle || bankEntry?.shortTitle?.trim() || hookSpoken || hookHeadline;
   await generateThumbnailPng({
     sourceVideoPath: outputPath,
     hook: thumbnailHook,

@@ -94,7 +94,11 @@ ScaledBorderAndShadow: yes
 
 [V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
-Style: Default,DejaVu Sans,80,&H0000FFFF,&H00FFFFFF,&H00000000,&H80000000,1,0,0,0,100,100,0,0,1,4,6,2,10,10,480,1
+  // Panel-10 Ret P1 (Linus): Fontsize=80 = 4.2% of PlayResY=1920 — below
+  // the mobile-shorts legibility sweet spot (5-6%). Bumped to 96 (5.0%)
+  // — large enough that captions read at arm's-length on a 6" phone
+  // without crowding the 480-pixel margin-V band.
+Style: Default,DejaVu Sans,96,&H0000FFFF,&H00FFFFFF,&H00000000,&H80000000,1,0,0,0,100,100,0,0,1,4,6,2,10,10,480,1
 
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text

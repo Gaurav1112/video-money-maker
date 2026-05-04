@@ -58,6 +58,13 @@ export interface MetadataInput {
    * frame — Panel-9 Aud P1 (was dead).
    */
   stake?: string;
+  /**
+   * Hinglish hook spoken in the audio. Surfaced in the description as
+   * a quoted line so the YT search index gets the Hindi keywords —
+   * Panel-10 Dist P1 (Schiffer): hookHinglish was previously only in
+   * the audio waveform; nothing pulled it into the indexable text.
+   */
+  hookHinglish?: string;
 }
 
 /** YouTube hard cap is 100 chars; we leave 6 for `#Shorts` ⇒ 94 for hook copy. */
@@ -168,7 +175,7 @@ export function generateShortMetadata(
   storyboard: StockStoryboard,
   input: MetadataInput = {}
 ): ShortMetadata {
-  const { licenses = [], extraTags = [], siteTopicSlug, hookHeadline, shortTitle, salaryBand, stake } = input;
+  const { licenses = [], extraTags = [], siteTopicSlug, hookHeadline, shortTitle, salaryBand, stake, hookHinglish } = input;
   // Panel-8 Dist P0: prefer topic-bank curated shortTitle when present —
   // each one is a hand-written power-line tuned to the specific topic
   // ("90% of Engineers Get Kafka Consumer Groups WRONG 😳"). Avoids
@@ -233,15 +240,16 @@ export function generateShortMetadata(
         ? `⚠️ ${stake}`
         : null;
 
-  // Panel-9 Dist P0 (#3): hashtags must sit ABOVE the YT mobile fold so
-  // they (a) act as discovery anchors before the "...more" cut-off, and
-  // (b) signal niche to the algorithm in the first ~120 chars. They
-  // also still appear at the bottom for legacy parsers that index trailing
-  // tags. A small duplicate cost is much cheaper than a missed surface.
+  // Panel-10 Dist P1 (Schiffer): description structure tuned for both
+  // the algorithm (hashtags above the YT mobile fold for niche signal)
+  // AND the human reader (lead with the hook, not a hashtag soup).
+  // Order: ⚡hook → hashtags → stake → spoken Hinglish hook (SEO) → CTAs.
+  // Hashtags also still appear at the bottom for legacy parsers.
   const description = [
-    `${NICHE_HASHTAGS} ${BROAD_HASHTAGS}`,
     `⚡ ${hook}`,
+    `${NICHE_HASHTAGS} ${BROAD_HASHTAGS}`,
     ...(stakeLine ? [stakeLine] : []),
+    ...(hookHinglish ? [`🎙️ "${hookHinglish}"`] : []),
     `🔗 Full deep-dive + practice: ${ctaUrl}`,
     `📘 Instant FREE 80-Q FAANG cheatsheet (no signup) → ${leadMagnetUrl}`,
     `👉 Bhai, subscribe karo ${BRAND_AT} — roz ek naya 60-sec tech Short; pinned comment me aaj ka deep-dive PDF link milega.`,

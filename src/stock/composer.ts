@@ -274,13 +274,10 @@ async function processScene(
       zoompanFilter = `zoompan=z='max(1,1.20-${zoomOutVel}*on)':d=${durFrames}:s=1080x1920:fps=${FPS}`;
     }
   }
-  // Panel-9 Ret P0 (McKinnon): zero color grading on raw stock clips
-  // is the single largest perceived-production-value ceiling. A subtle
-  // saturation lift (1.06) + small contrast bump (1.04) gives a
-  // consistent "house look" across heterogeneous Mixkit/Pexels/Pixabay
-  // sources without crushing skin tones. Applied AFTER zoompan so it
-  // composes the final color over the zoomed crop.
-  const colorGrade = ',eq=saturation=1.06:contrast=1.04';
+  // Panel-10 Ret P1 (McKinnon): saturation=1.06/contrast=1.04 was
+  // sub-perceptual on AMOLED panels. Bumped to saturation=1.10 and
+  // contrast=1.08 for visible house-look without crushing skin tones.
+  const colorGrade = ',eq=saturation=1.10:contrast=1.08';
   const baseScale = enableZoompan
     ? `scale=-2:1920,crop=1080:1920,${zoompanFilter}${colorGrade}`
     : `scale=-2:1920,crop=1080:1920${colorGrade}`;
@@ -292,8 +289,12 @@ async function processScene(
   // viewer's foveal attention — the same trick TikTok/Reels editors
   // use mid-clip to defeat doom-scroll fatigue. Skipped for the hook
   // (sceneIndex 0) and scene-1/scene-2 to keep the open clean.
+  // Panel-10 Ret P0 (Stuart Edge): 80ms ≈ 2.4 frames at 30fps — below
+  // the perceptual threshold for a pattern interrupt. Bumped to 167ms
+  // (5 frames) at +0.30 brightness so the flash is consciously
+  // detectable but still reads as a "cut feel" not a defect.
   if (scene.sceneIndex >= 3 && scene.sceneIndex % 3 === 0) {
-    filters.push(`eq=brightness=0.20:enable='lt(t,0.08)'`);
+    filters.push(`eq=brightness=0.30:enable='lt(t,0.167)'`);
   }
 
   const hasOverlay = !!(scene.bigText || scene.captionText || scene.endCardText);
@@ -319,7 +320,10 @@ async function processScene(
     // at y=240 to clear the Subscribe overlap, height 480 ⇒ ends at 720.
     if (scene.bigText) {
       filters.push('drawbox=x=0:y=240:w=1080:h=480:color=black@0.55:t=fill');
-      const hookLines = wrapText(scene.bigText, 14).split('\n').slice(0, 3);
+      // Panel-10 Ret P0 (Linus): wrap=14 fragments natural 2-word phrases
+      // ("Round / Robin", "Consumer / Groups"). Widened to 18 — still
+      // fits 1080-wide hook band at FS=92 with safe-zone margins.
+      const hookLines = wrapText(scene.bigText, 18).split('\n').slice(0, 3);
       const FS = 92;
       const LH = 120;
       const totalH = hookLines.length * LH;
@@ -362,7 +366,11 @@ async function processScene(
     // the underlying B-roll. enable= timing is scoped to this scene's
     // local timestamp (relative to scene start, not absolute).
     if (scene.endCardText) {
-      const endCardStart = Math.max(0, scene.durationSec - 1.5);
+      // Panel-10 Ret P1 (Edge): 1.5s is too short for a 3-line CTA read
+      // (eye-track studies put 3-line readability floor at 1.8-2.0s).
+      // Extended to 2.0s so the viewer has time to actually parse the
+      // ask before the loop bumps them back to scene-0.
+      const endCardStart = Math.max(0, scene.durationSec - 2.0);
       const endCardEnable = `enable='gte(t,${endCardStart.toFixed(3)})'`;
       // Panel-9 Ret/Dist P1 (MKBHD/Schiffer): drawbox at y=760+400 ended
       // at 1160, overlapping the ASS caption band 1080-1540 by 80 px on
@@ -631,7 +639,7 @@ async function mixBgmBed(
       '-filter_complex',
       [
         '[1:a]aformat=channel_layouts=stereo,volume=-26dB,atrim=duration=' + totalDur.toFixed(3) + ',asetpts=PTS-STARTPTS[bgm]',
-        '[bgm][0:a]sidechaincompress=threshold=0.04:ratio=8:attack=10:release=300[ducked]',
+        '[bgm][0:a]sidechaincompress=threshold=0.04:ratio=8:attack=10:release=200[ducked]',
         '[0:a][ducked]amix=inputs=2:duration=first:dropout_transition=0[mix]',
         '[mix]loudnorm=I=-14:LRA=11:tp=-1.5[aout]',
       ].join(';'),
@@ -671,7 +679,7 @@ async function mixBgmBed(
     [
       '[1:a]aformat=channel_layouts=stereo,lowpass=f=700,tremolo=f=0.25:d=0.10,volume=-26dB[bgm]',
       '[2:a]aformat=channel_layouts=stereo[sfx]',
-      '[bgm][0:a]sidechaincompress=threshold=0.04:ratio=8:attack=10:release=300[ducked]',
+      '[bgm][0:a]sidechaincompress=threshold=0.04:ratio=8:attack=10:release=200[ducked]',
       '[0:a][ducked][sfx]amix=inputs=3:duration=first:dropout_transition=0:weights=1 0.35 0.6[mix]',
       '[mix]loudnorm=I=-14:LRA=11:tp=-1.5[aout]',
     ].join(';'),
