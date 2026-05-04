@@ -175,6 +175,7 @@ jobs:
           path: output/hinglish/
 
       - name: Upload Hinglish video to YouTube
+        id: upload-hinglish
         env:
           TOPIC: ${{ needs.determine.outputs.topic }}
           SESSION: ${{ needs.determine.outputs.session }}
@@ -191,15 +192,94 @@ jobs:
             --audio "output/hinglish/${TOPIC}/session-${SESSION}/audio-hi.mp3" \
             --playlist "$YOUTUBE_HINGLISH_PLAYLIST_ID"
 
+      # ── Panel-21 P0-B: Cross-post Hinglish upload to all social platforms ──
+      # Mirrors daily-short.yml lines 452-546. Each step is continue-on-error
+      # so a failing social post never blocks the queue mark or commit.
+
+      - name: Cross-post to X/Twitter
+        if: success() && inputs.dry_run != 'true' && steps.upload-hinglish.outputs.video_id != ''
+        env:
+          X_BEARER_TOKEN: ${{ secrets.X_BEARER_TOKEN }}
+          X_API_KEY: ${{ secrets.X_API_KEY }}
+          X_API_SECRET: ${{ secrets.X_API_SECRET }}
+          X_ACCESS_TOKEN: ${{ secrets.X_ACCESS_TOKEN }}
+          X_ACCESS_SECRET: ${{ secrets.X_ACCESS_SECRET }}
+        continue-on-error: true
+        run: |
+          META_PATH="${{ steps.upload-hinglish.outputs.metadata_path }}"
+          VIDEO_URL="https://youtube.com/shorts/${{ steps.upload-hinglish.outputs.video_id }}"
+          if [ -n "$META_PATH" ] && [ -f "$META_PATH" ]; then
+            TOPIC=$(python3 -c "import sys,json; d=json.load(open('$META_PATH')); print(d.get('topic','Tech Short'))" 2>/dev/null || echo "Tech Short")
+            X_TEXT=$(python3 -c "import sys,json; d=json.load(open('$META_PATH')); print(d.get('x_post',{}).get('text', d.get('hook','')))" 2>/dev/null || echo "")
+            npx tsx scripts/cross-post-x.ts --topic "$TOPIC" --text "$X_TEXT" --url "$VIDEO_URL" || true
+          fi
+
+      - name: Cross-post to Instagram Reels
+        if: success() && inputs.dry_run != 'true' && steps.upload-hinglish.outputs.video_id != ''
+        env:
+          INSTAGRAM_ACCESS_TOKEN: ${{ secrets.INSTAGRAM_ACCESS_TOKEN }}
+          INSTAGRAM_BUSINESS_ID: ${{ secrets.INSTAGRAM_BUSINESS_ID }}
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }}
+          R2_PUBLIC_URL: ${{ secrets.R2_PUBLIC_URL }}
+        continue-on-error: true
+        run: |
+          META_PATH="${{ steps.upload-hinglish.outputs.metadata_path }}"
+          MP4_PATH="${{ steps.upload-hinglish.outputs.video_path }}"
+          if [ -z "${INSTAGRAM_ACCESS_TOKEN:-}" ] || [ -z "${INSTAGRAM_BUSINESS_ID:-}" ]; then
+            echo "[instagram] secrets missing — skipping (configure INSTAGRAM_ACCESS_TOKEN + INSTAGRAM_BUSINESS_ID)"
+            exit 0
+          fi
+          if [ -n "$META_PATH" ] && [ -f "$META_PATH" ] && [ -n "$MP4_PATH" ] && [ -f "$MP4_PATH" ]; then
+            TOPIC=$(python3 -c "import sys,json; d=json.load(open('$META_PATH')); print(d.get('slug',''))" 2>/dev/null || echo "")
+            npx tsx scripts/publish-to-instagram.ts --video "$MP4_PATH" --metadata "$META_PATH" --topic "$TOPIC" || true
+          fi
+
+      - name: Broadcast to Telegram
+        if: success() && inputs.dry_run != 'true' && steps.upload-hinglish.outputs.video_id != ''
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHANNEL_ID: ${{ secrets.TELEGRAM_CHANNEL_ID }}
+        continue-on-error: true
+        run: |
+          VIDEO_ID="${{ steps.upload-hinglish.outputs.video_id }}"
+          META_PATH="${{ steps.upload-hinglish.outputs.metadata_path }}"
+          if [ -n "$META_PATH" ] && [ -f "$META_PATH" ]; then
+            npx tsx scripts/seed-telegram.ts "$VIDEO_ID" --metadata "$META_PATH" || true
+          else
+            npx tsx scripts/seed-telegram.ts "$VIDEO_ID" || true
+          fi
+
+      # Panel-20 ruling: do NOT add `|| true` here — continue-on-error preserves
+      # step.outcome=failure visibility (LinkedIn token expiry, 429s, etc.)
+      - name: Cross-post to LinkedIn
+        if: success() && inputs.dry_run != 'true' && steps.upload-hinglish.outputs.video_id != ''
+        env:
+          LINKEDIN_ACCESS_TOKEN: ${{ secrets.LINKEDIN_ACCESS_TOKEN }}
+          LINKEDIN_AUTHOR_URN: ${{ secrets.LINKEDIN_AUTHOR_URN }}
+        continue-on-error: true
+        run: |
+          VIDEO_ID="${{ steps.upload-hinglish.outputs.video_id }}"
+          META_PATH="${{ steps.upload-hinglish.outputs.metadata_path }}"
+          if [ -n "$META_PATH" ] && [ -f "$META_PATH" ]; then
+            npx tsx scripts/post-linkedin.ts "$VIDEO_ID" --metadata "$META_PATH"
+          else
+            npx tsx scripts/post-linkedin.ts "$VIDEO_ID"
+          fi
+
       - name: Mark session as Hinglish-published
         env:
           TOPIC: ${{ needs.determine.outputs.topic }}
           SESSION: ${{ needs.determine.outputs.session }}
         run: |
           # Update publish-queue.json to set hinglish_published: true
+          VIDEO_ID="${{ steps.upload-hinglish.outputs.video_id }}"
           npx tsx scripts/mark-hinglish-published.ts \
             --topic "$TOPIC" \
-            --session "$SESSION"
+            --session "$SESSION" \
+            ${VIDEO_ID:+--video-id "$VIDEO_ID"}
 
       - name: Commit updated publish queue
         run: |
