@@ -55,9 +55,31 @@ export function buildLinkedInPostBody(args: {
   authorUrn: string;
 }): Record<string, unknown> {
   const url = `https://youtube.com/shorts/${args.videoId}`;
-  const title = (args.metadata?.linkedin?.title || args.metadata?.youtube?.title || args.metadata?.topic || 'New Tech Short')
+  // Panel-22 Torvalds P0: there was zero runtime check that the
+  // metadata.linkedin.body field was actually populated by the
+  // upstream renderer. A direct invocation or a metadata.json
+  // assembled by an older script silently posted with an empty body.
+  // Now we hard-fail when the linkedin sub-object is missing OR has
+  // an empty body — better to surface the contract violation in CI
+  // than to ship empty LinkedIn posts and dilute the channel.
+  const linkedinObj = args.metadata?.linkedin;
+  if (!linkedinObj || typeof linkedinObj !== 'object') {
+    throw new Error(
+      '[post-linkedin] metadata.linkedin missing — was this metadata.json ' +
+      'produced by render-stock-short.ts? The linkedin.{title,body} fields ' +
+      'are required.',
+    );
+  }
+  const baseBodyRaw = (linkedinObj.body || '').trim();
+  if (!baseBodyRaw) {
+    throw new Error(
+      '[post-linkedin] metadata.linkedin.body is empty — refusing to post ' +
+      'an empty LinkedIn body. Check the renderer\'s linkedin.body builder.',
+    );
+  }
+  const title = (linkedinObj.title || args.metadata?.youtube?.title || args.metadata?.topic || 'New Tech Short')
     .trim();
-  const baseBody = (args.metadata?.linkedin?.body || '').trim();
+  const baseBody = baseBodyRaw;
   // LinkedIn truncates at the "see more" fold around 200-300 chars on
   // mobile; lead with the title + watch link so the most important
   // signal sits above that fold.

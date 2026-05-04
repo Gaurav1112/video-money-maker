@@ -511,13 +511,22 @@ async function main(): Promise<void> {
       })();
 
       // Panel-20 Retention P0-A (Bilyeu/MrBeast): mid-point promise on
-      // the BODY scene (sceneIndex=1 in a 3-scene structure). Straddles
-      // the algo's 50% completion checkpoint with a stake reset that
-      // pushes viewers past the "should I swipe?" decision. Topic-bank
-      // salaryBand (₹35-55LPA / ₹40-65LPA) anchors the stake when
-      // available — Edge's "salary anchor in audio/video" finding —
-      // otherwise falls back to the generic curiosity-gap promise.
-      const midPromiseText = isBody
+      // the BODY scene that straddles the algo's 50% completion
+      // checkpoint with a stake reset that pushes viewers past the
+      // "should I swipe?" decision. Topic-bank salaryBand
+      // (₹35-55LPA / ₹40-65LPA) anchors the stake when available —
+      // Edge's "salary anchor in audio/video" finding — otherwise
+      // falls back to the generic curiosity-gap promise.
+      // Panel-22 Carmack P1: previously fired on EVERY body scene
+      // (`isBody` boolean). For a 4-scene storyboard scenes[1] AND
+      // scenes[2] are both body, so two identical mid-promise overlays
+      // landed on consecutive cuts — repeated banner, not a midpoint
+      // mechanic. Now gated to the EXACT midpoint scene using a
+      // floor(N/2) index so every storyboard length lands the
+      // mid-promise on the true 50% checkpoint scene only.
+      const midpointSceneIdx = Math.floor(storyboard.scenes.length / 2);
+      const isMidpointScene = isBody && i === midpointSceneIdx;
+      const midPromiseText = isMidpointScene
         ? (bankEntry?.salaryBand
             ? `Last 5 sec mein ${bankEntry.salaryBand} ka twist`
             : 'Ruko — last 5 sec mein twist hai')
@@ -526,21 +535,41 @@ async function main(): Promise<void> {
       // Panel-21 Retention P0 (user follow-up: "graphic should stay,
       // it is going away in 1 sec or 2"): render the diagram on the
       // BODY scene AND on the CLOSING scene so it persists across
-      // the cut. Body scene paces stages early (startT=0.4 — right
-      // after the brightness pulse + scene-flash) so the diagram is
-      // fully assembled before the body cut. Closing scene reveals
-      // INSTANTLY at t=0.05 (instant=true skips paceStage) so the
-      // diagram appears already-built the moment the cut lands —
-      // visually it reads as a continuous element. Hides at
-      // sceneDur-2.0 so the end-card CTA owns the last 2s.
+      // the cut.
+      // Panel-22 MrBeast/Beggs P0: body-scene `startT=0.4` was making
+      // the diagram reveal stages compete with the mid-promise
+      // drawer (t=0..1.8s). Spec at concept-diagram.ts:DiagramFilter-
+      // Options says "pass startT=1.95" on body scenes carrying the
+      // drawer; implementation now matches the spec — diagram begins
+      // assembling at t=1.95s (just after the mid-promise window
+      // closes), giving the 50% checkpoint defense its full saliency.
+      // Closing-scene reveal stays INSTANT at t=0.05 (instant=true
+      // skips paceStage) so the diagram appears already-built the
+      // moment the cut lands. Panel-22 MrBeast P1: hideAfter floored
+      // at 2.0s so the diagram is visible for ≥2.0s even when the
+      // closing scene hits the PER_SCENE_HARD_CAP=3.5s ceiling
+      // (eye-tracking minimum for a 4-stage architecture graph).
       const conceptDiagram = wantsDiagram
         ? getConceptDiagram(storyboard.topic, bankEntry?.shortTitle ?? rotated?.shortTitle)
         : undefined;
       const sceneSec = scene.durationFrames / storyboard.fps;
+      // End-card window: Panel-22 Beggs P1 raised the floor from 2.0 →
+      // 3.0s (3-line CTA at FS=64 needs ≥2.8-3.2s for click-through
+      // reads on phone screens). Sync this constant with composer.ts
+      // endCardStart calculation if either changes.
+      const END_CARD_WINDOW = 3.0;
       const conceptDiagramOptions = isLast
-        ? { startT: 0.05, hideAfter: Math.max(0, sceneSec - 2.0), instant: true }
+        ? {
+            startT: 0.05,
+            // Diagram hides exactly when end-card claims the frame.
+            // Math.max(2.0, ...) floor: even on a hard-capped 3.5s
+            // closing scene the diagram gets at least 2.0s of visible
+            // assembled time before the CTA takes over.
+            hideAfter: Math.max(2.0, sceneSec - END_CARD_WINDOW),
+            instant: true,
+          }
         : isBody
-          ? { startT: 0.4 }
+          ? { startT: 1.95 }
           : undefined;
 
       // Brand subline appears on EVERY scene below the watermark
@@ -717,12 +746,14 @@ async function main(): Promise<void> {
       },
       linkedin: {
         title: metadata.title.replace(/\s*#\w+\s*/g, '').trim(),
-        // Panel-20 Dist P0-1 (Moore): the YT description has the
-        // hashtag wall on line index 1; without filtering it that
-        // block leaks into the LinkedIn post body and reads as
-        // low-effort SEO spam to the professional-network audience.
-        // Drop line 1 specifically (the hashtag block) and the
-        // following blank line, then keep the next 6 prose lines.
+        // Panel-21 Dist P1-1 + Panel-22 Torvalds P1: filter out lines
+        // that read as a hashtag wall (tagRatio≥0.7) — same threshold
+        // applied in seed-telegram.ts so the Telegram + LinkedIn
+        // bodies derive from a consistent definition of "hashtag spam".
+        // Pre-B28 the YT description had hashtags on line index 1;
+        // post-B28 they live at the bottom — so this filter
+        // preserves prose anywhere in the file regardless of position
+        // (no positional slicing).
         body: (() => {
           const raw = metadata.description.replace(/utm_source=yt_shorts/g, 'utm_source=linkedin');
           const lines = raw.split('\n');

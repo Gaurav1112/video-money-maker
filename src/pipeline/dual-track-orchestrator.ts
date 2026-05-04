@@ -85,25 +85,45 @@ async function renderEnglishTrack(
   // in the patch context (the orchestrator is a drop-in addition).
   let synthesizeFn: (text: string, options?: unknown) => Promise<{ audioPath: string }>;
   try {
-    const mod = await import("../pipeline/tts-engine");
-    synthesizeFn = mod.synthesize ?? mod.default;
+    const mod = (await import("../pipeline/tts-engine")) as {
+      synthesize?: (text: string, opts?: unknown) => Promise<{ audioPath: string }>;
+      default?: (text: string, opts?: unknown) => Promise<{ audioPath: string }>;
+      generateAudio?: (text: string, opts?: unknown) => Promise<{ audioPath: string }>;
+    };
+    const candidate = mod.synthesize ?? mod.default ?? mod.generateAudio;
+    if (!candidate) {
+      throw new Error("tts-engine has no synthesize/default/generateAudio export");
+    }
+    synthesizeFn = candidate;
   } catch {
-    // Fallback: use English Edge TTS voice directly when tts-engine.ts is
-    // not available (e.g., standalone testing of this orchestrator)
-    const edgeTTS = await import("edge-tts-node");
+    // Fallback: shell out to scripts/edge-tts-synth.py (same path used by
+    // edge-tts-hinglish.ts). The earlier `await import("edge-tts-node")`
+    // never worked because that npm package was never published — this
+    // path now uses the actual project TTS provider (Python edge_tts).
+    const { spawn } = await import("child_process");
     const crypto = await import("crypto");
+    const helperPath = path.resolve(__dirname, "../../scripts/edge-tts-synth.py");
     synthesizeFn = async (text: string) => {
       const hash = crypto.createHash("sha256").update(text).digest("hex").slice(0, 12);
       const audioPath = path.join(outputDir, `.tts-cache`, `en-${hash}.mp3`);
       fs.mkdirSync(path.dirname(audioPath), { recursive: true });
       if (!fs.existsSync(audioPath)) {
-        await edgeTTS.synthesize(
-          `<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xml:lang="en-IN">
+        const ssml = `<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xml:lang="en-IN">
             <voice name="en-IN-PrabhatNeural"><prosody rate="-5%">${text}</prosody></voice>
-           </speak>`,
-          audioPath,
-          { outputFormat: "audio-24khz-48kbitrate-mono-mp3" }
-        );
+           </speak>`;
+        await new Promise<void>((resolve, reject) => {
+          const proc = spawn(
+            "python3",
+            [helperPath, "--voice", "en-IN-PrabhatNeural", "--rate", "-5%", "--out", audioPath],
+            { stdio: ["pipe", "pipe", "pipe"] },
+          );
+          let stderr = "";
+          proc.stderr.on("data", (d) => { stderr += d.toString(); });
+          proc.on("error", reject);
+          proc.on("close", (code) => code === 0 ? resolve() : reject(new Error(`edge-tts-synth.py exited ${code}: ${stderr}`)));
+          proc.stdin.write(ssml, "utf8");
+          proc.stdin.end();
+        });
       }
       return { audioPath };
     };

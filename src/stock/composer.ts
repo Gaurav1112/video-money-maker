@@ -383,10 +383,19 @@ export async function compose(input: ComposeInput): Promise<void> {
     const skipLufs =
       !input.voicePath || process.env['SKIP_LUFS_VERIFY'] === '1';
     if (!skipLufs) {
+      // Panel-22 Bob Katz P0 (interim): `minLra: 0` made the LRA gate
+      // a no-op — every render shipped at LRA ≈3.5 LU (over-compressed,
+      // "loud but lifeless" on phone speakers). EBU R128 narrative
+      // target is ≥6 LU; a chain change (sidechain ratio 6→4, less
+      // brick-wall compression) is needed to actually reach 6. Until
+      // that lands we set `minLra: 3` as a regression FLOOR — catches
+      // any future change that would push LRA below the current 3.5
+      // baseline, without blocking current renders.
       await verifyLufs(input.outputPath, {
         targetLufs: -14,
         targetTruePeak: -1.0,
         toleranceLu: 0.5,
+        minLra: 3,
       });
     }
   } finally {
@@ -497,7 +506,7 @@ async function processScene(
       // suppress the subline during the end-card window so the CTA
       // text doesn't compete with the persistent watermark line.
       const brandEnable = scene.endCardText
-        ? `:enable='lt(t,${Math.max(0, scene.durationSec - 2.0).toFixed(3)})'`
+        ? `:enable='lt(t,${Math.max(0, scene.durationSec - 3.0).toFixed(3)})'`
         : '';
       filters.push(
         `drawtext=text='${escapeDrawtext(scene.brandSubline)}'${fontArgFor(scene.brandSubline)}:` +
@@ -560,7 +569,11 @@ async function processScene(
     // below and the bigText hook band above. Visible from ~2s into
     // the scene until the end-card fades in.
     if (scene.tombstoneText) {
-      const endCardStart = Math.max(0, scene.durationSec - 2.0);
+      // Panel-22 Beggs P1: end-card window is 3.0s (was 2.0s) — the
+      // 3-line CTA at FS=64 needs ≥2.8-3.2s to be readably parsed on
+      // phone screens. Tombstone hides as the end-card fades in to
+      // avoid two-text overlap in the final 3s.
+      const endCardStart = Math.max(0, scene.durationSec - 3.0);
       const tombStart = Math.min(2.0, scene.durationSec * 0.15);
       const tombEnable = `enable='between(t,${tombStart.toFixed(3)},${endCardStart.toFixed(3)})'`;
       const tombLines = wrapText(scene.tombstoneText, 24).split('\n').slice(0, 2);
@@ -892,7 +905,11 @@ async function muxFinal(
     // exactly when we want the viewer's eye on the loop driver. Suppress
     // the watermark during the end-card window (last END_CARD_SEC=2s)
     // so the CTA owns that frame zone unchallenged.
-    const endCardStart = Math.max(0, totalDur - 2.0).toFixed(3);
+    // Panel-22 Beggs P1: watermark hides during the 3.0s end-card
+    // window (was 2.0s) — the CTA needs the full bottom-right zone
+    // unchallenged for the longer read. Sync with composer end-card
+    // calculation if either changes.
+    const endCardStart = Math.max(0, totalDur - 3.0).toFixed(3);
     const overlayFilter = `${vf ? `[0:v]${vf}[captioned];[captioned]` : '[0:v]'}[2:v]overlay=W-w-30:H-h-380:enable='lt(t,${endCardStart})'[outv]`;
     args.push(
       '-filter_complex', overlayFilter,

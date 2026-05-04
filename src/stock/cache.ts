@@ -38,13 +38,20 @@ export class StockCache {
     if (clip.provider === 'pexels') {
       const dir = ephemeralDir ?? tmpdir();
       mkdirSync(dir, { recursive: true });
-      const hash = createHash('sha256').update(clip.url).digest('hex').slice(0, 16);
+      // Panel-22 Frazelle P1: SHA-256 truncated to 16 hex (64-bit
+      // address space). Birthday-paradox collision probability becomes
+      // non-negligible at 64K cached entries (~1 in 4B), and a
+      // collision silently returns the wrong clip → render
+      // determinism break with no error. 32 hex (128-bit) costs zero
+      // in filename length and pushes collision probability into
+      // cryptographic-implausibility range.
+      const hash = createHash('sha256').update(clip.url).digest('hex').slice(0, 32);
       const dest = join(dir, `pexels-${hash}.mp4`);
       await this.fetchToFile(clip.url, dest);
       return dest;
     }
 
-    const hash = createHash('sha256').update(clip.url).digest('hex').slice(0, 16);
+    const hash = createHash('sha256').update(clip.url).digest('hex').slice(0, 32);
     const dest = join(this.root, `${hash}.mp4`);
 
     if (existsSync(dest)) {

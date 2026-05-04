@@ -42,10 +42,17 @@ export interface DiagramNode {
   w: number;
   /** Height in pixels (integer). */
   h: number;
-  /** Hex fill color (no leading `#`, ffmpeg-style "RRGGBB"). */
-  fill: string;
-  /** Hex border color. */
-  border: string;
+  /**
+   * Hex border color (no leading `#`, ffmpeg-style "RRGGBB"). Diagrams
+   * are TRANSPARENT-bg since B28 — `borderColor` is the only color
+   * applied to the node (rendered as a 3-px ring via ffmpeg drawbox
+   * `t=3`). Pre-B28 there were separate `fill` + `border` fields, but
+   * `border` was dead data (Panel-22 Carmack P1) — `fill` was being
+   * used as the border ring color. Renamed to `borderColor` to match
+   * actual semantics; rule callouts which previously expressed a
+   * yellow border via the `border` field now express it directly here.
+   */
+  borderColor: string;
   /** Primary label (single line, ≤ 14 chars renders cleanly at FS=36). */
   label: string;
   /** Optional second line below the label (≤ 18 chars at FS=24). */
@@ -87,14 +94,14 @@ function kafkaConsumerGroupsDiagram(): ConceptDiagram {
   return {
     title: 'KAFKA CONSUMER GROUPS',
     nodes: [
-      { id: 'prod', x: 400, y: 300, w: 280, h: 80, fill: '2196F3', border: 'FFFFFF', label: 'Producer', stage: 1 },
-      { id: 'p0', x: 220, y: 720, w: 200, h: 80, fill: '00897B', border: 'FFFFFF', label: 'P0', sublabel: 'partition', stage: 2 },
-      { id: 'p1', x: 440, y: 720, w: 200, h: 80, fill: '00897B', border: 'FFFFFF', label: 'P1', sublabel: 'partition', stage: 2 },
-      { id: 'p2', x: 660, y: 720, w: 200, h: 80, fill: '00897B', border: 'FFFFFF', label: 'P2', sublabel: 'partition', stage: 2 },
-      { id: 'c1', x: 140, y: 880, w: 180, h: 80, fill: 'F57C00', border: 'FFFFFF', label: 'C1', sublabel: 'reads P0', stage: 3 },
-      { id: 'c2', x: 340, y: 880, w: 180, h: 80, fill: 'F57C00', border: 'FFFFFF', label: 'C2', sublabel: 'reads P1', stage: 3 },
-      { id: 'c3', x: 540, y: 880, w: 180, h: 80, fill: 'F57C00', border: 'FFFFFF', label: 'C3', sublabel: 'reads P2', stage: 3 },
-      { id: 'c4', x: 740, y: 880, w: 180, h: 80, fill: '4A4A4A', border: 'F44336', label: 'C4', sublabel: 'IDLE', stage: 4, highlightStage: 4 },
+      { id: 'prod', x: 400, y: 300, w: 280, h: 80, borderColor: '2196F3', label: 'Producer', stage: 1 },
+      { id: 'p0', x: 220, y: 720, w: 200, h: 80, borderColor: '00897B', label: 'P0', sublabel: 'partition', stage: 2 },
+      { id: 'p1', x: 440, y: 720, w: 200, h: 80, borderColor: '00897B', label: 'P1', sublabel: 'partition', stage: 2 },
+      { id: 'p2', x: 660, y: 720, w: 200, h: 80, borderColor: '00897B', label: 'P2', sublabel: 'partition', stage: 2 },
+      { id: 'c1', x: 140, y: 880, w: 180, h: 80, borderColor: 'F57C00', label: 'C1', sublabel: 'reads P0', stage: 3 },
+      { id: 'c2', x: 340, y: 880, w: 180, h: 80, borderColor: 'F57C00', label: 'C2', sublabel: 'reads P1', stage: 3 },
+      { id: 'c3', x: 540, y: 880, w: 180, h: 80, borderColor: 'F57C00', label: 'C3', sublabel: 'reads P2', stage: 3 },
+      { id: 'c4', x: 740, y: 880, w: 180, h: 80, borderColor: 'F44336', label: 'C4', sublabel: 'IDLE', stage: 4, highlightStage: 4 },
     ],
     edges: [
       { from: 'prod', to: 'p1', stage: 1 },
@@ -109,12 +116,12 @@ function kafkaPartitioningDiagram(): ConceptDiagram {
   return {
     title: 'KAFKA PARTITIONING',
     nodes: [
-      { id: 'msg', x: 400, y: 300, w: 280, h: 80, fill: '2196F3', border: 'FFFFFF', label: 'Producer', sublabel: 'key=user_id', stage: 1 },
-      { id: 'hash', x: 380, y: 410, w: 320, h: 60, fill: '7B1FA2', border: 'FFFFFF', label: 'hash(key) % N', stage: 2 },
-      { id: 'p0', x: 220, y: 720, w: 200, h: 80, fill: '00897B', border: 'FFFFFF', label: 'P0', sublabel: 'ordered', stage: 3 },
-      { id: 'p1', x: 440, y: 720, w: 200, h: 80, fill: '00897B', border: 'FFFFFF', label: 'P1', sublabel: 'ordered', stage: 3 },
-      { id: 'p2', x: 660, y: 720, w: 200, h: 80, fill: '00897B', border: 'FFFFFF', label: 'P2', sublabel: 'ordered', stage: 3 },
-      { id: 'rule', x: 90, y: 880, w: 900, h: 70, fill: '0E1B2C', border: 'FFEB3B', label: 'same key → same partition', stage: 4, highlightStage: 4 },
+      { id: 'msg', x: 400, y: 300, w: 280, h: 80, borderColor: '2196F3', label: 'Producer', sublabel: 'key=user_id', stage: 1 },
+      { id: 'hash', x: 380, y: 410, w: 320, h: 60, borderColor: '7B1FA2', label: 'hash(key) % N', stage: 2 },
+      { id: 'p0', x: 220, y: 720, w: 200, h: 80, borderColor: '00897B', label: 'P0', sublabel: 'ordered', stage: 3 },
+      { id: 'p1', x: 440, y: 720, w: 200, h: 80, borderColor: '00897B', label: 'P1', sublabel: 'ordered', stage: 3 },
+      { id: 'p2', x: 660, y: 720, w: 200, h: 80, borderColor: '00897B', label: 'P2', sublabel: 'ordered', stage: 3 },
+      { id: 'rule', x: 90, y: 880, w: 900, h: 70, borderColor: 'FFEB3B', label: 'same key → same partition', stage: 4, highlightStage: 4 },
     ],
     edges: [
       { from: 'msg', to: 'hash', stage: 2 },
@@ -127,12 +134,12 @@ function loadBalancerDiagram(): ConceptDiagram {
   return {
     title: 'LOAD BALANCING',
     nodes: [
-      { id: 'client', x: 400, y: 300, w: 280, h: 80, fill: '2196F3', border: 'FFFFFF', label: 'Clients', sublabel: '10K req/s', stage: 1 },
-      { id: 'lb', x: 350, y: 410, w: 380, h: 70, fill: 'D32F2F', border: 'FFFFFF', label: 'Load Balancer', stage: 2 },
-      { id: 's1', x: 180, y: 730, w: 200, h: 80, fill: '00897B', border: 'FFFFFF', label: 'Server 1', sublabel: 'healthy', stage: 3 },
-      { id: 's2', x: 440, y: 730, w: 200, h: 80, fill: '00897B', border: 'FFFFFF', label: 'Server 2', sublabel: 'healthy', stage: 3 },
-      { id: 's3', x: 700, y: 730, w: 200, h: 80, fill: '4A4A4A', border: 'F44336', label: 'Server 3', sublabel: 'DOWN', stage: 4, highlightStage: 4 },
-      { id: 'rule', x: 90, y: 880, w: 900, h: 70, fill: '0E1B2C', border: 'FFEB3B', label: 'health-check skips dead nodes', stage: 4 },
+      { id: 'client', x: 400, y: 300, w: 280, h: 80, borderColor: '2196F3', label: 'Clients', sublabel: '10K req/s', stage: 1 },
+      { id: 'lb', x: 350, y: 410, w: 380, h: 70, borderColor: 'D32F2F', label: 'Load Balancer', stage: 2 },
+      { id: 's1', x: 180, y: 730, w: 200, h: 80, borderColor: '00897B', label: 'Server 1', sublabel: 'healthy', stage: 3 },
+      { id: 's2', x: 440, y: 730, w: 200, h: 80, borderColor: '00897B', label: 'Server 2', sublabel: 'healthy', stage: 3 },
+      { id: 's3', x: 700, y: 730, w: 200, h: 80, borderColor: 'F44336', label: 'Server 3', sublabel: 'DOWN', stage: 4, highlightStage: 4 },
+      { id: 'rule', x: 90, y: 880, w: 900, h: 70, borderColor: 'FFEB3B', label: 'health-check skips dead nodes', stage: 4 },
     ],
     edges: [
       { from: 'client', to: 'lb', stage: 2 },
@@ -147,10 +154,10 @@ function redisCachingDiagram(): ConceptDiagram {
   return {
     title: 'CACHE-ASIDE PATTERN',
     nodes: [
-      { id: 'app', x: 400, y: 300, w: 280, h: 80, fill: '2196F3', border: 'FFFFFF', label: 'App', stage: 1 },
-      { id: 'cache', x: 140, y: 720, w: 380, h: 90, fill: 'D32F2F', border: 'FFFFFF', label: 'Redis Cache', sublabel: '1ms · TTL=60s', stage: 2 },
-      { id: 'db', x: 560, y: 720, w: 380, h: 90, fill: '7B1FA2', border: 'FFFFFF', label: 'Database', sublabel: '50ms · source of truth', stage: 3 },
-      { id: 'rule', x: 90, y: 880, w: 900, h: 70, fill: '0E1B2C', border: 'FFEB3B', label: 'miss → DB → set cache', stage: 4, highlightStage: 4 },
+      { id: 'app', x: 400, y: 300, w: 280, h: 80, borderColor: '2196F3', label: 'App', stage: 1 },
+      { id: 'cache', x: 140, y: 720, w: 380, h: 90, borderColor: 'D32F2F', label: 'Redis Cache', sublabel: '1ms · TTL=60s', stage: 2 },
+      { id: 'db', x: 560, y: 720, w: 380, h: 90, borderColor: '7B1FA2', label: 'Database', sublabel: '50ms · source of truth', stage: 3 },
+      { id: 'rule', x: 90, y: 880, w: 900, h: 70, borderColor: 'FFEB3B', label: 'miss → DB → set cache', stage: 4, highlightStage: 4 },
     ],
     edges: [
       { from: 'app', to: 'cache', stage: 2 },
@@ -163,12 +170,12 @@ function pubSubDiagram(): ConceptDiagram {
   return {
     title: 'PUB / SUB',
     nodes: [
-      { id: 'pub', x: 400, y: 300, w: 280, h: 80, fill: '2196F3', border: 'FFFFFF', label: 'Publisher', stage: 1 },
-      { id: 'topic', x: 280, y: 420, w: 520, h: 70, fill: '7B1FA2', border: 'FFFFFF', label: 'Topic / Channel', stage: 2 },
-      { id: 's1', x: 100, y: 730, w: 280, h: 80, fill: '00897B', border: 'FFFFFF', label: 'Subscriber A', sublabel: 'email', stage: 3 },
-      { id: 's2', x: 400, y: 730, w: 280, h: 80, fill: '00897B', border: 'FFFFFF', label: 'Subscriber B', sublabel: 'sms', stage: 3 },
-      { id: 's3', x: 700, y: 730, w: 280, h: 80, fill: '00897B', border: 'FFFFFF', label: 'Subscriber C', sublabel: 'analytics', stage: 3 },
-      { id: 'rule', x: 90, y: 880, w: 900, h: 70, fill: '0E1B2C', border: 'FFEB3B', label: 'one publish → fan-out', stage: 4, highlightStage: 4 },
+      { id: 'pub', x: 400, y: 300, w: 280, h: 80, borderColor: '2196F3', label: 'Publisher', stage: 1 },
+      { id: 'topic', x: 280, y: 420, w: 520, h: 70, borderColor: '7B1FA2', label: 'Topic / Channel', stage: 2 },
+      { id: 's1', x: 100, y: 730, w: 280, h: 80, borderColor: '00897B', label: 'Subscriber A', sublabel: 'email', stage: 3 },
+      { id: 's2', x: 400, y: 730, w: 280, h: 80, borderColor: '00897B', label: 'Subscriber B', sublabel: 'sms', stage: 3 },
+      { id: 's3', x: 700, y: 730, w: 280, h: 80, borderColor: '00897B', label: 'Subscriber C', sublabel: 'analytics', stage: 3 },
+      { id: 'rule', x: 90, y: 880, w: 900, h: 70, borderColor: 'FFEB3B', label: 'one publish → fan-out', stage: 4, highlightStage: 4 },
     ],
     edges: [
       { from: 'pub', to: 'topic', stage: 2 },
@@ -183,11 +190,11 @@ function microservicesDiagram(): ConceptDiagram {
   return {
     title: 'MICROSERVICES',
     nodes: [
-      { id: 'gw', x: 350, y: 300, w: 380, h: 80, fill: 'D32F2F', border: 'FFFFFF', label: 'API Gateway', stage: 1 },
-      { id: 'auth', x: 100, y: 720, w: 240, h: 90, fill: '00897B', border: 'FFFFFF', label: 'Auth', sublabel: 'JWT · OAuth', stage: 2 },
-      { id: 'order', x: 380, y: 720, w: 240, h: 90, fill: '2196F3', border: 'FFFFFF', label: 'Orders', sublabel: 'gRPC', stage: 2 },
-      { id: 'pay', x: 660, y: 720, w: 320, h: 90, fill: '7B1FA2', border: 'FFFFFF', label: 'Payments', sublabel: 'idempotent', stage: 2 },
-      { id: 'rule', x: 90, y: 880, w: 900, h: 70, fill: '0E1B2C', border: 'FFEB3B', label: 'each service = own DB', stage: 3, highlightStage: 3 },
+      { id: 'gw', x: 350, y: 300, w: 380, h: 80, borderColor: 'D32F2F', label: 'API Gateway', stage: 1 },
+      { id: 'auth', x: 100, y: 720, w: 240, h: 90, borderColor: '00897B', label: 'Auth', sublabel: 'JWT · OAuth', stage: 2 },
+      { id: 'order', x: 380, y: 720, w: 240, h: 90, borderColor: '2196F3', label: 'Orders', sublabel: 'gRPC', stage: 2 },
+      { id: 'pay', x: 660, y: 720, w: 320, h: 90, borderColor: '7B1FA2', label: 'Payments', sublabel: 'idempotent', stage: 2 },
+      { id: 'rule', x: 90, y: 880, w: 900, h: 70, borderColor: 'FFEB3B', label: 'each service = own DB', stage: 3, highlightStage: 3 },
     ],
     edges: [
       { from: 'gw', to: 'auth', stage: 2 },
@@ -201,10 +208,10 @@ function dbIndexingDiagram(): ConceptDiagram {
   return {
     title: 'DATABASE INDEX',
     nodes: [
-      { id: 'q', x: 400, y: 300, w: 280, h: 80, fill: '2196F3', border: 'FFFFFF', label: 'WHERE id=42', stage: 1 },
-      { id: 'noidx', x: 90, y: 460, w: 440, h: 90, fill: 'F57C00', border: 'FFFFFF', label: 'No index', sublabel: 'O(N) full scan', stage: 2 },
-      { id: 'idx', x: 550, y: 460, w: 440, h: 90, fill: '00897B', border: 'FFFFFF', label: 'B-tree index', sublabel: 'O(log N)', stage: 3 },
-      { id: 'rule', x: 90, y: 880, w: 900, h: 70, fill: '0E1B2C', border: 'FFEB3B', label: '1M rows: 800ms → 2ms', stage: 4, highlightStage: 4 },
+      { id: 'q', x: 400, y: 300, w: 280, h: 80, borderColor: '2196F3', label: 'WHERE id=42', stage: 1 },
+      { id: 'noidx', x: 90, y: 460, w: 440, h: 90, borderColor: 'F57C00', label: 'No index', sublabel: 'O(N) full scan', stage: 2 },
+      { id: 'idx', x: 550, y: 460, w: 440, h: 90, borderColor: '00897B', label: 'B-tree index', sublabel: 'O(log N)', stage: 3 },
+      { id: 'rule', x: 90, y: 880, w: 900, h: 70, borderColor: 'FFEB3B', label: '1M rows: 800ms → 2ms', stage: 4, highlightStage: 4 },
     ],
     edges: [
       { from: 'q', to: 'idx', stage: 3 },
@@ -216,12 +223,12 @@ function oauthDiagram(): ConceptDiagram {
   return {
     title: 'OAUTH 2.0 FLOW',
     nodes: [
-      { id: 'user', x: 60, y: 300, w: 280, h: 80, fill: '2196F3', border: 'FFFFFF', label: 'User', stage: 1 },
-      { id: 'app', x: 400, y: 300, w: 280, h: 80, fill: '7B1FA2', border: 'FFFFFF', label: 'Your App', stage: 1 },
-      { id: 'auth', x: 740, y: 300, w: 280, h: 80, fill: 'D32F2F', border: 'FFFFFF', label: 'Auth Server', stage: 1 },
-      { id: 'code', x: 90, y: 540, w: 900, h: 60, fill: '00897B', border: 'FFFFFF', label: '1) get authorization code', stage: 2 },
-      { id: 'token', x: 90, y: 720, w: 900, h: 60, fill: '00897B', border: 'FFFFFF', label: '2) exchange code → access_token', stage: 3 },
-      { id: 'rule', x: 90, y: 880, w: 900, h: 70, fill: '0E1B2C', border: 'FFEB3B', label: 'never store passwords', stage: 4, highlightStage: 4 },
+      { id: 'user', x: 60, y: 300, w: 280, h: 80, borderColor: '2196F3', label: 'User', stage: 1 },
+      { id: 'app', x: 400, y: 300, w: 280, h: 80, borderColor: '7B1FA2', label: 'Your App', stage: 1 },
+      { id: 'auth', x: 740, y: 300, w: 280, h: 80, borderColor: 'D32F2F', label: 'Auth Server', stage: 1 },
+      { id: 'code', x: 90, y: 540, w: 900, h: 60, borderColor: '00897B', label: '1) get authorization code', stage: 2 },
+      { id: 'token', x: 90, y: 720, w: 900, h: 60, borderColor: '00897B', label: '2) exchange code → access_token', stage: 3 },
+      { id: 'rule', x: 90, y: 880, w: 900, h: 70, borderColor: 'FFEB3B', label: 'never store passwords', stage: 4, highlightStage: 4 },
     ],
     edges: [],
   };
@@ -231,11 +238,11 @@ function websocketDiagram(): ConceptDiagram {
   return {
     title: 'HTTP vs WEBSOCKET',
     nodes: [
-      { id: 'http', x: 90, y: 320, w: 440, h: 90, fill: 'F57C00', border: 'FFFFFF', label: 'HTTP', sublabel: 'request/response', stage: 1 },
-      { id: 'ws', x: 550, y: 320, w: 440, h: 90, fill: '00897B', border: 'FFFFFF', label: 'WebSocket', sublabel: 'full duplex', stage: 2 },
-      { id: 'http2', x: 90, y: 720, w: 440, h: 80, fill: '4A4A4A', border: 'FFFFFF', label: 'new TCP each time', stage: 1 },
-      { id: 'ws2', x: 550, y: 720, w: 440, h: 80, fill: '2196F3', border: 'FFFFFF', label: 'one persistent conn', stage: 2 },
-      { id: 'rule', x: 90, y: 880, w: 900, h: 70, fill: '0E1B2C', border: 'FFEB3B', label: 'realtime → WebSocket', stage: 3, highlightStage: 3 },
+      { id: 'http', x: 90, y: 320, w: 440, h: 90, borderColor: 'F57C00', label: 'HTTP', sublabel: 'request/response', stage: 1 },
+      { id: 'ws', x: 550, y: 320, w: 440, h: 90, borderColor: '00897B', label: 'WebSocket', sublabel: 'full duplex', stage: 2 },
+      { id: 'http2', x: 90, y: 720, w: 440, h: 80, borderColor: '4A4A4A', label: 'new TCP each time', stage: 1 },
+      { id: 'ws2', x: 550, y: 720, w: 440, h: 80, borderColor: '2196F3', label: 'one persistent conn', stage: 2 },
+      { id: 'rule', x: 90, y: 880, w: 900, h: 70, borderColor: 'FFEB3B', label: 'realtime → WebSocket', stage: 3, highlightStage: 3 },
     ],
     edges: [],
   };
@@ -246,9 +253,9 @@ function genericThreePointDiagram(topicLabel: string): ConceptDiagram {
   return {
     title: upper.length > 22 ? upper.slice(0, 22) : upper,
     nodes: [
-      { id: 'one', x: 90, y: 320, w: 900, h: 90, fill: '2196F3', border: 'FFFFFF', label: '1   What it is', stage: 1 },
-      { id: 'two', x: 90, y: 720, w: 900, h: 90, fill: '7B1FA2', border: 'FFFFFF', label: '2   How it works', stage: 2 },
-      { id: 'three', x: 90, y: 880, w: 900, h: 90, fill: 'F57C00', border: 'FFEB3B', label: '3   Why FAANG asks', stage: 3, highlightStage: 3 },
+      { id: 'one', x: 90, y: 320, w: 900, h: 90, borderColor: '2196F3', label: '1   What it is', stage: 1 },
+      { id: 'two', x: 90, y: 720, w: 900, h: 90, borderColor: '7B1FA2', label: '2   How it works', stage: 2 },
+      { id: 'three', x: 90, y: 880, w: 900, h: 90, borderColor: 'FFEB3B', label: '3   Why FAANG asks', stage: 3, highlightStage: 3 },
     ],
     edges: [],
   };
@@ -276,9 +283,18 @@ export function getConceptDiagram(topicSlug: string, displayLabel?: string): Con
   return genericThreePointDiagram(label);
 }
 
-/** Escape a string for safe use inside ffmpeg drawtext text='...'. */
+/**
+ * Escape a string for safe use inside ffmpeg drawtext text='...'.
+ *
+ * Strips control / shell-substitution glyphs (newline, carriage return,
+ * backtick, dollar) BEFORE escaping the standard ffmpeg drawtext meta-
+ * characters. Labels can come from external JSON (topic-bank) and a
+ * stray newline would split the filter string mid-chain (Panel-22
+ * Frazelle P2).
+ */
 function escapeDrawtext(s: string): string {
   return s
+    .replace(/[\n\r`$]/g, ' ')
     .replace(/\\/g, '\\\\')
     .replace(/'/g, "\\'")
     .replace(/:/g, '\\:')
@@ -368,18 +384,28 @@ export function buildDiagramFilters(
   const filters: string[] = [];
   const startT = opts.startT ?? 1.9;
   const hideAfter = opts.hideAfter;
-  const allStages = [
+  // Panel-22 Carmack P2: previous code did `Math.max(...allStages)` and
+  // passed `maxStage + 1` as `totalStages` to paceStage. That assumes
+  // contiguous stages 0..N. If a template ever uses non-contiguous
+  // stages (e.g. 1, 3, 5) the divisor in paceStage would mis-pace the
+  // reveal. Switched to distinct-stage cardinality so the math holds
+  // for any stage set.
+  const stageSet = new Set<number>([
     0,
     ...diagram.nodes.map(n => n.stage),
     ...diagram.nodes.flatMap(n => n.highlightStage !== undefined ? [n.highlightStage] : []),
     ...diagram.edges.map(e => e.stage),
-  ];
-  const maxStage = Math.max(...allStages);
+  ]);
+  const sortedStages = [...stageSet].sort((a, b) => a - b);
+  const stageRank = new Map<number, number>(sortedStages.map((s, i) => [s, i]));
+  const totalStages = sortedStages.length;
+  const maxStage = sortedStages[sortedStages.length - 1] ?? 0;
 
   const enableFor = (stage: number): string => {
+    const rank = stageRank.get(stage) ?? 0;
     const t = opts.instant
       ? startT
-      : paceStage(stage, maxStage + 1, sceneDurationSec, startT);
+      : paceStage(rank, totalStages, sceneDurationSec, startT);
     if (hideAfter !== undefined) {
       return `enable='gte(t,${t.toFixed(3)})*lt(t,${hideAfter.toFixed(3)})'`;
     }
@@ -404,10 +430,19 @@ export function buildDiagramFilters(
   // transparent borders and reads as a render artifact.
   for (const n of diagram.nodes) {
     if (n.y < DIAGRAM_TOP || n.y + n.h > DIAGRAM_BOTTOM) {
+      // Panel-22 Carmack P1: previously a silent `continue`. A
+      // template author placing a node at y=995 h=80 (y+h=1075 >
+      // DIAGRAM_BOTTOM=1060) would silently lose the node from the
+      // render — no error, no test failure. Surface a console warn so
+      // the audit trail exists.
+      console.warn(
+        `[concept-diagram] node "${n.id}" clipped: y=${n.y} h=${n.h} ` +
+        `(y+h=${n.y + n.h}) exceeds [${DIAGRAM_TOP},${DIAGRAM_BOTTOM}] — skipping`,
+      );
       continue;
     }
     const enable = enableFor(n.stage);
-    filters.push(`drawbox=x=${n.x}:y=${n.y}:w=${n.w}:h=${n.h}:color=0x${n.fill}@0.95:t=3:${enable}`);
+    filters.push(`drawbox=x=${n.x}:y=${n.y}:w=${n.w}:h=${n.h}:color=0x${n.borderColor}@0.95:t=3:${enable}`);
 
     if (n.highlightStage !== undefined) {
       const hEnable = enableFor(n.highlightStage);

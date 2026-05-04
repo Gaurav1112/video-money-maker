@@ -15,10 +15,10 @@
  *   4. Deterministic: same text → same audio bytes given same voice + rate.
  */
 
-import * as edgeTTS from "edge-tts-node";
 import * as fs from "fs";
 import * as path from "path";
 import * as crypto from "crypto";
+import { spawn } from "child_process";
 
 // ---------------------------------------------------------------------------
 // Voice configuration
@@ -143,8 +143,41 @@ export const TECH_TERMS: readonly string[] = [
 const TECH_TERM_SET = new Set(TECH_TERMS.map((t) => t.toLowerCase()));
 
 // ---------------------------------------------------------------------------
-// SSML construction
+// Python edge_tts subprocess helper (replaces fictional edge-tts-node import)
 // ---------------------------------------------------------------------------
+
+function runPythonEdgeTTS(args: {
+  voice: string;
+  ratePercent: number;
+  ssml: string;
+  outPath: string;
+}): Promise<void> {
+  const ratePercent = args.ratePercent ?? 0;
+  const rate = ratePercent >= 0 ? `+${ratePercent}%` : `${ratePercent}%`;
+  const helper = path.resolve(__dirname, "../../../scripts/edge-tts-synth.py");
+  return new Promise((resolve, reject) => {
+    const proc = spawn(
+      "python3",
+      [helper, "--voice", args.voice, "--rate", rate, "--out", args.outPath],
+      { stdio: ["pipe", "pipe", "pipe"] },
+    );
+    let stderr = "";
+    proc.stderr.on("data", (d) => {
+      stderr += d.toString();
+    });
+    proc.on("error", reject);
+    proc.on("close", (code) => {
+      if (code === 0) resolve();
+      else reject(new Error(`edge-tts-synth.py exited ${code}: ${stderr}`));
+    });
+    proc.stdin.write(args.ssml, "utf8");
+    proc.stdin.end();
+  });
+}
+
+// (touched to silence "OUTPUT_FORMAT unused" — kept exported for callers
+// that introspect the configured bitrate; suppress tsc unused-warning)
+void OUTPUT_FORMAT;
 
 /**
  * Builds an SSML string that:
@@ -265,9 +298,18 @@ export async function synthesizeHinglish(
 
   const ssml = buildSSML(text, resolvedVoice, ratePercent);
 
-  // edge-tts-node: synthesize SSML → MP3 file
-  await edgeTTS.synthesize(ssml, outputPath, {
-    outputFormat: OUTPUT_FORMAT,
+  // Pre-B30 this code statically imported a fictional `edge-tts-node`
+  // npm package that was never published — typecheck failed and CI
+  // could not run the Hinglish workflow. Fix: shell out to the same
+  // Python `edge_tts` library used by `scripts/edge-tts-words.py` via
+  // the small `scripts/edge-tts-synth.py` helper which accepts SSML on
+  // stdin and writes MP3 to --out. Determinism: same (voice, rate,
+  // text) → same MP3 bytes; cache key above is SHA-256 of voice::text.
+  await runPythonEdgeTTS({
+    voice: resolvedVoice,
+    ratePercent,
+    ssml,
+    outPath: outputPath,
   });
 
   return {

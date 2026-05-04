@@ -121,7 +121,14 @@ jobs:
         with:
           path: node_modules/.cache/remotion
           key: remotion-bundle-${{ hashFiles('src/**', 'remotion.config.ts') }}
-          restore-keys: remotion-bundle-
+          # Panel-22 Hightower P1: removed `restore-keys: remotion-bundle-`.
+          # The fallback matched any prior run's bundle, so when src/**
+          # changed but a stale bundle was in cache GHA would happily
+          # restore the OLD bundle and renders proceeded on outdated
+          # composition code with NO log distinguishing a real cache hit
+          # from a stale-key restore. Without restore-keys, a key miss
+          # forces a clean rebuild (~60s) — cheaper than a silently-wrong
+          # render.
 
       - name: Install dependencies
         run: npm ci
