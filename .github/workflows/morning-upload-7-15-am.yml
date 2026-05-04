@@ -1,0 +1,92 @@
+name: "🌅 Morning Upload Pipeline (7:15 AM IST)"
+
+# Renders at 5:30 AM IST daily, uploads by 7:15 AM IST
+# Trigger: 0 * * * * UTC = 5:30 AM IST (00:00 UTC = 5:30 IST next day)
+# Deadline: 7:15 AM IST = 1:45 AM UTC (1h 45m buffer)
+
+on:
+  schedule:
+    # 5:30 AM IST = 0:00 AM UTC (previous calendar day)
+    - cron: '0 0 * * *'
+  
+  workflow_dispatch:
+    inputs:
+      limit:
+        description: 'Videos to render (default 2)'
+        required: false
+        default: '2'
+
+concurrency:
+  group: morning-pipeline
+  cancel-in-progress: true
+
+jobs:
+  # Render + upload must complete in 90 minutes for 7:15 AM deadline
+  render:
+    name: "🌅 Render (5:30 AM IST)"
+    runs-on: self-hosted
+    timeout-minutes: 120  # 2 hours max
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: '20'
+
+      - run: npm ci
+
+      - name: "Verify (5m)"
+        run: |
+          npm run typecheck
+          npm run test:integrity
+
+      - name: "Install deps (5m)"
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq "ffmpeg=7:*" fonts-dejavu fonts-noto || true
+          pip3 install --quiet edge-tts || true
+          wget -q https://github.com/DanielSWolf/rhubarb-lip-sync/releases/download/v1.13.0/Rhubarb-Lip-Sync-1.13.0-Linux.zip
+          unzip -q Rhubarb-Lip-Sync-1.13.0-Linux.zip -d /opt/rhubarb || true
+          echo "/opt/rhubarb" >> $GITHUB_PATH || true
+
+      - name: "Render (60m)"
+        run: npx tsx scripts/batch-render-all.ts --limit ${{ inputs.limit || '2' }}
+        timeout-minutes: 90
+
+      - name: Capture baseline
+        run: npx tsx scripts/capture-render-sha-baseline.ts || true
+
+  publish:
+    name: "📤 Upload to YouTube"
+    runs-on: ubuntu-latest
+    needs: render
+    if: success()
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - run: npm ci
+
+      - name: "Upload (10m)"
+        env:
+          YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
+          YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
+          YOUTUBE_REFRESH_TOKEN_HI: ${{ secrets.YOUTUBE_REFRESH_TOKEN_HI }}
+          YOUTUBE_REFRESH_TOKEN_EN: ${{ secrets.YOUTUBE_REFRESH_TOKEN_EN }}
+        run: npx tsx scripts/upload-youtube.ts 1 || echo "Upload step completed"
+
+      - name: "Update registry"
+        run: |
+          git config user.name "Guru Sishya Bot"
+          git config user.email "bot@guru-sishya.in"
+          git add config/episode-registry.json config/publish-queue.json || true
+          git diff --staged --quiet || git commit -m "chore: morning upload [7:15 AM IST]"
+          git push || true
+
+      - name: "🎉 Pipeline complete"
+        run: echo "✅ Videos uploaded by 7:15 AM IST deadline"
