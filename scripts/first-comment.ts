@@ -85,7 +85,17 @@ export function buildFirstCommentText(meta: ShortMetadata | null): string {
     ``,
     `👉 ${url}`,
     ``,
-    `Drop a 🔥 if this clicked, or comment what topic you want next!`,
+    // Panel-9 Aud P1-A: explicit subscribe nudge with @handle. The
+    // creator badge + first-position visibility makes this the single
+    // highest-conversion subscribe surface on the video.
+    `🙏 Subscribe @GuruSishya-India — roz ek naya 60-sec FAANG concept, free.`,
+    ``,
+    // Panel-9 Aud P1-C: binary reply bait. "🔥 OR 🤯?" forces a 1-tap
+    // commit (vs. open-ended "what topic next" which wins reflection
+    // but costs reply velocity). Both questions kept — bait first,
+    // open-ended after, so the binary triggers fast comment volume.
+    `🔥 OR 🤯 — kaunsa wala tum already knew? Drop one emoji 👇`,
+    `Aur agla topic kya cover karu? Comment karo 👇`,
   ].join('\n');
 }
 

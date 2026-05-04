@@ -187,12 +187,21 @@ async function main(): Promise<void> {
     storyboard.scenes[0]?.narration ?? '',
   );
   // hookSpoken: full Hinglish hook for TTS scene-0 audio (longer, urgent).
-  // hookVisual: punchy ≤42-char headline for the on-screen hook band.
-  // When a bank entry exists with hookHinglish, the spoken+title carry
-  // the curated copy; the visual still uses the short template so the
-  // 3-line/14-char hook band remains legible.
+  // hookVisual: ≤42-char headline for the on-screen hook band — derived
+  // from hookSpoken so audio/visual carry the SAME words in the first 3s
+  // (Panel-9 Dist P0 — coherence within the algorithm's most-weighted
+  // retention window). When hookSpoken fits, it appears verbatim; when
+  // it overflows, we ellipsis-truncate at a word boundary so the
+  // truncated visual still reads as the start of the spoken hook.
   const hookSpoken: string = bankEntry?.hookHinglish?.trim() || hookHeadline;
-  const hookVisual: string = hookHeadline;
+  const hookVisual: string = (() => {
+    const trimmed = hookSpoken.replace(/\s+/g, ' ').trim();
+    if (trimmed.length <= 42) return trimmed;
+    // Truncate on a word boundary ≤39 chars + ellipsis.
+    const cut = trimmed.slice(0, 40);
+    const lastSpace = cut.lastIndexOf(' ');
+    return (lastSpace > 20 ? cut.slice(0, lastSpace) : cut.slice(0, 39)) + '…';
+  })();
 
   // ── Auto-generate TTS narration if storyboard didn't ship a voice ────────
   if (!hasVoice && process.env['TTS_DISABLED'] !== '1') {
@@ -266,7 +275,20 @@ async function main(): Promise<void> {
         );
       }
     } catch (err) {
-      console.warn(`[orchestrator] TTS failed (${String(err).slice(0, 160)}) — composing with silent audio`);
+      // Panel-9 Eng P1 (Eich): silently shipping a muted video when
+      // TTS fails is the worst-of-both-worlds outcome — broken upload
+      // disguised as success. Allow the legacy "carry-on with silent
+      // audio" behaviour ONLY when explicitly opted-in via the
+      // ALLOW_SILENT_FALLBACK=1 env (test fixtures rely on it). In
+      // production, hard-fail the render.
+      if (process.env['ALLOW_SILENT_FALLBACK'] === '1') {
+        console.warn(`[orchestrator] TTS failed (${String(err).slice(0, 160)}) — composing with silent audio (ALLOW_SILENT_FALLBACK=1)`);
+      } else {
+        throw new Error(
+          `[orchestrator] TTS synthesis failed: ${String(err).slice(0, 240)}. ` +
+          `Refusing to ship a muted video. Set ALLOW_SILENT_FALLBACK=1 to override (tests only).`
+        );
+      }
     }
   }
   if (!hasVoice) console.log('[orchestrator] no voice track found — composing with silent audio');
@@ -371,6 +393,8 @@ async function main(): Promise<void> {
     siteTopicSlug: bankEntry?.siteTopicSlug ?? slug,
     hookHeadline,
     shortTitle: bankEntry?.shortTitle,
+    salaryBand: bankEntry?.salaryBand,
+    stake: bankEntry?.stake,
   });
   const metadataPath = path.join(finalOutDir, 'metadata.json');
   fs.writeFileSync(
@@ -420,9 +444,15 @@ async function main(): Promise<void> {
   // provided — and frame 1 is rarely the most engaging visual. We render
   // a separate branded thumbnail so the upload step has it.
   const thumbnailPath = path.join(finalOutDir, 'thumbnail.png');
+  // Panel-9 Dist P1 (MrBeast): the thumbnail must match the YT title
+  // exactly — it is the only surface 100% controlled before a viewer
+  // clicks. When a curated bank shortTitle exists we put THAT on the
+  // thumbnail; otherwise fall through to hookSpoken (which now also
+  // drives the title), and finally to the legacy hookHeadline.
+  const thumbnailHook = bankEntry?.shortTitle?.trim() || hookSpoken || hookHeadline;
   await generateThumbnailPng({
     sourceVideoPath: outputPath,
-    hook: hookHeadline,
+    hook: thumbnailHook,
     handle: process.env['CHANNEL_HANDLE'] ?? BRAND_AT,
     outPath: thumbnailPath,
   });
@@ -642,13 +672,17 @@ async function generateNarrationForScenes(
       wantSubtitles: true,
     });
     sceneWordTimestamps.push(wordTimestamps);
-    // Per-segment loudnorm so a quiet sentence next to a loud one doesn't
-    // jump 4-6 LU after global normalisation. Single-pass loudnorm at
-    // segment level is cheap and removes the within-video pump.
+    // Panel-9 Eng P0 (Carmack): segment-level `loudnorm I=-16` followed
+    // by the full-track `loudnorm I=-14` in muxFinal/mixBgmBed produces
+    // measurable inter-segment pump on 2-3s clips (single-pass loudnorm
+    // is unstable below the EBU R128 measurement gate). Switched to
+    // `dynaudnorm` which smooths within-segment level variation without
+    // engaging the full EBU normaliser — the I=-14 master pass at the
+    // end is still the single source of truth for output loudness.
     await execFileAsync(FFMPEG_BIN, [
       '-y',
       '-i', rawPath,
-      '-af', 'loudnorm=I=-16:LRA=11:tp=-1.5',
+      '-af', 'dynaudnorm=p=0.7:m=10:s=12',
       '-ar', '48000',
       '-ac', '1',
       '-c:a', 'libmp3lame', '-b:a', '160k',

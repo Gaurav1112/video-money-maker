@@ -253,15 +253,17 @@ async function processScene(
 
   // Ret2 P1 (panel-7): alternating zoompan direction by scene index
   // doubles perceived motion variety vs a single zoom-in across all
-  // scenes. Velocity 0.0016/frame is ~2× the previous gentle ramp,
-  // so over 3.5s @ 30fps the visible zoom delta is +17% (vs +8%).
-  // Even-index scenes zoom IN, odd-index scenes zoom OUT — keeps the
-  // viewer's eye chasing detail.
+  // scenes. Velocity is now COMPUTED from durFrames so both lanes
+  // (zoom-in and zoom-out) resolve to exactly the symmetric endpoints
+  // regardless of cap changes — Panel-9 Ret P1 (McKinnon): the
+  // hardcoded 0.0016/frame zoom-in left scenes ending at 1.14×–1.17×
+  // (asymmetric with the zoom-out lane that nails 1.00× exactly).
   let zoompanFilter = '';
   if (enableZoompan) {
     if (scene.sceneIndex % 2 === 0) {
-      // Zoom in: 1.00 → ~1.17 over the scene
-      zoompanFilter = `zoompan=z='1+0.0016*on':d=${durFrames}:s=1080x1920:fps=${FPS}`;
+      // Zoom in: 1.00 → 1.20 over the scene
+      const zoomInVel = (0.20 / durFrames).toFixed(6);
+      zoompanFilter = `zoompan=z='1+${zoomInVel}*on':d=${durFrames}:s=1080x1920:fps=${FPS}`;
     } else {
       // Panel-8 Ret P1 (McKinnon): previous hardcoded 0.00133 never
       // resolved to 1.00× at end of scene — at 105 frames (3.5s × 30)
@@ -272,9 +274,16 @@ async function processScene(
       zoompanFilter = `zoompan=z='max(1,1.20-${zoomOutVel}*on)':d=${durFrames}:s=1080x1920:fps=${FPS}`;
     }
   }
+  // Panel-9 Ret P0 (McKinnon): zero color grading on raw stock clips
+  // is the single largest perceived-production-value ceiling. A subtle
+  // saturation lift (1.06) + small contrast bump (1.04) gives a
+  // consistent "house look" across heterogeneous Mixkit/Pexels/Pixabay
+  // sources without crushing skin tones. Applied AFTER zoompan so it
+  // composes the final color over the zoomed crop.
+  const colorGrade = ',eq=saturation=1.06:contrast=1.04';
   const baseScale = enableZoompan
-    ? `scale=-2:1920,crop=1080:1920,${zoompanFilter}`
-    : 'scale=-2:1920,crop=1080:1920';
+    ? `scale=-2:1920,crop=1080:1920,${zoompanFilter}${colorGrade}`
+    : `scale=-2:1920,crop=1080:1920${colorGrade}`;
   const filters: string[] = [`${baseScale},fps=${FPS},setpts=PTS-STARTPTS`];
 
   // Panel-8 Ret P0 (Schiffer): pattern-interrupt brightness flash on
@@ -355,19 +364,29 @@ async function processScene(
     if (scene.endCardText) {
       const endCardStart = Math.max(0, scene.durationSec - 1.5);
       const endCardEnable = `enable='gte(t,${endCardStart.toFixed(3)})'`;
+      // Panel-9 Ret/Dist P1 (MKBHD/Schiffer): drawbox at y=760+400 ended
+      // at 1160, overlapping the ASS caption band 1080-1540 by 80 px on
+      // the last scene. Lifted to y=680 + h=400 ⇒ ends at 1080 — sits
+      // exactly above the caption band with zero overlap.
       filters.push(
-        `drawbox=x=0:y=760:w=1080:h=400:color=black@0.78:t=fill:${endCardEnable}`
+        `drawbox=x=0:y=680:w=1080:h=400:color=black@0.78:t=fill:${endCardEnable}`
       );
       const ecLines = scene.endCardText.split('\n').slice(0, 3);
       const FS = 64;
       const LH = 96;
       const totalH = ecLines.length * LH;
-      const startY = 800 + Math.max(0, (340 - totalH) / 2);
+      const startY = 720 + Math.max(0, (340 - totalH) / 2);
+      // 400ms fade-in on the text alpha so the end-card lands as a
+      // designed reveal, not a pop-in artifact (Panel-9 Dist P1 MKBHD).
+      // alpha expression: 0 before endCardStart, ramps 0→1 over 0.4s,
+      // capped at 1. drawbox stays static (a fading background pad
+      // looks like a flicker; the text fade alone is enough).
+      const fadeAlpha = `alpha='if(lt(t,${endCardStart.toFixed(3)}),0,min((t-${endCardStart.toFixed(3)})/0.4,1))'`;
       ecLines.forEach((line, idx) => {
         const escaped = escapeDrawtext(line);
         filters.push(
           `drawtext=text='${escaped}'${fontArgFor(line)}:fontcolor=#FFEB3B:fontsize=${FS}:` +
-          `borderw=5:bordercolor=black@0.95:` +
+          `borderw=5:bordercolor=black@0.95:${fadeAlpha}:` +
           `x=(w-text_w)/2:y=${Math.round(startY + idx * LH)}:${endCardEnable}`
         );
       });
@@ -636,8 +655,11 @@ async function mixBgmBed(
   // Padded with `apad` to totalDur so the amix doesn't hold open due to
   // a short input. After the 350ms strike the input is silence, so it
   // costs nothing on subsequent body scenes.
+  // Panel-9 Ret P1 (Huang): decay constant -12 gave a ~58ms half-life
+  // — the strike was over before the hook word landed. Slowed decay to
+  // -4 (half-life ~173ms) so the impact body carries through 350ms.
   const sfxExpr =
-    "aevalsrc='if(lt(t\\,0.35)\\,0.45*exp(-12*t)*sin(2*PI*(180+800*t)*t)\\,0)'" +
+    "aevalsrc='if(lt(t\\,0.35)\\,0.45*exp(-4*t)*sin(2*PI*(180+800*t)*t)\\,0)'" +
     `:s=44100:d=${totalDur.toFixed(3)}`;
   await runFfmpeg([
     '-i', voicePath,

@@ -47,6 +47,17 @@ export interface MetadataInput {
    * "Most engineers get X wrong" stamp pattern.
    */
   shortTitle?: string;
+  /**
+   * Topic-bank `salaryBand` (e.g. "₹35-55LPA"). When set, surfaces in
+   * the description as a stake anchor — Panel-9 Aud P1 (was dead).
+   */
+  salaryBand?: string;
+  /**
+   * Topic-bank `stake` line (e.g. "fail Amazon SDE-2 system design
+   * round"). When set, surfaces in the description as the consequence
+   * frame — Panel-9 Aud P1 (was dead).
+   */
+  stake?: string;
 }
 
 /** YouTube hard cap is 100 chars; we leave 6 for `#Shorts` ⇒ 94 for hook copy. */
@@ -157,7 +168,7 @@ export function generateShortMetadata(
   storyboard: StockStoryboard,
   input: MetadataInput = {}
 ): ShortMetadata {
-  const { licenses = [], extraTags = [], siteTopicSlug, hookHeadline, shortTitle } = input;
+  const { licenses = [], extraTags = [], siteTopicSlug, hookHeadline, shortTitle, salaryBand, stake } = input;
   // Panel-8 Dist P0: prefer topic-bank curated shortTitle when present —
   // each one is a hand-written power-line tuned to the specific topic
   // ("90% of Engineers Get Kafka Consumer Groups WRONG 😳"). Avoids
@@ -211,8 +222,26 @@ export function generateShortMetadata(
   // `line !== undefined` filter, producing a triple blank line in the
   // published description. The conditional spread below removes it
   // cleanly when there are no credits.
+  // Stake line shows ONLY when the bank entry curated both salaryBand
+  // and stake (Panel-9 Aud P1 — make the consequence concrete in the
+  // first 4 lines of the description).
+  const stakeLine = salaryBand && stake
+    ? `🤑 ${salaryBand} roles · ${stake}`
+    : salaryBand
+      ? `🤑 ${salaryBand} roles`
+      : stake
+        ? `⚠️ ${stake}`
+        : null;
+
+  // Panel-9 Dist P0 (#3): hashtags must sit ABOVE the YT mobile fold so
+  // they (a) act as discovery anchors before the "...more" cut-off, and
+  // (b) signal niche to the algorithm in the first ~120 chars. They
+  // also still appear at the bottom for legacy parsers that index trailing
+  // tags. A small duplicate cost is much cheaper than a missed surface.
   const description = [
+    `${NICHE_HASHTAGS} ${BROAD_HASHTAGS}`,
     `⚡ ${hook}`,
+    ...(stakeLine ? [stakeLine] : []),
     `🔗 Full deep-dive + practice: ${ctaUrl}`,
     `📘 Instant FREE 80-Q FAANG cheatsheet (no signup) → ${leadMagnetUrl}`,
     `👉 Bhai, subscribe karo ${BRAND_AT} — roz ek naya 60-sec tech Short; pinned comment me aaj ka deep-dive PDF link milega.`,
