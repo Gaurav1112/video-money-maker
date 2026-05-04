@@ -1,0 +1,72 @@
+{
+  "_comment": "Vendored Pixabay copyright-free audio assets. Pixabay Content License (https://pixabay.com/service/license-summary/) permits commercial use, no attribution required. Tracked here for licenses.json bookkeeping and to make the source/license auditable in the repo. Do NOT add files here without verifying the Pixabay download page shows the Pixabay Content License and that the Author has not opted into a custom license.",
+  "license": "Pixabay Content License",
+  "license_url": "https://pixabay.com/service/license-summary/",
+  "attribution_required": false,
+  "tracks": [
+    {
+      "path": "assets/audio/bgm/tense-suspense.mp3",
+      "role": "bgm-primary",
+      "duration_sec": 60.5,
+      "source": "https://pixabay.com/music/suspense-tense-suspense-background-music-442839/",
+      "author": "delosound",
+      "pixabay_id": 442839,
+      "fits_categories": ["system-design", "db-internals", "behavioral", "dsa"],
+      "notes": "Primary BGM bed. Tense, slow-building -- fits FAANG-interview-pressure framing. Replaces procedural triad pad in mixBgmBed when present."
+    },
+    {
+      "path": "assets/audio/sfx/hook-sting.mp3",
+      "role": "hook-sting",
+      "duration_sec": 4.05,
+      "source": "https://pixabay.com/sound-effects/suspense-sting-377244/",
+      "author": "pwlpl",
+      "pixabay_id": 377244,
+      "notes": "Replaces procedural 350ms aevalsrc chirp at t=0. Real impact transient + tonal body."
+    },
+    {
+      "path": "assets/audio/sfx/end-card-uplift.mp3",
+      "role": "end-card-uplift",
+      "duration_sec": 1.69,
+      "source": "https://pixabay.com/sound-effects/uplifting-sound-356041/",
+      "author": "koiroylers",
+      "pixabay_id": 356041,
+      "notes": "Last ~1.5s of video on end-card scene. Reward / takeaway lift before subscribe CTA."
+    },
+    {
+      "path": "assets/audio/sfx/scifi-reveal.mp3",
+      "role": "intro-logo-reveal",
+      "duration_sec": 6.7,
+      "source": "https://pixabay.com/sound-effects/sci-fi-intro-logo-reveal-4-227278/",
+      "author": "breakzstudios",
+      "pixabay_id": 227278,
+      "notes": "Reserved for branded intro / iris-orb avatar wake animation. Not yet wired."
+    },
+    {
+      "path": "assets/audio/sfx/dramatic-sting.mp3",
+      "role": "alt-hook-sting",
+      "duration_sec": 1.32,
+      "source": "https://pixabay.com/sound-effects/dramatic-sting-118943/",
+      "author": "u_903n3qx7rq",
+      "pixabay_id": 118943,
+      "notes": "Alternate hook sting. Reserved for category rotation."
+    },
+    {
+      "path": "assets/audio/sfx/rimshot.mp3",
+      "role": "punchline",
+      "duration_sec": 5.65,
+      "source": "https://pixabay.com/sound-effects/rimshot-joke-funny-80325/",
+      "author": "freesound_community",
+      "pixabay_id": 80325,
+      "notes": "Reserved for interview-trap-reveal punchline scene 1->2 transition. Not yet wired."
+    },
+    {
+      "path": "assets/audio/sfx/vinyl-scratch.mp3",
+      "role": "pattern-interrupt",
+      "duration_sec": 2.18,
+      "source": "https://pixabay.com/sound-effects/vinyl-scratch-3-395154/",
+      "author": "51977681",
+      "pixabay_id": 395154,
+      "notes": "Reserved for 'wait, what?' mid-scene pattern interrupt. Not yet wired."
+    }
+  ]
+}

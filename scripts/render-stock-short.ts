@@ -74,6 +74,56 @@ interface LicenseEntry {
   credit: string;
 }
 
+interface AudioLicenseEntry {
+  path: string;
+  role: string;
+  source: string;
+  author: string;
+  license: string;
+  pixabayId?: number;
+}
+
+/**
+ * Read assets/audio/MANIFEST.json (Pixabay-vendored tracks) and surface
+ * per-track license info for the pipeline's licenses.json. Only the
+ * three roles actually composited into the render (bgm-primary,
+ * hook-sting, end-card-uplift) are emitted; reserved/alt tracks stay
+ * out of the public license bookkeeping until they're wired in.
+ *
+ * Returns [] if the manifest is missing or no in-use track is present
+ * on disk so determinism on cold-cloned environments degrades gracefully.
+ */
+function collectVendoredAudioLicenses(): AudioLicenseEntry[] {
+  const manifestPath = path.join(REPO_ROOT, 'assets', 'audio', 'MANIFEST.json');
+  if (!fs.existsSync(manifestPath)) return [];
+  const ACTIVE_ROLES = new Set(['bgm-primary', 'hook-sting', 'end-card-uplift']);
+  try {
+    const m = JSON.parse(fs.readFileSync(manifestPath, 'utf8')) as {
+      license: string;
+      tracks: Array<{
+        path: string;
+        role: string;
+        source: string;
+        author: string;
+        pixabay_id?: number;
+      }>;
+    };
+    return m.tracks
+      .filter((t) => ACTIVE_ROLES.has(t.role))
+      .filter((t) => fs.existsSync(path.join(REPO_ROOT, t.path)))
+      .map((t) => ({
+        path: t.path,
+        role: t.role,
+        source: t.source,
+        author: t.author,
+        license: m.license,
+        ...(t.pixabay_id ? { pixabayId: t.pixabay_id } : {}),
+      }));
+  } catch {
+    return [];
+  }
+}
+
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
 async function main(): Promise<void> {
@@ -396,8 +446,18 @@ async function main(): Promise<void> {
     pageUrl: p.clip.pageUrl ?? '',
     credit: p.clip.credit ?? '',
   }));
+  // Batch-18 Phase A: also list any vendored Pixabay audio assets that
+  // were composited into this render (BGM bed + hook sting + end-card
+  // uplift). Pixabay Content License is no-attribution, but surfacing
+  // the source URLs in licenses.json keeps the audit trail clean and
+  // matches the per-clip video license bookkeeping.
+  const audioLicenses = collectVendoredAudioLicenses();
   const licensesPath = path.join(finalOutDir, 'licenses.json');
-  fs.writeFileSync(licensesPath, JSON.stringify({ clips: licenses }, null, 2), 'utf8');
+  fs.writeFileSync(
+    licensesPath,
+    JSON.stringify({ clips: licenses, audio: audioLicenses }, null, 2),
+    'utf8',
+  );
   console.log(`[orchestrator] ✓ licenses: ${licensesPath}`);
 
   // 8. Write metadata.json — title/description/tags consumed by the

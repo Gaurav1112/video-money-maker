@@ -12,11 +12,38 @@
 
 import { execFile } from 'node:child_process';
 import { existsSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
-import { join, dirname } from 'node:path';
+import { join, dirname, resolve as pathResolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 import { FFMPEG_BIN, FFPROBE_BIN } from '../lib/ffmpeg-bin.js';
 
 const execFileP = promisify(execFile);
+
+// ─── Vendored audio assets ──────────────────────────────────────────────────
+// Pixabay Content License (commercial-use, no-attribution). Vendored at
+// repo root so byte-determinism is preserved -- no runtime download, no
+// network. Resolved package-root-relative (NOT cwd-relative) so any
+// invocation site picks up the same bytes; absent paths fall back to
+// the procedural synthesis path in mixBgmBed.
+// Manifest: assets/audio/MANIFEST.json (license + per-file source URL).
+// (Batch-18 Phase A.)
+const PACKAGE_ROOT = pathResolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
+const VENDORED_BGM_PATH = pathResolve(PACKAGE_ROOT, 'assets/audio/bgm/tense-suspense.mp3');
+const VENDORED_HOOK_STING_PATH = pathResolve(PACKAGE_ROOT, 'assets/audio/sfx/hook-sting.mp3');
+const VENDORED_END_CARD_SFX_PATH = pathResolve(PACKAGE_ROOT, 'assets/audio/sfx/end-card-uplift.mp3');
+
+function discoverVendoredAudio(): {
+  bgm: string | undefined;
+  hookSting: string | undefined;
+  endCardSfx: string | undefined;
+} {
+  return {
+    bgm: existsSync(VENDORED_BGM_PATH) ? VENDORED_BGM_PATH : undefined,
+    hookSting: existsSync(VENDORED_HOOK_STING_PATH) ? VENDORED_HOOK_STING_PATH : undefined,
+    endCardSfx: existsSync(VENDORED_END_CARD_SFX_PATH) ? VENDORED_END_CARD_SFX_PATH : undefined,
+  };
+}
+
 
 // Memoised filter-availability probes. Some ffmpeg builds (e.g. macOS
 // homebrew default) ship without libass; we skip captions gracefully
@@ -549,7 +576,21 @@ async function muxFinal(
         boundaries.push(cum);
       }
     }
-    audioPath = await mixBgmBed(audioPath, input.bgmPath, totalDur, workDir, boundaries);
+    // Batch-18 Phase A: discover vendored Pixabay assets and let them
+    // override the procedural BGM/hook-sting branches. Discovery is
+    // cwd-relative; absent paths fall back to procedural synthesis so
+    // tests / out-of-tree invocations still work.
+    const vendored = discoverVendoredAudio();
+    const effectiveBgmPath = input.bgmPath ?? vendored.bgm;
+    audioPath = await mixBgmBed(
+      audioPath,
+      effectiveBgmPath,
+      totalDur,
+      workDir,
+      boundaries,
+      vendored.hookSting,
+      vendored.endCardSfx,
+    );
   }
 
   // Panel-9 Eng P0 (Carmack): when the renderer extends the last scene
@@ -709,81 +750,125 @@ async function mixBgmBed(
   totalDur: number,
   workDir: string,
   sceneBoundariesSec: number[] = [],
+  hookStingPath?: string,
+  endCardSfxPath?: string,
 ): Promise<string> {
   const out = join(workDir, 'voice-plus-bgm.m4a');
+  const totalDurStr = totalDur.toFixed(3);
   const whooshExpr = buildWhooshExpr(sceneBoundariesSec, totalDur);
   const hasWhoosh = whooshExpr.length > 0;
 
+  // ─── Unified asset-aware filter graph ────────────────────────────────────
+  // Single branch: voice + BGM (file OR procedural) + hook-sting (file OR
+  // procedural) + optional end-card SFX (file only) + optional whoosh
+  // (procedural). Each input fans into the amix; sidechain ducks BGM
+  // under voice; loudnorm tames final master to -14 LUFS / -1.0 dBTP.
+  // Batch-18 Phase A: replaces the two-branch (external-bgm / procedural)
+  // dispatch with a unified pipeline so vendored Pixabay assets, when
+  // present, drop straight in without losing the procedural hook sting
+  // or whoosh paths.
+  const inputs: string[] = ['-i', voicePath];
+  const filters: string[] = [];
+  let nextIdx = 1;
+
+  // Source 1: BGM bed (always present — file or procedural).
+  const bgmIdx = nextIdx++;
   if (bgmPath && existsSync(bgmPath)) {
-    // External asset path: load → loop → trim → duck under voice.
-    const inputs: string[] = [
-      '-i', voicePath,
-      '-stream_loop', '-1',
-      '-i', bgmPath,
-    ];
-    const filters: string[] = [
-      '[1:a]aformat=channel_layouts=stereo,volume=-26dB,atrim=duration=' + totalDur.toFixed(3) + ',asetpts=PTS-STARTPTS[bgm]',
-      '[bgm][0:a]sidechaincompress=threshold=0.04:ratio=6:attack=10:release=400[ducked]',
-    ];
-    let mixSpec: string;
-    if (hasWhoosh) {
-      inputs.push('-f', 'lavfi', '-i', whooshExpr);
-      filters.push('[2:a]aformat=channel_layouts=stereo[whoosh]');
-      mixSpec = '[0:a][ducked][whoosh]amix=inputs=3:duration=first:dropout_transition=0:weights=1 0.35 0.5[mix]';
-    } else {
-      mixSpec = '[0:a][ducked]amix=inputs=2:duration=first:dropout_transition=0[mix]';
-    }
-    filters.push(mixSpec);
-    filters.push('[mix]loudnorm=I=-14:LRA=11:tp=-1.0[aout]');
-    await runFfmpeg([
-      ...inputs,
-      '-filter_complex', filters.join(';'),
-      '-map', '[aout]',
-      '-c:a', 'aac', '-b:a', '192k', '-ar', '48000', '-ac', '2',
-      out,
-    ]);
-    return out;
+    inputs.push('-stream_loop', '-1', '-i', bgmPath);
+    filters.push(
+      `[${bgmIdx}:a]aformat=channel_layouts=stereo,volume=-26dB,` +
+        `atrim=duration=${totalDurStr},asetpts=PTS-STARTPTS[bgm]`,
+    );
+  } else {
+    // Procedural pad — three detuned sines (G3 / C4 / E4 = G major triad)
+    // with low-pass + slow tremolo to imitate a sustained synth bed.
+    const padExpr =
+      "aevalsrc='0.04*sin(2*PI*196*t)+0.035*sin(2*PI*261.63*t)+0.03*sin(2*PI*329.63*t)'" +
+      `:s=44100:d=${totalDurStr}`;
+    inputs.push('-f', 'lavfi', '-i', padExpr);
+    filters.push(
+      `[${bgmIdx}:a]aformat=channel_layouts=stereo,lowpass=f=700,` +
+        `tremolo=f=0.25:d=0.25,volume=-26dB[bgm]`,
+    );
   }
 
-  // Procedural pad — same filter graph, but [bgm] is synthesised inline.
-  // aevalsrc emits mono; we duplicate via aformat to stereo before the
-  // sidechain compressor (which expects matching channel layouts).
-  const padExpr =
-    "aevalsrc='0.04*sin(2*PI*196*t)+0.035*sin(2*PI*261.63*t)+0.03*sin(2*PI*329.63*t)'" +
-    `:s=44100:d=${totalDur.toFixed(3)}`;
-  // Hook SFX impact (Ret1 P0): a 350ms exponentially-decaying frequency
-  // sweep at t=0 of the voice track — fires the brain's attention reset
-  // *just before* the hook word lands. Amplitude 0.45 → mixed at -3 dB
-  // peak which sits ~6 dB above the BGM pad and ~3 dB below voice.
-  // Padded with `apad` to totalDur so the amix doesn't hold open due to
-  // a short input. After the 350ms strike the input is silence, so it
-  // costs nothing on subsequent body scenes.
-  // Panel-9 Ret P1 (Huang): decay constant -12 gave a ~58ms half-life
-  // — the strike was over before the hook word landed. Slowed decay to
-  // -4 (half-life ~173ms) so the impact body carries through 350ms.
-  const sfxExpr =
-    "aevalsrc='if(lt(t\\,0.35)\\,0.45*exp(-4*t)*sin(2*PI*(180+800*t)*t)\\,0)'" +
-    `:s=44100:d=${totalDur.toFixed(3)}`;
-  const inputs: string[] = [
-    '-i', voicePath,
-    '-f', 'lavfi', '-i', padExpr,
-    '-f', 'lavfi', '-i', sfxExpr,
-  ];
-  const filters: string[] = [
-    '[1:a]aformat=channel_layouts=stereo,lowpass=f=700,tremolo=f=0.25:d=0.25,volume=-26dB[bgm]',
-    '[2:a]aformat=channel_layouts=stereo[sfx]',
-    '[bgm][0:a]sidechaincompress=threshold=0.04:ratio=6:attack=10:release=400[ducked]',
-  ];
-  let mixSpec: string;
-  if (hasWhoosh) {
-    inputs.push('-f', 'lavfi', '-i', whooshExpr);
-    filters.push('[3:a]aformat=channel_layouts=stereo[whoosh]');
-    mixSpec = '[0:a][ducked][sfx][whoosh]amix=inputs=4:duration=first:dropout_transition=0:weights=1 0.35 0.6 0.5[mix]';
+  // Source 2: Hook sting (always present — file or procedural).
+  // File path: trim to first 2.5s, peak-normalised to -3 dB, padded to
+  // totalDur so amix doesn't hold open. Procedural: existing 350ms
+  // exp-decay chirp from Panel-9.
+  const hookIdx = nextIdx++;
+  if (hookStingPath && existsSync(hookStingPath)) {
+    inputs.push('-i', hookStingPath);
+    filters.push(
+      `[${hookIdx}:a]aformat=channel_layouts=stereo,` +
+        `atrim=duration=2.5,asetpts=PTS-STARTPTS,` +
+        `volume=-3dB,apad=whole_dur=${totalDurStr}[hooksfx]`,
+    );
   } else {
-    mixSpec = '[0:a][ducked][sfx]amix=inputs=3:duration=first:dropout_transition=0:weights=1 0.35 0.6[mix]';
+    // Procedural fallback (Panel-9 Ret P1 Huang: -4 decay → ~173ms
+    // half-life so the body of the impact carries through 350ms).
+    const sfxExpr =
+      "aevalsrc='if(lt(t\\,0.35)\\,0.45*exp(-4*t)*sin(2*PI*(180+800*t)*t)\\,0)'" +
+      `:s=44100:d=${totalDurStr}`;
+    inputs.push('-f', 'lavfi', '-i', sfxExpr);
+    filters.push(
+      `[${hookIdx}:a]aformat=channel_layouts=stereo[hooksfx]`,
+    );
   }
+
+  // Source 3: End-card uplift SFX (optional — file only, no procedural
+  // fallback). Placed at totalDur - 1.6s so it lifts the CTA frame.
+  // adelay shifts the input forward; apad pads tail to totalDur.
+  let endCardLabel = '';
+  if (endCardSfxPath && existsSync(endCardSfxPath)) {
+    const endIdx = nextIdx++;
+    inputs.push('-i', endCardSfxPath);
+    const delayMs = Math.max(0, Math.round((totalDur - 1.6) * 1000));
+    filters.push(
+      `[${endIdx}:a]aformat=channel_layouts=stereo,` +
+        `atrim=duration=1.6,asetpts=PTS-STARTPTS,volume=-6dB,` +
+        `adelay=${delayMs}|${delayMs},apad=whole_dur=${totalDurStr}[endsfx]`,
+    );
+    endCardLabel = '[endsfx]';
+  }
+
+  // Source 4: Per-scene-transition whoosh (optional — procedural,
+  // boundaries from compose()).
+  let whooshLabel = '';
+  if (hasWhoosh) {
+    const whooshIdx = nextIdx++;
+    inputs.push('-f', 'lavfi', '-i', whooshExpr);
+    filters.push(`[${whooshIdx}:a]aformat=channel_layouts=stereo[whoosh]`);
+    whooshLabel = '[whoosh]';
+  }
+
+  // Sidechain duck BGM under voice (always).
+  filters.push(
+    '[bgm][0:a]sidechaincompress=threshold=0.04:ratio=6:' +
+      'attack=10:release=400[ducked]',
+  );
+
+  // Build amix dynamically. Order: voice, ducked-BGM, hook-sting,
+  // [end-card], [whoosh]. Weights tuned so voice dominates, BGM sits
+  // ~9 dB under, hook ~5 dB under, end-card ~6 dB under, whoosh ~6 dB
+  // under.
+  const mixLabels: string[] = ['[0:a]', '[ducked]', '[hooksfx]'];
+  const weights: number[] = [1, 0.35, 0.6];
+  if (endCardLabel) {
+    mixLabels.push(endCardLabel);
+    weights.push(0.55);
+  }
+  if (whooshLabel) {
+    mixLabels.push(whooshLabel);
+    weights.push(0.5);
+  }
+  const mixSpec =
+    `${mixLabels.join('')}amix=inputs=${mixLabels.length}` +
+    `:duration=first:dropout_transition=0` +
+    `:weights=${weights.join(' ')}[mix]`;
   filters.push(mixSpec);
   filters.push('[mix]loudnorm=I=-14:LRA=11:tp=-1.0[aout]');
+
   await runFfmpeg([
     ...inputs,
     '-filter_complex', filters.join(';'),
