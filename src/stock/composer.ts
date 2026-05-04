@@ -300,7 +300,12 @@ async function processScene(
   // the perceptual threshold for a pattern interrupt. Bumped to 167ms
   // (5 frames) at +0.30 brightness so the flash is consciously
   // detectable but still reads as a "cut feel" not a defect.
-  if (scene.sceneIndex >= 3 && scene.sceneIndex % 3 === 0) {
+  // Panel-14 Ret P0 (Edge): previous gate `>= 3 && % 3 === 0` was dead
+  // code for the standard 3-scene storyboard (sceneIndex maxes at 2).
+  // Fire on every odd scene from 1 onward — that's scene 1 (mid-video)
+  // for 3-scene stories, scenes 1+3 for 4+, etc. Hook (scene 0) and
+  // closing scene of an odd-count story stay flash-free.
+  if (scene.sceneIndex >= 1 && scene.sceneIndex % 2 === 1) {
     filters.push(`eq=brightness=0.30:enable='lt(t,0.167)'`);
   }
 
@@ -527,7 +532,15 @@ async function muxFinal(
     const boundaries: number[] = [];
     let cum = 0;
     for (let i = 0; i < input.scenes.length; i++) {
-      cum += input.scenes[i].durationSec;
+      const dur = input.scenes[i]!.durationSec;
+      // Panel-14 Eng P1 (Brendan): NaN/Infinity in any scene's
+      // durationSec would poison cum for all subsequent boundaries
+      // (NaN propagates through addition, comparisons all return
+      // false). Guard each scene; on bad input, skip that boundary
+      // computation and fall back to no-whoosh for the run rather
+      // than emit a malformed aevalsrc expression.
+      if (!Number.isFinite(dur) || dur <= 0) continue;
+      cum += dur;
       if (i < input.scenes.length - 1 && cum > 0.05 && cum < totalDur - 0.20) {
         boundaries.push(cum);
       }
@@ -658,9 +671,15 @@ function buildWhooshExpr(boundariesSec: number[], totalDur: number): string {
   // Each whoosh: 180ms exponentially-decaying frequency sweep
   // (1200Hz → 7200Hz over 180ms), amplitude 0.30, gated by
   // gte(t,T) * lt(t-T,0.18). Sum of all boundary impulses.
+  // Panel-14 Eng/Ret P0 (Maeda/Huang): instantaneous frequency of
+  // sin(2π(f0 + k·Δ)·Δ) is f0 + 2k·Δ (derivative of phase wrt t).
+  // Reaching f1 = 7200Hz at Δ=0.18s requires k = (f1-f0)/(2·0.18)
+  // = 6000/0.36 = 16666.667 — not 6000. Previous coefficient only
+  // climbed to 1200 + 2·6000·0.18 = 3360Hz, missing the upper octave
+  // that gives the whoosh its perceptual "swoosh" punch.
   const terms = boundariesSec.map((t) => {
     const T = t.toFixed(3);
-    return `gte(t\\,${T})*lt(t-${T}\\,0.18)*0.30*exp(-7*(t-${T}))*sin(2*PI*(1200+6000*(t-${T}))*(t-${T}))`;
+    return `gte(t\\,${T})*lt(t-${T}\\,0.18)*0.30*exp(-7*(t-${T}))*sin(2*PI*(1200+16666.667*(t-${T}))*(t-${T}))`;
   });
   const expr = terms.join('+');
   return `aevalsrc='${expr}':s=44100:d=${totalDur.toFixed(3)}`;
