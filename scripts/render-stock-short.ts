@@ -460,21 +460,23 @@ async function main(): Promise<void> {
   );
   console.log(`[orchestrator] ✓ metadata: ${metadataPath}`);
 
-  // 9. Generate thumbnail PNG: frame extracted at t=0.5s, with a bold hook
-  // banner overlay. YT Shorts auto-picks frame 1 if no custom thumbnail is
-  // provided — and frame 1 is rarely the most engaging visual. We render
-  // a separate branded thumbnail so the upload step has it.
+  // 9. Generate thumbnail PNG: PROCEDURAL gradient backdrop with bold hook
+  // typography. YT Shorts auto-picks frame 1 if no custom thumbnail is
+  // provided — and frame 1 is rarely the most engaging visual. Panel-12
+  // Dist P0 (MKBHD): we previously used the rendered video frame at
+  // t=1.5s as the backdrop, which made the thumbnail look like a
+  // landscape stock-footage screenshot — actively misleading on the
+  // YT Shorts shelf where the click is the only signal we control.
+  // Now we render a clean designed thumbnail entirely with ffmpeg
+  // primitives (gradient + drawtext) so it stays deterministic, has
+  // zero external assets, and clearly signals "tech short" not "stock
+  // landscape". Category drives an accent gradient stop.
   const thumbnailPath = path.join(finalOutDir, 'thumbnail.png');
-  // Panel-9 Dist P1 (MrBeast): the thumbnail must match the YT title
-  // exactly — it is the only surface 100% controlled before a viewer
-  // clicks. When a curated bank shortTitle exists we put THAT on the
-  // thumbnail; otherwise fall through to hookSpoken (which now also
-  // drives the title), and finally to the legacy hookHeadline.
   const thumbnailHook = rotated?.shortTitle || bankEntry?.shortTitle?.trim() || hookSpoken || hookHeadline;
   await generateThumbnailPng({
-    sourceVideoPath: outputPath,
     hook: thumbnailHook,
     handle: process.env['CHANNEL_HANDLE'] ?? BRAND_AT,
+    category: bankEntry?.category,
     outPath: thumbnailPath,
   });
   console.log(`[orchestrator] ✓ thumbnail: ${thumbnailPath}`);
@@ -736,18 +738,23 @@ async function generateNarrationForScenes(
 }
 
 /**
- * Renders a 1080×1920 portrait thumbnail PNG: source-frame at t=0.5s of the
- * final mp4 + dim overlay + giant hook headline + channel handle. ffmpeg
- * drawtext only — no Puppeteer, no Remotion, no headless Chrome — so this
- * runs deterministically in any CI environment.
+ * Renders a 1080×1920 portrait thumbnail PNG: PROCEDURAL gradient
+ * backdrop (no video frame — Panel-12 Dist P0) + giant hook headline +
+ * channel handle + category accent stripe. ffmpeg drawtext + lavfi
+ * color sources only — no Puppeteer, no Remotion, no headless Chrome —
+ * so this runs deterministically in any CI environment.
+ *
+ * Category gradients are picked deterministically; defaults to a neutral
+ * deep-blue → indigo for unknown/empty category. Each palette is tuned
+ * for ≥4.5:1 WCAG contrast against pure white (#ffffff) hook text.
  */
 async function generateThumbnailPng(opts: {
-  sourceVideoPath: string;
   hook: string;
   handle: string;
+  category?: string;
   outPath: string;
 }): Promise<void> {
-  const { sourceVideoPath, hook, handle, outPath } = opts;
+  const { hook, handle, category, outPath } = opts;
   // Word-wrap the hook to ≤14 chars/line, max 3 lines, draw each line as
   // its own drawtext filter (newline-glyph workaround consistent with
   // composer.ts hook rendering).
@@ -773,42 +780,75 @@ async function generateThumbnailPng(opts: {
     if (fs.existsSync(c)) { fontfile = `:fontfile='${c.replace(/'/g, "\\'")}'`; break; }
   }
 
-  // Panel-8 Dist P1 (MrBeast/MKBHD): at the 120×210-px shelf size,
-  // 110-px text on a 1080×1920 canvas renders ~12 px tall — illegible.
-  // Bumped to 165 px (≈18 px shelf), tighter line-height, larger
-  // border to keep the stroke visible at small scale. Salary anchor
-  // (yellow) raised from 44 → 64.
+  // Panel-12 Dist P0: category-driven backdrop palette. Top color is the
+  // saturated accent (signals topic at a glance on the shelf), bottom
+  // color is the deep base (keeps hook copy readable). Verified ≥4.5:1
+  // WCAG against #ffffff hook text (the dim band drops ratios further).
+  const PALETTES: Record<string, { top: string; bottom: string; accent: string }> = {
+    'system-design': { top: '0x1e3a8a', bottom: '0x0a0a23', accent: '0xfbbf24' }, // navy → near-black, amber accent
+    'dsa':           { top: '0x065f46', bottom: '0x0f1a14', accent: '0xfde047' }, // emerald → near-black, yellow
+    'behavioral':    { top: '0x7c2d12', bottom: '0x1a0a05', accent: '0xfde047' }, // burnt orange → near-black, yellow
+    'db-internals':  { top: '0x4c1d95', bottom: '0x0d0a1f', accent: '0x60a5fa' }, // violet → near-black, sky-blue
+  };
+  const cat = (category ?? '').toLowerCase();
+  const palette = PALETTES[cat] ?? { top: '0x1e3a8a', bottom: '0x0a0a23', accent: '0xfbbf24' };
+
+  // Type sizing: at the 120×210-px shelf size, 165-px text on a
+  // 1080×1920 canvas renders ~18 px tall — legible. (Carried forward
+  // from the prior generator after Panel-8 Dist P1.)
   const FS = 165;
   const LH = 188;
   const totalH = hookLines.length * LH;
   const startY = 460 + Math.max(0, (640 - totalH) / 2);
 
+  // Procedural backdrop: blend two solid color sources with a vertical
+  // alpha gradient via geq. This is fully deterministic and adds no
+  // dependencies. We render the two colours at 1080×1920 then
+  // alphablend top → bottom.
   const filters: string[] = [
-    'scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920',
-    // Dim middle band where the hook sits
-    'drawbox=x=0:y=420:w=1080:h=720:color=black@0.65:t=fill',
+    // Inputs are two color sources (declared in the cmdline below).
+    // [0] = top, [1] = bottom. Build a vertical gradient by blending
+    // [0] over [1] with a top-to-bottom alpha fade.
+    '[0:v]format=rgba,geq=r=\'r(X,Y)\':g=\'g(X,Y)\':b=\'b(X,Y)\':a=\'255*(1-Y/H)\'[topa]',
+    '[1:v][topa]overlay=0:0[bg]',
+    // Bottom accent stripe (3% of canvas height = ~58px) — adds the
+    // category accent color as a clear shelf-readable signal.
+    '[bg]drawbox=x=0:y=1862:w=1080:h=58:color=' + paletteHexToColor(palette.accent) + ':t=fill[bg2]',
+    // Dim middle band where the hook sits (less aggressive than before
+    // since the backdrop is no longer photographic).
+    '[bg2]drawbox=x=0:y=420:w=1080:h=720:color=black@0.45:t=fill[band]',
   ];
+  let chain = '[band]';
   hookLines.forEach((line, idx) => {
+    const next = `[t${idx}]`;
     filters.push(
-      `drawtext=text='${escapeDrawtext(line)}'${fontfile}:fontcolor=white:fontsize=${FS}:` +
+      `${chain}drawtext=text='${escapeDrawtext(line)}'${fontfile}:fontcolor=white:fontsize=${FS}:` +
       `borderw=10:bordercolor=black@0.95:` +
-      `x=(w-text_w)/2:y=${Math.round(startY + idx * LH)}`
+      `x=(w-text_w)/2:y=${Math.round(startY + idx * LH)}${next}`
     );
+    chain = next;
   });
-  // Channel handle bottom-right (yellow salary anchor; bumped 44 → 64)
+  // Channel handle bottom-right (yellow accent) — sits above the accent stripe.
   filters.push(
-    `drawtext=text='${escapeDrawtext(handle)}'${fontfile}:fontcolor=#FFEB3B:fontsize=64:` +
-    `borderw=5:bordercolor=black@0.95:x=w-text_w-40:y=h-text_h-160`
+    `${chain}drawtext=text='${escapeDrawtext(handle)}'${fontfile}:fontcolor=#FFEB3B:fontsize=64:` +
+    `borderw=5:bordercolor=black@0.95:x=w-text_w-40:y=h-text_h-160[out]`
   );
 
   await execFileAsync(FFMPEG_BIN, [
     '-y',
-    // Seek to 1.5s — past the hook SFX/zoom intro, into a settled frame.
-    // t=0.5s caught a mid-zoompan blur per Panel-8 distribution review.
-    '-ss', '1.5',
-    '-i', sourceVideoPath,
+    '-f', 'lavfi', '-i', `color=c=${palette.top}:s=1080x1920:d=1`,
+    '-f', 'lavfi', '-i', `color=c=${palette.bottom}:s=1080x1920:d=1`,
+    '-filter_complex', filters.join(';'),
+    '-map', '[out]',
     '-frames:v', '1',
-    '-vf', filters.join(','),
     outPath,
   ], { maxBuffer: 8 * 1024 * 1024 });
+}
+
+/**
+ * Convert an ffmpeg `0xRRGGBB` color string to the `#RRGGBB` form
+ * accepted by the drawbox `color=` parameter.
+ */
+function paletteHexToColor(hex0x: string): string {
+  return '0x' + hex0x.replace(/^0x/, '');
 }

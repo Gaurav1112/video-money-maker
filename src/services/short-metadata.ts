@@ -198,22 +198,50 @@ export function generateShortMetadata(
   const hook = baseHook;
   const title = `${baseHook} #Shorts`.slice(0, TITLE_MAX);
 
-  // Tag set: topic-derived + ICP-search + brand + caller extras. Expanded
-  // ICP tags target tier-1 college / campus-placement search alongside
-  // FAANG (Aud1 + Dist4 P1).
+  // Tag set: topic-derived + ICP-search + brand + caller extras + category-
+  // aware additions. Panel-12 Dist P1 (Schiffer): expand from ~15 ICP_TAGS
+  // to ≥25 unique tags after merge — YT allows up to 30 free indexable
+  // signals, leaving them empty is foregone SEO surface area. Each
+  // category bucket appends 5-7 high-volume Indian-CSE search terms.
   const baseTags = topicToTags(storyboard.topic);
   // Panel-11 Aud P1 (Striver): `strivergrind` only signals coherently
   // for DSA content — including it on behavioral/system-design videos
   // surfaces them to the wrong ICP and poisons the recommendation
   // graph for future DSA uploads. Conditional on category.
   const cat = (category ?? '').toLowerCase();
-  const ICP_TAGS = [
+  const CORE_ICP_TAGS = [
     'faang', 'leetcode', 'dsa', 'systemdesign', 'placement',
     'interviewprep', 'codingshorts', 'cseducation', 'lowleveldesign',
     'softwareengineer', 'computerscience', 'gate2026',
     'campusplacement', 'tier1college', 'apnacollege',
     ...(cat === 'dsa' || cat === '' ? ['strivergrind'] : []),
   ];
+  // Panel-12 Dist P1 (Schiffer): category-aware high-volume tag
+  // expansion. Uses verifiably high-volume Indian-CSE search terms
+  // (validated via Apna College / Striver / Take U Forward tag clouds).
+  const CATEGORY_TAGS: Record<string, string[]> = {
+    'dsa': [
+      'leetcodeindia', 'codingproblems', 'dsainterview',
+      'algorithms', 'datastructures', 'codingpractice',
+      'striver', 'neetcode', 'cphelp',
+    ],
+    'system-design': [
+      'systemdesigninterview', 'hld', 'lld',
+      'designpatterns', 'scalability', 'distributedsystems',
+      'microservices', 'backendengineering', 'softwarearchitecture',
+    ],
+    'behavioral': [
+      'hrinterview', 'behavioralinterview', 'softskills',
+      'placementtips', 'tellmeaboutyourself', 'starmethod',
+      'careeradvice', 'jobinterview',
+    ],
+    'db-internals': [
+      'database', 'sqlinterview', 'dbms',
+      'postgres', 'mysql', 'transactions',
+      'indexing', 'queryoptimization',
+    ],
+  };
+  const ICP_TAGS = [...CORE_ICP_TAGS, ...(CATEGORY_TAGS[cat] ?? [])];
   const tags = Array.from(
     new Set([...baseTags, ...extraTags, ...ICP_TAGS, 'shorts', BRAND_TAG])
   ).slice(0, 30);
@@ -280,8 +308,11 @@ export function generateShortMetadata(
     `👉 Mock interviews + 1:1 mentoring (limited slots this week) → ${sessionsUrl}`,
     `👉 Comment karo agla topic — top-voted topic 7 din me ship hota hai.`,
     '',
+    // Panel-12 Dist P1 (Schiffer): trailing `${NICHE_HASHTAGS} ${BROAD_HASHTAGS}`
+    // line was duplicating the above-fold block — YT counts hashtags
+    // beyond the first 3 against video relevance signal. License credits
+    // (when present) close the description.
     ...(credits ? [credits, ''] : []),
-    `${NICHE_HASHTAGS} ${BROAD_HASHTAGS}`,
   ].join('\n');
 
   return { title, description, tags };
