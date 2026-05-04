@@ -59,7 +59,7 @@ jobs:
       - name: Install system deps
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y -qq "ffmpeg=7:*" fonts-dejavu fonts-noto fonts-noto-devanagari
+          sudo apt-get install -y -qq "ffmpeg=7:*" fonts-dejavu fonts-noto
           pip3 install --quiet edge-tts
 
       - name: Install Rhubarb

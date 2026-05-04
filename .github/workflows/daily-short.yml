@@ -181,7 +181,7 @@ jobs:
           # it is because we're currently on a stable Jammy/Noble
           # cycle. ffmpeg=7:* anchors the major version while still
           # accepting security patches.
-          sudo apt-get update && sudo apt-get install -y "ffmpeg=7:*" fonts-dejavu fonts-noto fonts-noto-devanagari
+          sudo apt-get update && sudo apt-get install -y "ffmpeg=7:*" fonts-dejavu fonts-noto
           python3 -c "import edge_tts; print('edge_tts OK')"
           ffmpeg -version | head -1
           fc-list | grep -i "dejavu sans" | head -1
@@ -420,7 +420,7 @@ jobs:
         run: |
           npx remotion browser ensure
           pip install --break-system-packages edge-tts==${EDGE_TTS_VERSION} 2>/dev/null || pip install edge-tts==${EDGE_TTS_VERSION}
-          sudo apt-get update -qq && sudo apt-get install -y -qq "ffmpeg=7:*" fonts-dejavu fonts-noto fonts-noto-devanagari
+          sudo apt-get update -qq && sudo apt-get install -y -qq "ffmpeg=7:*" fonts-dejavu fonts-noto
 
       - name: "[FALLBACK] Clone content repo"
         if: steps.check.outputs.found != 'true' && inputs.dry_run != 'true'
