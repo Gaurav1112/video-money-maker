@@ -53,14 +53,44 @@ function escapeAssText(s: string): string {
     .replace(/\}/g, '\\}');
 }
 
+// Panel-17 Retention P1 (Robbins): pure char-count + word-count
+// grouping breaks mid-clause after connector words ("is/a/the/ka/ki
+// /ko/se/ne") which read as broken-English on a karaoke caption.
+// We never end a group on one of these connectors — defer the break
+// to the next word so phrase-level integrity is preserved.
+const CONNECTOR_STOP_LIST = new Set<string>([
+  // English articles / linking verbs / prepositions
+  'is', 'a', 'an', 'the', 'of', 'to', 'in', 'on', 'at', 'by', 'for',
+  'and', 'or', 'but', 'with', 'as', 'so',
+  // Hindi/Hinglish post-positions + common connectors that break
+  // sentences mid-clause when broken on the wrong side
+  'ka', 'ki', 'ko', 'se', 'ne', 'me', 'mein', 'par', 'bhi', 'hi',
+  'aur', 'ya', 'jo', 'ke', 'tak', 'tha', 'thi', 'hai', 'hain', 'ho',
+]);
+
+function isConnector(word: string): boolean {
+  return CONNECTOR_STOP_LIST.has(word.toLowerCase().replace(/[^a-z]/gi, ''));
+}
+
 function groupWords(words: WordTimestamp[]): Array<{ words: WordTimestamp[]; text: string }> {
   const groups: Array<{ words: WordTimestamp[]; text: string }> = [];
   let current: WordTimestamp[] = [];
   let currentText = '';
 
-  for (const w of words) {
+  for (let i = 0; i < words.length; i++) {
+    const w = words[i];
     const newText = currentText ? `${currentText} ${w.word}` : w.word;
-    if (current.length >= 3 || newText.length > 30) {
+    const wantBreak = current.length >= 3 || newText.length > 30;
+
+    // Panel-17 Retention P1 (Robbins): if the *current* group ends on
+    // a connector ("is", "a", "ka", "ki", ...), defer the break so the
+    // connector groups with what follows it instead of dangling at
+    // the end of a karaoke line. Also: never start a new group on a
+    // connector — pull the connector into the previous group.
+    const lastWord = current.length > 0 ? current[current.length - 1].word : '';
+    const breakWouldDangle = wantBreak && current.length > 0 && isConnector(lastWord);
+
+    if (wantBreak && !breakWouldDangle) {
       if (current.length > 0) {
         groups.push({ words: current, text: currentText });
       }

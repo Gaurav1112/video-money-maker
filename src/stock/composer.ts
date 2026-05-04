@@ -231,6 +231,17 @@ export interface SceneInput {
    * scene only.
    */
   endCardText?: string;
+  /**
+   * Panel-17 Retention P0 (Bilyeu): tombstone text drawn after the
+   * narration ends but before the end-card fires (typically t=12-17s
+   * window on a 17.5-19s last scene). Without this, the body of the
+   * last scene plays empty dark navy with only a watermark — the algo's
+   * 50% completion checkpoint falls inside the dead zone, killing
+   * retention. The tombstone is a static "key takeaway" recap line
+   * that sits in the captionText band (lower-mid) and bridges the
+   * silence between voice EOF and end-card reveal.
+   */
+  tombstoneText?: string;
 }
 
 export interface ComposeInput {
@@ -356,7 +367,7 @@ async function processScene(
     filters.push(`eq=brightness=0.30:enable='lt(t,0.167)'`);
   }
 
-  const hasOverlay = !!(scene.bigText || scene.captionText || scene.endCardText);
+  const hasOverlay = !!(scene.bigText || scene.captionText || scene.endCardText || scene.tombstoneText);
   const drawtextAvailable = hasOverlay ? await isDrawtextAvailable() : false;
 
   if (hasOverlay && drawtextAvailable) {
@@ -413,6 +424,34 @@ async function processScene(
           `drawtext=text='${escaped}'${fontArgFor(line)}:fontcolor=#FFEB3B:fontsize=${FS}:` +
           `borderw=4:bordercolor=black@0.95:` +
           `x=(w-text_w)/2:y=${Math.round(startY + idx * LH)}`
+        );
+      });
+    }
+
+    // Panel-17 Retention P0 (Bilyeu): tombstone "key takeaway" recap
+    // that fills the dead-zone between voice-EOF (~t=12s on the last
+    // scene) and end-card reveal (~scene.durationSec - 2.0s). Eye-track
+    // research puts the algo's 50% completion checkpoint inside this
+    // window — without it, viewers see 5+ seconds of dark void and
+    // swipe. The tombstone is a static yellow line in the upper-mid
+    // band so it's clearly distinct from the karaoke caption band
+    // below and the bigText hook band above. Visible from ~2s into
+    // the scene until the end-card fades in.
+    if (scene.tombstoneText) {
+      const endCardStart = Math.max(0, scene.durationSec - 2.0);
+      const tombStart = Math.min(2.0, scene.durationSec * 0.15);
+      const tombEnable = `enable='between(t,${tombStart.toFixed(3)},${endCardStart.toFixed(3)})'`;
+      const tombLines = wrapText(scene.tombstoneText, 24).split('\n').slice(0, 2);
+      const FS = 56;
+      const LH = 80;
+      const startY = 880;
+      const tombFade = `alpha='if(lt(t,${tombStart.toFixed(3)}),0,if(gt(t,${endCardStart.toFixed(3)}),0,min((t-${tombStart.toFixed(3)})/0.5,1)))'`;
+      tombLines.forEach((line, idx) => {
+        const escaped = escapeDrawtext(line);
+        filters.push(
+          `drawtext=text='${escaped}'${fontArgFor(line)}:fontcolor=#FFEB3B:fontsize=${FS}:` +
+          `borderw=4:bordercolor=black@0.92:${tombFade}:` +
+          `x=(w-text_w)/2:y=${Math.round(startY + idx * LH)}:${tombEnable}`
         );
       });
     }
@@ -818,8 +857,20 @@ async function mixBgmBed(
   const bgmIdx = nextIdx++;
   if (bgmPath && existsSync(bgmPath)) {
     inputs.push('-stream_loop', '-1', '-i', bgmPath);
+    // Panel-17 Audio P0 (Rogers/Beato): vendored BGM (tense-suspense.mp3
+    // is full-spectrum 256kbps) carries energy to ~16kHz; even at
+    // -27 dBr its 1-4kHz harmonics mask T/K/S/F consonants on
+    // en-IN-PrabhatNeural voice through consumer earbuds. The
+    // procedural-pad branch below uses lowpass=f=700 specifically to
+    // sit below the 2-4kHz consonant intelligibility band — apply the
+    // same protection to the vendored branch.
+    // lowpass=f=1000 cuts above 1kHz (preserves bass+low-mid bed
+    // warmth, removes consonant-masking energy). highshelf -6dB above
+    // 3kHz adds a second tier of attenuation on residual harmonics so
+    // any leakage past the lowpass slope (12 dB/oct) is also tamed.
     filters.push(
       `[${bgmIdx}:a]aformat=channel_layouts=stereo,volume=-18dB,` +
+        `lowpass=f=1000,highshelf=f=3000:width_type=o:width=2:gain=-6,` +
         `atrim=duration=${totalDurStr},asetpts=PTS-STARTPTS[bgm]`,
     );
   } else {
@@ -888,9 +939,15 @@ async function mixBgmBed(
   // Sidechain duck BGM under voice (always). Uses the rate-normalized
   // voice signal as the sidechain control so attack/release envelopes
   // are calibrated correctly (Panel-16 Eng E4 Carmack Gap 2).
+  // Panel-17 Audio P1 (Beato): release=400ms left a 400ms BGM-recovery
+  // dip after each voice clause — detectable in the silence-detect
+  // reading at t=17.48s (voice ends ~17.1s, BGM not fully recovered
+  // by 17.5s before end-card SFX fires). release=250ms halves the
+  // recovery tail to one BS.1770 short-term block boundary, eliminating
+  // the audible post-voice dip.
   filters.push(
     '[bgm][voice44k_sc]sidechaincompress=threshold=0.04:ratio=6:' +
-      'attack=10:release=400[ducked]',
+      'attack=10:release=250[ducked]',
   );
 
   // Build amix dynamically. Order: voice, ducked-BGM, hook-sting,
@@ -940,16 +997,108 @@ async function mixBgmBed(
   // we want sub-0.05 dB LUFS accuracy the proper fix is a true two-pass
   // loudnorm (measure → apply with measured_*+linear=true), deferred
   // to B22.
-  filters.push('[mix]loudnorm=I=-14:LRA=11:tp=-1.0[aout]');
+  // Panel-17 Audio P1 (Katz): true two-pass loudnorm — measure with
+  // print_format=json, then apply with linear=true + measured_*
+  // values for sub-0.05 dB LUFS accuracy. Single-pass loudnorm has
+  // ±0.5 dB inherent error which the YouTube/Spotify -0.2 dB silent
+  // attenuate-on-upload then compounds. Two-pass eliminates the gap.
+  //
+  // Implementation:
+  //  Pass 0: render filter_complex to PCM intermediate WAV (no
+  //          loudnorm, no AAC).
+  //  Pass 1: ffmpeg -i wav -af loudnorm=...:print_format=json measure
+  //          → parse stderr for measured_I/_LRA/_TP/_thresh/offset.
+  //  Pass 2: ffmpeg -i wav -af loudnorm=...:linear=true:measured_*=...
+  //          encode AAC to final .m4a.
+  // All three steps are pure functions of identical input → fully
+  // deterministic. Pass 1 measurements drive Pass 2 linear scaling so
+  // there's no compression artifacting and LRA is preserved exactly.
+  const intermediateWav = join(workDir, 'voice-plus-bgm.pre-loudnorm.wav');
+  filters.push('[mix]anull[aout_pre]');
 
   await runFfmpeg([
     ...inputs,
     '-filter_complex', filters.join(';'),
-    '-map', '[aout]',
+    '-map', '[aout_pre]',
+    '-c:a', 'pcm_s16le', '-ar', '48000', '-ac', '2',
+    intermediateWav,
+  ]);
+
+  const loudnormMeasured = await measureLoudnorm(intermediateWav);
+
+  await runFfmpeg([
+    '-i', intermediateWav,
+    '-af',
+      `loudnorm=I=-14:LRA=11:tp=-1.0:` +
+      `measured_I=${loudnormMeasured.input_i}:` +
+      `measured_LRA=${loudnormMeasured.input_lra}:` +
+      `measured_TP=${loudnormMeasured.input_tp}:` +
+      `measured_thresh=${loudnormMeasured.input_thresh}:` +
+      `offset=${loudnormMeasured.target_offset}:` +
+      `linear=true:print_format=summary`,
     '-c:a', 'aac', '-b:a', '192k', '-ar', '48000', '-ac', '2',
     out,
   ]);
   return out;
+}
+
+// Panel-17 Audio P1 (Katz): two-pass loudnorm support — Pass 1.
+// Runs loudnorm with print_format=json on a PCM intermediate and
+// extracts the 5 measured values needed for Pass 2's linear scaling.
+// The JSON block sits at the END of stderr; we slice from the last
+// '{' to ensure we don't catch ffmpeg's preamble braces.
+type LoudnormMeasure = {
+  input_i: string;
+  input_lra: string;
+  input_tp: string;
+  input_thresh: string;
+  target_offset: string;
+};
+async function measureLoudnorm(wavPath: string): Promise<LoudnormMeasure> {
+  return new Promise((resolve, reject) => {
+    execFile(
+      FFMPEG_BIN,
+      [
+        '-hide_banner', '-nostats',
+        '-i', wavPath,
+        '-af', 'loudnorm=I=-14:LRA=11:tp=-1.0:print_format=json',
+        '-f', 'null', '-',
+      ],
+      { maxBuffer: 8 * 1024 * 1024 },
+      (err, _stdout, stderr) => {
+        if (err) {
+          reject(new Error(`loudnorm pass-1 measure failed: ${stderr}`));
+          return;
+        }
+        const lastBrace = stderr.lastIndexOf('{');
+        if (lastBrace < 0) {
+          reject(new Error(`loudnorm pass-1 produced no JSON: ${stderr}`));
+          return;
+        }
+        const jsonChunk = stderr.slice(lastBrace);
+        const closeBrace = jsonChunk.lastIndexOf('}');
+        if (closeBrace < 0) {
+          reject(new Error(`loudnorm pass-1 JSON unterminated: ${jsonChunk}`));
+          return;
+        }
+        try {
+          const parsed = JSON.parse(jsonChunk.slice(0, closeBrace + 1));
+          // ffmpeg returns values as strings already (e.g. "-14.9");
+          // pass them through unchanged so the second pass sees the
+          // exact byte representation it expects.
+          resolve({
+            input_i: String(parsed.input_i),
+            input_lra: String(parsed.input_lra),
+            input_tp: String(parsed.input_tp),
+            input_thresh: String(parsed.input_thresh),
+            target_offset: String(parsed.target_offset),
+          });
+        } catch (e) {
+          reject(new Error(`loudnorm pass-1 JSON parse failed: ${(e as Error).message}\nchunk: ${jsonChunk}`));
+        }
+      },
+    );
+  });
 }
 
 async function probeDuration(videoPath: string): Promise<number> {

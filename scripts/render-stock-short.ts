@@ -428,6 +428,27 @@ async function main(): Promise<void> {
       const endCardText = isLast
         ? `Drop a comment\nSubscribe ${BRAND_AT}\nkal milte hain`
         : undefined;
+      // Panel-17 Retention P0 (Bilyeu): the last scene is extended ~6
+      // frames to fit voice tail + 2s end-card pad. Voice EOF lands at
+      // ~t=12s but end-card doesn't fire until scene.durationSec - 2.0s
+      // (~t=15.4s). The 3-5 second window in between rendered as dark
+      // navy with no captions, no text — the algorithm's 50% completion
+      // checkpoint falls right inside this dead zone. Tombstone bridges
+      // the silence with a static "key takeaway" recap line so viewers
+      // have something to read until the end-card lands.
+      // Source: rotated.shortTitle ("The Kafka Consumer Groups Mistake")
+      // is the descriptive sentence form already curated in topic-bank;
+      // perfect for a recap tombstone. Truncate to ≤36 chars at last
+      // word boundary so the 2-line wrap doesn't end mid-word.
+      const tombstoneText = (() => {
+        if (!isLast) return undefined;
+        const raw = (rotated?.shortTitle || bankEntry?.shortTitle || '').trim();
+        if (!raw) return undefined;
+        if (raw.length <= 36) return raw;
+        const trimmed = raw.slice(0, 36);
+        const lastSpace = trimmed.lastIndexOf(' ');
+        return lastSpace > 18 ? trimmed.slice(0, lastSpace) : trimmed;
+      })();
       return {
         clipPath: clipPaths[i],
         durationSec: scene.durationFrames / storyboard.fps,
@@ -435,6 +456,7 @@ async function main(): Promise<void> {
         bigText,
         captionText,
         endCardText,
+        tombstoneText,
       };
     }),
     voicePath: hasVoice ? voicePath : undefined,
