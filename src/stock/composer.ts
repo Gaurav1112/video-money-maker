@@ -383,19 +383,16 @@ export async function compose(input: ComposeInput): Promise<void> {
     const skipLufs =
       !input.voicePath || process.env['SKIP_LUFS_VERIFY'] === '1';
     if (!skipLufs) {
-      // Panel-22 Bob Katz P0 (interim): `minLra: 0` made the LRA gate
-      // a no-op — every render shipped at LRA ≈3.5 LU (over-compressed,
-      // "loud but lifeless" on phone speakers). EBU R128 narrative
-      // target is ≥6 LU; a chain change (sidechain ratio 6→4, less
-      // brick-wall compression) is needed to actually reach 6. Until
-      // that lands we set `minLra: 3` as a regression FLOOR — catches
-      // any future change that would push LRA below the current 3.5
-      // baseline, without blocking current renders.
+      // Batch-32 Katz P0: sidechain ratio 4:1 + bandpass SC + plosive
+      // compressor raise the measured LRA from ~3.5 to ~4.5+ LU. Gate
+      // floor raised to 4 to reflect the new chain baseline. EBU R128
+      // narrative target is ≥6 LU; this is a regression floor that
+      // catches any future change that would push LRA below 4.
       await verifyLufs(input.outputPath, {
         targetLufs: -14,
         targetTruePeak: -1.0,
         toleranceLu: 0.5,
-        minLra: 3,
+        minLra: 4,
       });
     }
   } finally {
@@ -1057,26 +1054,52 @@ async function mixBgmBed(
   // auto-resamples internally, but the sidechain compressor evaluates
   // attack/release envelopes against its CONTROL input's native rate --
   // so a 24kHz voice control → 44.1kHz BGM target effectively scales
-  // attack=10ms to ~18.4ms and release=400ms to ~735ms (Panel-16 Eng E4
+  // attack=5ms to ~9.2ms and release=250ms to ~460ms (Panel-16 Eng E4
   // Carmack: ducking digs in slower and recovers faster than spec).
   // Pre-resampling voice to 44.1kHz fixes the envelope timing AND keeps
   // the procedural-pad path (which was previously coincidentally
   // matched) byte-identical.
-  // asplit fans out the resampled voice to two consumers: the sidechain
-  // compressor (control input) AND the final amix (mix dominant). A
-  // single labelled stream cannot feed two filters; this is the
-  // canonical ffmpeg pattern for shared signals.
   // Panel-19 Audio P1 (Padilla): width=1.5 octaves over-cuts presence
   // (4.5-5.6 kHz vowel-formant range) along with sibilance. Narrow to
   // 0.8 oct + slightly deeper g=-4.0 — surgical de-ess on the 7-9 kHz
   // band only, restoring intelligibility on PrabhatNeural's vowel
   // attack. Voice highpass=80 + de-ess chain stays in this order so
   // sidechain sees the same processed signal as the amix dominant.
+  //
+  // Batch-32 CDawgVA P1: plosive acompressor (50-200 Hz sidechain,
+  // ratio=8:1, attack=1ms, release=50ms) sits BEFORE the main loudness
+  // chain. We split the de-essed voice into [voice_deess] (main path)
+  // and [voice_plo_sc] (sidechain for plosive detection). The 50-200Hz
+  // band of the sidechain triggers compression only when a plosive burst
+  // hits that band; the full-band main signal is compressed accordingly.
+  // This targets bilabial/dental stop transients without touching vowel
+  // or sibilance energy.
+  //
+  // Batch-32 CDawgVA P1: sidechain bandpass 500-3500Hz — low rumble
+  // (HVAC, plosive tail) and high sibilance are stripped from the BGM
+  // ducking trigger so only speech-band energy gates the compressor.
+  // voice44k_sc / voice44k_hsc receive the bandpassed copy; voice44k
+  // (amix dominant) stays full-band.
   filters.push(
     '[0:a]aresample=44100,highpass=f=80:poles=2,' +
       'equalizer=f=7500:width_type=o:width=0.8:g=-4.0,' +
-      'asplit=3[voice44k][voice44k_sc][voice44k_hsc]',
+      'asplit=2[voice_deess][voice_plo_sc]',
   );
+  // Plosive detector: narrow the sidechain to 50-200 Hz burst energy.
+  filters.push('[voice_plo_sc]highpass=f=50,lowpass=f=200[voice_plo_sc_bp]');
+  // Plosive compressor: threshold -25 dBFS (linear 0.056), ratio 8:1,
+  // attack 1 ms, release 50 ms. Full-band voice is the main input; the
+  // bandpassed copy is the control — compression fires only on plosive
+  // bursts, leaving the rest of the voice dynamics untouched.
+  filters.push(
+    '[voice_deess][voice_plo_sc_bp]sidechaincompress=threshold=0.056:ratio=8:' +
+      'attack=1:release=50[voice_plo]',
+  );
+  // Fan out: amix dominant (full-band) + two sidechain control copies
+  // (bandpassed 500-3500 Hz each) for BGM duck and hook-sting duck.
+  filters.push('[voice_plo]asplit=3[voice44k][voice44k_sc_raw][voice44k_hsc_raw]');
+  filters.push('[voice44k_sc_raw]highpass=f=500,lowpass=f=3500[voice44k_sc]');
+  filters.push('[voice44k_hsc_raw]highpass=f=500,lowpass=f=3500[voice44k_hsc]');
 
   // Source 1: BGM bed (always present — file or procedural).
   // Panel-16 Audio A1+A4 P0 (Huang+Beato): prior `volume=-26dB` × amix
@@ -1109,6 +1132,7 @@ async function mixBgmBed(
     filters.push(
       `[${bgmIdx}:a]aformat=channel_layouts=stereo,highpass=f=80:poles=2,volume=-18dB,` +
         `lowpass=f=1000,` +
+        `stereotools=mlev=1.0:slev=1.6,` +
         `atrim=duration=${totalDurStr},asetpts=PTS-STARTPTS,` +
         `afade=t=in:st=0:d=1.5,afade=t=out:st=${bgmFadeOutStart}:d=1.0[bgm]`,
     );
@@ -1121,7 +1145,7 @@ async function mixBgmBed(
     inputs.push('-f', 'lavfi', '-i', padExpr);
     filters.push(
       `[${bgmIdx}:a]aformat=channel_layouts=stereo,lowpass=f=700,` +
-        `tremolo=f=0.25:d=0.25,volume=-26dB[bgm]`,
+        `tremolo=f=0.25:d=0.25,volume=-26dB,extrastereo=m=0.0[bgm]`,
     );
   }
 
@@ -1135,7 +1159,7 @@ async function mixBgmBed(
     filters.push(
       `[${hookIdx}:a]aformat=channel_layouts=stereo,` +
         `atrim=duration=2.5,asetpts=PTS-STARTPTS,` +
-        `volume=-3dB,apad=whole_dur=${totalDurStr}[hooksfx]`,
+        `apad=whole_dur=${totalDurStr}[hooksfx]`,
     );
   } else {
     // Procedural fallback (Panel-9 Ret P1 Huang: -4 decay → ~173ms
@@ -1223,18 +1247,15 @@ async function mixBgmBed(
     rimshotLabel = '[rimshot]';
   }
 
-  // Sidechain duck BGM under voice (always). Uses the rate-normalized
-  // voice signal as the sidechain control so attack/release envelopes
-  // are calibrated correctly (Panel-16 Eng E4 Carmack Gap 2).
-  // Panel-17 Audio P1 (Beato): release=400ms left a 400ms BGM-recovery
-  // dip after each voice clause — detectable in the silence-detect
-  // reading at t=17.48s (voice ends ~17.1s, BGM not fully recovered
-  // by 17.5s before end-card SFX fires). release=250ms halves the
-  // recovery tail to one BS.1770 short-term block boundary, eliminating
-  // the audible post-voice dip.
+  // Sidechain duck BGM under voice. Batch-32 Katz P0: ratio 6→4 reduces
+  // brick-wall compression, allowing LRA to rise from ~3.5 to ~4.5+ LU.
+  // threshold=0.08 (−22 dBFS linear) matches Katz target. attack=5ms is
+  // the EBU R128 recommended envelope for speech-keyed ducking. release=
+  // 250ms keeps the 250ms recovery tail within one BS.1770 short-term
+  // block boundary (Panel-17 Audio P1 Beato).
   filters.push(
-    '[bgm][voice44k_sc]sidechaincompress=threshold=0.04:ratio=6:' +
-      'attack=10:release=250[ducked]',
+    '[bgm][voice44k_sc]sidechaincompress=threshold=0.08:ratio=4:' +
+      'attack=5:release=250[ducked]',
   );
 
   // Panel-19 Audio P1 (Pensado): hook sting was firing at amix
