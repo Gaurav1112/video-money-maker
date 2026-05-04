@@ -76,7 +76,7 @@ jobs:
       - name: Install ffmpeg system package
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y "ffmpeg=7:*" fonts-dejavu fonts-noto fonts-noto-devanagari
+          sudo apt-get install -y "ffmpeg=7:*" fonts-dejavu fonts-noto || true
 
       - name: Cache Remotion bundler
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
@@ -111,7 +111,7 @@ jobs:
           cache: 'npm'
 
       - name: Install ffmpeg
-        run: sudo apt-get update -qq && sudo apt-get install -y "ffmpeg=7:*" fonts-dejavu fonts-noto fonts-noto-devanagari
+        run: sudo apt-get update -qq && sudo apt-get install -y "ffmpeg=7:*" fonts-dejavu fonts-noto || true
 
       - run: npm ci
 
@@ -160,7 +160,7 @@ jobs:
 
       - name: Install ffmpeg (needed for audio and stock layers)
         if: matrix.layer == 'retention' || matrix.layer == 'stock'
-        run: sudo apt-get update -qq && sudo apt-get install -y "ffmpeg=7:*" fonts-dejavu fonts-noto fonts-noto-devanagari
+        run: sudo apt-get update -qq && sudo apt-get install -y "ffmpeg=7:*" fonts-dejavu fonts-noto || true
 
       - run: npm ci
 
