@@ -52,7 +52,7 @@ jobs:
         run: |
           npx remotion browser ensure
           pip install --break-system-packages edge-tts
-          sudo apt-get update && sudo apt-get install -y "ffmpeg=7:*" fonts-dejavu fonts-noto fonts-lohit-devanagari
+          sudo apt-get update && sudo apt-get install -y "ffmpeg=7:*" fonts-dejavu fonts-noto fonts-noto-devanagari
           # Verify installations
           edge-tts --help >/dev/null 2>&1 && echo "edge-tts OK" || echo "edge-tts WARNING: not on PATH"
           python3 -c "import edge_tts; print('edge_tts module OK')"

@@ -123,7 +123,7 @@ jobs:
         run: |
           npx remotion browser ensure
           pip install --break-system-packages edge-tts
-          sudo apt-get update && sudo apt-get install -y "ffmpeg=7:*" fonts-dejavu fonts-noto fonts-lohit-devanagari
+          sudo apt-get update && sudo apt-get install -y "ffmpeg=7:*" fonts-dejavu fonts-noto fonts-noto-devanagari
 
       - name: "[FALLBACK] Clone content repo"
         if: steps.has_artifact.outputs.found != 'true'
@@ -261,7 +261,7 @@ jobs:
           echo "=== Rendering + uploading daily Atomic Short ==="
           # Install TTS + ffmpeg if not already done (needed for fallback render path)
           which edge-tts >/dev/null 2>&1 || pip install --break-system-packages edge-tts
-          which ffmpeg >/dev/null 2>&1 || (sudo apt-get update && sudo apt-get install -y "ffmpeg=7:*" fonts-dejavu fonts-noto fonts-lohit-devanagari)
+          which ffmpeg >/dev/null 2>&1 || (sudo apt-get update && sudo apt-get install -y "ffmpeg=7:*" fonts-dejavu fonts-noto fonts-noto-devanagari)
           npx remotion browser ensure 2>/dev/null || true
 
           # Ensure content symlink

@@ -40,6 +40,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Run unit tests
+        run: npm run test:integrity
+
       - name: Render sessions
         run: |
           if [ -n "${{ inputs.topic }}" ] && [ -n "${{ inputs.session }}" ]; then
@@ -53,6 +59,14 @@ jobs:
       - name: Show status
         if: always()
         run: npx tsx scripts/dashboard.ts --json > render-report.json 2>/dev/null || true
+
+      - name: Capture render SHA baseline
+        if: success()
+        run: npx tsx scripts/capture-render-sha-baseline.ts
+
+      - name: Verify render determinism
+        if: success()
+        run: npm run test:determinism
 
       - name: Commit queue updates
         if: success()
