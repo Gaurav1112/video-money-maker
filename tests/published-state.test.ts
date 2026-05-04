@@ -119,4 +119,58 @@ describe('published-state ledger', () => {
     const result = mod.pickEligibleStoryboard();
     expect(result).toBeNull();
   });
+
+  // Panel-23 (user-request): each session of a topic must be a
+  // distinct video. Cooldown is bucketed per (topic, session) so
+  // load-balancing/s2 is pickable even when load-balancing/s1 was
+  // just published.
+  it('treats different sessions of the same topic as independent buckets', async () => {
+    fs.writeFileSync(
+      path.join(contentDir, 'lb-s1.json'),
+      JSON.stringify({ topic: 'Load Balancing', session: 1, scenes: [] }),
+    );
+    fs.writeFileSync(
+      path.join(contentDir, 'lb-s2.json'),
+      JSON.stringify({ topic: 'Load Balancing', session: 2, scenes: [] }),
+    );
+    const recent = new Date();
+    recent.setDate(recent.getDate() - 2);
+    fs.writeFileSync(
+      ledgerPath,
+      JSON.stringify({
+        version: 1,
+        cooldownDays: 30,
+        published: [
+          {
+            topic: 'Load Balancing',
+            session: 1,
+            slug: 'load-balancing-s1',
+            videoId: 'v1',
+            publishedAt: recent.toISOString(),
+          },
+        ],
+      }),
+    );
+    const mod = await freshImport();
+    const result = mod.pickEligibleStoryboard();
+    expect(result).not.toBeNull();
+    expect(result!.topic).toBe('Load Balancing');
+    expect(result!.session).toBe(2);
+    expect(result!.reason).toBe('fresh');
+  });
+
+  it('persists session in the ledger and respects per-session cooldown', async () => {
+    fs.writeFileSync(
+      path.join(contentDir, 'cache-s3.json'),
+      JSON.stringify({ topic: 'Caching', session: 3, scenes: [] }),
+    );
+    const mod = await freshImport();
+    mod.recordPublish({ topic: 'Caching', session: 3, videoId: 'cache3' });
+    const ledger = JSON.parse(fs.readFileSync(ledgerPath, 'utf8'));
+    expect(ledger.published[0].session).toBe(3);
+    const result = mod.pickEligibleStoryboard();
+    // Same (topic, session) bucket on cooldown → fallback path.
+    expect(result!.reason).toBe('all-on-cooldown-fallback');
+    expect(result!.session).toBe(3);
+  });
 });

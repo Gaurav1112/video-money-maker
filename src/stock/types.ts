@@ -72,4 +72,22 @@ export interface StockStoryboard {
   audioFile?: string;
   durationInFrames: number;
   scenes: StockScene[];
+  /**
+   * Per-session metadata (Panel-23 user-request: each video should map to
+   * a specific guru-sishya.in session of the topic). All fields optional —
+   * legacy single-video-per-topic storyboards remain valid.
+   *
+   * `session` is the 1-based session number (1..10). `siteTopicSlug` and
+   * `siteSessionSlug` are the URL slugs used to deep-link to the actual
+   * guru-sishya.in lesson page: `/topics/{siteTopicSlug}/sessions/{siteSessionSlug}`.
+   * `siteSessionTitle` is the human-readable session title (e.g. "Round
+   * Robin & Weighted Round Robin"). `siteSessionFocus` is a one-line gist
+   * of what that session covers, used in the description body.
+   */
+  session?: number;
+  totalSessions?: number;
+  siteTopicSlug?: string;
+  siteSessionSlug?: string;
+  siteSessionTitle?: string;
+  siteSessionFocus?: string;
 }

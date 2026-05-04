@@ -28,6 +28,18 @@ import * as path from 'node:path';
 
 type LedgerEntry = {
   topic: string;
+  /**
+   * Optional 1-based session number. When set, cooldown is bucketed
+   * by `topic|session` so different sessions of the same topic are
+   * picked independently (Panel-23 user-request: each session of a
+   * topic should be a separate video, not collapse onto one
+   * 30-day-cooldown bucket).
+   *
+   * Legacy entries without `session` continue to bucket on `topic`
+   * alone — preserves existing 30-day cooldown for single-video-per-
+   * topic shorts.
+   */
+  session?: number;
   slug: string;
   videoId: string;
   publishedAt: string;
@@ -96,6 +108,27 @@ function topicOfStoryboard(filePath: string): string {
   }
 }
 
+/**
+ * Per-Panel-23 user-request: each session of a topic is a distinct
+ * video. Read `session` (1-based) from the storyboard if present so
+ * the cooldown picker buckets `topic|session` independently. Returns
+ * undefined for legacy single-video-per-topic storyboards.
+ */
+function sessionOfStoryboard(filePath: string): number | undefined {
+  try {
+    const obj = JSON.parse(fs.readFileSync(filePath, 'utf8')) as {
+      session?: number;
+    };
+    return typeof obj.session === 'number' ? obj.session : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+function bucketKey(topic: string, session?: number): string {
+  return session !== undefined ? `${topic}|s${session}` : topic;
+}
+
 function slugify(text: string): string {
   return text
     .toLowerCase()
@@ -107,6 +140,7 @@ function slugify(text: string): string {
 export function pickEligibleStoryboard(now: Date = new Date()): {
   path: string;
   topic: string;
+  session?: number;
   reason: 'fresh' | 'all-on-cooldown-fallback';
 } | null {
   const ledger = readLedger();
@@ -117,20 +151,27 @@ export function pickEligibleStoryboard(now: Date = new Date()): {
   const cutoffDays = cooldown;
   const nowIso = now.toISOString();
 
-  const lastPublishedByTopic = new Map<string, string>();
+  // Per-Panel-23 (user-request): cooldown bucketed by `topic|session`
+  // when the storyboard carries a session number, falling back to
+  // bare `topic` for legacy single-video-per-topic boards. Result:
+  // load-balancing/s2 is not blocked by load-balancing/s1's recent
+  // publish — each session is its own 30-day-cooldown video.
+  const lastPublishedByBucket = new Map<string, string>();
   for (const e of ledger.published) {
-    const prev = lastPublishedByTopic.get(e.topic);
+    const k = bucketKey(e.topic, e.session);
+    const prev = lastPublishedByBucket.get(k);
     if (!prev || prev < e.publishedAt) {
-      lastPublishedByTopic.set(e.topic, e.publishedAt);
+      lastPublishedByBucket.set(k, e.publishedAt);
     }
   }
 
-  const eligible: { path: string; topic: string }[] = [];
+  const eligible: { path: string; topic: string; session?: number }[] = [];
   for (const p of boards) {
     const topic = topicOfStoryboard(p);
-    const last = lastPublishedByTopic.get(topic);
+    const session = sessionOfStoryboard(p);
+    const last = lastPublishedByBucket.get(bucketKey(topic, session));
     if (!last || daysBetween(last, nowIso) >= cutoffDays) {
-      eligible.push({ path: p, topic });
+      eligible.push({ path: p, topic, session });
     }
   }
 
@@ -144,26 +185,31 @@ export function pickEligibleStoryboard(now: Date = new Date()): {
     return { ...eligible[idx], reason: 'fresh' };
   }
 
-  // Every topic on cooldown → fall back to oldest-published topic
+  // Every bucket on cooldown → fall back to oldest-published bucket
   let oldestPath = boards[0];
   let oldestTs = '9999-12-31T23:59:59Z';
+  let oldestSession: number | undefined;
   for (const p of boards) {
     const topic = topicOfStoryboard(p);
-    const last = lastPublishedByTopic.get(topic) || '0000-01-01T00:00:00Z';
+    const session = sessionOfStoryboard(p);
+    const last = lastPublishedByBucket.get(bucketKey(topic, session)) || '0000-01-01T00:00:00Z';
     if (last < oldestTs) {
       oldestTs = last;
       oldestPath = p;
+      oldestSession = session;
     }
   }
   return {
     path: oldestPath,
     topic: topicOfStoryboard(oldestPath),
+    session: oldestSession,
     reason: 'all-on-cooldown-fallback',
   };
 }
 
 export function recordPublish(args: {
   topic: string;
+  session?: number;
   slug?: string;
   videoId: string;
   publishedAt?: string;
@@ -171,6 +217,7 @@ export function recordPublish(args: {
   const ledger = readLedger();
   const entry: LedgerEntry = {
     topic: args.topic,
+    ...(args.session !== undefined ? { session: args.session } : {}),
     slug: args.slug || slugify(args.topic),
     videoId: args.videoId,
     publishedAt: args.publishedAt || new Date().toISOString(),
@@ -193,6 +240,9 @@ function cliPick(): void {
     fs.appendFileSync(process.env.GITHUB_OUTPUT, `path=${result.path}\n`);
     fs.appendFileSync(process.env.GITHUB_OUTPUT, `topic=${result.topic}\n`);
     fs.appendFileSync(process.env.GITHUB_OUTPUT, `reason=${result.reason}\n`);
+    if (result.session !== undefined) {
+      fs.appendFileSync(process.env.GITHUB_OUTPUT, `session=${result.session}\n`);
+    }
   } else {
     // Local-shell fallback only (e.g. `published-state.ts pick`); the
     // workflow consumes steps.pick.outputs.path, never stdout.
@@ -203,19 +253,22 @@ function cliPick(): void {
 function cliRecord(metaPathOrTopic: string, videoId: string): void {
   let topic = metaPathOrTopic;
   let slug: string | undefined;
+  let session: number | undefined;
 
   if (fs.existsSync(metaPathOrTopic) && metaPathOrTopic.endsWith('.json')) {
     const meta = JSON.parse(fs.readFileSync(metaPathOrTopic, 'utf8')) as {
       topic?: string;
       slug?: string;
+      session?: number;
     };
     topic = meta.topic || metaPathOrTopic;
     slug = meta.slug;
+    if (typeof meta.session === 'number') session = meta.session;
   }
 
-  const entry = recordPublish({ topic, slug, videoId });
+  const entry = recordPublish({ topic, session, slug, videoId });
   process.stderr.write(
-    `[published-state] recorded ${entry.topic} → ${entry.videoId} @ ${entry.publishedAt}\n`,
+    `[published-state] recorded ${entry.topic}${entry.session !== undefined ? `/s${entry.session}` : ''} → ${entry.videoId} @ ${entry.publishedAt}\n`,
   );
 }
 

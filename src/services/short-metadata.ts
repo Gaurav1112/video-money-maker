@@ -89,6 +89,22 @@ export interface MetadataInput {
    * signal for Striver's ICP.
    */
   category?: string;
+  /**
+   * Session number (1-based) when this Short maps to a specific
+   * guru-sishya.in session of a multi-session topic. When set:
+   *   - the description's primary deep-link points to the session
+   *     page `/topics/{siteTopicSlug}/sessions/{siteSessionSlug}`
+   *     (otherwise the bare topic landing page).
+   *   - a "Session N/M" anchor line surfaces under the hook so the
+   *     audience knows which lesson they just watched and what
+   *     comes next in the sequence (Panel-23 user-request).
+   *   - tags include `session{N}` for cohort filtering.
+   */
+  session?: number;
+  totalSessions?: number;
+  siteSessionSlug?: string;
+  siteSessionTitle?: string;
+  siteSessionFocus?: string;
 }
 
 /** YouTube hard cap is 100 chars; we leave 6 for `#Shorts` ⇒ 94 for hook copy. */
@@ -199,7 +215,7 @@ export function generateShortMetadata(
   storyboard: StockStoryboard,
   input: MetadataInput = {}
 ): ShortMetadata {
-  const { licenses = [], extraTags = [], siteTopicSlug, hookHeadline, shortTitle, salaryBand, stake, hookHinglish, category } = input;
+  const { licenses = [], extraTags = [], siteTopicSlug, hookHeadline, shortTitle, salaryBand, stake, hookHinglish, category, session, totalSessions, siteSessionSlug, siteSessionTitle, siteSessionFocus } = input;
   // Panel-8 Dist P0: prefer topic-bank curated shortTitle when present —
   // each one is a hand-written power-line tuned to the specific topic
   // ("90% of Engineers Get Kafka Consumer Groups WRONG 😳"). Avoids
@@ -290,16 +306,50 @@ export function generateShortMetadata(
     ...(CATEGORY_TAGS[cat] ?? []),
   ];
   const tags = Array.from(
-    new Set([...baseTags, ...extraTags, ...ICP_TAGS, 'shorts', BRAND_TAG])
+    new Set([
+      ...baseTags,
+      ...extraTags,
+      ...ICP_TAGS,
+      'shorts',
+      BRAND_TAG,
+      // Panel-23 (user-request): per-session cohort tag so each
+      // session of a topic indexes uniquely. YT recommends related
+      // sessions of the same topic together rather than collapsing
+      // them into a single bucket. Only when session is set.
+      ...(session !== undefined ? [`session${session}`] : []),
+    ])
   ).slice(0, 30);
 
   const slug = siteTopicSlug ?? slugifyTopic(storyboard.topic);
+  // Panel-23 (user-request): when this Short maps to a specific session
+  // of the topic on guru-sishya.in, deep-link directly to that lesson
+  // page instead of the topic landing. Each session of a topic should
+  // pull viewers to its own URL — not collapse 10 sessions into one
+  // funnel — so the actual session content (`Round Robin & Weighted
+  // Round Robin` for load-balancing/s2) is one click away.
+  const sessionSlug = (session !== undefined && siteSessionSlug)
+    ? siteSessionSlug.replace(/[^a-z0-9-]+/gi, '-').toLowerCase()
+    : '';
+  const ctaTarget = sessionSlug
+    ? `${SITE_BASE}/topics/${slug}/sessions/${sessionSlug}`
+    : `${SITE_BASE}/topics/${slug}`;
   // UTM-tag every CTA URL so we can attribute email sign-ups, deep-link
   // taps, and session bookings to specific topic Shorts (Aud2 P0).
-  const ctaUrl = withUtm(`${SITE_BASE}/topics/${slug}`, slug, 'cta_deeplink');
+  const ctaUrl = withUtm(ctaTarget, slug, sessionSlug ? `cta_session_${sessionSlug}` : 'cta_deeplink');
   const leadMagnetUrl = withUtm(`${SITE_BASE}/free-pdf-faang-80-questions`, slug, 'cta_leadmagnet');
   const sessionsUrl = withUtm(`${SITE_BASE}/sessions`, slug, 'cta_sessions');
   const proUrl = withUtm(`${SITE_BASE}/pro`, slug, 'cta_pro');
+
+  // Per-session anchor line — surfaces the lesson position so viewers
+  // know "Session 2 of 10: Round Robin" rather than thinking they
+  // watched a generic "Load Balancing" Short. Empty when no session.
+  const sessionLine = (session !== undefined)
+    ? (() => {
+        const total = totalSessions && totalSessions > 0 ? `/${totalSessions}` : '';
+        const titleSuffix = siteSessionTitle ? ` · ${siteSessionTitle}` : '';
+        return `🎓 Session ${session}${total}${titleSuffix} — full lesson on ${BRAND_SITE}`;
+      })()
+    : null;
 
   const sceneSummaries = storyboard.scenes
     .slice(0, 4)
@@ -352,6 +402,7 @@ export function generateShortMetadata(
   // parsers something to chew on without burning the fold.
   const description = [
     `⚡ ${hook}`,
+    ...(sessionLine ? [sessionLine] : []),
     ...(stakeLine ? [stakeLine] : []),
     ...(fallbackSalaryLine ? [fallbackSalaryLine] : []),
     ...(hookHinglish ? [`🎙️ "${hookHinglish}"`] : []),
@@ -360,7 +411,9 @@ export function generateShortMetadata(
     `👉 Bhai, subscribe karo ${BRAND_AT} — roz ek naya 60-sec tech Short; pinned comment me aaj ka deep-dive PDF link milega.`,
     `— ${BRAND_HANDLE_RAW} | Empowering Indian engineers, one Short at a time.`,
     '',
-    `Is Short me tum sikhoge ${storyboard.topic} — exactly waise jaise ek senior engineer apne junior ko code review me samjhata hai. Hum cover karenge core idea, kab use karna hai, common interview trap, aur ek-line takeaway jo tum next FAANG / system-design round me bol sakte ho.`,
+    siteSessionFocus
+      ? `Is Session ${session ?? ''} me tum sikhoge ${storyboard.topic}${siteSessionTitle ? ` — specifically: ${siteSessionTitle}` : ''}. Focus: ${siteSessionFocus}. Yeh ek senior engineer ki tarah seekho — core idea, kab use karna hai, common interview trap, aur ek-line takeaway jo tum next FAANG / system-design round me bol sakte ho.`
+      : `Is Short me tum sikhoge ${storyboard.topic} — exactly waise jaise ek senior engineer apne junior ko code review me samjhata hai. Hum cover karenge core idea, kab use karna hai, common interview trap, aur ek-line takeaway jo tum next FAANG / system-design round me bol sakte ho.`,
     '',
     'Inside this 60-second Short:',
     sceneSummaries || '1. The hook — why this matters now\n2. The core mechanism\n3. The interview trap\n4. The takeaway',

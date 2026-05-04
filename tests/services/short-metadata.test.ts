@@ -85,3 +85,37 @@ describe('short-metadata description fold ordering (Panel-21 P0-A)', () => {
     }
   });
 });
+
+// Panel-23 (user-request): each video maps to a specific
+// guru-sishya.in session of a topic. Verify session metadata is
+// surfaced into the description, deep-link points to the session
+// page, and the cohort tag is attached.
+describe('short-metadata per-session enrichment (Panel-23)', () => {
+  it('deep-links to the session page when siteSessionSlug is set', () => {
+    const m = generateShortMetadata(STORY, {
+      siteTopicSlug: 'load-balancing',
+      session: 2,
+      totalSessions: 10,
+      siteSessionSlug: 'round-robin',
+      siteSessionTitle: 'Round Robin & Weighted Round Robin',
+      siteSessionFocus: 'basic algorithms, when to use, tradeoffs',
+    });
+    expect(m.description).toContain(
+      'guru-sishya.in/topics/load-balancing/sessions/round-robin?',
+    );
+    expect(m.description).toMatch(/Session 2\/10/);
+    expect(m.description).toContain('Round Robin & Weighted Round Robin');
+    expect(m.description).toContain('basic algorithms, when to use, tradeoffs');
+    expect(m.tags).toContain('session2');
+    // UTM content should disambiguate the session click.
+    expect(m.description).toContain('utm_content=cta_session_round-robin');
+  });
+
+  it('falls back to the topic landing when no session info given', () => {
+    const m = generateShortMetadata(STORY, { siteTopicSlug: 'load-balancing' });
+    expect(m.description).toContain('guru-sishya.in/topics/load-balancing?');
+    expect(m.description).not.toMatch(/sessions\//);
+    expect(m.description).not.toMatch(/Session \d+/);
+    expect(m.tags).not.toContain('session1');
+  });
+});

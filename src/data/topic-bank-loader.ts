@@ -12,6 +12,8 @@ export interface TopicBankEntry {
   salaryBand?: string;
   siteTopicSlug?: string;
   siteSessionSlug?: string;
+  /** Total number of sessions for this topic on guru-sishya.in. */
+  sessions?: number;
 }
 
 interface TopicBankFile {

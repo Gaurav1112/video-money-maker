@@ -649,7 +649,12 @@ async function main(): Promise<void> {
       url: l.url,
       attribution: l.credit || l.id,
     })),
-    siteTopicSlug: bankEntry?.siteTopicSlug ?? slug,
+    siteTopicSlug: storyboard.siteTopicSlug ?? bankEntry?.siteTopicSlug ?? slug,
+    session: storyboard.session,
+    totalSessions: storyboard.totalSessions ?? bankEntry?.sessions,
+    siteSessionSlug: storyboard.siteSessionSlug ?? bankEntry?.siteSessionSlug,
+    siteSessionTitle: storyboard.siteSessionTitle,
+    siteSessionFocus: storyboard.siteSessionFocus,
     hookHeadline,
     shortTitle: (() => {
       // Panel-17 Distribution P0 (Blake/Schiffer): YT title now leads
@@ -696,6 +701,16 @@ async function main(): Promise<void> {
     JSON.stringify({
       slug,
       topic: storyboard.topic,
+      // Panel-23 (user-request): persist session metadata into
+      // metadata.json so downstream consumers (published-state.ts
+      // record, telegram seed, instagram poster) bucket each session
+      // independently and quote the correct lesson title.
+      session: storyboard.session,
+      totalSessions: storyboard.totalSessions,
+      siteTopicSlug: storyboard.siteTopicSlug ?? bankEntry?.siteTopicSlug ?? slug,
+      siteSessionSlug: storyboard.siteSessionSlug,
+      siteSessionTitle: storyboard.siteSessionTitle,
+      siteSessionFocus: storyboard.siteSessionFocus,
       hook: hookHeadline,
       title: metadata.title,
       description: metadata.description,
