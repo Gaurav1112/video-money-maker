@@ -1,5 +1,6 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import { getConceptDiagram, buildDiagramFilters } from '../../src/stock/concept-diagram.js';
+import type { ConceptDiagram } from '../../src/stock/concept-diagram.js';
 
 describe('getConceptDiagram', () => {
   it('returns kafka consumer-groups template for kafka-consumer-groups slug', () => {
@@ -70,5 +71,34 @@ describe('buildDiagramFilters', () => {
   it('handles short scenes (< 2.5s) without crashing', () => {
     const filters = buildDiagramFilters(getConceptDiagram('load-balancing'), 2.0, opts);
     expect(filters.length).toBeGreaterThan(0);
+  });
+
+  // Panel-22 Carmack P2: OOB node guard — console.warn is emitted for nodes
+  // whose bounding box exceeds [DIAGRAM_TOP=200, DIAGRAM_BOTTOM=1060].
+  describe('OOB node guard (Panel-22 Carmack P2)', () => {
+    afterEach(() => { vi.restoreAllMocks(); });
+
+    it('warns and skips a node with y+h exceeding DIAGRAM_BOTTOM', () => {
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      const diagram: ConceptDiagram = {
+        title: 'OOB TEST',
+        nodes: [
+          // In-bounds node — should produce filters normally.
+          { id: 'ok', x: 100, y: 300, w: 200, h: 80, borderColor: '2196F3', label: 'OK', stage: 1 },
+          // OOB node: y=990, h=80 → y+h=1070 > DIAGRAM_BOTTOM(1060).
+          { id: 'oob', x: 100, y: 990, w: 200, h: 80, borderColor: 'F44336', label: 'OOB', stage: 2 },
+        ],
+        edges: [],
+      };
+      buildDiagramFilters(diagram, 6.0, opts);
+      expect(warnSpy).toHaveBeenCalledOnce();
+      expect(warnSpy.mock.calls[0]![0]).toMatch(/\[concept-diagram\] node "oob" clipped/);
+    });
+
+    it('does not warn for an in-bounds diagram', () => {
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      buildDiagramFilters(getConceptDiagram('kafka-consumer-groups'), 6.84, opts);
+      expect(warnSpy).not.toHaveBeenCalled();
+    });
   });
 });

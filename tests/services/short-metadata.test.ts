@@ -84,6 +84,15 @@ describe('short-metadata description fold ordering (Panel-21 P0-A)', () => {
       expect(tagRatio).toBeLessThan(0.7);
     }
   });
+
+  // Panel-22 Torvalds P2 canary: the deep-link CTA (🔗) must appear
+  // in the first 4 lines — above the YouTube mobile "see more" fold.
+  // This locks the Panel-21 P0-A placement contract.
+  it('deep-link CTA (🔗) is present in the first 4 lines of the description', () => {
+    const m = generateShortMetadata(STORY, { siteTopicSlug: 'kafka-consumer-groups' });
+    const firstFour = m.description.split('\n').slice(0, 4).join('\n');
+    expect(firstFour).toContain('🔗');
+  });
 });
 
 // Panel-23 (user-request): each video maps to a specific
