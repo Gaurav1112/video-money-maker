@@ -195,6 +195,7 @@ async function main(): Promise<void> {
       let runningTotal = 0;
       storyboard.scenes = storyboard.scenes.map((scene, i) => {
         const segDur = ttsResult.sceneDurations[i];
+        const wt = ttsResult.sceneWordTimestamps[i];
         if (segDur && segDur > 0) {
           let newFrames = Math.round((segDur + 0.2) * storyboard.fps);
           const cap = i === 0 ? HOOK_HARD_CAP : PER_SCENE_HARD_CAP;
@@ -202,9 +203,9 @@ async function main(): Promise<void> {
           const remaining = TOTAL_HARD_CAP - runningTotal;
           if (newFrames > remaining) newFrames = Math.max(remaining, storyboard.fps);
           runningTotal += newFrames;
-          return { ...scene, durationFrames: newFrames };
+          return { ...scene, durationFrames: newFrames, wordTimestamps: wt };
         }
-        return scene;
+        return { ...scene, wordTimestamps: wt };
       });
       console.log(`[orchestrator] tts: ${voicePath} (scenes: ${ttsResult.sceneDurations.map((d) => d.toFixed(2)).join('s + ')}s)`);
     } catch (err) {
@@ -215,6 +216,16 @@ async function main(): Promise<void> {
 
   console.log(`[orchestrator] composing → ${outputPath}`);
 
+  // ── Build merged ASS karaoke captions across all scenes ──────────────────
+  // Word-level timestamps (captured via Edge-TTS --write-subtitles) feed
+  // the karaoke layer that highlights each word as it's spoken — the
+  // single highest-leverage retention lever per Ret3 panel-5. If any
+  // scene lacks timestamps we fall through to drawtext captions; if all
+  // do, drawtext is suppressed to prevent double-caption stacking.
+  const captionsPath = path.join(workDir, 'captions.ass');
+  await buildMergedAssCaptions(storyboard, captionsPath);
+  const hasAssCaptions = fs.existsSync(captionsPath);
+
   // ── Generate channel watermark PNG on the fly ────────────────────────────
   const watermarkPath = path.join(workDir, 'watermark.png');
   await generateWatermarkPng(watermarkPath);
@@ -223,13 +234,16 @@ async function main(): Promise<void> {
     scenes: storyboard.scenes.map((scene, i) => {
       const isHook = i === 0;
       // Hook scene: short, punchy 4-6 word hook in giant text.
-      // Body scenes: narration sentence as caption strip.
+      // Body scenes: narration sentence as caption strip — but only when
+      // ASS karaoke captions are NOT active, otherwise we double-stack.
       const bigText = isHook
         ? hookHeadline
         : undefined;
       const captionText = isHook
         ? undefined // hook text already dominates the upper third
-        : buildCaptionPhrase(scene.narration || '');
+        : hasAssCaptions
+          ? undefined // Ret3 P1: ASS karaoke owns the caption layer
+          : buildCaptionPhrase(scene.narration || '');
       return {
         clipPath: clipPaths[i],
         durationSec: scene.durationFrames / storyboard.fps,
@@ -240,6 +254,11 @@ async function main(): Promise<void> {
     }),
     voicePath: hasVoice ? voicePath : undefined,
     watermarkPath,
+    captionsPath: hasAssCaptions ? captionsPath : undefined,
+    // Ret2 P0: ken-burns motion on by default for body scenes — static
+    // stock clips on a 60s vertical kill perceived pacing. The composer
+    // already supports zoompan; the call site just had it disabled.
+    enableZoompan: process.env['DISABLE_KEN_BURNS'] === '1' ? false : true,
     outputPath,
     workDir,
   });
@@ -504,12 +523,13 @@ async function generateNarrationForScenes(
   sb: StockStoryboard,
   workDir: string,
   hookHeadline?: string,
-): Promise<{ audioPath: string; sceneDurations: number[] }> {
+): Promise<{ audioPath: string; sceneDurations: number[]; sceneWordTimestamps: Array<Array<{ word: string; startMs: number; endMs: number }> | undefined> }> {
   const fs = await import('node:fs');
   const path = await import('node:path');
 
   const sceneAudioPaths: string[] = [];
   const sceneDurations: number[] = [];
+  const sceneWordTimestamps: Array<Array<{ word: string; startMs: number; endMs: number }> | undefined> = [];
 
   for (let i = 0; i < sb.scenes.length; i++) {
     const scene = sb.scenes[i]!;
@@ -533,11 +553,21 @@ async function generateNarrationForScenes(
       ], { maxBuffer: 4 * 1024 * 1024 });
       sceneAudioPaths.push(silentPath);
       sceneDurations.push(0.5);
+      sceneWordTimestamps.push(undefined);
       continue;
     }
     const outPath = path.join(workDir, `voice-${i}.mp3`);
     const rawPath = path.join(workDir, `voice-${i}-raw.mp3`);
-    const { durationSec: rawDur } = await ttsSynthesize({ text, outPath: rawPath, rate: '+8%' });
+    // Per-scene rate: hook scene (i=0) at +0% for emphasis/gravitas; body
+    // scenes at +8% for density. Ret4 P1.
+    const rate = i === 0 ? '+0%' : '+8%';
+    const { durationSec: rawDur, wordTimestamps } = await ttsSynthesize({
+      text,
+      outPath: rawPath,
+      rate,
+      wantSubtitles: true,
+    });
+    sceneWordTimestamps.push(wordTimestamps);
     // Per-segment loudnorm so a quiet sentence next to a loud one doesn't
     // jump 4-6 LU after global normalisation. Single-pass loudnorm at
     // segment level is cheap and removes the within-video pump.
@@ -573,7 +603,7 @@ async function generateNarrationForScenes(
     finalAudio,
   ], { maxBuffer: 16 * 1024 * 1024 });
 
-  return { audioPath: finalAudio, sceneDurations };
+  return { audioPath: finalAudio, sceneDurations, sceneWordTimestamps };
 }
 
 /**
