@@ -78,3 +78,64 @@ describe('seedTelegram', () => {
     ).rejects.toThrow(/chat not found/);
   });
 });
+
+describe('buildSeedMessage — Panel-21 P1-2 hashtag-wall strip', () => {
+  it('strips hashtag wall from description before forming caption (snapshot shape)', () => {
+    const description = [
+      '⚡ Kafka Consumer Groups — most engineers get this wrong',
+      'Fail Amazon SDE-2 system design without knowing this.',
+      '🔗 Deep-dive: https://guru-sishya.in/kafka',
+      '#Kafka #KafkaConsumerGroups #SystemDesign #DSA #FAANG #India #SDE #LLD #OS #DBMS #CodingInterview',
+    ].join('\n');
+
+    const msg = buildSeedMessage({
+      videoId: 'abc123',
+      metadata: {
+        topic: 'Kafka Consumer Groups',
+        youtube: { title: '🔥 Kafka Consumer Groups in 60s' },
+        description,
+      },
+    });
+
+    // Snapshot shape assertions:
+    expect(msg).toContain('🚀 New Short is live!');
+    expect(msg).toContain('*🔥 Kafka Consumer Groups in 60s*');
+    expect(msg).toContain('https://youtube.com/shorts/abc123');
+    // The description body (prose lines) should appear in the caption.
+    expect(msg).toContain('⚡ Kafka Consumer Groups');
+    // The hashtag wall line should be stripped (ratio = 11/11 = 1.0 > 0.7).
+    expect(msg).not.toContain('#Kafka #KafkaConsumerGroups');
+  });
+
+  it('does not include description section when metadata has no description', () => {
+    const msg = buildSeedMessage({
+      videoId: 'v2',
+      metadata: { topic: 'Redis', youtube: { title: 'Redis in 60s' } },
+    });
+    expect(msg).toContain('*Redis in 60s*');
+    expect(msg).toContain('https://youtube.com/shorts/v2');
+  });
+
+  it('clamps caption to 4096 characters', () => {
+    const longDescription = 'word '.repeat(1000);
+    const msg = buildSeedMessage({
+      videoId: 'v3',
+      metadata: { topic: 'Long', description: longDescription },
+    });
+    expect(msg.length).toBeLessThanOrEqual(4096);
+  });
+
+  it('URL line is preserved even when description has hashtag wall', () => {
+    const description = [
+      '⚡ hook line here',
+      'stake line here',
+      '🔗 some cta',
+      '#a #b #c #d #e #f #g #h #i #j',
+    ].join('\n');
+    const msg = buildSeedMessage({
+      videoId: 'urltest',
+      metadata: { description },
+    });
+    expect(msg).toContain('https://youtube.com/shorts/urltest');
+  });
+});

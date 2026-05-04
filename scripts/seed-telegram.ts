@@ -37,14 +37,23 @@
  */
 
 import * as fs from 'node:fs';
+import { stripTagWall } from '../src/services/strip-tag-wall.js';
 
 type ShortMetadata = {
   topic?: string;
   slug?: string;
   youtube?: { title?: string };
+  description?: string;
 };
 
 const TELEGRAM_API_BASE = 'https://api.telegram.org/bot';
+
+/**
+ * Telegram hard limit for text messages is 4096 characters.
+ * Strip first, then truncate — so the URL line is always closer to the
+ * bottom (it's appended after the description body).
+ */
+const TG_TEXT_LIMIT = 4096;
 
 export function buildSeedMessage(args: {
   videoId: string;
@@ -53,15 +62,27 @@ export function buildSeedMessage(args: {
   const topic = (args.metadata?.topic || 'today').trim();
   const title = (args.metadata?.youtube?.title || `${topic} (60 sec)`).trim();
   const url = `https://youtube.com/shorts/${args.videoId}`;
-  return [
+
+  // Panel-21 P1-2: strip the hashtag wall from the description before
+  // including it in the Telegram caption. The title/hook line is kept
+  // untouched; only the body text is filtered.
+  const rawDescription = (args.metadata?.description || '').trim();
+  const cleanDescription = rawDescription ? stripTagWall(rawDescription) : '';
+
+  const parts = [
     `🚀 New Short is live!`,
     ``,
     `*${title}*`,
     ``,
     `Watch & like to help the algorithm push this to more engineers 🙏`,
+    ...(cleanDescription ? [``, cleanDescription] : []),
     ``,
     url,
-  ].join('\n');
+  ];
+
+  const full = parts.join('\n');
+  // Respect Telegram's 4096-char limit (strip first, truncate second).
+  return full.length > TG_TEXT_LIMIT ? full.slice(0, TG_TEXT_LIMIT) : full;
 }
 
 async function sendTelegramMessage(
