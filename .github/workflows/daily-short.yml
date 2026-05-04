@@ -69,11 +69,15 @@ jobs:
       needs.determine-phase.outputs.phase == 'full'
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    # Render job is read-only; it only produces an artifact. Write
-    # permission lives on `upload` (the job that actually commits the
-    # published-state ledger back to main). Eng4 least-privilege.
+    # Render must call POST /repos/.../dispatches to enqueue the publish
+    # phase via repository_dispatch — that endpoint requires `contents:
+    # write` on the token. Eng4 panel-6 P1: rendering with `contents:
+    # read` made every cron run fail at the Enqueue step, silently
+    # falling back to the legacy direct-render path that bypasses the
+    # 30-day cooldown ledger. Keep the write surface minimal: only
+    # contents (for repository_dispatch); no actions/packages/id-token.
     permissions:
-      contents: read
+      contents: write
     env:
       PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
       PIXABAY_API_KEY: ${{ secrets.PIXABAY_API_KEY }}

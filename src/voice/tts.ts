@@ -74,6 +74,16 @@ export async function synthesize(
   if (!text || !text.trim()) {
     throw new Error('synthesize: empty text');
   }
+  // Defence-in-depth against argv injection. `text` originates in the
+  // storyboard JSON which is generated upstream from a content repo we
+  // don't fully control. argparse treats any token starting with `--`
+  // as a flag; a malicious narration like "--rate=+5000% Hello" could
+  // hijack voice/rate. We don't pipe through a shell (execFile is
+  // safe from shell metachars) but the *contents* of the string still
+  // reach Python as an argv element, so we reject the prefix here.
+  if (/^\s*--/.test(text)) {
+    throw new Error('synthesize: text must not start with "--" (argparse hazard)');
+  }
 
   const useElevenLabs =
     process.env['USE_ELEVENLABS'] === '1' && !!process.env['ELEVENLABS_API_KEY'];
@@ -216,9 +226,20 @@ interface ElevenLabsErrorBody {
 
 async function synthesizeElevenLabs(opts: TtsOptions): Promise<void> {
   const apiKey = process.env['ELEVENLABS_API_KEY']!;
-  // Default: Sarah (mature, reassuring) — replace with cloned voice when
-  // upgraded.
-  const voiceId = process.env['ELEVENLABS_VOICE_ID'] ?? 'EXAVITQu4vr4xnSDxMaL';
+  // ElevenLabs has no Indian-English voice in its default catalog; the
+  // historical fallback ("Sarah" — EXAVITQu4vr4xnSDxMaL) is American
+  // and immediately breaks our Hinglish persona. Refuse to ship that
+  // accent: when ElevenLabs is selected, ELEVENLABS_VOICE_ID *must*
+  // point to an Indian-cloned voice. The Edge-TTS path remains the
+  // safe default (en-IN-NeerjaNeural).
+  const voiceId = process.env['ELEVENLABS_VOICE_ID'];
+  if (!voiceId) {
+    throw new Error(
+      '[tts] ELEVENLABS_VOICE_ID is required when USE_ELEVENLABS=1. ' +
+        'No safe Indian-English default exists; configure a cloned voice id ' +
+        'or unset USE_ELEVENLABS to fall back to Edge-TTS (en-IN-NeerjaNeural).',
+    );
+  }
   const url = `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`;
   const res = await fetch(url, {
     method: 'POST',

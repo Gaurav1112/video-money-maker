@@ -191,6 +191,18 @@ export interface ComposeInput {
   workDir?: string;
   /** Apply slow zoompan ken-burns effect. Disabled by default for speed. */
   enableZoompan?: boolean;
+  /**
+   * When true, mixes a procedurally-synthesised soft ambient pad under
+   * the voice track with sidechain ducking (≈‑22 dB under speech,
+   * ‑12 dB in voiceless gaps). Generated deterministically inside the
+   * mux step — no external asset needed.
+   */
+  enableBgm?: boolean;
+  /**
+   * When provided, use this audio file as the BGM bed instead of the
+   * procedural pad. Must be ≥ video length (will be looped & trimmed).
+   */
+  bgmPath?: string;
 }
 
 // ─── Public API ───────────────────────────────────────────────────────────────
@@ -398,6 +410,17 @@ async function muxFinal(
     ]);
   }
 
+  // ── BGM bed + sidechain ducking ─────────────────────────────────────────
+  // Retention panel highest-leverage P0 (Ret4): voiceover-only audio reads
+  // as "AI slop" to YT viewers. A soft ambient pad mixed under the VO with
+  // sidechain ducking keyed to speech transforms the perceived production
+  // value. We synthesise the pad procedurally (3 detuned sine carriers
+  // through a low-pass + tremolo) so the pipeline ships zero binary
+  // assets while staying byte-deterministic.
+  if ((input.enableBgm || input.bgmPath) && hasVoice) {
+    audioPath = await mixBgmBed(audioPath, input.bgmPath, totalDur, workDir);
+  }
+
   const args: string[] = [];
 
   // Build video filter for watermark + captions
@@ -457,7 +480,11 @@ async function muxFinal(
   // loudnorm crashes ffmpeg's aac encoder on near-silent input (NaN/Inf
   // averages). Only apply when we have a real voice track. LRA=11 is the
   // sweet spot for narrative speech (LRA=7 sounds compressed).
-  if (hasVoice) {
+  // When BGM ducking is active, loudnorm has already been applied to the
+  // pre-mixed voice+bgm track — do NOT re-apply (Eng3 P1: double-loudnorm
+  // pumps).
+  const bgmActive = (input.enableBgm || !!input.bgmPath) && hasVoice;
+  if (hasVoice && !bgmActive) {
     args.push('-af', 'loudnorm=I=-14:LRA=11:tp=-1.5');
   }
   args.push(
@@ -467,6 +494,72 @@ async function muxFinal(
   );
 
   await runFfmpeg(args);
+}
+
+/**
+ * Generates a procedural ambient pad and ducks it under the voice with
+ * a sidechain compressor. Returns the path to a pre-mixed `voice+bgm`
+ * stereo m4a that can be plugged into the final mux as a single audio
+ * input — keeping the existing video filter graph unchanged.
+ *
+ * Pad recipe (deterministic, no external assets):
+ *   • 3 detuned sine carriers @ 196 / 261.6 / 329.6 Hz (G3 / C4 / E4 — Cmaj triad)
+ *   • mixed at low gain (0.04 / 0.035 / 0.03)
+ *   • low-pass @ 700 Hz to soften
+ *   • slow tremolo (0.25 Hz × 0.10 depth) for life
+ *   • dual-channel duplication for stereo
+ *   • final pad gain ‑26 dB before duck, ‑40 dB during speech (8:1 ratio)
+ */
+async function mixBgmBed(
+  voicePath: string,
+  bgmPath: string | undefined,
+  totalDur: number,
+  workDir: string,
+): Promise<string> {
+  const out = join(workDir, 'voice-plus-bgm.m4a');
+
+  if (bgmPath && existsSync(bgmPath)) {
+    // External asset path: load → loop → trim → duck under voice.
+    await runFfmpeg([
+      '-i', voicePath,
+      '-stream_loop', '-1',
+      '-i', bgmPath,
+      '-filter_complex',
+      [
+        '[1:a]aformat=channel_layouts=stereo,volume=-26dB,atrim=duration=' + totalDur.toFixed(3) + ',asetpts=PTS-STARTPTS[bgm]',
+        '[bgm][0:a]sidechaincompress=threshold=0.04:ratio=8:attack=10:release=300[ducked]',
+        '[0:a][ducked]amix=inputs=2:duration=first:dropout_transition=0[mix]',
+        '[mix]loudnorm=I=-14:LRA=11:tp=-1.5[aout]',
+      ].join(';'),
+      '-map', '[aout]',
+      '-c:a', 'aac', '-b:a', '192k', '-ar', '48000', '-ac', '2',
+      out,
+    ]);
+    return out;
+  }
+
+  // Procedural pad — same filter graph, but [bgm] is synthesised inline.
+  // aevalsrc emits mono; we duplicate via aformat to stereo before the
+  // sidechain compressor (which expects matching channel layouts).
+  const padExpr =
+    "aevalsrc='0.04*sin(2*PI*196*t)+0.035*sin(2*PI*261.63*t)+0.03*sin(2*PI*329.63*t)'" +
+    `:s=44100:d=${totalDur.toFixed(3)}`;
+  await runFfmpeg([
+    '-i', voicePath,
+    '-f', 'lavfi',
+    '-i', padExpr,
+    '-filter_complex',
+    [
+      '[1:a]aformat=channel_layouts=stereo,lowpass=f=700,tremolo=f=0.25:d=0.10,volume=-26dB[bgm]',
+      '[bgm][0:a]sidechaincompress=threshold=0.04:ratio=8:attack=10:release=300[ducked]',
+      '[0:a][ducked]amix=inputs=2:duration=first:dropout_transition=0[mix]',
+      '[mix]loudnorm=I=-14:LRA=11:tp=-1.5[aout]',
+    ].join(';'),
+    '-map', '[aout]',
+    '-c:a', 'aac', '-b:a', '192k', '-ar', '48000', '-ac', '2',
+    out,
+  ]);
+  return out;
 }
 
 async function probeDuration(videoPath: string): Promise<number> {

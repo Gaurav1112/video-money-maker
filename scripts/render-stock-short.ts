@@ -259,6 +259,11 @@ async function main(): Promise<void> {
     // stock clips on a 60s vertical kill perceived pacing. The composer
     // already supports zoompan; the call site just had it disabled.
     enableZoompan: process.env['DISABLE_KEN_BURNS'] === '1' ? false : true,
+    // Ret4 P0: BGM ambient bed with sidechain ducking. Procedurally
+    // synthesised inside the composer — no external assets, fully
+    // deterministic. Disabled in tests via DISABLE_BGM=1 because the
+    // longer mux step bloats the test suite by ~3-4s per fixture.
+    enableBgm: process.env['DISABLE_BGM'] === '1' ? false : true,
     outputPath,
     workDir,
   });
@@ -377,7 +382,7 @@ const HOOK_TEMPLATES: Array<(topic: string) => string> = [
   (t) => `${t} kyun zaruri hai`,               // H4 curiosity (Hinglish)
   (t) => `3 baatein ${t} ke baare me`,         // H1 number-lead (Hinglish)
   (t) => `Bhai, ${t} ek line me`,              // H5 peer (Hinglish)
-  (t) => `Sirf 60 sec me ${t}`,                // H5 density (Hinglish)
+  (t) => `${t} — ye mistake mat karna`,        // H5 loss-aversion (Hinglish)
   (t) => `${t} — placement walo ke liye`,      // H5 ICP (Hinglish)
   (t) => `${t} ka asli concept`,               // H5 authority (Hinglish)
 ];
