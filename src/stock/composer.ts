@@ -32,6 +32,8 @@ const PACKAGE_ROOT = pathResolve(dirname(fileURLToPath(import.meta.url)), '..', 
 const VENDORED_BGM_PATH = pathResolve(PACKAGE_ROOT, 'assets/audio/bgm/tense-suspense.mp3');
 const VENDORED_HOOK_STING_PATH = pathResolve(PACKAGE_ROOT, 'assets/audio/sfx/hook-sting.mp3');
 const VENDORED_END_CARD_SFX_PATH = pathResolve(PACKAGE_ROOT, 'assets/audio/sfx/end-card-uplift.mp3');
+const VENDORED_RIMSHOT_PATH = pathResolve(PACKAGE_ROOT, 'assets/audio/sfx/rimshot.mp3');
+const VENDORED_VINYL_SCRATCH_PATH = pathResolve(PACKAGE_ROOT, 'assets/audio/sfx/vinyl-scratch.mp3');
 
 // Panel-16 Eng E2 Hejlsberg: end-card SFX offset was a duplicated magic
 // literal (1.6) used by both the SFX delay computation and the totalDur
@@ -47,6 +49,8 @@ type VendoredAudioPaths = {
   bgm: string | undefined;
   hookSting: string | undefined;
   endCardSfx: string | undefined;
+  rimshot: string | undefined;
+  vinylScratch: string | undefined;
 };
 let vendoredAudioCache: VendoredAudioPaths | null = null;
 function discoverVendoredAudio(): VendoredAudioPaths {
@@ -55,6 +59,8 @@ function discoverVendoredAudio(): VendoredAudioPaths {
     bgm: existsSync(VENDORED_BGM_PATH) ? VENDORED_BGM_PATH : undefined,
     hookSting: existsSync(VENDORED_HOOK_STING_PATH) ? VENDORED_HOOK_STING_PATH : undefined,
     endCardSfx: existsSync(VENDORED_END_CARD_SFX_PATH) ? VENDORED_END_CARD_SFX_PATH : undefined,
+    rimshot: existsSync(VENDORED_RIMSHOT_PATH) ? VENDORED_RIMSHOT_PATH : undefined,
+    vinylScratch: existsSync(VENDORED_VINYL_SCRATCH_PATH) ? VENDORED_VINYL_SCRATCH_PATH : undefined,
   };
   return vendoredAudioCache;
 }
@@ -701,6 +707,8 @@ async function muxFinal(
       boundaries,
       vendored.hookSting,
       vendored.endCardSfx,
+      vendored.rimshot,
+      vendored.vinylScratch,
     );
   }
 
@@ -742,7 +750,15 @@ async function muxFinal(
     // (220 px UI strip). H-h-200 placed it at y≈1720 — INSIDE the UI strip,
     // collision per Eng2 audit. Push it to H-h-380 so its bottom edge sits
     // at y≈1540, fully above the safe-zone boundary.
-    const overlayFilter = `${vf ? `[0:v]${vf}[captioned];[captioned]` : '[0:v]'}[2:v]overlay=W-w-30:H-h-380[outv]`;
+    //
+    // Panel-19 Retention P1-B (Bilyeu): the watermark is competing with
+    // the end-card CTA visually during the last 2s — Subscribe + handle
+    // + "Rewatch karo phir se" text fight the watermark for attention
+    // exactly when we want the viewer's eye on the loop driver. Suppress
+    // the watermark during the end-card window (last END_CARD_SEC=2s)
+    // so the CTA owns that frame zone unchallenged.
+    const endCardStart = Math.max(0, totalDur - 2.0).toFixed(3);
+    const overlayFilter = `${vf ? `[0:v]${vf}[captioned];[captioned]` : '[0:v]'}[2:v]overlay=W-w-30:H-h-380:enable='lt(t,${endCardStart})'[outv]`;
     args.push(
       '-filter_complex', overlayFilter,
       '-map', '[outv]',
@@ -863,6 +879,8 @@ async function mixBgmBed(
   sceneBoundariesSec: number[] = [],
   hookStingPath?: string,
   endCardSfxPath?: string,
+  rimshotPath?: string,
+  vinylScratchPath?: string,
 ): Promise<string> {
   const out = join(workDir, 'voice-plus-bgm.m4a');
   const totalDurStr = totalDur.toFixed(3);
@@ -905,7 +923,7 @@ async function mixBgmBed(
   filters.push(
     '[0:a]aresample=44100,highpass=f=80:poles=2,' +
       'equalizer=f=7500:width_type=o:width=0.8:g=-4.0,' +
-      'asplit=2[voice44k][voice44k_sc]',
+      'asplit=3[voice44k][voice44k_sc][voice44k_hsc]',
   );
 
   // Source 1: BGM bed (always present — file or procedural).
@@ -1005,6 +1023,54 @@ async function mixBgmBed(
     whooshLabel = '[whoosh]';
   }
 
+  // Panel-19 Audio P2 (Huang): pattern-interrupt SFX layer.
+  // Vinyl-scratch lands at the first scene boundary (scene 0 → 1) —
+  // the "okay, here's the meat" handoff from hook to body content.
+  // Rimshot lands at the second boundary (scene 1 → 2) — the punchline
+  // / reveal moment before the takeaway. Both are short transients
+  // (≤500ms) so we trim conservatively, fade-in 5ms to remove any
+  // pre-roll click, fade-out 80ms to soften the tail. Volume kept at
+  // -10 to -8 dBFS so they punch but don't dominate the voice mix.
+  // Boundaries are deterministic (frame-quantised in compose()), so
+  // the adelay values are byte-stable across runs.
+  let vinylLabel = '';
+  if (
+    vinylScratchPath &&
+    existsSync(vinylScratchPath) &&
+    sceneBoundariesSec.length >= 1
+  ) {
+    const vIdx = nextIdx++;
+    inputs.push('-i', vinylScratchPath);
+    const delayMs = Math.max(0, Math.round(sceneBoundariesSec[0]! * 1000));
+    filters.push(
+      `[${vIdx}:a]aformat=channel_layouts=stereo,` +
+        `atrim=duration=0.6,asetpts=PTS-STARTPTS,` +
+        `afade=t=in:st=0:d=0.005,afade=t=out:st=0.52:d=0.08,` +
+        `volume=-10dB,` +
+        `adelay=${delayMs}|${delayMs},apad=whole_dur=${totalDurStr}[vinyl]`,
+    );
+    vinylLabel = '[vinyl]';
+  }
+
+  let rimshotLabel = '';
+  if (
+    rimshotPath &&
+    existsSync(rimshotPath) &&
+    sceneBoundariesSec.length >= 2
+  ) {
+    const rIdx = nextIdx++;
+    inputs.push('-i', rimshotPath);
+    const delayMs = Math.max(0, Math.round(sceneBoundariesSec[1]! * 1000));
+    filters.push(
+      `[${rIdx}:a]aformat=channel_layouts=stereo,` +
+        `atrim=duration=0.5,asetpts=PTS-STARTPTS,` +
+        `afade=t=in:st=0:d=0.005,afade=t=out:st=0.42:d=0.08,` +
+        `volume=-8dB,` +
+        `adelay=${delayMs}|${delayMs},apad=whole_dur=${totalDurStr}[rimshot]`,
+    );
+    rimshotLabel = '[rimshot]';
+  }
+
   // Sidechain duck BGM under voice (always). Uses the rate-normalized
   // voice signal as the sidechain control so attack/release envelopes
   // are calibrated correctly (Panel-16 Eng E4 Carmack Gap 2).
@@ -1017,6 +1083,20 @@ async function mixBgmBed(
   filters.push(
     '[bgm][voice44k_sc]sidechaincompress=threshold=0.04:ratio=6:' +
       'attack=10:release=250[ducked]',
+  );
+
+  // Panel-19 Audio P1 (Pensado): hook sting was firing at amix
+  // weight=0.6 simultaneously with the voice attack at t=0 — most
+  // intelligibility-critical moment. Sidechain duck the sting under
+  // the voice control signal so the sting's body recedes the moment
+  // the voice starts. Threshold=0.04 / ratio=3 / attack=30 / release=
+  // 500 chosen for a SOFT duck (the sting still establishes presence
+  // in the first 200-300ms before voice attack but yields cleanly).
+  // Lower ratio than BGM duck because the sting is short (≤2.5s) and
+  // we want it heard, just not on top of the first syllable.
+  filters.push(
+    '[hooksfx][voice44k_hsc]sidechaincompress=threshold=0.04:ratio=3:' +
+      'attack=30:release=500[hookducked]',
   );
 
   // Build amix dynamically. Order: voice, ducked-BGM, hook-sting,
@@ -1037,7 +1117,7 @@ async function mixBgmBed(
   // signal → no ducking → BGM at base -26dB during CTA tail).
   // dropout_transition=2 prevents the hard cut that would click the
   // loudnorm pass.
-  const mixLabels: string[] = ['[voice44k]', '[ducked]', '[hooksfx]'];
+  const mixLabels: string[] = ['[voice44k]', '[ducked]', '[hookducked]'];
   const weights: number[] = [1, 0.35, 0.6];
   if (endCardLabel) {
     mixLabels.push(endCardLabel);
@@ -1046,6 +1126,14 @@ async function mixBgmBed(
   if (whooshLabel) {
     mixLabels.push(whooshLabel);
     weights.push(0.5);
+  }
+  if (vinylLabel) {
+    mixLabels.push(vinylLabel);
+    weights.push(0.5);
+  }
+  if (rimshotLabel) {
+    mixLabels.push(rimshotLabel);
+    weights.push(0.55);
   }
   const mixSpec =
     `${mixLabels.join('')}amix=inputs=${mixLabels.length}` +
