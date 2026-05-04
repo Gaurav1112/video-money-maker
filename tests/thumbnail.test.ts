@@ -20,6 +20,7 @@ import {
   hookTextFor,
   variantFor,
   djb2,
+  __ALL_CATEGORY_PATTERNS_FOR_TEST,
 } from '../src/lib/thumbnail-text';
 
 // ---------------------------------------------------------------------------
@@ -279,4 +280,47 @@ describe('cap4Words safety — render-time truncation', () => {
     const result = cap4Words('kafka wrong watch this');
     expect(result).toBe(result.toUpperCase());
   });
+});
+
+// ---------------------------------------------------------------------------
+// 7. Panel-17 Eng P0 (Hejlsberg) — pattern-bank structural integrity
+// ---------------------------------------------------------------------------
+// Every pattern, after {TECH} substitution, must produce ≤ 4 words.
+// enforceMaxFourWords silently truncates longer patterns — dropping the
+// {TECH} label when it sits in the 5th slot. The B20 production bug fired
+// for FRONTEND_PATTERNS[6] = 'NEVER DO THIS IN {TECH}', shipping
+// thumbnails reading 'NEVER DO THIS IN' (label dropped). This test scans
+// every bank and every entry — including {TECH} substitution with both
+// short ('JWT', 3 chars) and long ('JAVASCRIPT', 10 chars) labels — to
+// make the regression class impossible to merge.
+describe('pattern-bank structural integrity — Panel-17 Eng P0', () => {
+  const TECH_SAMPLES = ['X', 'JWT', 'KAFKA', 'JAVASCRIPT', 'WEBSOCKET'];
+
+  for (const [category, bank] of __ALL_CATEGORY_PATTERNS_FOR_TEST) {
+    for (let i = 0; i < bank.length; i++) {
+      const pattern = bank[i];
+      for (const tech of TECH_SAMPLES) {
+        test(`${category}[${i}] = ${JSON.stringify(pattern)} with TECH=${tech} → ≤ 4 words`, () => {
+          const substituted = pattern.replace(/\{TECH\}/g, tech);
+          const wordCount = substituted.trim().split(/\s+/).length;
+          expect(wordCount).toBeLessThanOrEqual(4);
+        });
+      }
+
+      // Also verify that {TECH} substitution actually survives the cap —
+      // i.e. when the pattern contains {TECH}, the rendered hook with a
+      // long tech label still includes that label after enforceMaxFourWords.
+      // This is the *semantic* guard the byte-count guard above misses
+      // when the pattern is exactly 4 words and {TECH} sits in slot 4
+      // (no truncation occurs, label survives) — but it catches the
+      // FRONTEND[6] class where {TECH} sat in slot 5.
+      if (pattern.includes('{TECH}')) {
+        test(`${category}[${i}] preserves TECH label after substitution`, () => {
+          const substituted = pattern.replace(/\{TECH\}/g, 'TESTLABEL');
+          const capped = substituted.trim().split(/\s+/).slice(0, 4).join(' ');
+          expect(capped).toContain('TESTLABEL');
+        });
+      }
+    }
+  }
 });

@@ -926,17 +926,21 @@ async function mixBgmBed(
     `:duration=longest:dropout_transition=2` +
     `:weights=${weights.join(' ')}[mix]`;
   filters.push(mixSpec);
-  // Panel-16 Audio P1 #2 (Beato/Huang): single-pass loudnorm landed at
-  // I=-14.9 LUFS (target -14.0) and LRA=3.5 LU — half the broadcast
-  // floor (7-9 LU). Narrow LRA = "loud-but-flat" which streaming
-  // listeners read as podcast-grade not viral-Short-grade.
-  // dynaudnorm before loudnorm expands per-frame dynamics within a
-  // sliding window without colouring tone (f=200ms frame, g=11 frames
-  // gauss = ~2.2s context). This lifts LRA toward 6-8 LU and gives the
-  // master a more musical envelope. dynaudnorm is fully deterministic
-  // on identical input — no internal randomness.
-  filters.push('[mix]dynaudnorm=f=200:g=11:p=0.95:m=10[mixexp]');
-  filters.push('[mixexp]loudnorm=I=-14:LRA=11:tp=-1.0[aout]');
+  // Panel-17 Audio P0 (Beato/Katz): Batch-20 added dynaudnorm before
+  // loudnorm with the comment claiming "lifts LRA toward 6-8 LU". That
+  // claim was wrong. dynaudnorm with p=0.95 is a per-frame PEAK
+  // NORMALISER — it pushes every 200ms window's peak toward -0.45 dBFS,
+  // uniformising loudness and NARROWING LRA. Measured impact: LRA went
+  // from 3.5 LU (B19) to 3.0 LU (B20), the opposite of the design
+  // intent. It also flattened the hook-sting transient at t=0,
+  // weakening the stop-the-scroll punch. Reverted to single-pass
+  // loudnorm — for voiceover-dominant content 3-5 LU is the natural
+  // landing range and matches Spotify/YouTube podcast playback spec.
+  // The B19 measurement (-14.9 LUFS, TPK -1.8 dBFS) is acceptable; if
+  // we want sub-0.05 dB LUFS accuracy the proper fix is a true two-pass
+  // loudnorm (measure → apply with measured_*+linear=true), deferred
+  // to B22.
+  filters.push('[mix]loudnorm=I=-14:LRA=11:tp=-1.0[aout]');
 
   await runFfmpeg([
     ...inputs,

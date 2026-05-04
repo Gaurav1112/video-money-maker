@@ -127,7 +127,10 @@ const SECURITY_PATTERNS: PatternBank = [
   '{TECH} DONE RIGHT FAST',
   'YOUR {TECH} IS BROKEN',
   'FAANG SECURES THIS WAY',
-  'FIX THIS OR GET HACKED',
+  // Panel-17 Eng P1 (Hejlsberg): was 'FIX THIS OR GET HACKED' (5
+  // words → truncated to 'FIX THIS OR GET'). 4-word version keeps
+  // the threat punchline intact.
+  '{TECH} HACK EXPOSED NOW',
 ];
 
 const DEVOPS_PATTERNS: PatternBank = [
@@ -137,7 +140,10 @@ const DEVOPS_PATTERNS: PatternBank = [
   'NEVER DEPLOY LIKE THIS',
   'FAANG DEPLOYS THIS WAY',
   '{TECH} BREAKS EVERYTHING',
-  'FIX THIS OR LOSE PROD',
+  // Panel-17 Eng P1 (Hejlsberg): was 'FIX THIS OR LOSE PROD' (5
+  // words → truncated to 'FIX THIS OR LOSE'). 4-word version keeps
+  // the consequence intact.
+  '{TECH} KILLED OUR PROD',
 ];
 
 const FRONTEND_PATTERNS: PatternBank = [
@@ -147,7 +153,11 @@ const FRONTEND_PATTERNS: PatternBank = [
   '{TECH} PATTERN THAT WINS',
   'STOP THIS {TECH} MISTAKE',
   '{TECH} PERF FIX NOW',
-  'NEVER DO THIS IN {TECH}',
+  // Panel-17 Eng P0 (Hejlsberg): was 'NEVER DO THIS IN {TECH}' which is
+  // structurally 5 words; after substitution enforceMaxFourWords always
+  // truncated to 'NEVER DO THIS IN' (tech label silently dropped).
+  // 'STOP THIS IN {TECH}' is 4 words — keeps the label intact.
+  'STOP THIS IN {TECH}',
 ];
 
 const GENERIC_PATTERNS: PatternBank = [
@@ -200,6 +210,17 @@ const CATEGORY_PATTERNS: Record<Category, PatternBank> = {
   frontend: FRONTEND_PATTERNS,
   generic: GENERIC_PATTERNS,
 };
+
+/**
+ * Panel-17 Eng P0 (Hejlsberg): exposed for test-time word-count
+ * assertion. enforceMaxFourWords silently truncates 5-word patterns to
+ * 4, dropping the {TECH} label when it sits in the 5th slot — the bug
+ * that shipped to production in FRONTEND_PATTERNS[6] / SECURITY[6] /
+ * DEVOPS[6]. Tests now scan EVERY entry to make this class of regression
+ * impossible to merge.
+ */
+export const __ALL_CATEGORY_PATTERNS_FOR_TEST: ReadonlyArray<readonly [Category, PatternBank]> =
+  (Object.entries(CATEGORY_PATTERNS) as Array<[Category, PatternBank]>);
 
 // ---------------------------------------------------------------------------
 // Enforce max-4-words contract

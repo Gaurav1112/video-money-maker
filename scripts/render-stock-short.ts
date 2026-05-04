@@ -257,8 +257,26 @@ async function main(): Promise<void> {
   // authenticity — Indian dev audiences are bilingual; the EN visual +
   // Hinglish audio combo is normal for the niche (cf. Apna College,
   // Striver, 100xDevs).
+  // Panel-17 Retention P0 (MrBeast/Bilyeu) + Distribution P0 (Blake/Schiffer):
+  // B20 wired hookTextFor() into thumbnailHook only — leaving in-video
+  // drawtext hook, YT title, and X-post text on the long shortTitle.
+  // Result was a *click-coherence break*: viewer clicks "FAANG USES
+  // KAFKA WHY", lands on "The Kafka Consumer Groups Mistake That Costs
+  // Freshers..." in the first 1.5s. Panel-17 Retention regressed
+  // 5.68→5.13 *because of this gap*. Compute punchyHook here (top of
+  // hook-derivation block) so it can flow into hookVisual, the YT title
+  // (via metadata input), AND the X-post text — same 4-word string
+  // everywhere the viewer might see it.
+  const punchyHook = hookTextFor(storyboard.topic);
+
   const hookSpoken: string = rotated?.hookHinglish || bankEntry?.hookHinglish?.trim() || hookHeadline;
-  const visualSource: string = rotated?.shortTitle || bankEntry?.shortTitle?.trim() || hookSpoken;
+  // Panel-17 Retention P0 (MrBeast): visualSource now prefers punchyHook
+  // so the in-video drawtext at scene-0 matches what the thumbnail
+  // promised. shortTitle survives as the secondary line / fallback.
+  const visualSource: string = punchyHook
+    || rotated?.shortTitle
+    || bankEntry?.shortTitle?.trim()
+    || hookSpoken;
   const hookVisual: string = (() => {
     const trimmed = visualSource.replace(/\s+/g, ' ').trim();
     if (trimmed.length <= 42) return trimmed;
@@ -400,8 +418,15 @@ async function main(): Promise<void> {
       // with a comment-bait + subscribe ask so every video closes with
       // an explicit replay/subscribe pull. Localised Hinglish to match
       // the @GuruSishya-India brand voice.
+      // Panel-17 Retention P0 (Bilyeu): previous end-card line 2
+      // ("Subscribe @GuruSishya-India — kal milte hain") was ~48 chars
+      // at fontsize=64 → ~1728px against a 1080px canvas → BOTH edges
+      // clipped. 🔥 emoji also rendered as a □ box because the vendored
+      // DejaVu/NotoSans-Bold has no color-emoji glyphs. Fixed: split
+      // into 3 short lines (each ≤22 chars), drop the emoji entirely
+      // (Beato: ASCII-only renders crisp at any fontsize, on any font).
       const endCardText = isLast
-        ? `Comment 🔥 if you got it\nSubscribe ${BRAND_AT} — kal milte hain`
+        ? `Drop a comment\nSubscribe ${BRAND_AT}\nkal milte hain`
         : undefined;
       return {
         clipPath: clipPaths[i],
@@ -472,7 +497,21 @@ async function main(): Promise<void> {
     })),
     siteTopicSlug: bankEntry?.siteTopicSlug ?? slug,
     hookHeadline,
-    shortTitle: rotated?.shortTitle || bankEntry?.shortTitle,
+    shortTitle: (() => {
+      // Panel-17 Distribution P0 (Blake/Schiffer): YT title now leads
+      // with the same 4-word punchyHook the thumbnail shows, then the
+      // descriptive shortTitle, then `#Shorts` (appended downstream).
+      // Result: shelf shows thumbnail "FAANG USES KAFKA WHY" stacked
+      // directly above title "FAANG USES KAFKA WHY — The Kafka..."
+      // — single coherent hook signal instead of two competing ones.
+      // Title cap at 100 chars handled by generateShortMetadata.
+      const longTitle = (rotated?.shortTitle || bankEntry?.shortTitle || '').trim();
+      if (!punchyHook) return longTitle || undefined;
+      if (!longTitle) return punchyHook;
+      // Avoid double-prefix when bank already starts with the punchyHook.
+      if (longTitle.toUpperCase().startsWith(punchyHook.toUpperCase())) return longTitle;
+      return `${punchyHook} — ${longTitle}`;
+    })(),
     salaryBand: bankEntry?.salaryBand,
     stake: bankEntry?.stake,
     hookHinglish: rotated?.hookHinglish || bankEntry?.hookHinglish,
@@ -503,9 +542,11 @@ async function main(): Promise<void> {
         hashtags: metadata.tags.slice(0, 30).map((t) => `#${t}`).join(' '),
       },
       x_post: {
-        // Hook + brand handle + ICP hashtags. cross-post-x.ts appends the
-        // video URL separately so we don't include it in `text`.
-        text: `${hookHeadline}\n\n${BRAND_AT} · ${metadata.tags.slice(0, 4).map((t) => `#${t}`).join(' ')}`.slice(0, 280),
+        // Panel-17 Distribution P0 (Schiffer): use punchyHook (4-word
+        // thumbnail copy) instead of hookHeadline so the X-post matches
+        // what the click delivers. Was: ${hookHeadline} — the long
+        // descriptive hook — which broke cross-platform coherence.
+        text: `${punchyHook}\n\n${BRAND_AT} · ${metadata.tags.slice(0, 4).map((t) => `#${t}`).join(' ')}`.slice(0, 280),
       },
       linkedin: {
         title: metadata.title.replace(/\s*#\w+\s*/g, '').trim(),
@@ -533,16 +574,12 @@ async function main(): Promise<void> {
   // zero external assets, and clearly signals "tech short" not "stock
   // landscape". Category drives an accent gradient stop.
   const thumbnailPath = path.join(finalOutDir, 'thumbnail.png');
-  // Panel-16 Retention R1+R4 (Beast/Bilyeu): the long shortTitle ("The
-  // Kafka Consumer Groups Mistake") is descriptive but inert — it tells
-  // the viewer what the video IS, not why they should stop scrolling.
-  // hookTextFor() returns deterministic 4-word punchy copy from
-  // src/lib/thumbnail-text.ts, designed for Beast/Striver-grade
-  // curiosity-gap thumbnails ("KAFKA TRAP EXPOSED", "FAANG ASKS THIS
-  // DAILY", etc). Same topic → same string, fully deterministic.
-  // shortTitle still survives as fallback if the topic doesn't match
-  // any pattern bank (rare — covers all our CSE/FAANG categories).
-  const punchyHook = hookTextFor(storyboard.topic);
+  // Panel-17 Retention/Distribution coherence: punchyHook is now computed
+  // at the top of the hook-derivation block (line ~261). Same 4-word
+  // string flows into in-video drawtext, YT title prefix, X-post text,
+  // and thumbnail — so every surface a viewer sees carries the same
+  // promise. Falls back to shortTitle if the topic doesn't match a
+  // pattern bank (rare — covers all our CSE/FAANG categories).
   const thumbnailHook = punchyHook
     || rotated?.shortTitle
     || bankEntry?.shortTitle?.trim()
