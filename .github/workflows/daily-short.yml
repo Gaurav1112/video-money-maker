@@ -30,6 +30,32 @@ on:
 permissions:
   contents: read
 
+# ─── P0 FIXES: System dependencies + Chrome caching ───────────────────────────
+before-render:
+  name: Setup system dependencies (P0 Chrome fix)
+  runs-on: ubuntu-latest
+  steps:
+    - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+
+    - name: Install system dependencies for Chrome
+      run: |
+        sudo apt-get update -qq
+        sudo apt-get install -y --no-install-recommends \
+          libx11-6 libxrender1 libxrandr2 libxss1 \
+          libnss3 libnspr4 \
+          libgbm1 libxkbcommon0 \
+          libgtk-3-0 libatk1.0-0 libatk-bridge2.0-0 libcups2 \
+          libpango-1.0-0 libpangocairo-1.0-0 \
+          libdbus-1-3 \
+          fonts-liberation fonts-liberation2 xfonts-utils
+
+    - name: Cache Chromium
+      uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae
+      with:
+        path: ~/.cache/remotion
+        key: chromium-${{ runner.os }}-4.0.457
+        restore-keys: chromium-${{ runner.os }}-
+
 env:
   NODE_VERSION: '20'
   # Pinned versions for the python pip + apt + npx external dependencies

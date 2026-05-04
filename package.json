@@ -30,10 +30,10 @@
     "test:topic-bank": "tsx --test tests/topic-bank.test.ts"
   },
   "dependencies": {
-    "@remotion/cli": "^4.0.600",
-    "@remotion/google-fonts": "^4.0.600",
-    "@remotion/paths": "^4.0.600",
-    "@remotion/transitions": "^4.0.600",
+    "@remotion/cli": "^4.0.457",
+    "@remotion/google-fonts": "^4.0.457",
+    "@remotion/paths": "^4.0.457",
+    "@remotion/transitions": "^4.0.457",
     "axios": "^1.16.0",
     "fs-extra": "^11.3.4",
     "googleapis": "^171.4.0",
@@ -42,7 +42,7 @@
     "noisejs": "^2.1.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "remotion": "^4.0.600",
+    "remotion": "^4.0.457",
     "roughjs": "^4.6.6",
     "zod": "^3.23.8"
   },

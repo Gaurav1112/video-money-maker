@@ -231,6 +231,42 @@ export function generateStoryboard(
     console.log('  ⏭ Rhubarb skipped (use RHUBARB=1 to enable)');
   }
 
+  // ── Extract misconception data for micro-shock opener ──
+  // Look for common misconception patterns in the first content scene
+  let shockWrongClaim: string | undefined;
+  let shockRightClaim: string | undefined;
+  let shockPattern: 'side-by-side' | 'flip-wipe' | 'truth-bomb' | 'myth-buster' | 'plot-twist' | 'reveal' = 'side-by-side';
+
+  // Skip intro and outro scenes to find first real content
+  const firstContentScene = enrichedScenes.find(s => s.type !== 'title' && s.type !== 'summary' && s.narration?.trim() && s !== enrichedScenes[0]);
+  if (firstContentScene?.narration) {
+    // Pattern 1: "Most/many think X, but actually/however Y"
+    let wrongMatch = firstContentScene.narration.match(/(?:most|many|people|developers|engineers).+?(?:think|say|believe|assume)\s+([^,]+),\s+but\s+(?:actually|however|the\s+truth|in\s+reality)\s+([^.!]+)/i);
+    if (wrongMatch) {
+      shockWrongClaim = wrongMatch[1].trim();
+      shockRightClaim = wrongMatch[2].trim();
+      shockPattern = 'myth-buster';
+    }
+
+    // Pattern 2: "Wrong: X | Right: Y"
+    if (!shockWrongClaim) {
+      wrongMatch = firstContentScene.narration.match(/(?:wrong|incorrect|false)\s*:?\s*([^|.!]+)\s*\|?\s*(?:right|correct|true)\s*:?\s*([^.!]+)/i);
+      if (wrongMatch) {
+        shockWrongClaim = wrongMatch[1].trim();
+        shockRightClaim = wrongMatch[2].trim();
+        shockPattern = 'truth-bomb';
+      }
+    }
+
+    // Pattern 3: Topic + first heading (fallback)
+    if (!shockWrongClaim && firstContentScene.heading) {
+      const headingWords = firstContentScene.heading.split(' ').slice(0, 5).join(' ');
+      shockWrongClaim = `Many use ${headingWords} incorrectly`;
+      shockRightClaim = firstContentScene.heading;
+      shockPattern = 'reveal';
+    }
+  }
+
   return {
     fps,
     width,
@@ -243,6 +279,7 @@ export function generateStoryboard(
     sceneOffsets,
     ...(mergedSfxTriggers.length > 0 ? { allSfxTriggers: mergedSfxTriggers } : {}),
     ...(mouthCues.length > 0 ? { mouthCues } : {}),
+    ...(shockWrongClaim ? { shockWrongClaim, shockRightClaim, shockPattern } : {}),
   };
 }
 

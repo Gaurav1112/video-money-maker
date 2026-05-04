@@ -61,6 +61,10 @@ export interface Storyboard {
   partCtaText?: string;
   partNumber?: number;
   totalParts?: number;
+  /** Micro-shock opener data for first 3 seconds */
+  shockWrongClaim?: string;
+  shockRightClaim?: string;
+  shockPattern?: 'side-by-side' | 'flip-wipe' | 'truth-bomb' | 'myth-buster' | 'plot-twist' | 'reveal';
 }
 
 export interface SessionInput {

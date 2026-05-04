@@ -36,6 +36,7 @@ import {
 } from '../components';
 import { IDEScene } from '../components/scenes/IDEScene';
 import { CinematicOpener } from '../components/CinematicOpener';
+import { ShockOpener } from '../components/shock-visuals/ShockOpener';
 import { SpeedReminder } from '../components/SpeedReminder';
 import { PatternInterruptLayer } from '../components/PatternInterruptLayer';
 // REMOVED: Visual clutter reduction — film grain is thematically wrong for tech tutorials
@@ -316,6 +317,19 @@ export const LongVideo: React.FC<LongVideoProps> = ({ storyboard, noOverlays = f
 
       {/* REMOVED: AnimatedOverlay — particles, scan line, vignette, tech grid = visual noise */}
       {/* {!isIntro && !isOutro && <AnimatedOverlay sceneType={currentSceneType} />} */}
+
+      {/* Micro-Shock Visual Opener — First 1.5 seconds [WRONG] vs [RIGHT] comparison */}
+      {storyboard.shockWrongClaim && storyboard.shockRightClaim && (
+        <Sequence from={0} durationInFrames={45}>
+          <ShockOpener
+            wrong={storyboard.shockWrongClaim}
+            right={storyboard.shockRightClaim}
+            topic={storyboard.topic}
+            pattern={storyboard.shockPattern || 'side-by-side'}
+            durationFrames={45}
+          />
+        </Sequence>
+      )}
 
       {/* Cinematic Opening — 6 movie-trailer styles, unique per topic */}
       <Sequence from={0} durationInFrames={INTRO_DURATION}>
