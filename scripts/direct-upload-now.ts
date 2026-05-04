@@ -2,11 +2,16 @@
 /**
  * DIRECT UPLOAD — No workflow, no delays
  * Uploads test video to YouTube right now
+ * ENHANCED: OAuth2 refresh + exponential backoff retry + health checks
  */
 
-import fs from 'fs';
-import path from 'path';
+import * as fs from 'fs';
+import * as path from 'path';
 import { google } from 'googleapis';
+import { refreshYouTubeToken, getValidAccessToken } from '../src/lib/auth-validator';
+import { retryableUpload } from '../src/lib/upload-retry';
+import { runHealthChecks, reportHealthCheckStatus } from '../src/lib/upload-health-check';
+import { logUpload, flushLogs } from '../src/lib/upload-logger';
 
 const VIDEO_FILE = '/Users/kumargaurav/guru-sishya-uploads/test/untitled/short-stock.mp4';
 const TITLE = '🔥 Database Indexing Explained - Retention 9/10 Test';
@@ -36,53 +41,115 @@ async function uploadNow() {
     process.exit(1);
   }
 
-  console.log('🚀 Starting upload...');
-  console.log(`   File: ${VIDEO_FILE}`);
-  console.log(`   Size: ${(fs.statSync(VIDEO_FILE).size / 1024 / 1024).toFixed(1)} MB`);
-  console.log(`   Title: ${TITLE}`);
-
-  const oauth2Client = new google.auth.OAuth2(clientId, clientSecret, 'http://localhost');
-  oauth2Client.setCredentials({ refresh_token: refreshToken });
-
-  const youtube = google.youtube({
-    version: 'v3',
-    auth: oauth2Client,
-  });
-
   try {
-    console.log('\n📤 Uploading to YouTube...');
-    
-    const response = await youtube.videos.insert(
-      {
-        part: ['snippet', 'status'],
-        requestBody: {
-          snippet: {
-            title: TITLE,
-            description: DESCRIPTION,
-            tags: ['database', 'indexing', 'system-design', 'tutorial'],
-            categoryId: '28',
-          },
-          status: {
-            privacyStatus: 'unlisted',
-            madeForKids: false,
-          },
-        },
-        media: {
-          body: fs.createReadStream(VIDEO_FILE),
-        },
-      },
-      {
-        onUploadProgress: (evt: any) => {
-          const progress = ((evt.bytesRead / fs.statSync(VIDEO_FILE).size) * 100).toFixed(1);
-          process.stdout.write(`\r   Progress: ${progress}%`);
-        },
-      }
+    // STEP 1: Run health checks
+    console.log('🏥 Running pre-flight health checks...');
+    const health = await runHealthChecks(
+      VIDEO_FILE,
+      clientId,
+      clientSecret,
+      refreshToken,
+      100
     );
+    reportHealthCheckStatus(health);
+    
+    if (!health.healthy) {
+      console.error('\n❌ Upload blocked by health check failures');
+      logUpload('error', 'Health check failed', health.checks.errors);
+      flushLogs();
+      process.exit(1);
+    }
 
+    // STEP 2: Get file info
+    console.log('📦 Upload Details:');
+    console.log(`   File: ${VIDEO_FILE}`);
+    const fileSize = fs.statSync(VIDEO_FILE).size / 1024 / 1024;
+    console.log(`   Size: ${fileSize.toFixed(1)} MB`);
+    console.log(`   Title: ${TITLE}`);
+
+    // STEP 3: Refresh token before upload
+    console.log('\n🔑 Refreshing OAuth2 token...');
+    let accessToken: string;
+    try {
+      accessToken = await getValidAccessToken(refreshToken);
+      logUpload('info', 'OAuth2 token refreshed successfully', { expiresIn: 3600 });
+    } catch (err: any) {
+      logUpload('error', 'Failed to refresh OAuth2 token', { error: err.message });
+      throw err;
+    }
+
+    // STEP 4: Perform upload with retry logic
+    console.log('\n📤 Starting upload with automatic retry logic...');
+    logUpload('info', 'Upload started', { title: TITLE, fileSize: `${fileSize.toFixed(1)}MB` });
+    
+    // Wrapper to convert logUpload signature to retryable format
+    const retryLogger = (msg: string) => {
+      logUpload('info', msg);
+    };
+    
+    const uploadResult = await retryableUpload(async () => {
+      const oauth2Client = new google.auth.OAuth2(clientId, clientSecret, 'http://localhost');
+      oauth2Client.setCredentials({ access_token: accessToken });
+
+      const youtube = google.youtube({
+        version: 'v3',
+        auth: oauth2Client,
+      });
+
+      const response = await youtube.videos.insert(
+        {
+          part: ['snippet', 'status'],
+          requestBody: {
+            snippet: {
+              title: TITLE,
+              description: DESCRIPTION,
+              tags: ['database', 'indexing', 'system-design', 'tutorial'],
+              categoryId: '28',
+            },
+            status: {
+              privacyStatus: 'unlisted',
+              madeForKids: false,
+            },
+          },
+          media: {
+            body: fs.createReadStream(VIDEO_FILE),
+          },
+        },
+        {
+          onUploadProgress: (evt: any) => {
+            const progress = ((evt.bytesRead / fs.statSync(VIDEO_FILE).size) * 100).toFixed(1);
+            process.stdout.write(`\r   Progress: ${progress}%`);
+          },
+        }
+      );
+      
+      return response;
+    }, retryLogger);
+
+    if (!uploadResult.success) {
+      console.error('\n❌ UPLOAD FAILED!');
+      console.error(`Failed after ${uploadResult.attempts} attempts`);
+      console.error(`Error: ${uploadResult.error}`);
+      logUpload('error', 'Upload failed after retries', {
+        attempts: uploadResult.attempts,
+        error: uploadResult.error,
+      });
+      flushLogs();
+      process.exit(1);
+    }
+
+    // STEP 5: Success
+    const response = uploadResult.data;
     console.log('\n\n✅ UPLOAD SUCCESSFUL!');
     console.log(`   Video ID: ${response.data.id}`);
     console.log(`   URL: https://www.youtube.com/watch?v=${response.data.id}`);
     console.log(`   Studio: https://studio.youtube.com/video/${response.data.id}`);
+    
+    logUpload('info', 'Upload successful', {
+      videoId: response.data.id,
+      url: `https://www.youtube.com/watch?v=${response.data.id}`,
+      attempts: uploadResult.attempts,
+    });
     
     // Save video ID for tracking
     const logEntry = {
@@ -92,8 +159,15 @@ async function uploadNow() {
       url: `https://www.youtube.com/watch?v=${response.data.id}`,
     };
     
-    fs.appendFileSync('tmp/uploaded-videos.json', JSON.stringify(logEntry) + '\n');
+    const tmpDir = path.join(process.cwd(), 'tmp');
+    if (!fs.existsSync(tmpDir)) {
+      fs.mkdirSync(tmpDir, { recursive: true });
+    }
+    
+    fs.appendFileSync(path.join(tmpDir, 'uploaded-videos.json'), JSON.stringify(logEntry) + '\n');
     console.log('\n📝 Logged to: tmp/uploaded-videos.json');
+    
+    flushLogs();
     
   } catch (error: any) {
     console.error('\n❌ Upload failed!');
@@ -101,6 +175,8 @@ async function uploadNow() {
     if (error.errors) {
       error.errors.forEach((e: any) => console.error('  -', e.message));
     }
+    logUpload('error', 'Upload exception', { error: error.message });
+    flushLogs();
     process.exit(1);
   }
 }
