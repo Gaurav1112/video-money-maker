@@ -12,6 +12,22 @@ export const BRAND_HANDLE_RAW = 'GuruSishya-India';
 export const BRAND_AT = `@${BRAND_HANDLE_RAW}`;
 export const BRAND_HASHTAG = `#${BRAND_HANDLE_RAW.replace(/-/g, '')}`;
 export const BRAND_TAG = BRAND_HANDLE_RAW.toLowerCase().replace(/-/g, '');
+/**
+ * Brand site + value-prop tagline. The watermark previously showed only
+ * @GuruSishya-India which gave viewers nowhere to go between Shorts —
+ * the only conversion path was YT subscribe. Surfacing the .in domain
+ * + a concrete promise ("Interview Ready in 21 Days") moves a passive
+ * subscribe-pull into an active off-platform funnel where the channel
+ * owns the audience relationship (not the YT algorithm).
+ *
+ * Single source of truth: every scene watermark, end-card CTA,
+ * description footer, and metadata tagline must derive from these
+ * constants so a future rebrand is a one-line change.
+ */
+export const BRAND_SITE = 'guru-sishya.in';
+export const BRAND_SITE_URL = `https://www.${BRAND_SITE}`;
+export const BRAND_TAGLINE = 'Interview Ready in 21 Days';
+export const BRAND_TAGLINE_HINGLISH = 'Interview Ready in 21 Din';
 
 export interface ShortMetadata {
   title: string;

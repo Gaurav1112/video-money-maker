@@ -17,6 +17,7 @@ import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 import { FFMPEG_BIN, FFPROBE_BIN } from '../lib/ffmpeg-bin.js';
 import { verifyLufs } from '../audio/lufs-verify.js';
+import { buildDiagramFilters } from './concept-diagram.js';
 
 const execFileP = promisify(execFile);
 
@@ -263,6 +264,36 @@ export interface SceneInput {
    * sceneIndex=1) only.
    */
   midPromiseText?: string;
+  /**
+   * Panel-21 Retention P0 (user-reported gap): the body scene was
+   * showing stock B-roll + caption text but never the actual concept
+   * graph. Viewers heard "consumer group reads partitions" and stared
+   * at a generic developer typing on a laptop — zero teaching value.
+   *
+   * `conceptDiagram` is a topic-keyed, ffmpeg-only architecture
+   * diagram (boxes + arrows + labels) drawn over the body scene with
+   * progressive reveal. Stages pace from t=1.9s (right after the
+   * mid-promise drawer fades) through t=sceneDur-0.3 so the diagram
+   * BUILDS as the narration explains it. Set on body scenes only —
+   * the hook (sceneIndex 0) carries the punchy headline, the closing
+   * scene carries the end-card CTA, and the body needs the visual.
+   *
+   * Built with drawbox/drawtext primitives only (no Mermaid/D2/PNG
+   * pipeline) to preserve byte-determinism: the same input produces
+   * the same SHA on every cold-cache render.
+   */
+  conceptDiagram?: import('./concept-diagram.js').ConceptDiagram;
+  /**
+   * Panel-21 Distribution P0 (user-reported brand gap): the watermark
+   * showed only @GuruSishya-India — no off-platform funnel, no value
+   * promise. `brandSubline` (e.g. "guru-sishya.in · Interview Ready
+   * in 21 Days") sits one line BELOW the @handle in the watermark
+   * stack, giving viewers a domain to type into a browser AND a
+   * concrete time-bound promise. Surfaced via watermark on every
+   * scene; suppressed during the last 2s end-card window so the CTA
+   * owns that frame zone unchallenged.
+   */
+  brandSubline?: string;
 }
 
 export interface ComposeInput {
@@ -419,7 +450,7 @@ async function processScene(
     filters.push(`eq=brightness=0.30:enable='lt(t,0.167)'`);
   }
 
-  const hasOverlay = !!(scene.bigText || scene.captionText || scene.endCardText || scene.tombstoneText);
+  const hasOverlay = !!(scene.bigText || scene.captionText || scene.endCardText || scene.tombstoneText || scene.conceptDiagram || scene.brandSubline);
   const drawtextAvailable = hasOverlay ? await isDrawtextAvailable() : false;
 
   if (hasOverlay && drawtextAvailable) {
@@ -435,6 +466,31 @@ async function processScene(
       }
       return fontArg;
     };
+
+    // ── Persistent brand subline (Panel-21 Distribution P0) ──────────────
+    // Off-platform funnel + value-prop tagline pinned at y=1545 — the
+    // 25px gap between the caption band ceiling (1540) and the YT
+    // Shorts like-strip safe-zone floor (1570). Fontsize 22 fits in
+    // 25px with proper border. Suppressed during the end-card window
+    // on the closing scene so the CTA owns the full frame; visible
+    // every other second. This is the FIRST off-platform funnel signal
+    // the channel has shipped — viewers can read "guru-sishya.in" the
+    // entire ~15s body and have a typeable URL to take with them.
+    if (scene.brandSubline) {
+      const brandY = 1545;
+      const brandFs = 22;
+      // If this scene also carries an endCardText (i.e. closing scene),
+      // suppress the subline during the end-card window so the CTA
+      // text doesn't compete with the persistent watermark line.
+      const brandEnable = scene.endCardText
+        ? `:enable='lt(t,${Math.max(0, scene.durationSec - 2.0).toFixed(3)})'`
+        : '';
+      filters.push(
+        `drawtext=text='${escapeDrawtext(scene.brandSubline)}'${fontArgFor(scene.brandSubline)}:` +
+        `fontcolor=white:fontsize=${brandFs}:borderw=3:bordercolor=black@0.95:` +
+        `x=(w-text_w)/2:y=${brandY}${brandEnable}`,
+      );
+    }
 
     // ── Big hook text in upper-third ──────────────────────────────────────
     // Safe zone: y=220 → 1570 (Subscribe button overlaps y<220, like-strip
@@ -547,6 +603,24 @@ async function processScene(
           `x=70:y=${Math.round(promStartY + idx * PLH)}:${promiseEnable}`,
         );
       });
+    }
+
+    // ── Concept diagram (Panel-21 Retention P0) ──────────────────────────
+    // Topic-keyed architecture diagram drawn over the body scene with
+    // progressive reveal — boxes/arrows fade in stage-by-stage so the
+    // diagram BUILDS as the narration explains it. Sits in y=200..1060,
+    // post-mid-promise (stages start at t=1.9s). Drives the actual
+    // teaching: viewers SEE the producer→partition→consumer-group
+    // graph instead of staring at generic stock footage of a developer
+    // typing. Suppressed on hook/end-card scenes via the caller (the
+    // hook owns the bigText band y=240..720, the end-card owns y=680..
+    // 1080 during the last 2s).
+    if (scene.conceptDiagram) {
+      const diagramFilters = buildDiagramFilters(scene.conceptDiagram, scene.durationSec, {
+        fontArg,
+        fontArgFor,
+      });
+      filters.push(...diagramFilters);
     }
 
     // ── End-card loop CTA (last 1.5s of last scene only) ──────────────────

@@ -29,7 +29,8 @@ import type { StockStoryboard, PickedClip, StockScene } from '../src/stock/types
 import { generateAssSubtitles } from '../src/stock/captions/ass-generator.js';
 import { runQualityGate } from '../src/stock/quality-gate.js';
 import { synthesize as ttsSynthesize } from '../src/voice/tts.js';
-import { generateShortMetadata, BRAND_AT, BRAND_HANDLE_RAW } from '../src/services/short-metadata.js';
+import { generateShortMetadata, BRAND_AT, BRAND_HANDLE_RAW, BRAND_SITE, BRAND_TAGLINE_HINGLISH } from '../src/services/short-metadata.js';
+import { getConceptDiagram } from '../src/stock/concept-diagram.js';
 import { findTopicBankEntry } from '../src/data/topic-bank-loader.js';
 import { rotateBankHook } from '../src/data/hook-rotator.js';
 import { hookTextFor } from '../src/lib/thumbnail-text.js';
@@ -460,8 +461,16 @@ async function main(): Promise<void> {
       // explicit reason to either replay or comment. Subscribe sits in
       // line 2 unchanged. All three lines remain ≤22 chars (no edge
       // clipping) and are ASCII-only (no emoji glyph fallback).
+      // Panel-21 Distribution P0 + user-reported brand gap: previously
+      // the end-card was Subscribe + rewatch-loop only — zero off-
+      // platform funnel. Now bakes in the .in domain (a typeable URL
+      // viewers can take off YT) and a concrete time-bound promise
+      // ("Interview Ready in 21 Din") that anchors the value-prop
+      // beyond the generic Subscribe CTA. Three lines, ≤22 chars each,
+      // ASCII + standard Devanagari only (Lohit/Noto fonts pinned in
+      // workflows for tofu-free rendering).
       const endCardText = isLast
-        ? `Tu ne ye galti ki?\nSubscribe ${BRAND_AT}\nRewatch karo phir se`
+        ? `${BRAND_TAGLINE_HINGLISH}\n${BRAND_SITE}\nSubscribe ${BRAND_AT}`
         : undefined;
       // Panel-17 Retention P0 (Bilyeu): the last scene is extended ~6
       // frames to fit voice tail + 2s end-card pad. Voice EOF lands at
@@ -499,6 +508,24 @@ async function main(): Promise<void> {
             : 'Ruko — last 5 sec mein twist hai')
         : undefined;
 
+      // Panel-21 Retention P0 (user-reported teaching gap): topic-keyed
+      // concept diagram on body scenes only. Hook scene owns the
+      // bigText hook band (y=240..720), the closing scene owns the
+      // end-card y=680..1080 region during the last 2s; the body
+      // scene's y=200..1060 was previously empty pixels behind a
+      // gradient — now it shows the actual architecture graph
+      // (producer → partitions → consumer group for kafka, etc).
+      // Slug fuzzy-matches a registry of templates with a generic
+      // 3-point fallback so EVERY topic gets a visual.
+      const conceptDiagram = isBody
+        ? getConceptDiagram(storyboard.topic, bankEntry?.shortTitle ?? rotated?.shortTitle)
+        : undefined;
+
+      // Brand subline appears on EVERY scene below the watermark
+      // handle stack (drawn in composer scene-overlay path). Off-
+      // platform funnel + value promise visible the entire ~17s.
+      const brandSubline = `${BRAND_SITE} · ${BRAND_TAGLINE_HINGLISH}`;
+
       return {
         clipPath: clipPaths[i],
         durationSec: scene.durationFrames / storyboard.fps,
@@ -508,6 +535,8 @@ async function main(): Promise<void> {
         endCardText,
         tombstoneText,
         midPromiseText,
+        conceptDiagram,
+        brandSubline,
       };
     }),
     voicePath: hasVoice ? voicePath : undefined,
