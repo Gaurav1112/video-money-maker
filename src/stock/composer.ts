@@ -488,6 +488,24 @@ async function muxFinal(
     audioPath = await mixBgmBed(audioPath, input.bgmPath, totalDur, workDir);
   }
 
+  // Panel-9 Eng P0 (Carmack): when the renderer extends the last scene
+  // to absorb audio + an end-card pad, the audio track is shorter than
+  // the video. With `-shortest` below this would drop the trailing
+  // pad — making the end-card invisible. Pad audio with silence to
+  // match video duration so `-shortest` becomes harmless.
+  const audioDur = await probeDuration(audioPath);
+  if (audioDur + 0.05 < totalDur) {
+    const padded = join(workDir, 'audio-padded.m4a');
+    const padSec = (totalDur - audioDur).toFixed(3);
+    await runFfmpeg([
+      '-i', audioPath,
+      '-af', `apad=pad_dur=${padSec}`,
+      '-c:a', 'aac', '-b:a', '192k', '-ar', '48000', '-ac', '2',
+      padded,
+    ]);
+    audioPath = padded;
+  }
+
   const args: string[] = [];
 
   // Build video filter for watermark + captions
