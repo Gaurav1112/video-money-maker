@@ -36,8 +36,18 @@ function hasFfmpeg(): boolean {
   }
 }
 
+function hasGeqFilter(): boolean {
+  try {
+    const result = execFileSync('ffmpeg', ['-filters'], { encoding: 'utf-8', timeout: 5000 });
+    return result.includes('geq');
+  } catch {
+    return false;
+  }
+}
+
 const FFMPEG_AVAILABLE = hasFfmpeg();
-const describeIfFfmpeg = FFMPEG_AVAILABLE ? describe : describe.skip;
+const GEQ_AVAILABLE = FFMPEG_AVAILABLE && hasGeqFilter();
+const describeIfFfmpeg = GEQ_AVAILABLE ? describe : describe.skip;
 
 function sha1(buf: Buffer): string {
   return createHash('sha1').update(buf).digest('hex');
