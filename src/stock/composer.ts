@@ -260,10 +260,17 @@ async function processScene(
   // (asymmetric with the zoom-out lane that nails 1.00× exactly).
   let zoompanFilter = '';
   if (enableZoompan) {
+    // Panel-13 Ret P0 (McKinnon): zoompan defaults x=0:y=0 (top-left),
+    // which on portrait stock with faces near vertical center causes
+    // the "ken burns" to walk the visible window towards the
+    // top-left corner — the subject drifts off-frame as the zoom
+    // progresses. Anchoring x/y at the geometric center keeps the
+    // focal subject locked while the zoom breathes around it.
+    const center = `:x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)'`;
     if (scene.sceneIndex % 2 === 0) {
       // Zoom in: 1.00 → 1.20 over the scene
       const zoomInVel = (0.20 / durFrames).toFixed(6);
-      zoompanFilter = `zoompan=z='1+${zoomInVel}*on':d=${durFrames}:s=1080x1920:fps=${FPS}`;
+      zoompanFilter = `zoompan=z='1+${zoomInVel}*on'${center}:d=${durFrames}:s=1080x1920:fps=${FPS}`;
     } else {
       // Panel-8 Ret P1 (McKinnon): previous hardcoded 0.00133 never
       // resolved to 1.00× at end of scene — at 105 frames (3.5s × 30)
@@ -271,7 +278,7 @@ async function processScene(
       // Compute the velocity from durFrames so the ramp ALWAYS ends
       // exactly at 1.00× regardless of cap changes.
       const zoomOutVel = (0.20 / durFrames).toFixed(6);
-      zoompanFilter = `zoompan=z='max(1,1.20-${zoomOutVel}*on)':d=${durFrames}:s=1080x1920:fps=${FPS}`;
+      zoompanFilter = `zoompan=z='max(1,1.20-${zoomOutVel}*on)'${center}:d=${durFrames}:s=1080x1920:fps=${FPS}`;
     }
   }
   // Panel-10 Ret P1 (McKinnon): saturation=1.06/contrast=1.04 was
@@ -512,7 +519,20 @@ async function muxFinal(
   // through a low-pass + tremolo) so the pipeline ships zero binary
   // assets while staying byte-deterministic.
   if ((input.enableBgm || input.bgmPath) && hasVoice) {
-    audioPath = await mixBgmBed(audioPath, input.bgmPath, totalDur, workDir);
+    // Panel-13 Ret P0 (Huang): per-scene-transition whoosh SFX. Compute
+    // each scene's start time (cumulative durations, excluding scene 0)
+    // and pass to the BGM mix step which adds them as procedural
+    // aevalsrc impulses. Skips boundaries that fall after totalDur to
+    // be safe against last-scene-extension drift.
+    const boundaries: number[] = [];
+    let cum = 0;
+    for (let i = 0; i < input.scenes.length; i++) {
+      cum += input.scenes[i].durationSec;
+      if (i < input.scenes.length - 1 && cum > 0.05 && cum < totalDur - 0.20) {
+        boundaries.push(cum);
+      }
+    }
+    audioPath = await mixBgmBed(audioPath, input.bgmPath, totalDur, workDir, boundaries);
   }
 
   // Panel-9 Eng P0 (Carmack): when the renderer extends the last scene
@@ -595,9 +615,13 @@ async function muxFinal(
   // When BGM ducking is active, loudnorm has already been applied to the
   // pre-mixed voice+bgm track — do NOT re-apply (Eng3 P1: double-loudnorm
   // pumps).
+  // Panel-13 Ret P1 (Huang): tp=-1.5 was loose vs the YT platform spec
+  // of tp=-1.0 dBTP. Tightened to -1.0 across all three loudnorm
+  // sites (no-BGM, BGM-file, BGM-procedural) for consistent inter-
+  // sample peak compliance.
   const bgmActive = (input.enableBgm || !!input.bgmPath) && hasVoice;
   if (hasVoice && !bgmActive) {
-    args.push('-af', 'loudnorm=I=-14:LRA=11:tp=-1.5');
+    args.push('-af', 'loudnorm=I=-14:LRA=11:tp=-1.0');
   }
   args.push(
     '-shortest',
@@ -621,28 +645,62 @@ async function muxFinal(
  *   • slow tremolo (0.25 Hz × 0.10 depth) for life
  *   • dual-channel duplication for stereo
  *   • final pad gain ‑26 dB before duck, ‑40 dB during speech (8:1 ratio)
+ *
+ * Panel-13 Ret P0 (Huang): per-scene-transition whoosh SFX. When
+ * `sceneBoundariesSec` is non-empty we synthesise a brief
+ * frequency-sweep + exponential-decay impulse at each boundary
+ * (180ms each). This is the same pattern-interrupt every
+ * MrBeast/Reels/TikTok cut uses to defeat doom-scroll fatigue.
+ * Procedural so it stays deterministic and adds no binary assets.
  */
+function buildWhooshExpr(boundariesSec: number[], totalDur: number): string {
+  if (!boundariesSec.length) return '';
+  // Each whoosh: 180ms exponentially-decaying frequency sweep
+  // (1200Hz → 7200Hz over 180ms), amplitude 0.30, gated by
+  // gte(t,T) * lt(t-T,0.18). Sum of all boundary impulses.
+  const terms = boundariesSec.map((t) => {
+    const T = t.toFixed(3);
+    return `gte(t\\,${T})*lt(t-${T}\\,0.18)*0.30*exp(-7*(t-${T}))*sin(2*PI*(1200+6000*(t-${T}))*(t-${T}))`;
+  });
+  const expr = terms.join('+');
+  return `aevalsrc='${expr}':s=44100:d=${totalDur.toFixed(3)}`;
+}
+
 async function mixBgmBed(
   voicePath: string,
   bgmPath: string | undefined,
   totalDur: number,
   workDir: string,
+  sceneBoundariesSec: number[] = [],
 ): Promise<string> {
   const out = join(workDir, 'voice-plus-bgm.m4a');
+  const whooshExpr = buildWhooshExpr(sceneBoundariesSec, totalDur);
+  const hasWhoosh = whooshExpr.length > 0;
 
   if (bgmPath && existsSync(bgmPath)) {
     // External asset path: load → loop → trim → duck under voice.
-    await runFfmpeg([
+    const inputs: string[] = [
       '-i', voicePath,
       '-stream_loop', '-1',
       '-i', bgmPath,
-      '-filter_complex',
-      [
-        '[1:a]aformat=channel_layouts=stereo,volume=-26dB,atrim=duration=' + totalDur.toFixed(3) + ',asetpts=PTS-STARTPTS[bgm]',
-        '[bgm][0:a]sidechaincompress=threshold=0.04:ratio=6:attack=10:release=400[ducked]',
-        '[0:a][ducked]amix=inputs=2:duration=first:dropout_transition=0[mix]',
-        '[mix]loudnorm=I=-14:LRA=11:tp=-1.5[aout]',
-      ].join(';'),
+    ];
+    const filters: string[] = [
+      '[1:a]aformat=channel_layouts=stereo,volume=-26dB,atrim=duration=' + totalDur.toFixed(3) + ',asetpts=PTS-STARTPTS[bgm]',
+      '[bgm][0:a]sidechaincompress=threshold=0.04:ratio=6:attack=10:release=400[ducked]',
+    ];
+    let mixSpec: string;
+    if (hasWhoosh) {
+      inputs.push('-f', 'lavfi', '-i', whooshExpr);
+      filters.push('[2:a]aformat=channel_layouts=stereo[whoosh]');
+      mixSpec = '[0:a][ducked][whoosh]amix=inputs=3:duration=first:dropout_transition=0:weights=1 0.35 0.5[mix]';
+    } else {
+      mixSpec = '[0:a][ducked]amix=inputs=2:duration=first:dropout_transition=0[mix]';
+    }
+    filters.push(mixSpec);
+    filters.push('[mix]loudnorm=I=-14:LRA=11:tp=-1.0[aout]');
+    await runFfmpeg([
+      ...inputs,
+      '-filter_complex', filters.join(';'),
       '-map', '[aout]',
       '-c:a', 'aac', '-b:a', '192k', '-ar', '48000', '-ac', '2',
       out,
@@ -669,20 +727,29 @@ async function mixBgmBed(
   const sfxExpr =
     "aevalsrc='if(lt(t\\,0.35)\\,0.45*exp(-4*t)*sin(2*PI*(180+800*t)*t)\\,0)'" +
     `:s=44100:d=${totalDur.toFixed(3)}`;
-  await runFfmpeg([
+  const inputs: string[] = [
     '-i', voicePath,
-    '-f', 'lavfi',
-    '-i', padExpr,
-    '-f', 'lavfi',
-    '-i', sfxExpr,
-    '-filter_complex',
-    [
-      '[1:a]aformat=channel_layouts=stereo,lowpass=f=700,tremolo=f=0.25:d=0.25,volume=-26dB[bgm]',
-      '[2:a]aformat=channel_layouts=stereo[sfx]',
-      '[bgm][0:a]sidechaincompress=threshold=0.04:ratio=6:attack=10:release=400[ducked]',
-      '[0:a][ducked][sfx]amix=inputs=3:duration=first:dropout_transition=0:weights=1 0.35 0.6[mix]',
-      '[mix]loudnorm=I=-14:LRA=11:tp=-1.5[aout]',
-    ].join(';'),
+    '-f', 'lavfi', '-i', padExpr,
+    '-f', 'lavfi', '-i', sfxExpr,
+  ];
+  const filters: string[] = [
+    '[1:a]aformat=channel_layouts=stereo,lowpass=f=700,tremolo=f=0.25:d=0.25,volume=-26dB[bgm]',
+    '[2:a]aformat=channel_layouts=stereo[sfx]',
+    '[bgm][0:a]sidechaincompress=threshold=0.04:ratio=6:attack=10:release=400[ducked]',
+  ];
+  let mixSpec: string;
+  if (hasWhoosh) {
+    inputs.push('-f', 'lavfi', '-i', whooshExpr);
+    filters.push('[3:a]aformat=channel_layouts=stereo[whoosh]');
+    mixSpec = '[0:a][ducked][sfx][whoosh]amix=inputs=4:duration=first:dropout_transition=0:weights=1 0.35 0.6 0.5[mix]';
+  } else {
+    mixSpec = '[0:a][ducked][sfx]amix=inputs=3:duration=first:dropout_transition=0:weights=1 0.35 0.6[mix]';
+  }
+  filters.push(mixSpec);
+  filters.push('[mix]loudnorm=I=-14:LRA=11:tp=-1.0[aout]');
+  await runFfmpeg([
+    ...inputs,
+    '-filter_complex', filters.join(';'),
     '-map', '[aout]',
     '-c:a', 'aac', '-b:a', '192k', '-ar', '48000', '-ac', '2',
     out,

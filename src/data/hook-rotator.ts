@@ -138,20 +138,23 @@ const DB_INTERNALS_TITLE: ((n: string, c: string) => string)[] = [
 function poolForCategory(
   category: string | undefined,
   kind: 'hinglish' | 'title',
-): ((n: string, c: string) => string)[] {
+): { pool: ((n: string, c: string) => string)[]; isSystemDesignTitle: boolean } {
   const cat = (category ?? '').toLowerCase();
   if (kind === 'hinglish') {
-    if (cat === 'system-design') return SYSTEM_DESIGN_HINGLISH;
-    if (cat === 'dsa') return DSA_HINGLISH;
-    if (cat === 'behavioral') return BEHAVIORAL_HINGLISH;
-    if (cat === 'db-internals') return DB_INTERNALS_HINGLISH;
-    return SYSTEM_DESIGN_HINGLISH;
+    if (cat === 'system-design') return { pool: SYSTEM_DESIGN_HINGLISH, isSystemDesignTitle: false };
+    if (cat === 'dsa') return { pool: DSA_HINGLISH, isSystemDesignTitle: false };
+    if (cat === 'behavioral') return { pool: BEHAVIORAL_HINGLISH, isSystemDesignTitle: false };
+    if (cat === 'db-internals') return { pool: DB_INTERNALS_HINGLISH, isSystemDesignTitle: false };
+    return { pool: SYSTEM_DESIGN_HINGLISH, isSystemDesignTitle: false };
   }
-  if (cat === 'system-design') return SYSTEM_DESIGN_TITLE;
-  if (cat === 'dsa') return DSA_TITLE;
-  if (cat === 'behavioral') return BEHAVIORAL_TITLE;
-  if (cat === 'db-internals') return DB_INTERNALS_TITLE;
-  return SYSTEM_DESIGN_TITLE;
+  if (cat === 'system-design') return { pool: SYSTEM_DESIGN_TITLE, isSystemDesignTitle: true };
+  if (cat === 'dsa') return { pool: DSA_TITLE, isSystemDesignTitle: false };
+  if (cat === 'behavioral') return { pool: BEHAVIORAL_TITLE, isSystemDesignTitle: false };
+  if (cat === 'db-internals') return { pool: DB_INTERNALS_TITLE, isSystemDesignTitle: false };
+  // Default fallback: system-design pool, but mark the WRONG-suffix
+  // guard active because the title at index 0 of SYSTEM_DESIGN_TITLE
+  // is the "WRONG 😳" template that needs the ungrammatical-suffix skip.
+  return { pool: SYSTEM_DESIGN_TITLE, isSystemDesignTitle: true };
 }
 
 export interface RotatedHook {
@@ -182,19 +185,29 @@ export function rotateBankHook(entry: TopicBankEntry): RotatedHook {
   const cleanName = trimTrailingNoise(entry.name);
   const company = COMPANIES[fnv1a(`${entry.slug}|company`) % COMPANIES.length] as string;
 
-  const hPool = poolForCategory(entry.category, 'hinglish');
-  const tPool = poolForCategory(entry.category, 'title');
+  // Panel-12/13 Hejlsberg P1: previously used `tPool === SYSTEM_DESIGN_TITLE`
+  // reference-identity to decide whether to apply the WRONG-suffix
+  // guard. Fragile under future bundler dedup or pool re-export. Now
+  // poolForCategory returns an explicit boolean alongside the array.
+  const { pool: hPool } = poolForCategory(entry.category, 'hinglish');
+  const { pool: tPool, isSystemDesignTitle } = poolForCategory(entry.category, 'title');
 
   const hinglishIdx = fnv1a(`${entry.slug}|h`) % hPool.length;
 
   // For title pool: if name would produce "Right WRONG"/"Explained WRONG",
   // shift past index 0 (the "WRONG" template).
   let titleIdx = fnv1a(`${entry.slug}|t`) % tPool.length;
-  if (titleIdx === 0 && tPool === SYSTEM_DESIGN_TITLE && isWrongSuffixUngrammatical(entry.name)) {
+  if (titleIdx === 0 && isSystemDesignTitle && isWrongSuffixUngrammatical(entry.name)) {
     titleIdx = 1;
   }
 
-  const hookHinglish = (hPool[hinglishIdx] as (n: string, c: string) => string)(cleanName, company);
-  const shortTitle = (tPool[titleIdx] as (n: string, c: string) => string)(cleanName, company);
+  // Panel-12/13 Hejlsberg P1: replaced `as` casts with non-null
+  // assertions so the call-site stays correct under the future
+  // `noUncheckedIndexedAccess: true` tsconfig flag. hinglishIdx and
+  // titleIdx are derived from `% pool.length` so are guaranteed
+  // in-range whenever the pool is non-empty (compile-time invariant
+  // of the pool definitions above).
+  const hookHinglish = hPool[hinglishIdx]!(cleanName, company);
+  const shortTitle = tPool[titleIdx]!(cleanName, company);
   return { hookHinglish, shortTitle, hinglishIdx, titleIdx };
 }

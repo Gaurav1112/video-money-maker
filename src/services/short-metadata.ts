@@ -250,8 +250,14 @@ export function generateShortMetadata(
       'careeradvice', 'jobinterview',
     ],
     'db-internals': [
-      'database', 'sqlinterview', 'dbms',
-      'postgres', 'mysql', 'transactions',
+      // Panel-13 Aud P1 (Harkirat): `sqlinterview` and `dbms` are
+      // university-course / interview-prep vocabulary — Harkirat's
+      // production-DB ICP searches `postgresql`, `query planner`,
+      // `explain analyze`, not `dbms`. Swapped academic terms for
+      // production-DB ones; kept `database`, `mysql`, `transactions`,
+      // `indexing`, `queryoptimization` which serve both audiences.
+      'database', 'postgresql', 'mysql',
+      'queryplanner', 'explainanalyze', 'transactions',
       'indexing', 'queryoptimization',
     ],
   };
