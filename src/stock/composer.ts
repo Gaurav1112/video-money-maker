@@ -243,8 +243,24 @@ async function processScene(
   const FPS = 30;
   const durFrames = Math.ceil(scene.durationSec * FPS);
 
+  // Ret2 P1 (panel-7): alternating zoompan direction by scene index
+  // doubles perceived motion variety vs a single zoom-in across all
+  // scenes. Velocity 0.0016/frame is ~2× the previous gentle ramp,
+  // so over 3.5s @ 30fps the visible zoom delta is +17% (vs +8%).
+  // Even-index scenes zoom IN, odd-index scenes zoom OUT — keeps the
+  // viewer's eye chasing detail.
+  let zoompanFilter = '';
+  if (enableZoompan) {
+    if (scene.sceneIndex % 2 === 0) {
+      // Zoom in: 1.00 → ~1.17 over the scene
+      zoompanFilter = `zoompan=z='1+0.0016*on':d=${durFrames}:s=1080x1920:fps=${FPS}`;
+    } else {
+      // Zoom out: start at ~1.20, end at ~1.00
+      zoompanFilter = `zoompan=z='max(1,1.20-0.00133*on)':d=${durFrames}:s=1080x1920:fps=${FPS}`;
+    }
+  }
   const baseScale = enableZoompan
-    ? `scale=-2:1920,crop=1080:1920,zoompan=z='1+0.0008*on':d=${durFrames}:s=1080x1920:fps=${FPS}`
+    ? `scale=-2:1920,crop=1080:1920,${zoompanFilter}`
     : 'scale=-2:1920,crop=1080:1920';
   const filters: string[] = [`${baseScale},fps=${FPS},setpts=PTS-STARTPTS`];
 
@@ -544,15 +560,28 @@ async function mixBgmBed(
   const padExpr =
     "aevalsrc='0.04*sin(2*PI*196*t)+0.035*sin(2*PI*261.63*t)+0.03*sin(2*PI*329.63*t)'" +
     `:s=44100:d=${totalDur.toFixed(3)}`;
+  // Hook SFX impact (Ret1 P0): a 350ms exponentially-decaying frequency
+  // sweep at t=0 of the voice track — fires the brain's attention reset
+  // *just before* the hook word lands. Amplitude 0.45 → mixed at -3 dB
+  // peak which sits ~6 dB above the BGM pad and ~3 dB below voice.
+  // Padded with `apad` to totalDur so the amix doesn't hold open due to
+  // a short input. After the 350ms strike the input is silence, so it
+  // costs nothing on subsequent body scenes.
+  const sfxExpr =
+    "aevalsrc='if(lt(t\\,0.35)\\,0.45*exp(-12*t)*sin(2*PI*(180+800*t)*t)\\,0)'" +
+    `:s=44100:d=${totalDur.toFixed(3)}`;
   await runFfmpeg([
     '-i', voicePath,
     '-f', 'lavfi',
     '-i', padExpr,
+    '-f', 'lavfi',
+    '-i', sfxExpr,
     '-filter_complex',
     [
       '[1:a]aformat=channel_layouts=stereo,lowpass=f=700,tremolo=f=0.25:d=0.10,volume=-26dB[bgm]',
+      '[2:a]aformat=channel_layouts=stereo[sfx]',
       '[bgm][0:a]sidechaincompress=threshold=0.04:ratio=8:attack=10:release=300[ducked]',
-      '[0:a][ducked]amix=inputs=2:duration=first:dropout_transition=0[mix]',
+      '[0:a][ducked][sfx]amix=inputs=3:duration=first:dropout_transition=0[mix]',
       '[mix]loudnorm=I=-14:LRA=11:tp=-1.5[aout]',
     ].join(';'),
     '-map', '[aout]',

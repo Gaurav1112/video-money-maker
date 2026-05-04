@@ -189,9 +189,13 @@ async function main(): Promise<void> {
       // headline at TTS rate +8% (~3.5s). 4s gives a safety buffer so the
       // visual never gets cut short of the audio (which would cause the
       // tail of the hook to play over scene-1 visuals).
-      const HOOK_HARD_CAP = Math.round(4.0 * storyboard.fps);  // 4.0s for scene 0
-      const PER_SCENE_HARD_CAP = 5 * storyboard.fps;            // 5s body sweet-spot (Ret panel)
-      const TOTAL_HARD_CAP = 55 * storyboard.fps;               // YT Shorts ≤60s
+      // Per Panel-6/7 retention consensus: faster cuts read as higher
+      // production value on Shorts. Hook fires at ≤3s (the algorithm
+      // SLA); body scenes are capped at 3.5s — fast enough to feel
+      // edited, slow enough that an idea fits.
+      const HOOK_HARD_CAP = Math.round(3.0 * storyboard.fps);    // 3.0s — Dist1 P1
+      const PER_SCENE_HARD_CAP = Math.round(3.5 * storyboard.fps); // 3.5s — Ret2 P0
+      const TOTAL_HARD_CAP = 55 * storyboard.fps;                  // YT Shorts ≤60s
       let runningTotal = 0;
       storyboard.scenes = storyboard.scenes.map((scene, i) => {
         const segDur = ttsResult.sceneDurations[i];
