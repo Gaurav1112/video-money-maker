@@ -65,6 +65,14 @@ export interface MetadataInput {
    * the audio waveform; nothing pulled it into the indexable text.
    */
   hookHinglish?: string;
+  /**
+   * Topic-bank `category` (system-design / dsa / behavioral /
+   * db-internals). Panel-11 Aud P1 (Striver): when category is not
+   * "dsa" we drop the `strivergrind` tag — algorithmically incoherent
+   * for behavioral/system-design content and poisons recommendation
+   * signal for Striver's ICP.
+   */
+  category?: string;
 }
 
 /** YouTube hard cap is 100 chars; we leave 6 for `#Shorts` ⇒ 94 for hook copy. */
@@ -175,7 +183,7 @@ export function generateShortMetadata(
   storyboard: StockStoryboard,
   input: MetadataInput = {}
 ): ShortMetadata {
-  const { licenses = [], extraTags = [], siteTopicSlug, hookHeadline, shortTitle, salaryBand, stake, hookHinglish } = input;
+  const { licenses = [], extraTags = [], siteTopicSlug, hookHeadline, shortTitle, salaryBand, stake, hookHinglish, category } = input;
   // Panel-8 Dist P0: prefer topic-bank curated shortTitle when present —
   // each one is a hand-written power-line tuned to the specific topic
   // ("90% of Engineers Get Kafka Consumer Groups WRONG 😳"). Avoids
@@ -194,11 +202,17 @@ export function generateShortMetadata(
   // ICP tags target tier-1 college / campus-placement search alongside
   // FAANG (Aud1 + Dist4 P1).
   const baseTags = topicToTags(storyboard.topic);
+  // Panel-11 Aud P1 (Striver): `strivergrind` only signals coherently
+  // for DSA content — including it on behavioral/system-design videos
+  // surfaces them to the wrong ICP and poisons the recommendation
+  // graph for future DSA uploads. Conditional on category.
+  const cat = (category ?? '').toLowerCase();
   const ICP_TAGS = [
     'faang', 'leetcode', 'dsa', 'systemdesign', 'placement',
     'interviewprep', 'codingshorts', 'cseducation', 'lowleveldesign',
     'softwareengineer', 'computerscience', 'gate2026',
-    'campusplacement', 'tier1college', 'apnacollege', 'strivergrind',
+    'campusplacement', 'tier1college', 'apnacollege',
+    ...(cat === 'dsa' || cat === '' ? ['strivergrind'] : []),
   ];
   const tags = Array.from(
     new Set([...baseTags, ...extraTags, ...ICP_TAGS, 'shorts', BRAND_TAG])

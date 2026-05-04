@@ -64,12 +64,20 @@ const SYSTEM_DESIGN_HINGLISH: ((n: string, c: string) => string)[] = [
   (n, c) => `${c} SDE-2 round: ${n} ka real answer 💡`,
   (n) => `Pichle hafte 3 logo ko isi wajah se reject kiya — ${n}`,
   (n) => `${n}: jo college mein nahi sikhaya jaata 🎯`,
+  // Panel-11 Aud P0 (Apna College): campus-placement framing for the
+  // tier-2/3 student segment. Different urgency frame (preparation, not
+  // panic) — keeps company credibility but speaks to the ICP that hasn't
+  // booked their FAANG slot yet.
+  (n) => `Campus placement mein ${n} zaroor aata hai — ab shortcut time 📚`,
 ];
 
 const DSA_HINGLISH: ((n: string, c: string) => string)[] = [
   (n, c) => `${c} loves this ${n} pattern. 90% log fail hote hain 💀`,
   (n) => `${n}: O(n²) se O(n) banao 30 second mein 🚀`,
-  (n) => `Striver ke baad: ${n} ka real interview answer 🔥`,
+  // Panel-11 Aud P1 (Kunal): "Striver ke baad" namechecked another
+  // creator inside Kunal's ICP pool — replaced with Kunal's casual
+  // register so this template reads as Kunal-coded, not Striver-coded.
+  (n) => `Bhai, ${n} — ek baar theek se dekho 👀`,
   (n, c) => `Leetcode pattern jo ${c} har round me pucchti hai — ${n}`,
   (n, c) => `Ye ${n} yad rakho, ${c} mein chalega 💡`,
 ];
@@ -84,6 +92,11 @@ const DB_INTERNALS_HINGLISH: ((n: string, c: string) => string)[] = [
   (n) => `${n}: production crash hone se pehle samajh lo 💀`,
   (n) => `Senior backend bhi galat samajhta hai — ${n} 👀`,
   (n) => `${n}: query 100x fast karne ka secret 🚀`,
+  // Panel-11 Aud P1 (Harkirat): asymmetric pool — db-internals had 3
+  // templates vs 5 elsewhere, lower variety ceiling. Added two with
+  // 100xDevs/modern-stack credibility signals.
+  (n) => `Jo ${n} nahi jaanta, uska Node backend prod me fail hoga 💀`,
+  (n) => `100x engineers ke liye: ${n} ka fast path 🚀`,
 ];
 
 const SYSTEM_DESIGN_TITLE: ((n: string, c: string) => string)[] = [
@@ -91,13 +104,21 @@ const SYSTEM_DESIGN_TITLE: ((n: string, c: string) => string)[] = [
   (n) => `${n}: How Senior Engineers Actually Think 🔥`,
   (n, c) => `Real ${c} SDE-2 Answer for ${n} 💡`,
   (n) => `${n} — Stop Memorizing, Start Understanding 🎯`,
-  (n) => `The ${n} Mistake That Costs Engineers ₹30LPA 💀`,
+  // Panel-11 Aud P0 (Apna College): "₹30LPA" was tone-deaf for the
+  // tier-2/3 fresher ICP whose aspirational frame is a first job, not a
+  // mid-level salary band. Reframed to fresher/first-job loss.
+  (n) => `The ${n} Mistake That Costs Freshers Their First Offer 💀`,
 ];
 
 const DSA_TITLE: ((n: string, c: string) => string)[] = [
   (n, c) => `${c}'s Favorite ${n} Pattern 🚀`,
   (n) => `${n}: O(n²) → O(n) in 30 Seconds 💡`,
-  (n) => `Striver Won't Tell You This About ${n} 🔥`,
+  // Panel-11 Aud P0 (Striver): previous "Striver Won't Tell You This"
+  // was an adversarial brand-jacking template that would fire on ~20%
+  // of DSA slugs and generate negative signal from Striver's high-
+  // loyalty audience. Replaced with a competitive-but-non-adversarial
+  // framing that keeps the urgency without naming a competitor.
+  (n) => `Crack ${n} Before Your Next Attempt 💡`,
   (n, c) => `Master ${n} Like a ${c} SDE-3 🎯`,
   (n) => `${n}: The DSA Pattern Recruiters Test 💀`,
 ];

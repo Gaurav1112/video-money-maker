@@ -639,7 +639,7 @@ async function mixBgmBed(
       '-filter_complex',
       [
         '[1:a]aformat=channel_layouts=stereo,volume=-26dB,atrim=duration=' + totalDur.toFixed(3) + ',asetpts=PTS-STARTPTS[bgm]',
-        '[bgm][0:a]sidechaincompress=threshold=0.04:ratio=8:attack=10:release=200[ducked]',
+        '[bgm][0:a]sidechaincompress=threshold=0.04:ratio=6:attack=10:release=400[ducked]',
         '[0:a][ducked]amix=inputs=2:duration=first:dropout_transition=0[mix]',
         '[mix]loudnorm=I=-14:LRA=11:tp=-1.5[aout]',
       ].join(';'),
@@ -677,9 +677,9 @@ async function mixBgmBed(
     '-i', sfxExpr,
     '-filter_complex',
     [
-      '[1:a]aformat=channel_layouts=stereo,lowpass=f=700,tremolo=f=0.25:d=0.10,volume=-26dB[bgm]',
+      '[1:a]aformat=channel_layouts=stereo,lowpass=f=700,tremolo=f=0.25:d=0.25,volume=-26dB[bgm]',
       '[2:a]aformat=channel_layouts=stereo[sfx]',
-      '[bgm][0:a]sidechaincompress=threshold=0.04:ratio=8:attack=10:release=200[ducked]',
+      '[bgm][0:a]sidechaincompress=threshold=0.04:ratio=6:attack=10:release=400[ducked]',
       '[0:a][ducked][sfx]amix=inputs=3:duration=first:dropout_transition=0:weights=1 0.35 0.6[mix]',
       '[mix]loudnorm=I=-14:LRA=11:tp=-1.5[aout]',
     ].join(';'),

@@ -109,9 +109,15 @@ async function main(): Promise<void> {
 
   // ── Retention SLA: clamp scene durations ─────────────────────────────────
   // YT Shorts retention dies after ~3s on the hook, then again at ~10s/15s/30s.
-  // Hard cap: hook ≤ 3s, body scenes ≤ 4s. Word-timestamps (if present) keep
-  // their relative timing inside the clamp.
-  const HOOK_MAX_FRAMES = Math.round(3 * fps);   // 3.0s
+  // Hard cap: hook ≤ 4s (Panel-11 Aud P0 — 3s mid-syllable cuts on Hindi),
+  // body scenes ≤ 4s. Word-timestamps (if present) keep their relative
+  // timing inside the clamp.
+  // Panel-11 Eng P1-A (Brendan/Hashimoto) + Aud P0 (Kunal/Harkirat): the
+  // static clamp HERE (pre-TTS) was still 3.0s while the TTS-path clamp
+  // (~line 240) was already bumped to 4.0s. Pre-baked-audio storyboards
+  // (test fixtures, manual production) hit only this clamp and lost the
+  // tail of every Hindi hook. Unified to 4.0s here.
+  const HOOK_MAX_FRAMES = Math.round(4 * fps);   // 4.0s — Aud P0
   const BODY_MAX_FRAMES = Math.round(4 * fps);   // 4.0s
   storyboard.scenes = storyboard.scenes.map((scene, i) => {
     const cap = i === 0 ? HOOK_MAX_FRAMES : BODY_MAX_FRAMES;
@@ -409,6 +415,7 @@ async function main(): Promise<void> {
     salaryBand: bankEntry?.salaryBand,
     stake: bankEntry?.stake,
     hookHinglish: rotated?.hookHinglish || bankEntry?.hookHinglish,
+    category: bankEntry?.category,
   });
   const metadataPath = path.join(finalOutDir, 'metadata.json');
   fs.writeFileSync(
