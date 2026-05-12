@@ -88,8 +88,8 @@ export const AnimatedBox: React.FC<AnimatedBoxProps> = ({
   label,
   iconSlug,
   x, y,
-  width = 180,
-  height = 70,
+  width = 200,
+  height = 80,
   color,
   isActive = false,
   entryFrame,
@@ -125,15 +125,15 @@ export const AnimatedBox: React.FC<AnimatedBoxProps> = ({
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      gap: 12,
-      padding: '0 16px',
+      gap: 16,
+      padding: '0 24px',
       transition: 'box-shadow 0.3s, border-color 0.3s',
     }}>
       {IconComponent && (
-        <IconComponent size={24} color={preset.icon} strokeWidth={1.5} />
+        <IconComponent size={32} color={preset.icon} strokeWidth={1.5} />
       )}
       <span style={{
-        fontSize: 18,
+        fontSize: 28,
         fontFamily: FONTS.heading,
         fontWeight: 700,
         color: '#FFFFFF',
@@ -143,7 +143,7 @@ export const AnimatedBox: React.FC<AnimatedBoxProps> = ({
         overflow: 'hidden',
         textOverflow: 'ellipsis',
         whiteSpace: 'nowrap',
-        maxWidth: width - 60,
+        maxWidth: width - 80,
       }}>
         {label}
       </span>

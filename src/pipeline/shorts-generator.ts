@@ -98,6 +98,17 @@ function toDisplay(slug: string): string {
     .join(' ');
 }
 
+const DSA_TOPICS = new Set([
+  'binary-search', 'sorting', 'dynamic-programming', 'trees', 'graphs',
+  'arrays', 'linked-list', 'hash-map', 'heap', 'trie',
+  'bfs-dfs', 'backtracking', 'greedy', 'sliding-window', 'two-pointers',
+  'design-patterns',
+]);
+
+function isDSATopic(slug: string): boolean {
+  return DSA_TOPICS.has(slug);
+}
+
 function truncTitle(title: string, max: number = 80): string {
   return title.length <= max ? title : title.slice(0, max - 3) + '...';
 }
@@ -715,6 +726,20 @@ export function generateShort(topicSlug: string, shortIndex: number): ShortEpiso
       `Default config problem: ${deep.defaultConfigProblem.slice(0, 60)}...`,
       deep.oneLinerFix.slice(0, 60),
     ];
+  }
+
+  // DSA topics: override system-design-focused formats with algorithm-specific narration
+  if (isDSATopic(topicSlug)) {
+    const algo = topicDisplay;
+    if (format.name === 'concept-explainer') {
+      narration = `${algo}. One of those algorithms everyone uses but few truly understand. The naive approach? Brute force. O(n) or worse. The insight that changes everything? ${example.solution}. That one optimization takes you from timing out on large inputs to solving in milliseconds. ${example.company} uses this at ${example.scale}. The edge case that trips everyone up: ${example.problem}. Most implementations get it wrong on the boundary. Here is how to get it right.`;
+    } else if (format.name === 'salary-bait') {
+      narration = `This ${algo} question separates junior developers from senior. The interviewer writes the problem on the board. Most candidates jump straight to code. Wrong move. The senior move: "What are the constraints?" Array sorted? Duplicates allowed? That one question changes the algorithm from O(n squared) to O(n log n). ${example.solution} is the pattern. Learn to recognize it in two seconds. That recognition speed is what interviewers are actually testing.`;
+    } else if (format.name === 'design-it') {
+      narration = `Coding interview. You get a ${algo} problem. Where do you start? Not the code. The examples. Walk through two examples by hand. Find the pattern. Then ask: what is the subproblem? ${example.solution}. That framing turns a hard problem into a pattern you have seen before. The implementation is straightforward once you see the structure. ${example.problem} is the edge case. Handle it first. Then the rest writes itself.`;
+    } else if (format.name === 'post-mortem') {
+      narration = `The ${algo} bug that hid for nine years. The code looked correct. All tests passed. Then someone fed it an array of two billion elements. Integer overflow on the midpoint calculation. Mid equals left plus right divided by two — except left plus right overflows a 32-bit integer. The fix: mid equals left plus right minus left divided by two. One line. Nine years. Joshua Bloch wrote about this in 2006. Your implementation probably has the same bug. Check it.`;
+    }
   }
 
   // Enforce 135-word limit (110-135 target range for ~45s at 2.5 words/sec)

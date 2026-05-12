@@ -144,6 +144,29 @@ async function main() {
   storyboard.durationInFrames = 2700;
   storyboard.bgmFile = pickBgm(episode.id);
 
+  // ── Step 2.5: Generate lip-synced avatar (if Docker + SadTalker available) ──
+  if (storyboard.audioFile && !process.env.SKIP_AVATAR) {
+    const avatarVideoPath = path.join(PROJECT_ROOT, 'public', 'video', 'avatar-talking.mp4');
+    const masterAudioPath = path.join(PROJECT_ROOT, 'public', 'audio', storyboard.audioFile.split('/').pop()!);
+
+    if (fs.existsSync(masterAudioPath)) {
+      try {
+        console.log('[2.5/5] Generating lip-synced avatar via SadTalker...');
+        const sadtalkerScript = path.join(PROJECT_ROOT, 'scripts', 'generate-avatar-video.sh');
+        execSync(`bash "${sadtalkerScript}" "${masterAudioPath}"`, {
+          stdio: 'inherit',
+          cwd: PROJECT_ROOT,
+          timeout: 600000, // 10 min max
+        });
+        if (fs.existsSync(avatarVideoPath)) {
+          console.log('   ✓ Lip-synced avatar generated — will render with video avatar');
+        }
+      } catch (err) {
+        console.warn('   ⚠ SadTalker not available — using static avatar (run: docker pull vinthony/sadtalker)');
+      }
+    }
+  }
+
   // Save props JSON
   const propsPath = path.join(PROPS_DIR, `daily-short-${episode.id}.json`);
   const propsData = {

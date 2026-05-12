@@ -124,7 +124,7 @@ const ConceptElementView: React.FC<{
       >
         <span
           style={{
-            fontSize: 13,
+            fontSize: 24,
             fontFamily: FONTS.text,
             fontWeight: 700,
             color: '#FFFFFF',

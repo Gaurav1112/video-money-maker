@@ -5,6 +5,7 @@ import {
   AbsoluteFill,
   Sequence,
   Audio,
+  Video,
   staticFile,
   interpolate,
   spring,
@@ -37,8 +38,14 @@ const AvatarBubble: React.FC = () => {
   });
   const slideX = interpolate(entrySpring, [0, 1], [120, 0]);
 
-  const avatarSrc = staticFile('images/KumarGaurav.jpg');
+  // Try lip-synced video first, fall back to static photo
+  // Generate with: bash scripts/generate-avatar-video.sh
+  const avatarVideoSrc = staticFile('video/avatar-talking.mp4');
+  const avatarImgSrc = staticFile('images/KumarGaurav.jpg');
   const fallbackSrc = staticFile('images/guru-avatar-large.jpg');
+
+  // Check if video exists by trying to use it (Remotion handles missing files gracefully)
+  const [useVideo, setUseVideo] = React.useState(true);
 
   return (
     <div
@@ -53,7 +60,7 @@ const AvatarBubble: React.FC = () => {
         zIndex: 80,
       }}
     >
-      {/* Avatar circle with glow */}
+      {/* Avatar circle with glow — video (lip-synced) or photo fallback */}
       <div
         style={{
           width: AVATAR_SIZE,
@@ -64,11 +71,21 @@ const AvatarBubble: React.FC = () => {
           boxShadow: `0 4px 24px rgba(0,0,0,0.5), 0 0 ${Math.round(20 + glowIntensity * 20)}px rgba(45,156,219,${glowIntensity})`,
         }}
       >
-        <img
-          src={avatarSrc}
-          onError={(e) => { (e.target as HTMLImageElement).src = fallbackSrc; }}
-          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-        />
+        {useVideo ? (
+          <Video
+            src={avatarVideoSrc}
+            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            volume={0}
+            loop
+            onError={() => setUseVideo(false)}
+          />
+        ) : (
+          <img
+            src={avatarImgSrc}
+            onError={(e) => { (e.target as HTMLImageElement).src = fallbackSrc; }}
+            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+          />
+        )}
       </div>
       {/* Name label below avatar */}
       <div
@@ -370,24 +387,22 @@ const EngagementPrompt: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
-  // Each prompt has unique position, entry direction, and accent color
+  // Each prompt has unique position, entry direction, accent color, and type
   const prompts = [
-    { triggerFrame: Math.round(8 * fps), text: '📌 Save this for later', top: 480, left: 40, right: undefined as number | undefined, entryDir: 'left' as const, accent: '#10B981' },
-    { triggerFrame: Math.round(20 * fps), text: '💬 Which part was new?', top: undefined as number | undefined, left: undefined as number | undefined, right: 40, bottom: 550, entryDir: 'right' as const, accent: SHORTS_ACCENT },
-    { triggerFrame: Math.round(35 * fps), text: '🔗 Free cheat sheet — bio', top: 520, left: 40, right: undefined as number | undefined, entryDir: 'bottom' as const, accent: '#FCD34D' },
+    { triggerFrame: Math.round(8 * fps), type: 'save' as const, top: 480, left: 40, right: undefined as number | undefined, entryDir: 'left' as const, accent: '#10B981' },
+    { triggerFrame: Math.round(20 * fps), type: 'comment' as const, top: undefined as number | undefined, left: undefined as number | undefined, right: 40, bottom: 550, entryDir: 'right' as const, accent: SHORTS_ACCENT },
+    { triggerFrame: Math.round(35 * fps), type: 'share' as const, top: 520, left: 40, right: undefined as number | undefined, entryDir: 'bottom' as const, accent: '#FCD34D' },
   ];
 
   const SHOW_DURATION = Math.round(2 * fps);  // 2 seconds (was 1.5)
   const FADE_FRAMES = Math.round(0.3 * fps);
 
   let activePrompt: typeof prompts[0] | null = null;
-  let promptIdx = -1;
   let localFrame = 0;
   for (let i = 0; i < prompts.length; i++) {
     const p = prompts[i];
     if (frame >= p.triggerFrame && frame < p.triggerFrame + SHOW_DURATION) {
       activePrompt = p;
-      promptIdx = i;
       localFrame = frame - p.triggerFrame;
       break;
     }
@@ -404,7 +419,125 @@ const EngagementPrompt: React.FC = () => {
   const slideX = activePrompt.entryDir === 'left' ? interpolate(s, [0, 1], [-80, 0])
     : activePrompt.entryDir === 'right' ? interpolate(s, [0, 1], [80, 0]) : 0;
   const slideY = activePrompt.entryDir === 'bottom' ? interpolate(s, [0, 1], [40, 0]) : 0;
-  const scale = activePrompt.entryDir === 'bottom' ? interpolate(s, [0, 1], [0.85, 1]) : 1;
+  const entryScale = activePrompt.entryDir === 'bottom' ? interpolate(s, [0, 1], [0.85, 1]) : 1;
+
+  // Pulsing border animation for save prompt (scale 1.0 -> 1.05 -> 1.0 cycle)
+  const pulseCycle = (localFrame % (fps * 0.6)) / (fps * 0.6);
+  const pulseScale = activePrompt.type === 'save'
+    ? 1 + 0.05 * Math.sin(pulseCycle * Math.PI * 2)
+    : 1;
+
+  // Render prompt content based on type
+  const renderPromptContent = () => {
+    if (activePrompt!.type === 'save') {
+      return (
+        <div
+          style={{
+            backgroundColor: 'rgba(0,0,0,0.8)',
+            borderRadius: 28,
+            padding: '12px 28px',
+            borderLeft: `4px solid ${activePrompt!.accent}`,
+            boxShadow: `0 0 20px ${activePrompt!.accent}22`,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 14,
+            transform: `scale(${pulseScale})`,
+          }}
+        >
+          <span style={{ fontSize: 40 }}>🔖</span>
+          <span style={{
+            fontSize: 36,
+            fontFamily: FONTS.text,
+            fontWeight: 700,
+            color: SHORTS_TEXT,
+          }}>
+            Save this
+          </span>
+        </div>
+      );
+    }
+
+    if (activePrompt!.type === 'comment') {
+      return (
+        <div
+          style={{
+            backgroundColor: 'rgba(0,0,0,0.8)',
+            borderRadius: 28,
+            padding: '12px 28px',
+            borderLeft: `4px solid ${activePrompt!.accent}`,
+            boxShadow: `0 0 20px ${activePrompt!.accent}22`,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 14,
+          }}
+        >
+          <div style={{
+            width: 44,
+            height: 44,
+            borderRadius: '50%',
+            backgroundColor: `${activePrompt!.accent}33`,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexShrink: 0,
+          }}>
+            <span style={{ fontSize: 28, fontWeight: 900, color: activePrompt!.accent }}>?</span>
+          </div>
+          <span style={{
+            fontSize: 34,
+            fontFamily: FONTS.text,
+            fontWeight: 700,
+            color: SHORTS_TEXT,
+          }}>
+            Can you name the 3rd config?
+          </span>
+        </div>
+      );
+    }
+
+    // share prompt
+    return (
+      <div
+        style={{
+          backgroundColor: 'rgba(0,0,0,0.8)',
+          borderRadius: 28,
+          padding: '12px 28px',
+          borderLeft: `4px solid ${activePrompt!.accent}`,
+          boxShadow: `0 0 20px ${activePrompt!.accent}22`,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 14,
+        }}
+      >
+        <span style={{ fontSize: 36 }}>↗</span>
+        <span style={{
+          fontSize: 36,
+          fontFamily: FONTS.text,
+          fontWeight: 700,
+          color: SHORTS_TEXT,
+        }}>
+          Share with your team
+        </span>
+        <div style={{
+          marginLeft: 8,
+          backgroundColor: `${activePrompt!.accent}33`,
+          borderRadius: 14,
+          padding: '4px 12px',
+          display: 'flex',
+          alignItems: 'center',
+        }}>
+          <span style={{
+            fontSize: 22,
+            fontFamily: FONTS.text,
+            fontWeight: 600,
+            color: activePrompt!.accent,
+          }}>
+            2.3K shares
+          </span>
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div
@@ -415,23 +548,11 @@ const EngagementPrompt: React.FC = () => {
         left: activePrompt.left,
         right: activePrompt.right,
         opacity: fadeIn * fadeOut,
-        transform: `translateX(${slideX}px) translateY(${slideY}px) scale(${scale})`,
+        transform: `translateX(${slideX}px) translateY(${slideY}px) scale(${entryScale})`,
         zIndex: 60,
       }}
     >
-      <div
-        style={{
-          backgroundColor: 'rgba(0,0,0,0.75)',
-          borderRadius: 24,
-          padding: '10px 24px',
-          border: `2px solid ${activePrompt.accent}55`,
-          boxShadow: `0 0 16px ${activePrompt.accent}22`,
-        }}
-      >
-        <span style={{ fontSize: 36, fontFamily: FONTS.text, fontWeight: 600, color: SHORTS_TEXT }}>
-          {activePrompt.text}
-        </span>
-      </div>
+      {renderPromptContent()}
     </div>
   );
 };
@@ -678,24 +799,27 @@ const MultiPhaseContent: React.FC<{
           <div
             style={{
               position: 'absolute',
-              top: 320,
-              bottom: 920,
+              top: 340,
+              bottom: 580,
               left: 20,
               right: 20,
               transform: `scale(${zoomScale})`,
               transformOrigin: 'center center',
+              overflow: 'hidden',
             }}
           >
-            <TemplateFactory
-              templateId={scene.templateId || 'ConceptDiagram'}
-              variant={scene.templateVariant || 'auto'}
-              beats={beats}
-              accentColor={SHORTS_ACCENT}
-              fps={fps}
-              sceneHeading={scene.heading}
-              bullets={scene.bullets}
-              content={scene.content}
-            />
+            <div style={{ width: '100%', height: '100%', transform: 'scale(1.4)', transformOrigin: 'center center' }}>
+              <TemplateFactory
+                templateId={scene.templateId || 'ConceptDiagram'}
+                variant={scene.templateVariant || 'auto'}
+                beats={beats}
+                accentColor={SHORTS_ACCENT}
+                fps={fps}
+                sceneHeading={scene.heading}
+                bullets={scene.bullets}
+                content={scene.content}
+              />
+            </div>
           </div>
         </AbsoluteFill>
       )}
@@ -742,7 +866,7 @@ const MultiPhaseContent: React.FC<{
                 top: 280,
                 left: 60,
                 right: 60,
-                bottom: 920,
+                bottom: 580,
               }}
             >
               {bullets.map((bullet, idx) => {
@@ -787,9 +911,10 @@ const MultiPhaseContent: React.FC<{
                 justifyContent: 'center',
                 transform: `scale(${zoomScale})`,
                 transformOrigin: 'center center',
+                overflow: 'hidden',
               }}
             >
-              <div style={{ width: '100%', height: 600 }}>
+              <div style={{ width: '100%', height: 800, transform: 'scale(1.4)', transformOrigin: 'center center' }}>
                 <TemplateFactory
                   templateId={scene.templateId || 'ConceptDiagram'}
                   variant={scene.templateVariant || 'auto'}
@@ -993,24 +1118,27 @@ const TextContent: React.FC<{
       <div
         style={{
           position: 'absolute',
-          top: 320,
-          bottom: 920,
+          top: 340,
+          bottom: 580,
           left: 20,
           right: 20,
           transform: `scale(${zoomScale})`,
           transformOrigin: 'center center',
+          overflow: 'hidden',
         }}
       >
-        <TemplateFactory
-          templateId={scene.templateId || 'ConceptDiagram'}
-          variant={scene.templateVariant || 'auto'}
-          beats={beats}
-          accentColor={SHORTS_ACCENT}
-          fps={fps}
-          sceneHeading={scene.heading}
-          bullets={scene.bullets}
-          content={scene.content}
-        />
+        <div style={{ width: '100%', height: '100%', transform: 'scale(1.4)', transformOrigin: 'center center' }}>
+          <TemplateFactory
+            templateId={scene.templateId || 'ConceptDiagram'}
+            variant={scene.templateVariant || 'auto'}
+            beats={beats}
+            accentColor={SHORTS_ACCENT}
+            fps={fps}
+            sceneHeading={scene.heading}
+            bullets={scene.bullets}
+            content={scene.content}
+          />
+        </div>
       </div>
     </AbsoluteFill>
   );
@@ -1057,7 +1185,7 @@ const CodeContent: React.FC<{
           top: 280,
           left: 40,
           right: 40,
-          bottom: 920,
+          bottom: 580,
           backgroundColor: '#1E1E2E',
           borderRadius: 12,
           padding: 24,
@@ -1166,7 +1294,7 @@ const InterviewContent: React.FC<{
           top: 440,
           left: 60,
           right: 60,
-          bottom: 920,
+          bottom: 580,
         }}
       >
         {bullets.map((bullet, idx) => {
@@ -1530,7 +1658,7 @@ export const ViralShort: React.FC<ViralShortProps> = ({
             startFrom={audioStartFrames}
             volume={(f) => {
               // Fade in over first 18 frames
-              const fadeIn = interpolate(f, [0, 18], [0, 1], {
+              const fadeIn = interpolate(f, [0, 6], [0, 1], {
                 extrapolateRight: 'clamp',
               });
               // Fade out at end of content
@@ -1550,7 +1678,12 @@ export const ViralShort: React.FC<ViralShortProps> = ({
       {/* ── BGM: looping, very low volume ── */}
       <Audio
         src={staticFile('audio/bgm/warm-ambient.mp3')}
-        volume={0.08}
+        volume={(f) => {
+          // Louder BGM during CTA for audio presence
+          const ctaStart = HOOK_FRAMES + contentFrames;
+          if (f >= ctaStart) return 0.15;
+          return 0.08;
+        }}
         loop
       />
 
