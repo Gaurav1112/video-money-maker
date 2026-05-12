@@ -23,6 +23,7 @@ import {
 import { generateSceneAudios } from '../src/pipeline/tts-engine';
 import { generateStoryboard } from '../src/pipeline/storyboard';
 import type { Scene, Storyboard } from '../src/types';
+import { buildTERarcFromScenes, generateStatusThreatHook } from '../src/pipeline/short-arc-builder';
 
 // ─── Paths ──────────────────────────────────────────────────────────────────
 
@@ -89,6 +90,16 @@ async function main() {
   // Generate the Short content
   const episode = generateShort(topicSlug, shortIndex);
 
+  // Apply TER arc — transforms flat educational scenes into tension→escalation→resolution
+  const hookScript = generateStatusThreatHook(episode.topicSlug, episode.heading);
+  episode.scenes = buildTERarcFromScenes(
+    episode.scenes,
+    episode.topicSlug,
+    episode.heading,
+    { forceOpenLoop: true, targetDurationSec: 50 },
+  );
+  // Keep the format-generated title (already diversified with hooks)
+
   console.log(`\n=== Daily Short #${shortNum} ===`);
   console.log(`Date:    ${date.toISOString().slice(0, 10)}`);
   console.log(`Topic:   ${topicSlug}`);
@@ -123,14 +134,14 @@ async function main() {
   const storyboard = generateStoryboard(episode.scenes, audioResults, {
     topic: topicSlug,
     sessionNumber: 0, // 0 = standalone short
-    fps: 30,
+    fps: 60,
     width: 1080,
     height: 1920,
     format: 'vertical',
   });
 
-  // Override duration to exactly 1350 frames (45s)
-  storyboard.durationInFrames = 1350;
+  // Override duration to exactly 2700 frames (45s at 60fps)
+  storyboard.durationInFrames = 2700;
   storyboard.bgmFile = pickBgm(episode.id);
 
   // Save props JSON
@@ -151,7 +162,7 @@ async function main() {
   const renderCmd = [
     'npx', 'remotion', 'render',
     'src/compositions/index.tsx',
-    'VerticalLong',
+    'ViralShort',
     outputPath,
     `--props=${propsPath}`,
     '--codec=h264',
@@ -201,15 +212,15 @@ function generateShortMetadata(episode: ReturnType<typeof generateShort>): Short
   // NO #Shorts in title — YouTube auto-detects vertical content
   const title = episode.title;
 
-  const description = [
+  // Use the episode's SEO-optimized description (includes lead magnet link)
+  const description = (episode as any).description || [
     `${episode.heading}`,
     '',
     episode.bullets.map(b => `- ${b}`).join('\n'),
     '',
-    `This is a standalone Short about ${topicDisplay}.`,
-    'Full deep-dive series available on our channel.',
+    `Full deep-dive series available on our channel.`,
     '',
-    '#SystemDesign #CodingInterview #TechShorts #SoftwareEngineering',
+    `${((episode as any).hashtags || []).join(' ')}`,
   ].join('\n');
 
   const tags = [

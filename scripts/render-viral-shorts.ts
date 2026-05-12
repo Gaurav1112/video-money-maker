@@ -16,6 +16,7 @@ import {
   selectSubtopicClips,
   buildMiniStoryboard,
 } from '../src/pipeline/smart-clip-selector';
+import { buildTERarcFromScenes, generateStatusThreatHook } from '../src/pipeline/short-arc-builder';
 
 const args = process.argv.slice(2);
 const topic = getArg('--topic') || 'Load Balancing';
@@ -124,6 +125,15 @@ async function main() {
     // a. Build mini storyboard
     const miniStoryboard = buildMiniStoryboard(storyboard, clip.startScene, clip.endScene);
 
+    // b. Apply TER arc — transforms flat scenes into tension→escalation→resolution structure
+    const hookScript = generateStatusThreatHook(topic, clip.heading);
+    miniStoryboard.scenes = buildTERarcFromScenes(
+      miniStoryboard.scenes,
+      topic,
+      clip.heading,
+      { forceOpenLoop: true },
+    );
+
     // Write temp props JSON for debugging
     const tempPropsPath = path.join(
       path.resolve('output'), 'shorts', `viral-props-${i + 1}.json`,
@@ -178,7 +188,7 @@ async function main() {
       console.log(`    \u2705 Reel #${i + 1}: ${reelDocsPath}`);
 
       // Build metadata for this clip
-      const youtubeTitle = `${clip.hookText} | ${topic} #shorts`;
+      const youtubeTitle = `${hookScript.displayText.replace(/\n/g, ' ')} | ${topic} #shorts`;
       const instagramCaption = [
         clip.hookText,
         '',

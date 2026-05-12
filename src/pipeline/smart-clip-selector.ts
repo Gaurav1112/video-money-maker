@@ -98,7 +98,7 @@ export function selectSubtopicClips(
     switch (group.archetype) {
       case 'interview': score = 100; break;
       case 'code':      score = 80;  break;
-      case 'problem':   score = 70;  break;
+      case 'problem':   score = 90;  break;
       case 'subtopic':  score = 50;  break;
     }
 
@@ -263,22 +263,50 @@ export function buildMiniStoryboard(
 }
 
 // ── generateHookText ─────────────────────────────────────────────────────────
+// Uses status-threat / loss-aversion / cognitive-dissonance hooks
+// (3-4x higher seed-phase engagement than educational framing)
 
 export function generateHookText(
   group: { heading: string; archetype: string },
   topic: string,
 ): string {
   const heading = group.heading || topic;
+  const lower = heading.toLowerCase();
+  const topicUpper = topic.toUpperCase();
 
-  switch (group.archetype) {
-    case 'problem':
-      return `90% of devs get ${heading} WRONG`;
-    case 'code':
-      return `This ${heading} code changes everything`;
-    case 'interview':
-      return `What Google asks about ${heading}`;
-    case 'subtopic':
-    default:
-      return `${heading} — explained in 60 seconds`;
+  // Loss-aversion patterns — "you are losing something right now"
+  if (lower.includes('drop') || lower.includes('los') || lower.includes('miss') ||
+      lower.includes('silent') || lower.includes('fail') || lower.includes('break')) {
+    return `YOUR ${topicUpper} IS SILENTLY FAILING`;
   }
+
+  // Cognitive dissonance — "what you believe is wrong"
+  if (lower.includes('myth') || lower.includes('wrong') || lower.includes('mistake') ||
+      lower.includes('misconception') || lower.includes('actually')) {
+    return `EVERYTHING YOU KNOW ABOUT ${topicUpper} IS WRONG`;
+  }
+
+  // Interview threat — status loss
+  if (group.archetype === 'interview' || lower.includes('interview') || lower.includes('senior')) {
+    return `THIS ${topicUpper} QUESTION FAILS 90% OF ENGINEERS`;
+  }
+
+  // Code archetype — implementation shock
+  if (group.archetype === 'code' || lower.includes('code') || lower.includes('implement')) {
+    return `SENIOR ENGINEERS WRITE ${topicUpper} LIKE THIS`;
+  }
+
+  // Problem archetype — loss aversion
+  if (group.archetype === 'problem') {
+    return `YOUR ${topicUpper} HAS A HIDDEN BUG RIGHT NOW`;
+  }
+
+  // Curiosity gap — the "nobody tells you" pattern
+  if (lower.includes('secret') || lower.includes('hidden') || lower.includes('nobody') ||
+      lower.includes('nobody') || lower.includes('dangerous')) {
+    return `THE HIDDEN COST OF ${topicUpper} NO ONE MENTIONS`;
+  }
+
+  // Status threat — default (works for any topic)
+  return `YOU'RE USING ${topicUpper} WRONG`;
 }

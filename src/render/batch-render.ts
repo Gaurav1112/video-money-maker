@@ -103,6 +103,7 @@ function getDimensions(format: VideoFormat): { width: number; height: number } {
     case 'long': return { width: 1920, height: 1080 };
     case 'short': return { width: 1080, height: 1920 };
     case 'thumb': return { width: 1280, height: 720 };
+    default: return { width: 1920, height: 1080 };
   }
 }
 
