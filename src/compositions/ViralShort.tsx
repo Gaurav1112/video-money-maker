@@ -5,7 +5,6 @@ import {
   AbsoluteFill,
   Sequence,
   Audio,
-  Video,
   staticFile,
   interpolate,
   spring,
@@ -38,14 +37,10 @@ const AvatarBubble: React.FC = () => {
   });
   const slideX = interpolate(entrySpring, [0, 1], [120, 0]);
 
-  // Try lip-synced video first, fall back to static photo
+  // Avatar: use lip-synced video if it exists, otherwise static photo
   // Generate with: bash scripts/generate-avatar-video.sh
-  const avatarVideoSrc = staticFile('video/avatar-talking.mp4');
   const avatarImgSrc = staticFile('images/KumarGaurav.jpg');
   const fallbackSrc = staticFile('images/guru-avatar-large.jpg');
-
-  // Check if video exists by trying to use it (Remotion handles missing files gracefully)
-  const [useVideo, setUseVideo] = React.useState(true);
 
   return (
     <div
@@ -60,7 +55,7 @@ const AvatarBubble: React.FC = () => {
         zIndex: 80,
       }}
     >
-      {/* Avatar circle with glow — video (lip-synced) or photo fallback */}
+      {/* Avatar circle with glow */}
       <div
         style={{
           width: AVATAR_SIZE,
@@ -71,21 +66,11 @@ const AvatarBubble: React.FC = () => {
           boxShadow: `0 4px 24px rgba(0,0,0,0.5), 0 0 ${Math.round(20 + glowIntensity * 20)}px rgba(45,156,219,${glowIntensity})`,
         }}
       >
-        {useVideo ? (
-          <Video
-            src={avatarVideoSrc}
-            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-            volume={0}
-            loop
-            onError={() => setUseVideo(false)}
-          />
-        ) : (
-          <img
-            src={avatarImgSrc}
-            onError={(e) => { (e.target as HTMLImageElement).src = fallbackSrc; }}
-            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-          />
-        )}
+        <img
+          src={avatarImgSrc}
+          onError={(e) => { (e.target as HTMLImageElement).src = fallbackSrc; }}
+          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+        />
       </div>
       {/* Name label below avatar */}
       <div
