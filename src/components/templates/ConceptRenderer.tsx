@@ -127,7 +127,7 @@ const ConceptElementView: React.FC<{
             fontSize: 13,
             fontFamily: FONTS.text,
             fontWeight: 700,
-            color: COLORS.white,
+            color: '#FFFFFF',
             textAlign: 'center',
             transform: isCircle ? undefined : 'rotate(-45deg)',
             maxWidth: dimension - 16,

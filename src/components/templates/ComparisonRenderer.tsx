@@ -178,7 +178,7 @@ const ComparisonRenderer: React.FC<ComparisonRendererProps> = ({
           <div
             style={{
               fontSize: SIZES.bodySmall,
-              color: isWinner ? COLORS.teal : isLoser ? COLORS.red : COLORS.white,
+              color: isWinner ? COLORS.teal : isLoser ? COLORS.red : '#FFFFFF',
               fontWeight: isWinner ? 700 : 400,
               lineHeight: 1.4,
             }}
@@ -234,7 +234,7 @@ const ComparisonRenderer: React.FC<ComparisonRendererProps> = ({
             transform: `translateY(${titleY}px)`,
             fontSize: SIZES.heading2,
             fontWeight: 800,
-            color: COLORS.white,
+            color: '#FFFFFF',
             marginBottom: 36,
             textAlign: 'center',
             fontFamily: FONTS.heading,
