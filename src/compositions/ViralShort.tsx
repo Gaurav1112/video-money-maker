@@ -37,10 +37,9 @@ const AvatarBubble: React.FC = () => {
   });
   const slideX = interpolate(entrySpring, [0, 1], [120, 0]);
 
-  // Avatar: use lip-synced video if it exists, otherwise static photo
-  // Generate with: bash scripts/generate-avatar-video.sh
-  const avatarImgSrc = staticFile('images/KumarGaurav.jpg');
-  const fallbackSrc = staticFile('images/guru-avatar-large.jpg');
+  // Avatar: ALWAYS use the AI-generated avatar, NEVER the raw photo
+  const avatarImgSrc = staticFile('images/guru-avatar-crop.png');
+  const fallbackSrc = staticFile('images/guru-avatar.png');
 
   return (
     <div
@@ -1385,8 +1384,8 @@ const OpenLoopEnding: React.FC<{ topic: string; hookText?: string }> = ({ topic,
 
   const displayText = hookText || `The ${topic} mistake that costs teams weeks...`;
 
-  const avatarSrc = staticFile('images/KumarGaurav.jpg');
-  const fallbackSrc = staticFile('images/guru-avatar-large.jpg');
+  const avatarSrc = staticFile('images/guru-avatar-crop.png');
+  const fallbackSrc = staticFile('images/guru-avatar.png');
 
   return (
     <AbsoluteFill style={{ backgroundColor: SHORTS_BG }}>
