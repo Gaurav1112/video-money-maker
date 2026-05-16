@@ -98,7 +98,10 @@ async function main() {
     episode.heading,
     { forceOpenLoop: true, targetDurationSec: 50 },
   );
-  // Keep the format-generated title (already diversified with hooks)
+  // Use viral title generator for maximum CTR
+  const { generateViralTitle } = await import('../src/lib/viral-strategy');
+  const viralTitles = generateViralTitle(topicSlug, episode.formatName, episode.narration);
+  episode.title = viralTitles[0]; // Use top-ranked viral title
 
   console.log(`\n=== Daily Short #${shortNum} ===`);
   console.log(`Date:    ${date.toISOString().slice(0, 10)}`);

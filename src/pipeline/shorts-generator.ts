@@ -706,25 +706,25 @@ export function generateShort(topicSlug: string, shortIndex: number): ShortEpiso
   const example = getTopicExample(topicSlug);
   let { narration, heading, bullets } = format.generateContent(topicSlug, topicDisplay, example);
 
-  // Upgrade with deep content if available (beats generic placeholder content)
+  // Deep content: override specific formats with topic-specific narration
+  // For formats that benefit from real incidents, use deep content as primary narration
+  // For other formats, keep the format voice but upgrade heading/bullets
   const deep = getDeepContent(topicSlug);
   if (deep) {
-    // Override with format-specific voice using deep content
     if (format.name === 'concept-explainer') {
-      narration = `${deep.bbgScenario} Boom. ${deep.realIncident} The fix? ${deep.catchphrase}. Specifically — ${deep.oneLinerFix}. Done. Not a rewrite. A config change.`;
-    } else if (format.name === 'three-mistakes') {
-      narration = `Mistake number one. ${deep.misconception}. That is what most engineers believe. Wrong. ${deep.misconceptionCorrection} Mistake number two. Ignoring this until production breaks. ${deep.incidentScenario} Mistake number three. No remediation plan. The fix for all three? ${deep.oneLinerFix}. Your move.`;
+      narration = `${deep.bbgScenario} ${deep.realIncident} The misconception: "${deep.misconception}" — wrong. ${deep.misconceptionCorrection} The fix: ${deep.oneLinerFix}. ${deep.zeigarnikHook}`;
+    } else if (format.name === 'real-incident' || format.name === 'post-mortem') {
+      narration = `${deep.realIncident} Root cause: ${deep.defaultConfigProblem} The misconception everyone had: "${deep.misconception}." The reality: ${deep.misconceptionCorrection} ${deep.specificNumbers} The one-line fix: ${deep.oneLinerFix}.`;
+    } else if (format.name === 'wrong-right') {
+      narration = `Here is how most teams configure ${deep.displayName}. It looks correct. Tests pass. Then production fails. The problem: ${deep.defaultConfigProblem} This is the wrong way. The right way: ${deep.oneLinerFix}. Zero code changes. Entirely config. ${deep.specificNumbers} ${deep.zeigarnikHook}`;
     } else if (format.name === 'hot-take') {
-      narration = `The docs are lying to you. ${deep.fireshipsummary} Go check your config. Seriously — stop this video and go check.`;
-    } else if (format.name === 'stat-hook') {
-      narration = `${deep.specificNumbers} That is the number. Remember it. ${deep.fireshipsummary} Write it down before you forget. ${deep.zeigarnikHook}`;
+      narration = `The ${deep.displayName} documentation is lying to you. "${deep.misconception}" — that is what it implies. Wrong. ${deep.misconceptionCorrection} ${deep.realIncident} The fix is one line: ${deep.oneLinerFix}. Your config is missing it right now. Go check.`;
     }
-    // Always override heading for deep-content topics
-    heading = `${deep.displayName}: What They Don't Teach You`;
+    heading = `${deep.displayName}: ${deep.catchphrase}`;
     bullets = [
       deep.catchphrase,
-      `Default config problem: ${deep.defaultConfigProblem.slice(0, 60)}...`,
-      deep.oneLinerFix.slice(0, 60),
+      deep.oneLinerFix.slice(0, 80),
+      `Real: ${deep.realIncident.split('.')[0]}.`,
     ];
   }
 
