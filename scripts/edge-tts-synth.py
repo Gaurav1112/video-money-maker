@@ -54,22 +54,43 @@ async def synth(
 
     communicate = edge_tts.Communicate(text, voice=voice, rate=rate, pitch=pitch, **kwargs)
     words: list[dict] = []
+    audio_bytes_written = 0
 
-    with out_path.open("wb") as fh:
-        async for chunk in communicate.stream():
-            if chunk["type"] == "audio":
-                fh.write(chunk["data"])
-            elif words_path is not None and chunk["type"] == "WordBoundary":
-                # offset and duration are in 100-nanosecond units (HNS)
-                start_ms = int(chunk["offset"]) // 10_000
-                dur_ms = int(chunk["duration"]) // 10_000
-                words.append(
-                    {
-                        "word": chunk["text"],
-                        "startMs": start_ms,
-                        "endMs": start_ms + dur_ms,
-                    }
-                )
+    try:
+        with out_path.open("wb") as fh:
+            async for chunk in communicate.stream():
+                if chunk["type"] == "audio":
+                    fh.write(chunk["data"])
+                    audio_bytes_written += len(chunk["data"])
+                elif words_path is not None and chunk["type"] == "WordBoundary":
+                    # offset and duration are in 100-nanosecond units (HNS)
+                    start_ms = int(chunk["offset"]) // 10_000
+                    dur_ms = int(chunk["duration"]) // 10_000
+                    words.append(
+                        {
+                            "word": chunk["text"],
+                            "startMs": start_ms,
+                            "endMs": start_ms + dur_ms,
+                        }
+                    )
+    except Exception as e:
+        print(f"[edge-tts-synth] stream error: {e}", file=sys.stderr)
+        # Retry once with a simpler voice as fallback
+        try:
+            print("[edge-tts-synth] retrying with en-US-AriaNeural...", file=sys.stderr)
+            fallback = edge_tts.Communicate(text, voice="en-US-AriaNeural", rate=rate)
+            with out_path.open("wb") as fh:
+                async for chunk in fallback.stream():
+                    if chunk["type"] == "audio":
+                        fh.write(chunk["data"])
+                        audio_bytes_written += len(chunk["data"])
+        except Exception as e2:
+            print(f"[edge-tts-synth] fallback also failed: {e2}", file=sys.stderr)
+            raise
+
+    if audio_bytes_written == 0:
+        print("[edge-tts-synth] WARNING: zero audio bytes written!", file=sys.stderr)
+        return 1
 
     if words_path is not None:
         words_path.write_text(
