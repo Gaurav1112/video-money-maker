@@ -23,6 +23,7 @@ import {
 import { generateSceneAudios } from '../src/pipeline/tts-engine';
 import { generateStoryboard } from '../src/pipeline/storyboard';
 import type { Scene, Storyboard } from '../src/types';
+import { buildTERarcFromScenes, generateStatusThreatHook } from '../src/pipeline/short-arc-builder';
 
 // ─── Paths ──────────────────────────────────────────────────────────────────
 
@@ -89,6 +90,19 @@ async function main() {
   // Generate the Short content
   const episode = generateShort(topicSlug, shortIndex);
 
+  // Apply TER arc — transforms flat educational scenes into tension→escalation→resolution
+  const hookScript = generateStatusThreatHook(episode.topicSlug, episode.heading);
+  episode.scenes = buildTERarcFromScenes(
+    episode.scenes,
+    episode.topicSlug,
+    episode.heading,
+    { forceOpenLoop: true, targetDurationSec: 50 },
+  );
+  // Use viral title generator for maximum CTR
+  const { generateViralTitle } = await import('../src/lib/viral-strategy');
+  const viralTitles = generateViralTitle(topicSlug, episode.formatName, episode.narration);
+  episode.title = viralTitles[0]; // Use top-ranked viral title
+
   console.log(`\n=== Daily Short #${shortNum} ===`);
   console.log(`Date:    ${date.toISOString().slice(0, 10)}`);
   console.log(`Topic:   ${topicSlug}`);
@@ -123,15 +137,20 @@ async function main() {
   const storyboard = generateStoryboard(episode.scenes, audioResults, {
     topic: topicSlug,
     sessionNumber: 0, // 0 = standalone short
-    fps: 30,
+    fps: 60,
     width: 1080,
     height: 1920,
     format: 'vertical',
   });
 
-  // Override duration to exactly 1350 frames (45s)
-  storyboard.durationInFrames = 1350;
+  // Override duration to exactly 2700 frames (45s at 60fps)
+  storyboard.durationInFrames = 2700;
   storyboard.bgmFile = pickBgm(episode.id);
+
+  // ── Optional: SadTalker lip-sync (run separately with SADTALKER=1) ──
+  // SadTalker is slow (~5min) and optional. Run it separately:
+  //   bash scripts/generate-avatar-video.sh public/audio/master-kafka-s0.mp3
+  // The avatar video at public/video/avatar-talking.mp4 will be auto-detected.
 
   // Save props JSON
   const propsPath = path.join(PROPS_DIR, `daily-short-${episode.id}.json`);
@@ -151,7 +170,7 @@ async function main() {
   const renderCmd = [
     'npx', 'remotion', 'render',
     'src/compositions/index.tsx',
-    'VerticalLong',
+    'ViralShort',
     outputPath,
     `--props=${propsPath}`,
     '--codec=h264',
@@ -201,15 +220,15 @@ function generateShortMetadata(episode: ReturnType<typeof generateShort>): Short
   // NO #Shorts in title — YouTube auto-detects vertical content
   const title = episode.title;
 
-  const description = [
+  // Use the episode's SEO-optimized description (includes lead magnet link)
+  const description = (episode as any).description || [
     `${episode.heading}`,
     '',
     episode.bullets.map(b => `- ${b}`).join('\n'),
     '',
-    `This is a standalone Short about ${topicDisplay}.`,
-    'Full deep-dive series available on our channel.',
+    `Full deep-dive series available on our channel.`,
     '',
-    '#SystemDesign #CodingInterview #TechShorts #SoftwareEngineering',
+    `${((episode as any).hashtags || []).join(' ')}`,
   ].join('\n');
 
   const tags = [

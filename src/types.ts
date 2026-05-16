@@ -128,3 +128,74 @@ export interface VisualBeat {
   totalBeats: number;
   keywords: string[];
 }
+
+// ─── World-Class Short Types ──────────────────────────────────────────────────
+// Used by short-arc-builder.ts to generate TER-structured viral Shorts
+
+export type EmotionalBeat = 'tension' | 'escalation' | 'resolution' | 'zeigarnik_loop';
+export type HookType = 'lossAversion' | 'statusThreat' | 'cognitiveDissonance' | 'curiosityGap' | 'misconception';
+export type MicroRewardType = 'revelation' | 'confirmation' | 'setup' | 'cliffhanger' | 'pattern_break';
+export type BTConnector = 'but' | 'therefore';
+
+export interface MicroReward {
+  triggerSec: number;
+  type: MicroRewardType;
+  displayText?: string;
+}
+
+export interface WorldClassScene extends Scene {
+  emotionalBeat: EmotionalBeat;
+  hookType?: HookType;
+  microRewardType: MicroRewardType;
+  btConnector?: BTConnector;
+  tensionScore: number;                   // 0.0–1.0
+  misconceptionText?: string;
+  correctionText?: string;
+  openLoopQuestion?: string;
+  closesLoopId?: string;
+  loopId?: string;
+  retentionHook?: string;
+  patternInterruptTrigger?: boolean;
+  arcPosition: 'hook' | 'tension_build' | 'escalation' | 'resolution' | 'open_end';
+  microRewards?: MicroReward[];
+  /** Spoken hook line (different from narration — shorter, punchier) */
+  spokenHookLine?: string;
+  /** Display text for the hook screen */
+  displayText?: string;
+}
+
+export interface HookScript {
+  spokenLine: string;
+  displayText: string;
+  hookType: HookType;
+  topicSlug: string;
+  tensionVector: 'loss' | 'status' | 'dissonance';
+  misconceptionSeeded: string | null;
+}
+
+export interface TERError {
+  rule: string;
+  message: string;
+  sceneIndex?: number;
+}
+
+export interface TERWarning {
+  rule: string;
+  message: string;
+  sceneIndex?: number;
+}
+
+export interface TERValidationResult {
+  valid: boolean;
+  errors: TERError[];
+  warnings: TERWarning[];
+  arcScores: { scene: number; tensionScore: number; beat: EmotionalBeat }[];
+}
+
+export interface ShortGenerationOptions {
+  targetDurationSec?: number;     // default 55
+  hookFormula?: HookType;
+  forceOpenLoop?: boolean;
+  misconceptionOverride?: string;
+  platform?: 'youtube' | 'instagram' | 'tiktok';
+}

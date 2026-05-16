@@ -88,7 +88,7 @@ export const AnimatedArrow: React.FC<AnimatedArrowProps> = ({
           y={midY - 10}
           textAnchor="middle"
           fill={COLORS.textOnDark}
-          fontSize={12}
+          fontSize={22}
           fontFamily="Inter, sans-serif"
           opacity={interpolate(progress, [0.5, 0.8], [0, 1], {
             extrapolateLeft: 'clamp',

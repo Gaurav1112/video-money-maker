@@ -149,7 +149,7 @@ const MonitoringRenderer: React.FC<MonitoringRendererProps> = ({
             transform: `translateY(${interpolate(titleSpring, [0, 1], [-20, 0])}px)`,
             fontSize: SIZES.heading2,
             fontWeight: 800,
-            color: COLORS.white,
+            color: '#FFFFFF',
             marginBottom: 28,
             textAlign: 'center',
             fontFamily: FONTS.heading,
@@ -481,7 +481,7 @@ const MonitoringRenderer: React.FC<MonitoringRendererProps> = ({
                 <div
                   style={{
                     fontSize: SIZES.caption,
-                    color: COLORS.white,
+                    color: '#FFFFFF',
                     lineHeight: 1.4,
                   }}
                 >

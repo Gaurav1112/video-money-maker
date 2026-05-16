@@ -94,7 +94,7 @@ export const FlowRenderer: React.FC<FlowRendererProps> = ({
             fontSize: SIZES.heading2,
             fontFamily: FONTS.heading,
             fontWeight: 800,
-            color: COLORS.white,
+            color: '#FFFFFF',
             letterSpacing: -0.5,
           }}
         >
@@ -148,7 +148,7 @@ export const FlowRenderer: React.FC<FlowRendererProps> = ({
                   top: pos.y + DESC_OFFSET_Y,
                   width: STAGE_W,
                   textAlign: 'center',
-                  fontSize: 13,
+                  fontSize: 24,
                   fontFamily: FONTS.text,
                   fontWeight: 400,
                   color: `${COLORS.gray}CC`,

@@ -155,6 +155,58 @@ async function whisperRefine(result: TTSResult): Promise<TTSResult> {
   };
 }
 
+/**
+ * Post-process a TTS audio file with the "humanize" chain:
+ * - High-pass filter (removes low rumble)
+ * - Presence EQ (cuts boxy 600Hz, boosts air at 3.2kHz)
+ * - Two-stage compression (gentle gain-riding + transient shaper)
+ * - Early reflection reverb (room presence, not echo)
+ * - Limiting to -1 dBTP
+ *
+ * Input: raw TTS WAV file (any sample rate)
+ * Output: processed WAV at 48kHz, -14 LUFS target
+ *
+ * Only runs if ffmpeg is available. Skips silently if not found.
+ */
+export async function humanizeTTSAudio(
+  inputPath: string,
+  outputPath: string,
+): Promise<void> {
+  const { execFile } = await import('child_process');
+  const { promisify } = await import('util');
+  const execFileAsync = promisify(execFile);
+
+  // Verify ffmpeg exists
+  try {
+    await execFileAsync('ffmpeg', ['-version']);
+  } catch {
+    // ffmpeg not available — copy input as-is
+    const fs = await import('fs');
+    await fs.promises.copyFile(inputPath, outputPath);
+    return;
+  }
+
+  const filterChain = [
+    'highpass=f=80',
+    'equalizer=f=600:t=o:w=1.4:g=-2',
+    'equalizer=f=3200:t=o:w=0.8:g=3',
+    'equalizer=f=8000:t=o:w=2.0:g=-2',
+    'equalizer=f=12000:t=o:w=0.5:g=1.5',
+    'acompressor=threshold=-18dB:ratio=2:attack=30:release=150',
+    'acompressor=threshold=-12dB:ratio=4:attack=8:release=80:makeup=4',
+    'aecho=0.6:0.88:8:0.12',
+    'alimiter=limit=0.891',
+  ].join(',');
+
+  await execFileAsync('ffmpeg', [
+    '-i', inputPath,
+    '-af', filterChain,
+    '-ar', '48000',
+    '-y',
+    outputPath,
+  ]);
+}
+
 // ─── Kokoro TTS (self-hosted, best quality) ───
 async function kokoroTTS(
   text: string,
