@@ -1,0 +1,243 @@
+/**
+ * lufs-verify.ts — Post-render LUFS assertion using ffmpeg ebur128
+ *
+ * Wraps `ffmpeg -af ebur128` to measure EBU R128 integrated loudness and
+ * true peak of a rendered audio file. Throws a descriptive error if the
+ * measurement falls outside the allowed tolerance window.
+ *
+ * Usage:
+ *   import { verifyLufs } from './lufs-verify';
+ *   await verifyLufs('master-audio.mp3', { targetLufs: -14, targetTruePeak: -1.0 });
+ *
+ * Fails the build (throws) if:
+ *   - Integrated loudness is outside targetLufs ± toleranceLu
+ *   - True peak exceeds targetTruePeak
+ *
+ * Zero-cost: uses the ffmpeg binary already required by audio-stitcher.
+ * Deterministic: ebur128 is a fixed algorithm with no random state.
+ * GH-Actions compatible: exits non-zero on failure so the workflow step fails.
+ */
+
+import { spawnSync, execFile } from 'child_process';
+
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
+export interface LufsVerifyOptions {
+  /** Target integrated loudness in LUFS (e.g. -14 for YouTube) */
+  targetLufs: number;
+  /** True-peak ceiling in dBTP (e.g. -1.0) */
+  targetTruePeak: number;
+  /** Allowed deviation from targetLufs (default ±0.5 LU) */
+  toleranceLu?: number;
+  /**
+   * Allowed overshoot above targetTruePeak in dB (default 0.2 dB).
+   * Panel-19 Audio P0 (Katz): two-pass loudnorm targets TP exactly,
+   * but AAC re-encoding can round true-peak up by ≤0.2 dB versus
+   * the linear-PCM measurement loudnorm sees. Without this margin
+   * the verifyLufs gate hard-fails legitimate masters at -0.9 dBTP
+   * when target is -1.0 dBTP.
+   */
+  toleranceTp?: number;
+  /** Minimum required loudness range in LU (default 0 — disabled). */
+  minLra?: number;
+}
+
+export interface LufsMeasurement {
+  integratedLufs: number;
+  truePeakDbtp: number;
+  loudnessRangeLu: number;
+}
+
+// ---------------------------------------------------------------------------
+// measureLufsAsync: run ffmpeg ebur128 truly async (Panel-20 Eng P0-1
+// Carmack — the prior spawnSync version blocked the Node.js event loop
+// for the full ebur128 measurement duration (~5-12s on a 17s short),
+// silently bypassing any AbortSignal/timeout the caller had set on
+// the render pipeline.
+// ---------------------------------------------------------------------------
+export function measureLufsAsync(filePath: string): Promise<LufsMeasurement> {
+  return new Promise((resolve, reject) => {
+    execFile(
+      'ffmpeg',
+      ['-nostats', '-i', filePath, '-af', 'ebur128=peak=true', '-f', 'null', '-'],
+      { maxBuffer: 8 * 1024 * 1024 },
+      (_err, stdout, stderr) => {
+        try {
+          resolve(parseEbur128((stderr ?? '') + (stdout ?? ''), filePath));
+        } catch (e) {
+          reject(e);
+        }
+      },
+    );
+  });
+}
+
+// Retained as legacy sync entry point (unit tests + CLI wrapper). Internal
+// async pipeline calls measureLufsAsync via verifyLufs.
+export function measureLufs(filePath: string): LufsMeasurement {
+  // ffmpeg ebur128 prints a summary block to stderr on exit:
+  //   Integrated loudness:
+  //     I:         -14.2 LUFS
+  //   True peak:
+  //     Peak:       -1.3 dBFS
+  //   Loudness range:
+  //     LRA:         6.2 LU
+  const result = spawnSync(
+    'ffmpeg',
+    [
+      '-nostats',
+      '-i', filePath,
+      '-af', 'ebur128=peak=true',
+      '-f', 'null',
+      '-',
+    ],
+    { encoding: 'utf-8' },
+  );
+
+  const stderr = (result.stderr ?? '') + (result.stdout ?? '');
+  return parseEbur128(stderr, filePath);
+}
+
+// Internal: shared parser for both sync and async paths.
+function parseEbur128(stderr: string, filePath: string): LufsMeasurement {
+  // Panel-19 Audio P0 (Katz): ebur128 streams running measurements
+  // throughout the file (e.g. `t: 0.40   M: -70.0 S: -70.0 I: -70.0
+  // LUFS LRA: 0.0 LU`) before printing the FINAL "Integrated loudness"
+  // / "True peak" / "Loudness range" summary block on exit. A simple
+  // .match() returns the FIRST occurrence — which is the t=0 streaming
+  // value of -70 LUFS for any non-trivial input — not the integrated
+  // total. Use matchAll() and take the LAST occurrence so we always
+  // read the post-EOF integrated summary regardless of file length.
+  const iMatches    = [...stderr.matchAll(/I:\s*([-\d.]+)\s*LUFS/g)];
+  const peakMatches = [...stderr.matchAll(/Peak:\s*([-\d.]+)\s*dBFS/g)];
+  const lraMatches  = [...stderr.matchAll(/LRA:\s*([-\d.]+)\s*LU/g)];
+  const iMatch    = iMatches[iMatches.length - 1];
+  const peakMatch = peakMatches[peakMatches.length - 1];
+  const lraMatch  = lraMatches[lraMatches.length - 1];
+
+  if (!iMatch || !peakMatch) {
+    throw new Error(
+      `[lufs-verify] Could not parse ebur128 output for "${filePath}".\n` +
+      `stderr tail:\n${stderr.slice(-600)}`,
+    );
+  }
+
+  return {
+    integratedLufs:   parseFloat(iMatch[1]),
+    truePeakDbtp:     parseFloat(peakMatch[1]),
+    loudnessRangeLu:  lraMatch ? parseFloat(lraMatch[1]) : NaN,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// verifyLufs: assert measurement is within spec, throw on failure
+// ---------------------------------------------------------------------------
+export async function verifyLufs(
+  filePath: string,
+  opts: LufsVerifyOptions,
+): Promise<LufsMeasurement> {
+  const { targetLufs, targetTruePeak, toleranceLu = 0.5, toleranceTp = 0.2, minLra = 0 } = opts;
+
+  // Panel-20 Eng P0-1 (Carmack): use the truly-async measurement path
+  // so the render pipeline's event loop stays responsive during the
+  // 5-12s ebur128 measurement window.
+  const m = await measureLufsAsync(filePath);
+
+  const lufsLow  = targetLufs - toleranceLu;
+  const lufsHigh = targetLufs + toleranceLu;
+  const tpCeiling = targetTruePeak + toleranceTp;
+
+  const errors: string[] = [];
+
+  if (m.integratedLufs < lufsLow || m.integratedLufs > lufsHigh) {
+    errors.push(
+      `Integrated loudness ${m.integratedLufs.toFixed(1)} LUFS ` +
+      `is outside target ${targetLufs} ± ${toleranceLu} LU ` +
+      `(allowed window: ${lufsLow} to ${lufsHigh} LUFS)`,
+    );
+  }
+
+  if (m.truePeakDbtp > tpCeiling) {
+    errors.push(
+      `True peak ${m.truePeakDbtp.toFixed(1)} dBTP exceeds ceiling ${targetTruePeak} dBTP ` +
+      `(+${toleranceTp} dB AAC rounding margin allowed)` +
+      (m.truePeakDbtp > 0
+        ? ' — HARD CLIPPING: digital distortion will be audible'
+        : ''),
+    );
+  }
+
+  // Panel-20 Audio P1-3 (Katz): LRA gate. A dead-flat mix (LRA<3 LU)
+  // signals over-compression — the master sounds "loud but lifeless"
+  // and Loudness Range standards (EBU R128 + AES) recommend ≥6 LU for
+  // narrative content. We don't enforce ≥6 yet (current renders sit
+  // around LRA=3.5), but minLra=0 disables, and callers can opt-in to
+  // a floor.
+  if (minLra > 0 && Number.isFinite(m.loudnessRangeLu) && m.loudnessRangeLu < minLra) {
+    errors.push(
+      `Loudness range ${m.loudnessRangeLu.toFixed(1)} LU is below floor ${minLra} LU ` +
+      `— mix is over-compressed (no inter-syllable variance, ` +
+      `EBU R128 narrative content target ≥6 LU)`,
+    );
+  }
+
+  if (errors.length > 0) {
+    const summary = [
+      `[lufs-verify] ❌ Audio loudness assertion FAILED for "${filePath}":`,
+      ...errors.map(e => `  • ${e}`),
+      ``,
+      `  Measured: ${m.integratedLufs.toFixed(1)} LUFS / ${m.truePeakDbtp.toFixed(1)} dBTP`,
+      `  Target:   ${targetLufs} LUFS / ≤ ${targetTruePeak} dBTP`,
+      ``,
+      `  Likely cause: 'volume=3dB' post-loudnorm boost is present. Search audio-stitcher.ts`,
+      `  for 'volume=' and delete any gain applied after the loudnorm filter chain.`,
+    ].join('\n');
+
+    throw new Error(summary);
+  }
+
+  console.log(
+    `[lufs-verify] ✅ ${filePath}: ` +
+    `${m.integratedLufs.toFixed(1)} LUFS / ${m.truePeakDbtp.toFixed(1)} dBTP ` +
+    `(target ${targetLufs} LUFS / ≤ ${targetTruePeak} dBTP)`,
+  );
+
+  return m;
+}
+
+// ---------------------------------------------------------------------------
+// CLI wrapper: node lufs-verify.js <file> [targetLufs] [targetTruePeak]
+// Used by smoke-test.sh and GH Actions audio-gate step
+// ---------------------------------------------------------------------------
+// Panel-20 Eng P1-5 (Eich): match the ESM guard pattern used by the
+// rest of the codebase; require.main === module silently no-ops when
+// loaded as ESM (which the tsx loader does), and would ReferenceError
+// in stricter loaders.
+const _isMain = (() => {
+  try {
+    return import.meta.url === `file://${process.argv[1]}`;
+  } catch {
+    return false;
+  }
+})();
+if (_isMain) {
+  const [, , filePath, lufsArg, peakArg] = process.argv;
+  if (!filePath) {
+    console.error('Usage: npx ts-node src/audio/lufs-verify.ts <file> [targetLufs=-14] [targetTruePeak=-1.0]');
+    process.exit(1);
+  }
+
+  const targetLufs      = parseFloat(lufsArg  ?? '-14');
+  const targetTruePeak  = parseFloat(peakArg  ?? '-1.0');
+
+  verifyLufs(filePath, { targetLufs, targetTruePeak, toleranceLu: 0.5 })
+    .then(m => {
+      console.log(JSON.stringify(m, null, 2));
+      process.exit(0);
+    })
+    .catch(err => {
+      console.error(err.message);
+      process.exit(1);
+    });
+}

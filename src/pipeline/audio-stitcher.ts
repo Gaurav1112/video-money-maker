@@ -179,10 +179,12 @@ export function stitchAudio(
   execFileSync('ffmpeg', [
     '-y',
     '-i', rawMasterPath,
-    '-af', [
-      `loudnorm=I=-14:LRA=11:TP=-1.5:measured_I=${measuredI}:measured_TP=${measuredTP}:measured_LRA=${measuredLRA}:measured_thresh=${measuredThresh}:offset=${offset}:linear=true`,
-      'volume=3dB',  // slight boost to ensure we hit YouTube standard
-    ].join(','),
+    // Panel-12 Dist P0: REMOVED `volume=3dB` post-loudnorm boost — it was
+    // causing ~-11 LUFS / +1.5 dBTP clipping vs the YT -14 LUFS target.
+    // Single-pass loudnorm with measured values lands at -14 LUFS exactly.
+    // (Mirrors the deletion in src/audio/audio-stitcher.ts so both
+    // legacy and modern pipelines emit spec-compliant audio.)
+    '-af', `loudnorm=I=-14:LRA=11:TP=-1.5:measured_I=${measuredI}:measured_TP=${measuredTP}:measured_LRA=${measuredLRA}:measured_thresh=${measuredThresh}:offset=${offset}:linear=true`,
     '-codec:a', 'libmp3lame', '-b:a', '192k',
     masterPath,
   ], { timeout: 120000, stdio: 'pipe' });

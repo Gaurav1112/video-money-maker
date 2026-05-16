@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "fps": 30,
+  "width": 1080,
+  "height": 1920,
+  "topic": "API Gateway",
+  "session": 4,
+  "totalSessions": 10,
+  "siteTopicSlug": "api-gateway",
+  "siteSessionSlug": "request-routing-load",
+  "siteSessionTitle": "Request Routing & Load Distribution",
+  "siteSessionFocus": "path-based, header-based, canary deployments",
+  "durationInFrames": 1500,
+  "audioFile": "assets/voice/api-gateway-s4.mp3",
+  "scenes": [
+    {
+      "sceneIndex": 0,
+      "startFrame": 0,
+      "endFrame": 150,
+      "durationFrames": 150,
+      "type": "hook",
+      "narration": "Canary deployment failed — wrong traffic split gaya. Request routing misconfigure karna FAANG deployment design mein disaster hai.",
+      "templateId": "ApiGatewayArch"
+    },
+    {
+      "sceneIndex": 1,
+      "startFrame": 150,
+      "endFrame": 600,
+      "durationFrames": 450,
+      "type": "body",
+      "narration": "Path-based routing: /api/v1/* → v1-service, /api/v2/* → v2-service. Header-based routing: X-API-Version: 2 → route to v2. Host-based routing: api.example.com → API gateway, admin.example.com → admin backend. Weighted routing: canary deployment — 5% traffic → new-service, 95% → stable-service. Gradual rollout: 1% → 5% → 20% → 100%. A/B testing: User-ID based split — consistent routing for same user. Blue-green deployment: full traffic switch from blue to green. Feature flags + routing: gateway reads feature flag, routes accordingly.",
+      "templateId": "ApiGatewayArch"
+    },
+    {
+      "sceneIndex": 2,
+      "startFrame": 600,
+      "endFrame": 1050,
+      "durationFrames": 450,
+      "type": "body",
+      "narration": "Canary routing consistency trap: user hits new version (5% canary), makes a change, next request goes to old version (95% stable) — inconsistency. Solution: sticky sessions for canary — once user hits canary, always route to canary. Cookie ya header mein canary flag store karo. FAANG: \"How do you ensure a user consistently hits the same deployment during canary rollout?\" Sticky routing by user_id hash — same user, same version. This is the nuance most candidates miss.",
+      "templateId": "ApiGatewayArch"
+    },
+    {
+      "sceneIndex": 3,
+      "startFrame": 1050,
+      "endFrame": 1500,
+      "durationFrames": 450,
+      "type": "outro",
+      "narration": "Request routing = path + header + host + weight based. Canary requires sticky routing for consistency. Feature-flag-driven routing decouples deploy from release. Guru-sishya.in pe routing configuration lab hai.",
+      "templateId": "ApiGatewayArch"
+    }
+  ]
+}

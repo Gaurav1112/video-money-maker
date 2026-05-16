@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "fps": 30,
+  "width": 1080,
+  "height": 1920,
+  "topic": "Load Balancing",
+  "session": 6,
+  "totalSessions": 10,
+  "siteTopicSlug": "load-balancing",
+  "siteSessionSlug": "layer-4-vs-7-load-balancing",
+  "siteSessionTitle": "Layer 4 vs Layer 7 Load Balancing",
+  "siteSessionFocus": "transport vs application layer, tradeoffs, when to use each",
+  "durationInFrames": 1500,
+  "audioFile": "assets/voice/load-balancing-s6.mp3",
+  "scenes": [
+    {
+      "sceneIndex": 0,
+      "startFrame": 0,
+      "endFrame": 150,
+      "durationFrames": 150,
+      "type": "hook",
+      "narration": "L4 ya L7 — interviewer ne poochha aur candidate blankly dekh raha tha. OSI model yaad karna sirf theory nahi, yeh practical tradeoff hai.",
+      "templateId": "LoadBalancingArch"
+    },
+    {
+      "sceneIndex": 1,
+      "startFrame": 150,
+      "endFrame": 600,
+      "durationFrames": 450,
+      "type": "body",
+      "narration": "L4 load balancer: TCP/UDP level pe kaam karta hai — IP aur port dekh ke forward karta hai. Ultra-fast, no content inspection, nanosecond-level decisions. AWS Network Load Balancer is L4. L7 load balancer: HTTP headers, URLs, cookies, request body dekh ke route karta hai. Path-based routing: /api → backend cluster, /static → CDN, /ws → WebSocket servers. AWS ALB is L7. Performance difference: L4 microseconds latency, L7 milliseconds — SSL termination aur header parsing ki additional cost.",
+      "templateId": "LoadBalancingArch"
+    },
+    {
+      "sceneIndex": 2,
+      "startFrame": 600,
+      "endFrame": 1050,
+      "durationFrames": 450,
+      "type": "body",
+      "narration": "WebSocket routing trap: L4 ka WebSocket ke saath problem hai — HTTP → WebSocket upgrade header ko decode nahi kar sakta, toh correct backend pe route nahi hoga. L7 zaruri hai WebSocket ke liye. Lekin L7 HTTP/1.1 keep-alive mein back-to-back requests same backend pe jaati hain — effective load distribution lose hoti hai. Solution: connection draining + HTTP/2 multiplexing ya proper timeout configuration.",
+      "templateId": "LoadBalancingArch"
+    },
+    {
+      "sceneIndex": 3,
+      "startFrame": 1050,
+      "endFrame": 1500,
+      "durationFrames": 450,
+      "type": "outro",
+      "narration": "L4 for speed, L7 for intelligence. FAANG systems dono layers simultaneously use karte hain — L4 at edge for raw throughput, L7 internally for microservices routing. Guru-sishya.in pe architecture diagrams dekho.",
+      "templateId": "LoadBalancingArch"
+    }
+  ]
+}

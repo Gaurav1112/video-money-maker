@@ -1,0 +1,35 @@
+{
+  "topicId": 86,
+  "topic": "HTTP/2 Multiplexing vs HTTP/1.1",
+  "quality": "placeholder",
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "Bhai, Cloudflare ke SDE-2 round mein HTTP/2 Multiplexing vs HTTP/1.1 pe ye trick poochhi jati hai. 30 second sun le."
+    },
+    {
+      "type": "problem",
+      "narration": "Why HTTP/2 Multiplexing vs HTTP/1.1 matters: pending hand-authoring."
+    },
+    {
+      "type": "intuition",
+      "narration": "Intuition for HTTP/2 Multiplexing vs HTTP/1.1: pending hand-authoring."
+    },
+    {
+      "type": "mechanism",
+      "narration": "Mechanism for HTTP/2 Multiplexing vs HTTP/1.1: pending hand-authoring."
+    },
+    {
+      "type": "mechanism-detail",
+      "narration": "Details for HTTP/2 Multiplexing vs HTTP/1.1: pending hand-authoring."
+    },
+    {
+      "type": "example",
+      "narration": "Real-world HTTP/2 Multiplexing vs HTTP/1.1 example: pending hand-authoring."
+    },
+    {
+      "type": "recap",
+      "narration": "HTTP/2 Multiplexing vs HTTP/1.1 recap: pending hand-authoring."
+    }
+  ]
+}

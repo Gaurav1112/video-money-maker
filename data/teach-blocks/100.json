@@ -1,0 +1,35 @@
+{
+  "topicId": 100,
+  "topic": "SQL N+1 Problem And How To Fix It",
+  "quality": "placeholder",
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "Tu agar SQL N+1 Problem And How To Fix It samajh nahi paya, toh Razorpay ka ₹25-50LPA ka offer bhool ja."
+    },
+    {
+      "type": "problem",
+      "narration": "Why SQL N+1 Problem And How To Fix It matters: pending hand-authoring."
+    },
+    {
+      "type": "intuition",
+      "narration": "Intuition for SQL N+1 Problem And How To Fix It: pending hand-authoring."
+    },
+    {
+      "type": "mechanism",
+      "narration": "Mechanism for SQL N+1 Problem And How To Fix It: pending hand-authoring."
+    },
+    {
+      "type": "mechanism-detail",
+      "narration": "Details for SQL N+1 Problem And How To Fix It: pending hand-authoring."
+    },
+    {
+      "type": "example",
+      "narration": "Real-world SQL N+1 Problem And How To Fix It example: pending hand-authoring."
+    },
+    {
+      "type": "recap",
+      "narration": "SQL N+1 Problem And How To Fix It recap: pending hand-authoring."
+    }
+  ]
+}

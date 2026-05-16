@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "fps": 30,
+  "width": 1080,
+  "height": 1920,
+  "topic": "Database Design",
+  "session": 3,
+  "totalSessions": 10,
+  "siteTopicSlug": "database-design",
+  "siteSessionSlug": "database-sharding-strategies",
+  "siteSessionTitle": "Database Sharding Strategies",
+  "siteSessionFocus": "horizontal partitioning, shard keys, range vs hash",
+  "durationInFrames": 1500,
+  "audioFile": "assets/voice/database-design-s3.mp3",
+  "scenes": [
+    {
+      "sceneIndex": 0,
+      "startFrame": 0,
+      "endFrame": 150,
+      "durationFrames": 150,
+      "type": "hook",
+      "narration": "Single database — 500GB data, 100K writes per second. Vertical scaling limit aa gaya. Sharding nahi jaante? FAANG interview mein yeh central question hai.",
+      "templateId": "DatabaseDesignArch"
+    },
+    {
+      "sceneIndex": 1,
+      "startFrame": 150,
+      "endFrame": 600,
+      "durationFrames": 450,
+      "type": "body",
+      "narration": "Database sharding: data ko multiple databases (shards) mein horizontally partition karo. Shard key selection critical hai. Range-based sharding: user_id 1-1M → Shard 1, 1M-2M → Shard 2. Simple but hotspot risk — new users sab last shard pe. Hash-based sharding: shard = hash(user_id) % N. Uniform distribution lekin range queries inefficient. Directory-based sharding: separate lookup service mein mapping store karo. Flexible but extra hop. Resharding: nodes add karne pe data move karna costly. Consistent hashing minimizes data movement.",
+      "templateId": "DatabaseDesignArch"
+    },
+    {
+      "sceneIndex": 2,
+      "startFrame": 600,
+      "endFrame": 1050,
+      "durationFrames": 450,
+      "type": "body",
+      "narration": "Cross-shard query trap: ORDER BY, GROUP BY, JOIN across shards — distributed query, expensive. Solution: shard key design karo taki 90% queries single-shard ho. Twitter example: tweet sharding by tweet_id efficient hai for individual tweet lookup, but user timeline query multiple shards hit karta hai. Hotspot shard: viral content ke saath ek shard overwhelmed. Solution: content delivery network + read replicas for hot shards, or sub-sharding.",
+      "templateId": "DatabaseDesignArch"
+    },
+    {
+      "sceneIndex": 3,
+      "startFrame": 1050,
+      "endFrame": 1500,
+      "durationFrames": 450,
+      "type": "outro",
+      "narration": "Sharding key selection = most important design decision. Wrong key → hotspots → resharding nightmare. Hash sharding for uniform distribution, range for time-series data, directory for flexibility. Guru-sishya.in pe sharding design labs karo.",
+      "templateId": "DatabaseDesignArch"
+    }
+  ]
+}

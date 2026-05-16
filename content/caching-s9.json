@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "fps": 30,
+  "width": 1080,
+  "height": 1920,
+  "topic": "Caching",
+  "session": 9,
+  "totalSessions": 10,
+  "siteTopicSlug": "caching",
+  "siteSessionSlug": "caching-at-instagram-twitter",
+  "siteSessionTitle": "Caching at Instagram, Twitter & Discord",
+  "siteSessionFocus": "real-world case studies, architecture decisions",
+  "durationInFrames": 1500,
+  "audioFile": "assets/voice/caching-s9.mp3",
+  "scenes": [
+    {
+      "sceneIndex": 0,
+      "startFrame": 0,
+      "endFrame": 150,
+      "durationFrames": 150,
+      "type": "hook",
+      "narration": "Instagram 1 billion users ka feed — Redis pe kaise chalta hai? Yeh case study FAANG system design mein direct score karta hai.",
+      "templateId": "CachingArch"
+    },
+    {
+      "sceneIndex": 1,
+      "startFrame": 150,
+      "endFrame": 600,
+      "durationFrames": 450,
+      "type": "body",
+      "narration": "Instagram: Redis sorted sets for timeline ranking — post timestamp as score, user_id:post_id as member. ZREVRANGE se paginated feed. Follow graph: Redis sets mein followers store. Media metadata: Cassandra. Cache eviction: custom LRU with popularity score. Twitter: Flock (Memcached based) + Redis for real-time timelines. Fan-out on write for timeline — write time pe followers ke caches update. Fan-out on read for celebrities (millions of followers) — too expensive to fan-out on write. Discord: Redis pub-sub for real-time presence, per-guild member lists as Redis sets.",
+      "templateId": "CachingArch"
+    },
+    {
+      "sceneIndex": 2,
+      "startFrame": 600,
+      "endFrame": 1050,
+      "durationFrames": 450,
+      "type": "body",
+      "narration": "Fan-out on write vs read trade-off: celebrity problem. Priyanka Chopra ke 80 million followers — ek tweet pe 80M cache writes, toh fan-out on write infeasible. Solution: hybrid — normal users fan-out on write, celebrities (>threshold followers) fan-out on read + pre-computed partial timelines. FAANG interview mein yeh \"hot key\" problem explicitly poochha jaata hai — ek user ki activity disproportionate load kaisi handle karoge?",
+      "templateId": "CachingArch"
+    },
+    {
+      "sceneIndex": 3,
+      "startFrame": 1050,
+      "endFrame": 1500,
+      "durationFrames": 450,
+      "type": "outro",
+      "narration": "Real caching at scale = multiple strategies simultaneously. Fan-out on write, fan-out on read, hot key isolation — sab ka combination. Guru-sishya.in pe all three case studies detailed mein hain.",
+      "templateId": "CachingArch"
+    }
+  ]
+}

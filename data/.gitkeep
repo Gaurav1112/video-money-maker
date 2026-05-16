@@ -1,0 +1,37 @@
+# data/ directory — SQLite queue database lives here
+
+This directory holds runtime state that must NOT be committed to git.
+
+- `queue.db`           — live SQLite database (gitignored)
+- `queue.db-wal`       — WAL journal (gitignored, managed by SQLite)
+- `queue.db-shm`       — shared memory file (gitignored, managed by SQLite)
+- `queue.db.example`   — empty schema snapshot committed for documentation
+
+## GHA artifact strategy
+
+At the end of every workflow job that touches the queue, upload the DB:
+
+```yaml
+- uses: actions/upload-artifact@v4
+  with:
+    name: queue-db
+    path: data/queue.db
+    retention-days: 7
+    overwrite: true
+```
+
+At the start of every job, download it:
+
+```yaml
+- uses: actions/download-artifact@v4
+  with:
+    name: queue-db
+    path: data/
+  continue-on-error: true   # first run: no artifact yet, migration will create it
+```
+
+Then run the (idempotent) migration:
+
+```yaml
+- run: npx tsx src/services/queue/migrate.ts
+```

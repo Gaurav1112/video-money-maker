@@ -1,0 +1,35 @@
+{
+  "topicId": 97,
+  "topic": "Redis Data Structures: When to Use Which",
+  "quality": "placeholder",
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "Tu agar Redis Data Structures: When to Use Which samajh nahi paya, toh Razorpay ka ₹30-55LPA ka offer bhool ja."
+    },
+    {
+      "type": "problem",
+      "narration": "Why Redis Data Structures: When to Use Which matters: pending hand-authoring."
+    },
+    {
+      "type": "intuition",
+      "narration": "Intuition for Redis Data Structures: When to Use Which: pending hand-authoring."
+    },
+    {
+      "type": "mechanism",
+      "narration": "Mechanism for Redis Data Structures: When to Use Which: pending hand-authoring."
+    },
+    {
+      "type": "mechanism-detail",
+      "narration": "Details for Redis Data Structures: When to Use Which: pending hand-authoring."
+    },
+    {
+      "type": "example",
+      "narration": "Real-world Redis Data Structures: When to Use Which example: pending hand-authoring."
+    },
+    {
+      "type": "recap",
+      "narration": "Redis Data Structures: When to Use Which recap: pending hand-authoring."
+    }
+  ]
+}

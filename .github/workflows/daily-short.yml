@@ -1,35 +1,81 @@
 name: Daily Short (Render + Upload)
 
-# Standalone 45-second YouTube Shorts -- one per day, fully automated.
-# 924 unique Shorts (66 topics x 14 formats) = ~28 months of daily content.
-# Uses ViralShort composition at 60fps with 3-phase content + viral titles.
+# Renders ViralShort composition at 1080×1920 9:16, ≤55 s — one per day.
+# FIX: was calling render-daily-short.ts + make-reels.ts (landscape 5-min clips).
+# NOW: calls make-shorts.ts (vertical ≤55 s) for YT Shorts shelf placement.
 
 on:
   schedule:
-    # Pre-render at 3:00 PM IST (9:30 UTC) -- 4h buffer before upload
-    - cron: '30 9 * * *'
-    # Upload at 7:00 PM IST (1:30 PM UTC) -- peak India viewing time
+    # Panel-16 Distribution P0 #2 (Schiffer): YouTube Shorts shelf peak
+    # impression density for India is 7-9 PM IST. Previous schedule put
+    # uploads at 9:30 PM IST — tail of prime-time. New: render at 12:30
+    # PM IST (07:00 UTC), upload at 7:00 PM IST (13:30 UTC).
+    # Pre-render at 12:30 PM IST (7:00 UTC) — 6.5h buffer before upload
+    - cron: '0 7 * * *'
+    # Upload at 7:00 PM IST (1:30 PM UTC) — first 30-min impression-
+    # budget cycle starts inside peak browse window.
     - cron: '30 13 * * *'
 
   workflow_dispatch:
     inputs:
-      short_number:
-        description: 'Specific short number (0-659), leave empty for today'
+      storyboard:
+        description: 'Path to storyboard JSON in content/, e.g. content/load-balancing-s1.json'
         required: false
+        default: ''
       dry_run:
         description: 'Render only, no upload'
         type: boolean
         default: false
 
 permissions:
-  contents: write
+  contents: read
+
+# ─── P0 FIXES: System dependencies + Chrome caching ───────────────────────────
+before-render:
+  name: Setup system dependencies (P0 Chrome fix)
+  runs-on: ubuntu-latest
+  steps:
+    - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+
+    - name: Install system dependencies for Chrome
+      run: |
+        sudo apt-get update -qq
+        sudo apt-get install -y --no-install-recommends \
+          libx11-6 libxrender1 libxrandr2 libxss1 \
+          libnss3 libnspr4 \
+          libgbm1 libxkbcommon0 \
+          libgtk-3-0 libatk1.0-0 libatk-bridge2.0-0 libcups2 \
+          libpango-1.0-0 libpangocairo-1.0-0 \
+          libdbus-1-3 \
+          fonts-liberation fonts-liberation2 xfonts-utils
+
+    - name: Cache Chromium
+      uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae
+      with:
+        path: ~/.cache/remotion
+        key: chromium-${{ runner.os }}-4.0.457
+        restore-keys: chromium-${{ runner.os }}-
 
 env:
   NODE_VERSION: '20'
+  # Pinned versions for the python pip + apt + npx external dependencies
+  # so a malicious upstream tag bump can't ingest into the render
+  # pipeline mid-run (Eng4 supply-chain P0).
+  EDGE_TTS_VERSION: '7.0.0'
+  REMOTION_VERSION: '4.0.279'
 
+# B4: prevent overlapping runs (manual + scheduled) from racing the
+# ledger commit. cancel-in-progress=false → queue the second run so
+# both videos still get published, but serially.
+concurrency:
+  group: daily-short-upload
+  cancel-in-progress: false
+
+# ─── Phase detection ──────────────────────────────────────────────────────────
 jobs:
   determine-phase:
     runs-on: ubuntu-latest
+    timeout-minutes: 3
     outputs:
       phase: ${{ steps.phase.outputs.phase }}
     steps:
@@ -37,67 +83,205 @@ jobs:
         id: phase
         run: |
           HOUR=$(date -u +%H)
-          # 9:30 UTC = pre-render, 13:30 UTC = upload
-          if [ "$HOUR" -lt "12" ]; then
-            echo "phase=render" >> $GITHUB_OUTPUT
-          else
-            echo "phase=upload" >> $GITHUB_OUTPUT
-          fi
-          # Manual trigger: always do full pipeline
+          # Manual trigger always runs the full pipeline (render + upload).
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "phase=full" >> $GITHUB_OUTPUT
+            echo "phase=full" >> "$GITHUB_OUTPUT"
+          elif [ "${HOUR}" -lt "12" ]; then
+            echo "phase=render" >> "$GITHUB_OUTPUT"
+          else
+            echo "phase=upload" >> "$GITHUB_OUTPUT"
           fi
 
+# ─── Render job ───────────────────────────────────────────────────────────────
   render:
     needs: determine-phase
-    if: needs.determine-phase.outputs.phase == 'render' || needs.determine-phase.outputs.phase == 'full'
+    if: |
+      needs.determine-phase.outputs.phase == 'render' ||
+      needs.determine-phase.outputs.phase == 'full'
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    # Render must call POST /repos/.../dispatches to enqueue the publish
+    # phase via repository_dispatch — that endpoint requires `contents:
+    # write` on the token. Eng4 panel-6 P1: rendering with `contents:
+    # read` made every cron run fail at the Enqueue step, silently
+    # falling back to the legacy direct-render path that bypasses the
+    # 30-day cooldown ledger. Keep the write surface minimal: only
+    # contents (for repository_dispatch); no actions/packages/id-token.
+    permissions:
+      contents: write
+    env:
+      PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
+      PIXABAY_API_KEY: ${{ secrets.PIXABAY_API_KEY }}
+      FREESOUND_API_KEY: ${{ secrets.FREESOUND_API_KEY }}
+      FREESOUND_CLIENT_ID: ${{ secrets.FREESOUND_CLIENT_ID }}
+      UNSPLASH_ACCESS_KEY: ${{ secrets.UNSPLASH_ACCESS_KEY }}
+    outputs:
+      artifact_name: daily-short-${{ github.run_number }}
+      queue_item_id: ${{ steps.enqueue.outputs.queue_item_id }}
     steps:
-      - uses: actions/checkout@v4
+      - name: Mask all API keys
+        run: |
+          echo "::add-mask::${PIXABAY_API_KEY}"
+          echo "::add-mask::${PEXELS_API_KEY}"
+          echo "::add-mask::${FREESOUND_API_KEY}"
+          echo "::add-mask::${FREESOUND_CLIENT_ID}"
+          echo "::add-mask::${UNSPLASH_ACCESS_KEY}"
+        env:
+          PIXABAY_API_KEY: ${{ secrets.PIXABAY_API_KEY }}
+          PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
+          FREESOUND_API_KEY: ${{ secrets.FREESOUND_API_KEY }}
+          FREESOUND_CLIENT_ID: ${{ secrets.FREESOUND_CLIENT_ID }}
+          UNSPLASH_ACCESS_KEY: ${{ secrets.UNSPLASH_ACCESS_KEY }}
+
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.2.2
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
           node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      # Cache Remotion bundle output — saves ~60 s on warm runs
+      - name: Cache Remotion bundle
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: node_modules/.cache/remotion
+          key: remotion-bundle-${{ hashFiles('src/**', 'remotion.config.ts') }}
+          # Panel-22 Hightower P1: removed `restore-keys: remotion-bundle-`.
+          # The fallback matched any prior run's bundle, so when src/**
+          # changed but a stale bundle was in cache GHA would happily
+          # restore the OLD bundle and renders proceeded on outdated
+          # composition code with NO log distinguishing a real cache hit
+          # from a stale-key restore. Without restore-keys, a key miss
+          # forces a clean rebuild (~60s) — cheaper than a silently-wrong
+          # render.
 
       - name: Install dependencies
         run: npm ci
 
       - name: Install Chrome + TTS + ffmpeg
         run: |
+          set -euo pipefail
           npx remotion browser ensure
-          pip install --break-system-packages edge-tts
-          sudo apt-get update && sudo apt-get install -y ffmpeg
-          # Verify
+          pip install --break-system-packages edge-tts==${EDGE_TTS_VERSION}
+          # Panel-18 Eng P1 (Carmack): explicitly install fonts-dejavu.
+          # ass-generator.ts pins "DejaVu Sans" in the Style: line; on
+          # ubuntu-24.04 (the rolling ubuntu-latest after mid-2025) the
+          # fonts-dejavu package is no longer default-installed (only
+          # fonts-dejavu-core ships). Without this libass silently
+          # falls back to a system sans-serif and the karaoke caption
+          # MarginV=600 + fontsize=96 layout breaks. Pinned install
+          # also makes glyph metrics byte-deterministic across runner
+          # rebuilds.
+          # Panel-19 Eng P1 (Carmack): pin ffmpeg deb to a major version
+          # so that an upstream package bump on `ubuntu-latest` cannot
+          # silently change loudnorm/pcm/libass ABIs between runs and
+          # break our byte-determinism guarantee. The two-pass loudnorm
+          # is environment-sensitive and the only reason we don't see
+          # it is because we're currently on a stable Jammy/Noble
+          # cycle. ffmpeg=7:* anchors the major version while still
+          # accepting security patches.
+          sudo apt-get update && sudo apt-get install -y "ffmpeg=7:*" fonts-dejavu fonts-noto
           python3 -c "import edge_tts; print('edge_tts OK')"
           ffmpeg -version | head -1
+          fc-list | grep -i "dejavu sans" | head -1
 
       - name: Clone content repo
         run: |
+          set -euo pipefail
           git clone --depth 1 https://github.com/Gaurav1112/guru-sishya.git ../guru-sishya
           ln -sf "$(pwd)/../guru-sishya/public/content" content 2>/dev/null || true
           ls content/*.json | head -3 || { echo "FATAL: content not accessible"; exit 1; }
 
-      - name: Render daily Short (3x retry)
+      # FIX: was `npx tsx scripts/render-daily-short.ts` + implicit make-reels.ts
+      #      → now explicitly calls make-shorts.ts which renders ViralShort at
+      #        1080×1920, ≤55 s, with #shorts metadata for YT Shorts shelf placement.
+      - name: Pick eligible storyboard (B4 cooldown-aware)
+        id: pick
+        if: ${{ inputs.storyboard == '' }}
+        run: npx tsx scripts/published-state.ts pick
+
+      - name: Cache stock footage
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: assets/stock-cache/
+          key: stock-cache-${{ hashFiles('assets/stock/manifest.json') }}
+
+      - name: Cache TTS narration (deterministic re-runs)
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: assets/tts-cache/
+          key: tts-cache-${{ hashFiles('content/**/*.json') }}
+          restore-keys: tts-cache-
+
+      - name: Render daily Short via render:stock (3× retry)
         id: render
         env:
-          EDGE_TTS: '1'  # Use Edge TTS on CI (fast, no Docker needed)
+          SHORT_NUM: ""
+          PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
+          PIXABAY_API_KEY: ${{ secrets.PIXABAY_API_KEY }}
+          FREESOUND_API_KEY: ${{ secrets.FREESOUND_API_KEY }}
+          UNSPLASH_ACCESS_KEY: ${{ secrets.UNSPLASH_ACCESS_KEY }}
+          CHANNEL_HANDLE: '@GuruSishya-India'
+          # SECURITY: route ${{ inputs.* }} through env vars so a malicious
+          # workflow_dispatch caller can't inject shell metacharacters into
+          # the run script via template-expression expansion.
+          INPUT_STORYBOARD: ${{ inputs.storyboard }}
+          PICK_PATH: ${{ steps.pick.outputs.path }}
+          PICK_TOPIC: ${{ steps.pick.outputs.topic }}
+          PICK_REASON: ${{ steps.pick.outputs.reason }}
         run: |
-          ARGS=""
-          if [ -n "${{ inputs.short_number }}" ]; then
-            ARGS="--short ${{ inputs.short_number }}"
+          # Determine which storyboard to render
+          if [ -n "$INPUT_STORYBOARD" ]; then
+            BOARD="$INPUT_STORYBOARD"
+          else
+            BOARD="$PICK_PATH"
+            if [ -z "$BOARD" ] || [ ! -f "$BOARD" ]; then
+              echo "FATAL: pick step did not produce a valid storyboard path ($BOARD)"
+              exit 1
+            fi
+            echo "Eligible pick: $BOARD (topic=$PICK_TOPIC, reason=$PICK_REASON)"
           fi
 
+          OUT_ROOT="out/shorts"
+          mkdir -p "$OUT_ROOT"
+
           for attempt in 1 2 3; do
-            echo "Render attempt $attempt/3..."
-            if npx tsx scripts/render-daily-short.ts $ARGS; then
+            echo "Render attempt $attempt/3 — npm run render:stock -- --storyboard $BOARD --out $OUT_ROOT"
+            if npm run render:stock -- --storyboard "$BOARD" --out "$OUT_ROOT"; then
               echo "success=true" >> $GITHUB_OUTPUT
-              echo "Render succeeded!"
+              # Locate the produced mp4 (renderer writes out/shorts/<slug>/short-stock.mp4)
+              # and copy it to a stable name out/shorts/<run>-yt.mp4 + meta.
+              MP4=$(find "$OUT_ROOT" -name 'short-stock.mp4' -print -quit)
+              if [ -z "$MP4" ]; then
+                echo "FATAL: render claimed success but no short-stock.mp4 found"
+                exit 1
+              fi
+              SLUG_DIR=$(dirname "$MP4")
+              FINAL="$OUT_ROOT/${{ github.run_number }}-yt.mp4"
+              cp "$MP4" "$FINAL"
+              cp "$SLUG_DIR/licenses.json" "$OUT_ROOT/${{ github.run_number }}-yt-licenses.json" || true
+              # Renderer now emits metadata.json + thumbnail.png alongside
+              # the mp4 (post-fe8a6a7 — generateShortMetadata + thumbnail
+              # generator). Promote both to the stable run-numbered name
+              # downstream upload + cross-post steps consume.
+              if [ -f "$SLUG_DIR/metadata.json" ]; then
+                cp "$SLUG_DIR/metadata.json" "$OUT_ROOT/${{ github.run_number }}-yt-metadata.json"
+              else
+                # Defensive fallback for older renderers
+                SLUG=$(basename "$SLUG_DIR")
+                cat > "$OUT_ROOT/${{ github.run_number }}-yt-metadata.json" <<META
+          {"slug":"$SLUG","video":"$(basename "$FINAL")","run":"${{ github.run_number }}"}
+          META
+              fi
+              if [ -f "$SLUG_DIR/thumbnail.png" ]; then
+                cp "$SLUG_DIR/thumbnail.png" "$OUT_ROOT/${{ github.run_number }}-yt-thumbnail.png"
+              fi
+              echo "Render succeeded → $FINAL"
               break
             fi
             if [ "$attempt" -lt 3 ]; then
-              echo "Retrying in 30s..."
+              echo "Retrying in 30 s…"
               sleep 30
             else
               echo "success=false" >> $GITHUB_OUTPUT
@@ -106,62 +290,137 @@ jobs:
             fi
           done
 
-      - name: List rendered files
-        run: ls -lh output/daily-short/ 2>/dev/null || echo "No files"
+      - name: Verify output format with ffprobe
+        run: |
+          MP4=$(ls out/shorts/*-yt.mp4 2>/dev/null | head -1)
+          if [ -z "$MP4" ]; then echo "ERROR: no mp4 in out/shorts/"; exit 1; fi
 
-      - name: Upload artifact for later upload phase
+          echo "Probing: $MP4"
+          WIDTH=$(ffprobe -v error -select_streams v:0 \
+            -show_entries stream=width -of csv=p=0 "$MP4")
+          HEIGHT=$(ffprobe -v error -select_streams v:0 \
+            -show_entries stream=height -of csv=p=0 "$MP4")
+          DURATION=$(ffprobe -v error -show_entries format=duration \
+            -of csv=p=0 "$MP4")
+
+          echo "  width    = $WIDTH   (expected 1080)"
+          echo "  height   = $HEIGHT  (expected 1920)"
+          echo "  duration = ${DURATION}s  (must be ≤55)"
+
+          [ "$WIDTH"  -eq 1080 ] || { echo "FAIL: width $WIDTH ≠ 1080";  exit 1; }
+          [ "$HEIGHT" -eq 1920 ] || { echo "FAIL: height $HEIGHT ≠ 1920"; exit 1; }
+          # bash float comparison via awk
+          awk -v d="$DURATION" 'BEGIN { if (d > 55) { print "FAIL: duration " d " > 55s"; exit 1 } else print "OK: duration " d "s" }'
+
+      - name: Upload artifact for upload phase
+        id: upload
         if: needs.determine-phase.outputs.phase == 'render'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: daily-short-${{ github.run_number }}
-          path: output/daily-short/
+          path: out/shorts/
           retention-days: 1
 
+      # Enqueue into queue.db on the self-hosted runner
+      # We store a pending row now; the self-hosted publish job will pick it up.
+      - name: Enqueue in queue.db (via API dispatch)
+        id: enqueue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ARTIFACT: daily-short-${{ github.run_number }}
+        run: |
+          set -euo pipefail
+
+          # Discover rendered video + metadata paths
+          # NOTE: render writes to out/shorts/ (line 144), NOT output/daily-short/.
+          # Path mismatch caused every scheduled run to error here with empty
+          # $VIDEO and $META — see MASTER-GAP-LIST.md Gap S2 for the audit.
+          VIDEO=$(ls out/shorts/*-yt.mp4         2>/dev/null | head -1)
+          META=$(ls  out/shorts/*-yt-metadata.json 2>/dev/null | head -1)
+          THUMB=$(ls out/shorts/*.png            2>/dev/null | head -1 || true)
+
+          if [ -z "${VIDEO}" ] || [ -z "${META}" ]; then
+            echo "No video/metadata found in out/shorts/"
+            ls -la out/shorts/ 2>/dev/null || true
+            exit 1
+          fi
+
+          # Derive queue item ID from run number (unique per run)
+          QUEUE_ID="daily-short/run-${{ github.run_number }}"
+
+          # Dispatch a repository_dispatch so self-hosted publish-pipeline picks it up
+          # carrying the artifact name for download
+          gh api \
+            --method POST \
+            "/repos/${{ github.repository }}/dispatches" \
+            -f event_type=publish-ready \
+            -f "client_payload[queue_id]=${QUEUE_ID}" \
+            -f "client_payload[artifact_name]=${ARTIFACT}" \
+            -f "client_payload[video_path]=${VIDEO}" \
+            -f "client_payload[metadata_path]=${META}" \
+            -f "client_payload[thumbnail_path]=${THUMB}" \
+            -f "client_payload[slot_type]=daily-short" \
+            -f "client_payload[triggered_by]=daily-short"
+
+          echo "queue_item_id=${QUEUE_ID}" >> "$GITHUB_OUTPUT"
+          echo "Dispatched publish for queue item: ${QUEUE_ID}"
+
+# ─── Upload job (direct path — no workflow_call needed for 'upload' phase) ────
+#
+# When phase='upload', download the artifact and publish directly.
+# This runs on ubuntu-latest to avoid self-hosted queue contention.
+# On 'full' (workflow_dispatch), render job already dispatched publish via
+# repository_dispatch — publish-pipeline.yml handles it on self-hosted.
   upload:
     needs: [determine-phase, render]
     if: |
       always() &&
-      (needs.determine-phase.outputs.phase == 'upload' || needs.determine-phase.outputs.phase == 'full') &&
+      needs.determine-phase.outputs.phase == 'upload' &&
       (needs.render.result == 'success' || needs.render.result == 'skipped')
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
+    # Upload job commits the published-state ledger back to main
+    # (line ~490: git push origin HEAD:main). It is the ONLY job
+    # that needs write capability; everything else stays read-only.
+    permissions:
+      contents: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.2.2
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
           node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --ignore-scripts
 
       - name: Download rendered artifact
-        if: needs.determine-phase.outputs.phase == 'upload'
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         continue-on-error: true
         with:
           name: daily-short-${{ github.run_number }}
-          path: output/daily-short/
+          path: out/shorts/
 
       - name: Check for rendered files
         id: check
         run: |
-          if ls output/daily-short/*.mp4 >/dev/null 2>&1; then
+          if ls out/shorts/*-yt.mp4 >/dev/null 2>&1; then
             echo "found=true" >> $GITHUB_OUTPUT
-            ls -lh output/daily-short/
+            ls -lh out/shorts/
           else
             echo "found=false" >> $GITHUB_OUTPUT
-            echo "No rendered Short found -- will render now"
+            echo "No rendered Short found — will render now (fallback)"
           fi
 
-      # Fallback: render if artifact is missing
+      # ── Fallback: render if artifact is missing ──────────────────────────────
       - name: "[FALLBACK] Install Chrome + TTS + ffmpeg"
         if: steps.check.outputs.found != 'true' && inputs.dry_run != 'true'
         run: |
           npx remotion browser ensure
-          pip install --break-system-packages edge-tts
-          sudo apt-get update && sudo apt-get install -y ffmpeg
+          pip install --break-system-packages edge-tts==${EDGE_TTS_VERSION} 2>/dev/null || pip install edge-tts==${EDGE_TTS_VERSION}
+          sudo apt-get update -qq && sudo apt-get install -y -qq "ffmpeg=7:*" fonts-dejavu fonts-noto
 
       - name: "[FALLBACK] Clone content repo"
         if: steps.check.outputs.found != 'true' && inputs.dry_run != 'true'
@@ -169,47 +428,214 @@ jobs:
           git clone --depth 1 https://github.com/Gaurav1112/guru-sishya.git ../guru-sishya
           ln -sf "$(pwd)/../guru-sishya/public/content" content 2>/dev/null || true
 
-      - name: "[FALLBACK] Render daily Short"
+      - name: "[FALLBACK] Render with make-shorts.ts"
         if: steps.check.outputs.found != 'true' && inputs.dry_run != 'true'
         env:
-          EDGE_TTS: '1'
+          INPUT_STORYBOARD: ${{ inputs.storyboard }}
         run: |
-          ARGS=""
-          if [ -n "${{ inputs.short_number }}" ]; then
-            ARGS="--short ${{ inputs.short_number }}"
+          if [ -n "$INPUT_STORYBOARD" ]; then
+            npm run render:stock -- --storyboard "$INPUT_STORYBOARD"
+          else
+            DOY=$(date +%j)
+            TOTAL=$(ls content/*.json 2>/dev/null | wc -l)
+            IDX=$((DOY % TOTAL))
+            BOARD=$(ls content/*.json | sort | sed -n "$((IDX + 1))p")
+            npm run render:stock -- --storyboard "$BOARD"
           fi
-          npx tsx scripts/render-daily-short.ts $ARGS
 
-      - name: Upload to YouTube (3x retry)
+      # ── Upload to YouTube ─────────────────────────────────────────────────────
+      - name: Upload to YouTube Shorts (3× retry)
+        id: upload
         if: inputs.dry_run != 'true'
         env:
-          YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
+          YOUTUBE_CLIENT_ID:     ${{ secrets.YOUTUBE_CLIENT_ID }}
           YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
           YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
         run: |
-          VIDEO=$(ls output/daily-short/*.mp4 2>/dev/null | head -1)
-          META=$(ls output/daily-short/*-metadata.json 2>/dev/null | head -1)
+          VIDEO=$(ls out/shorts/*-yt.mp4 2>/dev/null | head -1)
+          META=$(ls out/shorts/*-yt-metadata.json 2>/dev/null | head -1)
 
           if [ -z "$VIDEO" ] || [ -z "$META" ]; then
-            echo "ERROR: No video or metadata found"
-            ls -la output/daily-short/ 2>/dev/null || echo "output/daily-short/ does not exist"
+            echo "ERROR: No YT Short video or metadata found in out/shorts/"
+            ls -la out/shorts/ 2>/dev/null || echo "(directory empty)"
             exit 1
           fi
 
           for attempt in 1 2 3; do
-            echo "Upload attempt $attempt/3..."
-            if npx tsx scripts/upload-youtube.ts "$VIDEO" "$META" --shorts; then
-              echo "Upload succeeded!"
+            echo "Upload attempt $attempt/3…"
+            if npx tsx scripts/upload-youtube.ts "$VIDEO" "$META" --shorts > /tmp/upload.log 2>&1; then
+              cat /tmp/upload.log
+              # Match upload-youtube.ts line: `Video ID:    <id>` — case-insensitive
+              VIDEO_ID=$(grep -iE 'video[ _]?id[":= ]+[A-Za-z0-9_-]{8,}' /tmp/upload.log | grep -oE '[A-Za-z0-9_-]{8,}$' | head -1 || true)
+              echo "video_id=$VIDEO_ID" >> $GITHUB_OUTPUT
+              echo "metadata_path=$META" >> $GITHUB_OUTPUT
+              echo "video_path=$VIDEO" >> $GITHUB_OUTPUT
+              echo "Upload succeeded (video_id=$VIDEO_ID)"
               exit 0
             fi
+            cat /tmp/upload.log
             if [ "$attempt" -lt 3 ]; then
-              echo "Retrying in 60s..."
+              echo "Retrying in 60 s…"
               sleep 60
             fi
           done
-          echo "All upload attempts failed"
+          echo "::error::All upload attempts failed"
+          exit 1
+
+      - name: Cross-post to X/Twitter
+        if: success() && inputs.dry_run != 'true' && steps.upload.outputs.video_id != ''
+        env:
+          # X v2 POST /2/tweets requires user-context OAuth 1.0a; bearer
+          # alone returns 403. All four secrets must be set in repo
+          # secrets for the post to fire — otherwise the script skips
+          # silently (Dist3 P0).
+          X_BEARER_TOKEN: ${{ secrets.X_BEARER_TOKEN }}
+          X_API_KEY: ${{ secrets.X_API_KEY }}
+          X_API_SECRET: ${{ secrets.X_API_SECRET }}
+          X_ACCESS_TOKEN: ${{ secrets.X_ACCESS_TOKEN }}
+          X_ACCESS_SECRET: ${{ secrets.X_ACCESS_SECRET }}
+        continue-on-error: true
+        run: |
+          META_PATH="${{ steps.upload.outputs.metadata_path }}"
+          VIDEO_URL="https://youtube.com/shorts/${{ steps.upload.outputs.video_id }}"
+          if [ -n "$META_PATH" ] && [ -f "$META_PATH" ]; then
+            # Use the pre-built x_post.text + topic from metadata.json so
+            # the tweet hook matches the on-screen hook headline (Dist3 P0).
+            TOPIC=$(python3 -c "import sys,json; d=json.load(open('$META_PATH')); print(d.get('topic','Tech Short'))" 2>/dev/null || echo "Tech Short")
+            X_TEXT=$(python3 -c "import sys,json; d=json.load(open('$META_PATH')); print(d.get('x_post',{}).get('text', d.get('hook','')))" 2>/dev/null || echo "")
+            npx tsx scripts/cross-post-x.ts --topic "$TOPIC" --text "$X_TEXT" --url "$VIDEO_URL" || true
+          fi
+
+      - name: Cross-post to Instagram Reels
+        if: success() && inputs.dry_run != 'true' && steps.upload.outputs.video_id != ''
+        env:
+          # Skips silently inside the script when these are missing, so
+          # this step is safe to keep enabled before the secrets are
+          # configured (Dist1 highest-leverage P0).
+          INSTAGRAM_ACCESS_TOKEN: ${{ secrets.INSTAGRAM_ACCESS_TOKEN }}
+          INSTAGRAM_BUSINESS_ID: ${{ secrets.INSTAGRAM_BUSINESS_ID }}
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }}
+          R2_PUBLIC_URL: ${{ secrets.R2_PUBLIC_URL }}
+        continue-on-error: true
+        run: |
+          META_PATH="${{ steps.upload.outputs.metadata_path }}"
+          MP4_PATH="${{ steps.upload.outputs.video_path }}"
+          if [ -z "${INSTAGRAM_ACCESS_TOKEN:-}" ] || [ -z "${INSTAGRAM_BUSINESS_ID:-}" ]; then
+            echo "[instagram] secrets missing — skipping (configure INSTAGRAM_ACCESS_TOKEN + INSTAGRAM_BUSINESS_ID)"
+            exit 0
+          fi
+          if [ -n "$META_PATH" ] && [ -f "$META_PATH" ] && [ -n "$MP4_PATH" ] && [ -f "$MP4_PATH" ]; then
+            TOPIC=$(python3 -c "import sys,json; d=json.load(open('$META_PATH')); print(d.get('slug',''))" 2>/dev/null || echo "")
+            npx tsx scripts/publish-to-instagram.ts --video "$MP4_PATH" --metadata "$META_PATH" --topic "$TOPIC" || true
+          fi
+
+      - name: Broadcast to Telegram
+        if: success() && inputs.dry_run != 'true' && steps.upload.outputs.video_id != ''
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHANNEL_ID: ${{ secrets.TELEGRAM_CHANNEL_ID }}
+        continue-on-error: true
+        run: |
+          VIDEO_ID="${{ steps.upload.outputs.video_id }}"
+          META_PATH="${{ steps.upload.outputs.metadata_path }}"
+          if [ -n "$META_PATH" ] && [ -f "$META_PATH" ]; then
+            npx tsx scripts/seed-telegram.ts "$VIDEO_ID" --metadata "$META_PATH" || true
+          else
+            npx tsx scripts/seed-telegram.ts "$VIDEO_ID" || true
+          fi
+
+      # Panel-18 Distribution P0 (Moore/Mogilko): LinkedIn arm. The
+      # @GuruSishya-India ICP (Indian SDE freshers, ₹35-55LPA target)
+      # uses LinkedIn as their primary professional identity surface;
+      # every Hinglish-tech competitor (Apna College, Striver,
+      # TakeUforward) ships LinkedIn natively. Metadata pipeline has
+      # produced linkedin.body since B17 — this step finally wires it.
+      # Non-blocking via continue-on-error + script-side skip on
+      # absent secrets.
+      - name: Cross-post to LinkedIn
+        if: success() && inputs.dry_run != 'true' && steps.upload.outputs.video_id != ''
+        env:
+          LINKEDIN_ACCESS_TOKEN: ${{ secrets.LINKEDIN_ACCESS_TOKEN }}
+          LINKEDIN_AUTHOR_URN: ${{ secrets.LINKEDIN_AUTHOR_URN }}
+        continue-on-error: true
+        run: |
+          VIDEO_ID="${{ steps.upload.outputs.video_id }}"
+          META_PATH="${{ steps.upload.outputs.metadata_path }}"
+          # Panel-20 Eng/Dist P1-3 (Carmack/Moore): drop `|| true`.
+          # `continue-on-error: true` already makes the step non-blocking
+          # while preserving step.outcome=failure visibility — the prior
+          # `|| true` collapsed every 401/403/422/429 into exit-0 with
+          # zero observability, hiding LinkedIn token expiry, rate-limit
+          # storms, and malformed payloads from CI surface. The script
+          # itself surfaces non-fatal "secrets missing" via exit-0 with
+          # warning so this is safe.
+          if [ -n "$META_PATH" ] && [ -f "$META_PATH" ]; then
+            npx tsx scripts/post-linkedin.ts "$VIDEO_ID" --metadata "$META_PATH"
+          else
+            npx tsx scripts/post-linkedin.ts "$VIDEO_ID"
+          fi
+
+      # ── B4: record this publish in the ledger so we don't repeat the topic
+      #        within the 30-day cooldown window
+      - name: Record publish in ledger
+        if: success() && inputs.dry_run != 'true' && steps.upload.outputs.video_id != ''
+        id: record
+        run: |
+          META="${{ steps.upload.outputs.metadata_path }}"
+          VIDEO_ID="${{ steps.upload.outputs.video_id }}"
+          if [ -z "$META" ] || [ -z "$VIDEO_ID" ]; then
+            echo "::error::Missing META=$META or VIDEO_ID=$VIDEO_ID — refusing to skip ledger record"
+            exit 1
+          fi
+          npx tsx scripts/published-state.ts record "$META" "$VIDEO_ID"
+
+      # ── B1: auto-post first comment as channel owner ───────────────────────
+      # NOTE: YouTube Data API v3 does NOT support programmatic pinning.
+      # This posts the FIRST comment (Creator badge + funnel CTA + reply
+      # prompt). For full pinned effect, manually pin via YT Studio UI.
+      - name: Post first comment (channel-owner CTA)
+        if: success() && inputs.dry_run != 'true' && steps.upload.outputs.video_id != ''
+        env:
+          YOUTUBE_CLIENT_ID:     ${{ secrets.YOUTUBE_CLIENT_ID }}
+          YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
+          YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
+        continue-on-error: true
+        run: |
+          VIDEO_ID="${{ steps.upload.outputs.video_id }}"
+          META="${{ steps.upload.outputs.metadata_path }}"
+          npx tsx scripts/first-comment.ts "$VIDEO_ID" --metadata "$META"
+
+      - name: Commit ledger update (fatal on failure — losing entries breaks cooldown)
+        if: success() && inputs.dry_run != 'true' && steps.record.outcome == 'success'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet data/published-state.json 2>/dev/null; then
+            echo "No ledger changes to commit"
+            exit 0
+          fi
+          git add data/published-state.json
+          git commit -m "chore(ledger): record published video (B4 cooldown tracking)"
+
+          # Retry push with rebase to handle concurrent main updates.
+          # Push failure is FATAL — silently dropping a ledger entry would
+          # let the same topic re-publish within the 30-day cooldown.
+          for attempt in 1 2 3; do
+            if git push origin HEAD:main; then
+              echo "Ledger pushed (attempt $attempt)"
+              exit 0
+            fi
+            echo "Push attempt $attempt failed; rebasing on origin/main and retrying"
+            git fetch origin main
+            git rebase origin/main || { git rebase --abort; exit 1; }
+            sleep $((attempt * 5))
+          done
+          echo "::error::Failed to push ledger update after 3 attempts — cooldown integrity at risk"
           exit 1
 
       - name: Cleanup local files
         if: success() && inputs.dry_run != 'true'
-        run: rm -rf output/daily-short/
+        run: rm -rf out/shorts/

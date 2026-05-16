@@ -1,0 +1,19 @@
+{
+  "scenes": [
+    {
+      "type": "title-card",
+      "duration": 90,
+      "text": "Database Indexing Explained"
+    },
+    {
+      "type": "hook",
+      "duration": 90,
+      "text": "Why indexing matters"
+    },
+    {
+      "type": "teaching",
+      "duration": 1800,
+      "text": "Key concepts"
+    }
+  ]
+}

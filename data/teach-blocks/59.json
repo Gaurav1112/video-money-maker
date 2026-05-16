@@ -1,0 +1,35 @@
+{
+  "topicId": 59,
+  "topic": "Greedy Algorithms: Activity Selection",
+  "quality": "placeholder",
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "Yaar, Amazon ne mujhe Greedy Algorithms: Activity Selection pe yahi question poocha tha — 90% log yahi galat dete hain."
+    },
+    {
+      "type": "problem",
+      "narration": "Why Greedy Algorithms: Activity Selection matters: pending hand-authoring."
+    },
+    {
+      "type": "intuition",
+      "narration": "Intuition for Greedy Algorithms: Activity Selection: pending hand-authoring."
+    },
+    {
+      "type": "mechanism",
+      "narration": "Mechanism for Greedy Algorithms: Activity Selection: pending hand-authoring."
+    },
+    {
+      "type": "mechanism-detail",
+      "narration": "Details for Greedy Algorithms: Activity Selection: pending hand-authoring."
+    },
+    {
+      "type": "example",
+      "narration": "Real-world Greedy Algorithms: Activity Selection example: pending hand-authoring."
+    },
+    {
+      "type": "recap",
+      "narration": "Greedy Algorithms: Activity Selection recap: pending hand-authoring."
+    }
+  ]
+}

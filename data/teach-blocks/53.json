@@ -1,0 +1,35 @@
+{
+  "topicId": 53,
+  "topic": "Dijkstra Shortest Path",
+  "quality": "placeholder",
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "Yaar, Google ne mujhe Dijkstra Shortest Path pe yahi question poocha tha — 90% log yahi galat dete hain."
+    },
+    {
+      "type": "problem",
+      "narration": "Why Dijkstra Shortest Path matters: pending hand-authoring."
+    },
+    {
+      "type": "intuition",
+      "narration": "Intuition for Dijkstra Shortest Path: pending hand-authoring."
+    },
+    {
+      "type": "mechanism",
+      "narration": "Mechanism for Dijkstra Shortest Path: pending hand-authoring."
+    },
+    {
+      "type": "mechanism-detail",
+      "narration": "Details for Dijkstra Shortest Path: pending hand-authoring."
+    },
+    {
+      "type": "example",
+      "narration": "Real-world Dijkstra Shortest Path example: pending hand-authoring."
+    },
+    {
+      "type": "recap",
+      "narration": "Dijkstra Shortest Path recap: pending hand-authoring."
+    }
+  ]
+}

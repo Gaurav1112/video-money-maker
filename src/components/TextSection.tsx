@@ -423,7 +423,7 @@ const TextSection: React.FC<TextSectionProps> = ({
   return (
     <AbsoluteFill
       style={{
-        background: COLORS.dark,
+        background: COLORS.bgBase,
         fontFamily: FONTS.text,
         overflow: 'hidden',
       }}

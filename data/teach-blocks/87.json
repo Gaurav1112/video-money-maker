@@ -1,0 +1,35 @@
+{
+  "topicId": 87,
+  "topic": "Linux Process Scheduling (CFS)",
+  "quality": "placeholder",
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "Bhai, Google ke SDE-2 round mein Linux Process Scheduling (CFS) pe ye trick poochhi jati hai. 30 second sun le."
+    },
+    {
+      "type": "problem",
+      "narration": "Why Linux Process Scheduling (CFS) matters: pending hand-authoring."
+    },
+    {
+      "type": "intuition",
+      "narration": "Intuition for Linux Process Scheduling (CFS): pending hand-authoring."
+    },
+    {
+      "type": "mechanism",
+      "narration": "Mechanism for Linux Process Scheduling (CFS): pending hand-authoring."
+    },
+    {
+      "type": "mechanism-detail",
+      "narration": "Details for Linux Process Scheduling (CFS): pending hand-authoring."
+    },
+    {
+      "type": "example",
+      "narration": "Real-world Linux Process Scheduling (CFS) example: pending hand-authoring."
+    },
+    {
+      "type": "recap",
+      "narration": "Linux Process Scheduling (CFS) recap: pending hand-authoring."
+    }
+  ]
+}

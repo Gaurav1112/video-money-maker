@@ -1,0 +1,35 @@
+{
+  "topicId": 70,
+  "topic": "Mentoring a Junior Dev — STAR Story",
+  "quality": "placeholder",
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "Ek line mein bata — Mentoring a Junior Dev — STAR Story? Galat answer = Amazon reject. Sahi answer = ₹30-55LPA."
+    },
+    {
+      "type": "problem",
+      "narration": "Why Mentoring a Junior Dev — STAR Story matters: pending hand-authoring."
+    },
+    {
+      "type": "intuition",
+      "narration": "Intuition for Mentoring a Junior Dev — STAR Story: pending hand-authoring."
+    },
+    {
+      "type": "mechanism",
+      "narration": "Mechanism for Mentoring a Junior Dev — STAR Story: pending hand-authoring."
+    },
+    {
+      "type": "mechanism-detail",
+      "narration": "Details for Mentoring a Junior Dev — STAR Story: pending hand-authoring."
+    },
+    {
+      "type": "example",
+      "narration": "Real-world Mentoring a Junior Dev — STAR Story example: pending hand-authoring."
+    },
+    {
+      "type": "recap",
+      "narration": "Mentoring a Junior Dev — STAR Story recap: pending hand-authoring."
+    }
+  ]
+}

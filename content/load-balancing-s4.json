@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "fps": 30,
+  "width": 1080,
+  "height": 1920,
+  "topic": "Load Balancing",
+  "session": 4,
+  "totalSessions": 10,
+  "siteTopicSlug": "load-balancing",
+  "siteSessionSlug": "consistent-hashing-for-load",
+  "siteSessionTitle": "Consistent Hashing for Load Balancers",
+  "siteSessionFocus": "ring-based hashing, virtual nodes, minimal disruption",
+  "durationInFrames": 1500,
+  "audioFile": "assets/voice/load-balancing-s4.mp3",
+  "scenes": [
+    {
+      "sceneIndex": 0,
+      "startFrame": 0,
+      "endFrame": 150,
+      "durationFrames": 150,
+      "type": "hook",
+      "narration": "10 servers hain, ek server down hua — aur 9/10 requests reroute hogaye. Consistent hashing nahi use kiya toh system design mein fail ho jaoge.",
+      "templateId": "LoadBalancingArch"
+    },
+    {
+      "sceneIndex": 1,
+      "startFrame": 150,
+      "endFrame": 600,
+      "durationFrames": 450,
+      "type": "body",
+      "narration": "Consistent hashing: 0 se 2^32 ka circular ring banao. Har server ko ring pe multiple points pe place karo — yeh virtual nodes hain. Request ke key ka hash leke ring pe clockwise nearest server dhundho. Jab ek server hata do: sirf us server ki keys adjacent server pe jaati hain, baaki sab undisturbed rehti hain — O(K/N) keys move hoti hain, not O(K). Virtual nodes hotspot problem solve karte hain — zyada virtual nodes, zyada uniform distribution. DynamoDB, Cassandra, Redis Cluster — sab yahi use karte hain.",
+      "templateId": "LoadBalancingArch"
+    },
+    {
+      "sceneIndex": 2,
+      "startFrame": 600,
+      "endFrame": 1050,
+      "durationFrames": 450,
+      "type": "body",
+      "narration": "Interview trap: \"Server add karne pe cache invalidation kaise hoti hai?\" Sirf ek subset of keys neighboring server se naye server pe move hoti hain — minimal disruption. Lekin warmup period hota hai — naye server pe cold cache, hit rate temporarily drop hoti hai. Thundering herd prevention ke liye: gradual traffic shift ya pre-warming strategy use karo. Yeh 90% candidates miss karte hain.",
+      "templateId": "LoadBalancingArch"
+    },
+    {
+      "sceneIndex": 3,
+      "startFrame": 1050,
+      "endFrame": 1500,
+      "durationFrames": 450,
+      "type": "outro",
+      "narration": "Consistent hashing distributed systems ka core primitive hai — load balancer se le ke sharding tak. Virtual nodes = uniform distribution. Guru-sishya.in pe full ring implementation dekhna mat bhoolna.",
+      "templateId": "LoadBalancingArch"
+    }
+  ]
+}

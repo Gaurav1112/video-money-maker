@@ -1,226 +1,100 @@
 #!/usr/bin/env npx tsx
 /**
- * Instagram Reel Maker — extracts best 5-minute segment from long videos
+ * scripts/make-reels.ts — v2 REWRITE (2025-07)
  *
- * Instead of re-rendering, this simply TRIMS the existing long-form video
- * to the meatiest 5-minute window (skipping intro/setup). The result is a
- * 1920x1080 horizontal clip that Instagram will display natively.
+ * FIX: Was trimming a 1920×1080 horizontal clip to 300 s and calling it a Reel.
+ *   • make-reels.ts line 7:  "1920x1080 horizontal clip that Instagram will display natively."
+ *   • make-reels.ts line 24: const REEL_DURATION = 300; // 5 minutes in seconds
+ * Both are wrong for every short-form platform.
  *
- * At 1.6x playback speed, 5 min = ~3:07 actual watch time.
+ * NOW: Renders the ViralShort Remotion composition — 1080×1920 9:16, ≤55 s —
+ * leaving a 5 s safety buffer under the YT Shorts 60 s hard cap.
+ *
+ * Key properties:
+ *   • Deterministic — topic slug is SHA-256 hashed; (hash % sceneCount) picks the
+ *     clipStart so the same topic always produces the same Short in CI reruns.
+ *   • Zero-money — free Remotion OSS renderer + GH Actions ubuntu-latest.
+ *   • Output: out/shorts/<slug>.mp4 + out/shorts/<slug>-metadata.json
  *
  * Usage:
  *   npx tsx scripts/make-reels.ts --topic "Load Balancing"
- *   npx tsx scripts/make-reels.ts --topic "Load Balancing" --session 3
+ *   npx tsx scripts/make-reels.ts --storyboard content/load-balancing-s1.json
  *   npx tsx scripts/make-reels.ts --all
  */
 
-import { execSync } from 'child_process';
+import { bundle } from '@remotion/bundler';
+import { renderMedia, selectComposition } from '@remotion/renderer';
+import { createHash } from 'crypto';
 import * as fs from 'fs';
 import * as path from 'path';
+import type { Storyboard } from '../src/types';
 
-// ── Config ──────────────────────────────────────────────────────────────────
+// ── Constants ──────────────────────────────────────────────────────────────────
 
-const DOCS_DIR = path.join(process.env.HOME || '~', 'Documents', 'guru-sishya');
-const OUTPUT_DIR = path.resolve(__dirname, '..', 'output');
-const REEL_DURATION = 300; // 5 minutes in seconds
+/** Output width — 9:16 vertical. FIXED from 1920 (was wrong direction). */
+const WIDTH = 1080;
+/** Output height — 9:16 vertical. */
+const HEIGHT = 1920;
+const FPS = 30;
+
+/**
+ * Hard cap: 55 s × 30 fps = 1650 frames.
+ * YT Shorts cap is 60 s; 5 s buffer prevents accidental over-cap on slow scenes.
+ * ViralShort's own MAX_TOTAL_FRAMES = 900 (30 s) is within this — guard is a safety net.
+ */
+const MAX_DURATION_FRAMES = 55 * FPS; // 1650
+
+const COMPOSITION_ID = 'ViralShort';
+
+/** Remotion bundle entrypoint — matches remotion.config.ts in repo root */
+const ENTRY_POINT = path.resolve('src', 'index.ts');
+
+/** Content JSON storyboards (symlinked in CI: ln -sf ../guru-sishya/public/content content) */
+const CONTENT_DIR = path.resolve('content');
+
+/** Rendered Shorts land here */
+const SHORTS_DIR = path.resolve('out', 'shorts');
+
 const SITE_URL = 'https://guru-sishya.in';
 
-const HASHTAGS = [
-  '#coding', '#programming', '#interviewprep', '#faang',
-  '#dsa', '#tech', '#developer', '#codinginterview',
-  '#systemdesign', '#softwareengineering', '#instagram',
-  '#reels', '#learntocode', '#gurusishya',
+const INSTAGRAM_HASHTAGS = [
+  '#coding', '#programming', '#interviewprep', '#faang', '#dsa',
+  '#systemdesign', '#softwareengineering', '#learntocode', '#gurusishya',
+  '#reels', '#techreels',
 ];
 
-// ── Session titles for metadata (Load Balancing) ────────────────────────────
+// ── Deterministic seed ─────────────────────────────────────────────────────────
 
-const SESSION_TITLES: Record<string, string[]> = {
-  'load-balancing': [
-    'Why Load Balancing Matters',
-    'Round Robin & Weighted Round Robin',
-    'Least Connections & IP Hash',
-    'Health Checks & Failover',
-    'Layer 4 vs Layer 7 Load Balancing',
-    'Consistent Hashing Deep Dive',
-    'Global Server Load Balancing',
-    'Load Balancing at Scale — Netflix & Google',
-    'Auto Scaling + Load Balancing',
-    'Interview Questions & System Design',
-  ],
-};
+/**
+ * Derives a stable uint32 from the topic slug via SHA-256.
+ * Identical slug → identical number → identical scene pick across all CI runs.
+ */
+function topicSeed(slug: string): number {
+  const hex = createHash('sha256').update(slug).digest('hex');
+  return parseInt(hex.slice(0, 8), 16); // first 32 bits → 0..4_294_967_295
+}
 
-// ── Helpers ──────────────────────────────────────────────────────────────────
+/**
+ * Picks the clipStart index deterministically.
+ * Only content scenes (not 'title' / 'summary') are counted.
+ */
+function deterministicSceneIndex(storyboard: Storyboard, slug: string): number {
+  const content = storyboard.scenes.filter(
+    (s) => s.type !== 'title' && s.type !== 'summary',
+  );
+  if (content.length === 0) return 0;
+  return topicSeed(slug) % content.length;
+}
+
+// ── Helpers ────────────────────────────────────────────────────────────────────
 
 function slugify(text: string): string {
   return text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 }
 
-function ensureDir(dir: string) {
+function ensureDir(dir: string): void {
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 }
-
-function getVideoDuration(videoPath: string): number {
-  try {
-    const result = execSync(
-      `ffprobe -v error -show_entries format=duration -of csv=p=0 "${videoPath}"`,
-      { encoding: 'utf-8' }
-    ).trim();
-    return parseFloat(result);
-  } catch {
-    return 0;
-  }
-}
-
-function formatTime(seconds: number): string {
-  const m = Math.floor(seconds / 60);
-  const s = Math.floor(seconds % 60);
-  return `${m}:${s.toString().padStart(2, '0')}`;
-}
-
-function findLongVideo(topicSlug: string, sessionNum: number): string | null {
-  // Primary: ~/Documents/guru-sishya/{slug}/session-{n}/long/{slug}-s{n}.mp4
-  const primary = path.join(
-    DOCS_DIR, topicSlug, `session-${sessionNum}`, 'long', `${topicSlug}-s${sessionNum}.mp4`
-  );
-  if (fs.existsSync(primary)) return primary;
-
-  // Fallback: output/{slug}-s{n}.mp4
-  const fallback = path.join(OUTPUT_DIR, `${topicSlug}-s${sessionNum}.mp4`);
-  if (fs.existsSync(fallback)) return fallback;
-
-  return null;
-}
-
-/**
- * Picks the best 5-minute start time from a long video.
- *
- * Strategy:
- *   - Under 5 min  → use entire video (start=0)
- *   - 5-10 min     → start at 5s (skip intro), take 5 min
- *   - 10+ min      → start at 15% in (skip intro + problem setup), take 5 min
- *                     This lands us right in the core explanation / deep dive.
- *
- * The 15% offset typically skips:
- *   - 0:00-0:05  hook/intro text
- *   - 0:05-1:00  problem statement
- *   - 1:00-1:30  why-it-matters motivation
- * and drops us into the first meaty subtopic.
- */
-function selectBestSegment(
-  durationSec: number,
-): { startSec: number; clipDuration: number } {
-  if (durationSec <= REEL_DURATION) {
-    // Video is shorter than 5 min — use it all
-    return { startSec: 0, clipDuration: durationSec };
-  }
-
-  if (durationSec <= REEL_DURATION * 2) {
-    // 5-10 min: skip 5s intro, take 5 min
-    return { startSec: 5, clipDuration: REEL_DURATION };
-  }
-
-  // 10+ min: start at 15% to hit the core content
-  const startSec = Math.round(durationSec * 0.15);
-
-  // Make sure we don't overshoot the end
-  const maxStart = durationSec - REEL_DURATION - 2; // 2s safety margin
-  const finalStart = Math.min(startSec, maxStart);
-
-  return { startSec: Math.max(5, finalStart), clipDuration: REEL_DURATION };
-}
-
-function generateCaption(
-  topicName: string,
-  sessionNum: number,
-  topicSlug: string,
-): string {
-  const titles = SESSION_TITLES[topicSlug] || [];
-  const sessionTitle = titles[sessionNum - 1] || `Session ${sessionNum}`;
-
-  const lines = [
-    `${topicName} — ${sessionTitle} (Part ${sessionNum}/10)`,
-    '',
-    `The BEST 5 minutes from our deep-dive. Save this for your next interview!`,
-    '',
-    `Full course FREE at ${SITE_URL}/${topicSlug}`,
-    `1,988 questions across 141 topics`,
-    '',
-    HASHTAGS.slice(0, 10).join(' '),
-  ];
-  return lines.join('\n');
-}
-
-function generateMetadata(
-  topicName: string,
-  topicSlug: string,
-  sessionNum: number,
-  startSec: number,
-  clipDuration: number,
-  sourceDuration: number,
-  sourcePath: string,
-) {
-  const titles = SESSION_TITLES[topicSlug] || [];
-  const sessionTitle = titles[sessionNum - 1] || `Session ${sessionNum}`;
-
-  return {
-    topic: topicName,
-    topicSlug,
-    sessionNumber: sessionNum,
-    sessionTitle,
-    platform: 'instagram',
-    type: 'reel',
-    generatedAt: new Date().toISOString(),
-    source: {
-      file: sourcePath,
-      durationSec: Math.round(sourceDuration),
-      durationFormatted: formatTime(sourceDuration),
-    },
-    clip: {
-      startSec,
-      durationSec: clipDuration,
-      startFormatted: formatTime(startSec),
-      endFormatted: formatTime(startSec + clipDuration),
-    },
-    instagram: {
-      caption: generateCaption(topicName, sessionNum, topicSlug),
-      coverText: `${topicName.toUpperCase()} — ${sessionTitle.toUpperCase()}`,
-      hashtags: HASHTAGS,
-    },
-    publishUrl: `${SITE_URL}/${topicSlug}`,
-  };
-}
-
-// ── Core: trim video with ffmpeg ────────────────────────────────────────────
-
-function trimVideo(
-  inputPath: string,
-  outputPath: string,
-  startSec: number,
-  clipDuration: number,
-): boolean {
-  ensureDir(path.dirname(outputPath));
-
-  const cmd = [
-    'ffmpeg -y',
-    `-ss ${startSec}`,
-    `-t ${clipDuration}`,
-    `-i "${inputPath}"`,
-    '-c:v libx264 -crf 22 -preset fast',
-    '-c:a aac -b:a 128k',
-    '-movflags +faststart',
-    `"${outputPath}"`,
-  ].join(' ');
-
-  try {
-    execSync(cmd, { stdio: 'pipe', timeout: 120_000 });
-    return true;
-  } catch (err: any) {
-    console.error(`    FFMPEG ERROR: ${err.stderr?.toString().slice(-200) || err.message}`);
-    return false;
-  }
-}
-
-// ── Main ────────────────────────────────────────────────────────────────────
 
 function getArg(flag: string): string | undefined {
   const idx = process.argv.indexOf(flag);
@@ -229,213 +103,180 @@ function getArg(flag: string): string | undefined {
     : undefined;
 }
 
-function discoverSessions(topicSlug: string): number[] {
-  const sessions: number[] = [];
-
-  // Check ~/Documents/guru-sishya/{slug}/session-{n}/
-  const topicDir = path.join(DOCS_DIR, topicSlug);
-  if (fs.existsSync(topicDir)) {
-    const entries = fs.readdirSync(topicDir);
-    for (const e of entries) {
-      const match = e.match(/^session-(\d+)$/);
-      if (match) sessions.push(parseInt(match[1], 10));
-    }
-  }
-
-  // Also check output/ for {slug}-s{n}.mp4
-  if (fs.existsSync(OUTPUT_DIR)) {
-    const entries = fs.readdirSync(OUTPUT_DIR);
-    for (const e of entries) {
-      const match = e.match(new RegExp(`^${topicSlug}-s(\\d+)\\.mp4$`));
-      if (match) {
-        const num = parseInt(match[1], 10);
-        if (!sessions.includes(num)) sessions.push(num);
-      }
-    }
-  }
-
-  return sessions.sort((a, b) => a - b);
+function discoverStoryboards(): string[] {
+  if (!fs.existsSync(CONTENT_DIR)) return [];
+  return fs
+    .readdirSync(CONTENT_DIR)
+    .filter((f) => f.endsWith('.json'))
+    .map((f) => path.join(CONTENT_DIR, f))
+    .sort();
 }
 
-function discoverTopics(): string[] {
-  const topics: string[] = [];
-  if (fs.existsSync(DOCS_DIR)) {
-    for (const entry of fs.readdirSync(DOCS_DIR)) {
-      const fullPath = path.join(DOCS_DIR, entry);
-      if (fs.statSync(fullPath).isDirectory()) {
-        // Check if it has session-* subdirs with long videos
-        const subs = fs.readdirSync(fullPath);
-        if (subs.some(s => s.match(/^session-\d+$/))) {
-          topics.push(entry);
-        }
-      }
-    }
-  }
-  return topics.sort();
+function loadStoryboard(jsonPath: string): Storyboard {
+  const raw = fs.readFileSync(jsonPath, 'utf-8');
+  return JSON.parse(raw) as Storyboard;
 }
 
-async function main() {
+function buildCaption(storyboard: Storyboard): string {
+  const topic = storyboard.topic || 'System Design';
+  return [
+    `${topic} explained in under 30 seconds 🔥`,
+    '',
+    `Full deep-dive FREE at ${SITE_URL}`,
+    '',
+    INSTAGRAM_HASHTAGS.join(' '),
+  ].join('\n');
+}
+
+function buildMetadata(
+  slug: string,
+  storyboard: Storyboard,
+  sceneIndex: number,
+  durationFrames: number,
+  outPath: string,
+) {
+  return {
+    slug,
+    topic: storyboard.topic,
+    platform: 'instagram',
+    type: 'reel',
+    format: { width: WIDTH, height: HEIGHT, fps: FPS, aspectRatio: '9:16' },
+    durationFrames,
+    durationSeconds: +(durationFrames / FPS).toFixed(2),
+    deterministicSeed: topicSeed(slug),
+    clipStart: sceneIndex,
+    generatedAt: new Date().toISOString(),
+    outputFile: outPath,
+    instagram: {
+      caption: buildCaption(storyboard),
+      hashtags: INSTAGRAM_HASHTAGS,
+      coverText: storyboard.topic?.toUpperCase() ?? '',
+    },
+  };
+}
+
+// ── Remotion bundle (cached per process) ──────────────────────────────────────
+
+let _bundleCache: string | null = null;
+
+async function getBundle(): Promise<string> {
+  if (_bundleCache) return _bundleCache;
+  console.log('  → Bundling Remotion compositions…');
+  _bundleCache = await bundle({ entryPoint: ENTRY_POINT });
+  console.log('  → Bundle ready.');
+  return _bundleCache;
+}
+
+// ── Core render ────────────────────────────────────────────────────────────────
+
+async function renderShort(jsonPath: string): Promise<void> {
+  const storyboard = loadStoryboard(jsonPath);
+  const slug = slugify(storyboard.topic || path.basename(jsonPath, '.json'));
+  const sceneIndex = deterministicSceneIndex(storyboard, slug);
+
+  const outMp4 = path.join(SHORTS_DIR, `${slug}.mp4`);
+  const outMeta = path.join(SHORTS_DIR, `${slug}-metadata.json`);
+  ensureDir(SHORTS_DIR);
+
+  console.log(`\n  ┌─ ${slug}`);
+  console.log(`  │  clipStart    : ${sceneIndex}  (seed=${topicSeed(slug)})`);
+  console.log(`  │  output       : ${outMp4}`);
+
+  const serveUrl = await getBundle();
+  const inputProps = { storyboard, clipStart: sceneIndex };
+
+  const composition = await selectComposition({
+    serveUrl,
+    id: COMPOSITION_ID,
+    inputProps,
+  });
+
+  // Enforce ≤55 s hard cap regardless of calculateViralShortMetadata result
+  const safeDuration = Math.min(composition.durationInFrames, MAX_DURATION_FRAMES);
+
+  await renderMedia({
+    composition: { ...composition, durationInFrames: safeDuration },
+    serveUrl,
+    codec: 'h264',
+    outputLocation: outMp4,
+    inputProps,
+    timeoutInMilliseconds: 180_000,
+    onProgress: ({ progress }) => {
+      const pct = Math.round(progress * 100);
+      if (pct % 25 === 0) process.stdout.write(`  │  render       : ${pct}%   \r`);
+    },
+  });
+
+  console.log(`  └─ ✓ ${safeDuration} frames (${(safeDuration / FPS).toFixed(1)} s)  →  ${outMp4}`);
+
+  const meta = buildMetadata(slug, storyboard, sceneIndex, safeDuration, outMp4);
+  fs.writeFileSync(outMeta, JSON.stringify(meta, null, 2));
+}
+
+// ── Main ───────────────────────────────────────────────────────────────────────
+
+async function main(): Promise<void> {
   const topicArg = getArg('--topic');
-  const sessionArg = getArg('--session');
+  const storyboardArg = getArg('--storyboard');
   const runAll = process.argv.includes('--all');
 
   console.log('');
-  console.log('  INSTAGRAM REEL MAKER');
-  console.log('  Extracts best 5-min segment from long videos');
-  console.log('  ─────────────────────────────────────────────');
-  console.log('');
+  console.log('  INSTAGRAM REEL MAKER  v2');
+  console.log('  Renders ViralShort @ 1080×1920 (9:16), ≤55 s');
+  console.log('  ──────────────────────────────────────────────');
 
-  // Determine which topics to process
-  let topicSlugs: string[] = [];
+  let targets: string[] = [];
 
-  if (runAll) {
-    topicSlugs = discoverTopics();
-    if (topicSlugs.length === 0) {
-      console.log('  No topics found in ' + DOCS_DIR);
+  if (storyboardArg) {
+    if (!fs.existsSync(storyboardArg)) {
+      console.error(`  ERROR: storyboard not found: ${storyboardArg}`);
       process.exit(1);
     }
-    console.log(`  Found ${topicSlugs.length} topics: ${topicSlugs.join(', ')}`);
+    targets = [storyboardArg];
   } else if (topicArg) {
-    topicSlugs = [slugify(topicArg)];
+    const slug = slugify(topicArg);
+    const all = discoverStoryboards();
+    const matches = all.filter((f) => path.basename(f).includes(slug));
+    if (matches.length === 0) {
+      console.error(`  ERROR: no storyboard for topic "${topicArg}" (slug: ${slug})`);
+      console.error(`  Available: ${all.map((f) => path.basename(f)).join(', ') || 'none'}`);
+      process.exit(1);
+    }
+    targets = matches;
+  } else if (runAll) {
+    targets = discoverStoryboards();
+    if (targets.length === 0) {
+      console.error(`  ERROR: no JSON storyboards found in ${CONTENT_DIR}`);
+      process.exit(1);
+    }
+    console.log(`  Found ${targets.length} storyboards`);
   } else {
     console.log('  Usage:');
     console.log('    npx tsx scripts/make-reels.ts --topic "Load Balancing"');
-    console.log('    npx tsx scripts/make-reels.ts --topic "Load Balancing" --session 3');
+    console.log('    npx tsx scripts/make-reels.ts --storyboard content/lb-s1.json');
     console.log('    npx tsx scripts/make-reels.ts --all');
     process.exit(0);
   }
 
-  let totalProcessed = 0;
-  let totalSkipped = 0;
-  let totalFailed = 0;
-  const results: { session: string; status: string; output?: string }[] = [];
+  let ok = 0;
+  let fail = 0;
 
-  for (const topicSlug of topicSlugs) {
-    const topicName = topicSlug
-      .split('-')
-      .map(w => w.charAt(0).toUpperCase() + w.slice(1))
-      .join(' ');
-
-    console.log(`  Topic: ${topicName} (${topicSlug})`);
-    console.log('');
-
-    // Discover sessions
-    let sessionNums = discoverSessions(topicSlug);
-    if (sessionArg) {
-      const target = parseInt(sessionArg, 10);
-      sessionNums = sessionNums.filter(n => n === target);
+  for (const target of targets) {
+    try {
+      await renderShort(target);
+      ok++;
+    } catch (err: unknown) {
+      console.error(`\n  ✗ FAILED: ${path.basename(target)}`);
+      console.error(`    ${err instanceof Error ? err.message : String(err)}`);
+      fail++;
     }
-
-    if (sessionNums.length === 0) {
-      console.log(`  No sessions found for ${topicSlug}`);
-      console.log('');
-      continue;
-    }
-
-    console.log(`  Sessions: ${sessionNums.join(', ')} (${sessionNums.length} total)`);
-    console.log('');
-
-    for (const sessionNum of sessionNums) {
-      const label = `${topicSlug} S${sessionNum}`;
-      process.stdout.write(`  [S${sessionNum}] `);
-
-      // Find source video
-      const videoPath = findLongVideo(topicSlug, sessionNum);
-      if (!videoPath) {
-        console.log('SKIP — no long video found');
-        totalSkipped++;
-        results.push({ session: label, status: 'skipped (no video)' });
-        continue;
-      }
-
-      // Get duration
-      const duration = getVideoDuration(videoPath);
-      if (duration <= 0) {
-        console.log('SKIP — could not read duration');
-        totalSkipped++;
-        results.push({ session: label, status: 'skipped (bad file)' });
-        continue;
-      }
-
-      // Select best segment
-      const { startSec, clipDuration } = selectBestSegment(duration);
-
-      process.stdout.write(
-        `${formatTime(duration)} total, trimming ${formatTime(startSec)}-${formatTime(startSec + clipDuration)} ... `
-      );
-
-      // Clean old shorts/reels directories
-      const sessionDir = path.join(DOCS_DIR, topicSlug, `session-${sessionNum}`);
-      const oldShorts = path.join(sessionDir, 'shorts');
-      const oldReels = path.join(sessionDir, 'reels');
-      if (fs.existsSync(oldShorts)) {
-        fs.rmSync(oldShorts, { recursive: true, force: true });
-      }
-      if (fs.existsSync(oldReels)) {
-        fs.rmSync(oldReels, { recursive: true, force: true });
-      }
-
-      // Output path
-      const reelsDir = path.join(sessionDir, 'reels');
-      ensureDir(reelsDir);
-      const outputPath = path.join(reelsDir, 'reel.mp4');
-
-      // Trim
-      const ok = trimVideo(videoPath, outputPath, startSec, clipDuration);
-
-      if (ok) {
-        // Verify output exists and has size
-        const stat = fs.statSync(outputPath);
-        const sizeMB = (stat.size / (1024 * 1024)).toFixed(1);
-        console.log(`OK (${sizeMB} MB)`);
-
-        // Write metadata
-        const meta = generateMetadata(
-          topicName, topicSlug, sessionNum,
-          startSec, clipDuration, duration, videoPath,
-        );
-        fs.writeFileSync(
-          path.join(reelsDir, 'metadata.json'),
-          JSON.stringify(meta, null, 2),
-        );
-
-        totalProcessed++;
-        results.push({
-          session: label,
-          status: `OK (${sizeMB} MB)`,
-          output: outputPath,
-        });
-      } else {
-        console.log('FAILED');
-        totalFailed++;
-        results.push({ session: label, status: 'FAILED' });
-      }
-    }
-
-    console.log('');
   }
 
-  // ── Summary ─────────────────────────────────────────────────────────────
-  console.log('  ═══════════════════════════════════════════════');
-  console.log('  SUMMARY');
-  console.log('  ═══════════════════════════════════════════════');
-  console.log(`  Processed: ${totalProcessed}`);
-  if (totalSkipped > 0) console.log(`  Skipped:   ${totalSkipped}`);
-  if (totalFailed > 0) console.log(`  Failed:    ${totalFailed}`);
-  console.log('');
-
-  for (const r of results) {
-    const icon = r.status.startsWith('OK') ? 'OK' : r.status.startsWith('FAIL') ? 'XX' : '--';
-    console.log(`  [${icon}] ${r.session}: ${r.status}`);
-  }
-
-  console.log('');
-  console.log('  Output: ~/Documents/guru-sishya/{topic}/session-{n}/reels/reel.mp4');
-  console.log('  Upload: Instagram Reels @ @guru_sishya.in');
-  console.log('');
+  console.log(`\n  Results: ${ok} rendered, ${fail} failed`);
+  if (fail > 0) process.exit(1);
 }
 
 main().catch((err) => {
-  console.error('Fatal error:', err);
+  console.error(err);
   process.exit(1);
 });

@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "fps": 30,
+  "width": 1080,
+  "height": 1920,
+  "topic": "API Gateway",
+  "session": 1,
+  "totalSessions": 10,
+  "siteTopicSlug": "api-gateway",
+  "siteSessionSlug": "what-is-an-api-gateway-why-you",
+  "siteSessionTitle": "What is an API Gateway & Why You Need One",
+  "siteSessionFocus": "fundamentals, single entry point, microservices routing",
+  "durationInFrames": 1500,
+  "audioFile": "assets/voice/api-gateway-s1.mp3",
+  "scenes": [
+    {
+      "sceneIndex": 0,
+      "startFrame": 0,
+      "endFrame": 150,
+      "durationFrames": 150,
+      "type": "hook",
+      "narration": "Har microservice directly expose karne pe 50 endpoints — clients confused, security gaps, auth duplicated. API Gateway miss karna FAANG red flag hai.",
+      "templateId": "ApiGatewayArch"
+    },
+    {
+      "sceneIndex": 1,
+      "startFrame": 150,
+      "endFrame": 600,
+      "durationFrames": 450,
+      "type": "body",
+      "narration": "API Gateway: single entry point for all clients to all backend microservices. Responsibilities: routing (path /users → user-service, /orders → order-service), authentication (JWT validate karo centrally), rate limiting (per client, per endpoint), SSL termination, request/response transformation. Without gateway: clients directly talk to services — N services × M clients = N×M coupling. With gateway: M clients → 1 gateway → N services. Benefits: centralized cross-cutting concerns, service discovery abstraction, protocol translation (REST to gRPC). AWS API Gateway, Kong, Nginx, Apigee — popular choices.",
+      "templateId": "ApiGatewayArch"
+    },
+    {
+      "sceneIndex": 2,
+      "startFrame": 600,
+      "endFrame": 1050,
+      "durationFrames": 450,
+      "type": "body",
+      "narration": "API Gateway SPOF trap: single gateway → single point of failure → entire system down. Solution: horizontal scaling of gateway, multiple availability zones, health checks. Another trap: putting business logic in gateway — gateway should be infrastructure, not application. Transformation logic, validation rules belong in services. Gateway fat = deployment coupling. FAANG interview: \"What should NOT go in an API Gateway?\" — business logic, complex orchestration, heavy computation.",
+      "templateId": "ApiGatewayArch"
+    },
+    {
+      "sceneIndex": 3,
+      "startFrame": 1050,
+      "endFrame": 1500,
+      "durationFrames": 450,
+      "type": "outro",
+      "narration": "API Gateway is infrastructure, not business logic layer. Cross-cutting concerns — auth, rate limiting, routing, logging — yes. Business rules — no. Design for horizontal scaling. Guru-sishya.in pe gateway architecture session hai.",
+      "templateId": "ApiGatewayArch"
+    }
+  ]
+}

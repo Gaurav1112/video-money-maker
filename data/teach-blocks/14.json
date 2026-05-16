@@ -1,0 +1,35 @@
+{
+  "topicId": 14,
+  "topic": "CQRS Pattern Done Right",
+  "quality": "placeholder",
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "Bhai sun, ye CQRS Pattern Done Right ki ek mistake teri ₹40-60LPA ki Atlassian offer cancel kara dega."
+    },
+    {
+      "type": "problem",
+      "narration": "Why CQRS Pattern Done Right matters: pending hand-authoring."
+    },
+    {
+      "type": "intuition",
+      "narration": "Intuition for CQRS Pattern Done Right: pending hand-authoring."
+    },
+    {
+      "type": "mechanism",
+      "narration": "Mechanism for CQRS Pattern Done Right: pending hand-authoring."
+    },
+    {
+      "type": "mechanism-detail",
+      "narration": "Details for CQRS Pattern Done Right: pending hand-authoring."
+    },
+    {
+      "type": "example",
+      "narration": "Real-world CQRS Pattern Done Right example: pending hand-authoring."
+    },
+    {
+      "type": "recap",
+      "narration": "CQRS Pattern Done Right recap: pending hand-authoring."
+    }
+  ]
+}

@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "fps": 30,
+  "width": 1080,
+  "height": 1920,
+  "topic": "Load Balancing",
+  "session": 1,
+  "totalSessions": 10,
+  "siteTopicSlug": "load-balancing",
+  "siteSessionSlug": "what-is-load-balancing-why-it",
+  "siteSessionTitle": "What is Load Balancing & Why It Matters",
+  "siteSessionFocus": "fundamentals, types, hardware vs software",
+  "durationInFrames": 1500,
+  "audioFile": "assets/voice/load-balancing-s1.mp3",
+  "scenes": [
+    {
+      "sceneIndex": 0,
+      "startFrame": 0,
+      "endFrame": 150,
+      "durationFrames": 150,
+      "type": "hook",
+      "narration": "Ek server pe poora traffic daal diya — interview mein yeh basic miss hai. Load balancing fundamentals jaante ho?",
+      "templateId": "LoadBalancingArch"
+    },
+    {
+      "sceneIndex": 1,
+      "startFrame": 150,
+      "endFrame": 600,
+      "durationFrames": 450,
+      "type": "body",
+      "narration": "Load balancer ek reverse proxy hai jo incoming requests ko multiple servers pe distribute karta hai. Hardware load balancers — jaise F5 — bahut fast hain, lekin expensive aur rigid hain. Software load balancers — jaise Nginx, HAProxy — flexible aur container-friendly hain. Cloud pe AWS ALB ya GCP Cloud Load Balancing use hota hai. Types: L4 TCP/UDP level routing karta hai, L7 HTTP headers aur URLs dekh ke smart routing karta hai. FAANG pe mostly L7 prefer hota hai application-aware decisions ke liye.",
+      "templateId": "LoadBalancingArch"
+    },
+    {
+      "sceneIndex": 2,
+      "startFrame": 600,
+      "endFrame": 1050,
+      "durationFrames": 450,
+      "type": "body",
+      "narration": "Hardware vs software ka interview trap: hardware 10M RPS handle karta hai lekin config rigid hai, software easily scale hota hai containers mein but CPU-bound hai. Dono ka hidden catch: single load balancer khud SPOF hai — active-passive pair ya DNS round-robin pe multiple LBs zaroori hain. 90% candidates yeh mention karna bhool jaate hain.",
+      "templateId": "LoadBalancingArch"
+    },
+    {
+      "sceneIndex": 3,
+      "startFrame": 1050,
+      "endFrame": 1500,
+      "durationFrames": 450,
+      "type": "outro",
+      "narration": "Load balancer sirf traffic distribute nahi karta — yeh availability aur scalability ka foundation hai. Yeh session 1 of 10 hai. Guru-sishya.in pe practice karo — FAANG-level questions ready hain.",
+      "templateId": "LoadBalancingArch"
+    }
+  ]
+}

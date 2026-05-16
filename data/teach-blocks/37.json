@@ -1,0 +1,42 @@
+{
+  "topicId": 37,
+  "topic": "Idempotency in APIs",
+  "quality": "authored",
+  "mechanismKeywords": [
+    "idempotency key",
+    "dedup",
+    "retry-safe",
+    "side effect"
+  ],
+  "mistakeKeyword": "duplicate",
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "Payment API ne network glitch pe retry kiya aur user double charge ho gaya? Bhai, idempotency missing."
+    },
+    {
+      "type": "problem",
+      "narration": "Mistake: POST /payment me retry pe duplicate charge. HTTP retry-safe matlab GET — POST nahi. Solution: idempotency-key header — client unique UUID bhejta hai, server first time process, retry pe cached response return."
+    },
+    {
+      "type": "intuition",
+      "narration": "ATM card swipe soch — same swipe twice, ek hi transaction. ATM ne transaction-id pakda, duplicate dekha to ignore. Idempotency wahi: client ek key generate karta hai per logical operation, server agar same key pehle dekha to result replay kar deta hai — koi naya side-effect nahi."
+    },
+    {
+      "type": "mechanism",
+      "narration": "Mechanism: client header Idempotency-Key: <UUID>. Server: check Redis/DB if key exists. Exists + completed → return cached response. Exists + in-progress → return 409 ya wait. Doesn't exist → process, store result keyed by UUID, return. TTL 24-72h typical."
+    },
+    {
+      "type": "mechanism-detail",
+      "narration": "Storage: Redis with TTL for fast hot-path, DB for durability. Race condition: SETNX or SQL unique constraint on key. Scope: per-user-per-endpoint to prevent collision. Stripe ka pattern: idempotency-key + request fingerprint hash — agar same key but different body to error 422."
+    },
+    {
+      "type": "example",
+      "narration": "Stripe API har POST pe Idempotency-Key support karta hai — Razorpay, PayPal, AWS SDK sab same. Stripe internally Postgres unique constraint use karta hai — 100% guarantee no double charge across retries."
+    },
+    {
+      "type": "recap",
+      "narration": "Interview line: idempotency = unique key per logical op + cached result + TTL + dedup at write path. Mandatory for payment, charge, transfer APIs."
+    }
+  ]
+}

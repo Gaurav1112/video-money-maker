@@ -1,0 +1,35 @@
+{
+  "topicId": 47,
+  "topic": "Tree Traversal: Inorder / Preorder / Postorder",
+  "quality": "placeholder",
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "Yaar, Amazon ne mujhe Tree Traversal: Inorder / Preorder / Postorder pe yahi question poocha tha — 90% log yahi galat dete hain."
+    },
+    {
+      "type": "problem",
+      "narration": "Why Tree Traversal: Inorder / Preorder / Postorder matters: pending hand-authoring."
+    },
+    {
+      "type": "intuition",
+      "narration": "Intuition for Tree Traversal: Inorder / Preorder / Postorder: pending hand-authoring."
+    },
+    {
+      "type": "mechanism",
+      "narration": "Mechanism for Tree Traversal: Inorder / Preorder / Postorder: pending hand-authoring."
+    },
+    {
+      "type": "mechanism-detail",
+      "narration": "Details for Tree Traversal: Inorder / Preorder / Postorder: pending hand-authoring."
+    },
+    {
+      "type": "example",
+      "narration": "Real-world Tree Traversal: Inorder / Preorder / Postorder example: pending hand-authoring."
+    },
+    {
+      "type": "recap",
+      "narration": "Tree Traversal: Inorder / Preorder / Postorder recap: pending hand-authoring."
+    }
+  ]
+}

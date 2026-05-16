@@ -1,0 +1,35 @@
+{
+  "topicId": 15,
+  "topic": "Event Sourcing in Production",
+  "quality": "placeholder",
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "Bhai sun, ye Event Sourcing in Production ki ek mistake teri ₹45-65LPA ki Razorpay offer cancel kara dega."
+    },
+    {
+      "type": "problem",
+      "narration": "Why Event Sourcing in Production matters: pending hand-authoring."
+    },
+    {
+      "type": "intuition",
+      "narration": "Intuition for Event Sourcing in Production: pending hand-authoring."
+    },
+    {
+      "type": "mechanism",
+      "narration": "Mechanism for Event Sourcing in Production: pending hand-authoring."
+    },
+    {
+      "type": "mechanism-detail",
+      "narration": "Details for Event Sourcing in Production: pending hand-authoring."
+    },
+    {
+      "type": "example",
+      "narration": "Real-world Event Sourcing in Production example: pending hand-authoring."
+    },
+    {
+      "type": "recap",
+      "narration": "Event Sourcing in Production recap: pending hand-authoring."
+    }
+  ]
+}

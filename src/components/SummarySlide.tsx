@@ -95,7 +95,7 @@ const SummarySlide: React.FC<SummarySlideProps> = ({
   return (
     <AbsoluteFill
       style={{
-        backgroundColor: COLORS.dark,
+        backgroundColor: COLORS.bgBase,
         fontFamily: FONTS.text,
         overflow: 'hidden',
       }}
@@ -155,7 +155,7 @@ const SummarySlide: React.FC<SummarySlideProps> = ({
             style={{
               fontSize: SIZES.heading3,
               fontWeight: 900,
-              color: COLORS.white,
+              color: COLORS.textPrimary,
               fontFamily: FONTS.heading,
               letterSpacing: 4,
               textTransform: 'uppercase' as const,
@@ -280,7 +280,7 @@ const SummarySlide: React.FC<SummarySlideProps> = ({
                     opacity: textOpacity,
                     fontSize: SIZES.bodySmall,
                     fontWeight: 600,
-                    color: COLORS.white,
+                    color: COLORS.textPrimary,
                     lineHeight: 1.45,
                   }}
                 >
@@ -362,7 +362,7 @@ const SummarySlide: React.FC<SummarySlideProps> = ({
                   style={{
                     transform: `scale(${ctaPulse})`,
                     background: `linear-gradient(135deg, ${COLORS.saffron} 0%, ${COLORS.gold} 100%)`,
-                    color: COLORS.dark,
+                    color: COLORS.bgBase,
                     padding: '16px 48px',
                     borderRadius: 50,
                     fontSize: SIZES.bodySmall,

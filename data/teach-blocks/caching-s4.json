@@ -1,0 +1,43 @@
+{
+  "slug": "caching",
+  "session": 4,
+  "totalSessions": 10,
+  "topic": "Caching",
+  "quality": "authored",
+  "mechanismKeywords": [
+    "skiplist",
+    "sorted set",
+    "hash"
+  ],
+  "mistakeKeyword": "wrong data type",
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "Ye Session 4 of 10 hai Caching series me — aaj focus: Redis architecture & types. Bhai, ek mistake jo 90% engineers karte hain — 8 second me batata hu."
+    },
+    {
+      "type": "problem",
+      "narration": "Common mistake: wrong data type samjhe bina production me lagaya — scale pe pakda gaya. Aaj ke session me exact reason aur fix dono dekhenge."
+    },
+    {
+      "type": "intuition",
+      "narration": "Soch tu ek student ka brain — important formulas saamne notebook me likhe (cache), kam-use ki cheezein library me (DB). Cache hit = saamne mil gaya, miss = library jaana padega."
+    },
+    {
+      "type": "mechanism",
+      "narration": "Core mechanism: skiplist, sorted set, hash — ye sab terms aaj clear karenge with concrete examples. Yaad rakh, Caching ka design choice = scale + cost trade-off."
+    },
+    {
+      "type": "mechanism-detail",
+      "narration": "Tunables: TTL 60s-1h hot path, eviction policy match access pattern (LRU temporal locality, LFU stable popularity). Memory budget 10-20% of working set. Cache:DB latency ratio 100:1. Tunables touched: skiplist, sorted set, hash."
+    },
+    {
+      "type": "example",
+      "narration": "Real example: Twitter timeline cache 100K QPS Memcached pe. Discord 4M concurrent users session-state Redis sharded across 200 nodes. Instagram feed cache hit-rate 99.5%."
+    },
+    {
+      "type": "recap",
+      "narration": "Interview line: skiplist, sorted set, hash — ye yaad rakh. Session 4/10 complete. agle session me hum caching ka next layer dekhenge."
+    }
+  ]
+}

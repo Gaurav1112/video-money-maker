@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "fps": 30,
+  "width": 1080,
+  "height": 1920,
+  "topic": "API Gateway",
+  "session": 8,
+  "totalSessions": 10,
+  "siteTopicSlug": "api-gateway",
+  "siteSessionSlug": "graphql-gateway-bff-pattern",
+  "siteSessionTitle": "GraphQL Gateway & BFF Pattern",
+  "siteSessionFocus": "GraphQL federation, backend-for-frontend, aggregation",
+  "durationInFrames": 1500,
+  "audioFile": "assets/voice/api-gateway-s8.mp3",
+  "scenes": [
+    {
+      "sceneIndex": 0,
+      "startFrame": 0,
+      "endFrame": 150,
+      "durationFrames": 150,
+      "type": "hook",
+      "narration": "Multiple REST APIs ka BFF layer nahi hai — mobile client 20 requests per screen. GraphQL Gateway yeh problem solve karta hai. FAANG mein yeh modern pattern hai.",
+      "templateId": "ApiGatewayArch"
+    },
+    {
+      "sceneIndex": 1,
+      "startFrame": 150,
+      "endFrame": 600,
+      "durationFrames": 450,
+      "type": "body",
+      "narration": "GraphQL Gateway: single endpoint, client specifies exactly what data it needs — no over-fetching, no under-fetching. Schema stitching: multiple GraphQL schemas combine karo. Federation (Apollo): each microservice owns its graph schema, gateway combines — distributed ownership. BFF (Backend for Frontend): mobile BFF, web BFF, third-party BFF — each optimized for its client. Mobile BFF: bandwidth-efficient responses, fewer requests. REST aggregation at BFF: multiple downstream REST calls, single response to client. DataLoader: N+1 prevention in GraphQL resolvers — batch requests to database.",
+      "templateId": "ApiGatewayArch"
+    },
+    {
+      "sceneIndex": 2,
+      "startFrame": 600,
+      "endFrame": 1050,
+      "durationFrames": 450,
+      "type": "body",
+      "narration": "GraphQL N+1 problem: query users list, each user resolves their posts — N database calls. Solution: DataLoader batches all user IDs into one query. But DataLoader trap: caching within a request is good, but cross-request caching can serve stale data. Create new DataLoader instance per request. FAANG: \"GraphQL vs REST for a mobile API?\" REST for simple CRUD, GraphQL for complex hierarchical data with variable client needs. GraphQL operation cost limit implement karo — deep nested queries can be expensive.",
+      "templateId": "ApiGatewayArch"
+    },
+    {
+      "sceneIndex": 3,
+      "startFrame": 1050,
+      "endFrame": 1500,
+      "durationFrames": 450,
+      "type": "outro",
+      "narration": "GraphQL for flexible client-driven queries, BFF for client-specific optimization, DataLoader for N+1 prevention. Federation for distributed schema ownership in microservices. Guru-sishya.in pe GraphQL gateway implementation hai.",
+      "templateId": "ApiGatewayArch"
+    }
+  ]
+}

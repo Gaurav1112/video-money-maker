@@ -1,0 +1,42 @@
+{
+  "topicId": 7,
+  "topic": "Consistent Hashing & Why Virtual Nodes",
+  "quality": "authored",
+  "mechanismKeywords": [
+    "ring",
+    "virtual node",
+    "hash ring",
+    "minimal disruption"
+  ],
+  "mistakeKeyword": "rehash",
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "Server add kiya aur 90% cache miss ho gaya? Bhai, modulo hashing use kar raha tha — full rehash ho gaya."
+    },
+    {
+      "type": "problem",
+      "narration": "Mistake: hash(key) % N use kiya. N badla — har key ka mapping change. Cache stampede, DB pe load 10x. Solution: consistent hashing. Server add hone pe sirf 1/N keys redistribute hote hain, baaki untouched."
+    },
+    {
+      "type": "intuition",
+      "narration": "Ring soch — 0 se 2^32 ka circle. Servers ko hash karke ring pe place kar. Key bhi hash karke ring pe gir — clockwise jo first server mile, wahi owner. Server add hua to sirf uske aur uske predecessor ke beech wale keys move hote hain — neighbors disturb hote hain, baaki nahi."
+    },
+    {
+      "type": "mechanism",
+      "narration": "Plain consistent hashing me ek server ek point pe baithta hai — load skew aata hai. Virtual nodes solution: har physical server ko 100-200 virtual points pe place kar ring pe. Ab load uniformly distributed hai. Server crash hua to uske 200 virtual points ke saare keys uniformly other servers pe redistribute hote hain."
+    },
+    {
+      "type": "mechanism-detail",
+      "narration": "Lookup: TreeMap.ceilingKey(hash(key)) — O(log V) where V = total virtual nodes. Add server: 200 points insert, ~K/N keys move. Remove: 200 points delete. Replication: ring pe next R-1 servers ko bhi same key bhej — Cassandra, DynamoDB yahi karte hain."
+    },
+    {
+      "type": "example",
+      "narration": "Discord apne 5M concurrent users ke session-state ko consistent hashing ring pe shard karta hai — 4096 virtual nodes per server. Server add hone pe migration time 12 second from 4 minute (modulo era). DynamoDB ka partition assignment bhi yahi algorithm."
+    },
+    {
+      "type": "recap",
+      "narration": "Interview line: consistent hashing ring + virtual nodes (100-200 per server) + clockwise lookup = minimal disruption + uniform load. Ye Session 4 of 10 — agla: data replication on the ring."
+    }
+  ]
+}

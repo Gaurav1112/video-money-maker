@@ -1,0 +1,35 @@
+{
+  "topicId": 9,
+  "topic": "Database Sharding Strategies",
+  "quality": "placeholder",
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "Bhai sun, ye Database Sharding Strategies ki ek mistake teri ₹40-65LPA ki Flipkart offer cancel kara dega."
+    },
+    {
+      "type": "problem",
+      "narration": "Why Database Sharding Strategies matters: pending hand-authoring."
+    },
+    {
+      "type": "intuition",
+      "narration": "Intuition for Database Sharding Strategies: pending hand-authoring."
+    },
+    {
+      "type": "mechanism",
+      "narration": "Mechanism for Database Sharding Strategies: pending hand-authoring."
+    },
+    {
+      "type": "mechanism-detail",
+      "narration": "Details for Database Sharding Strategies: pending hand-authoring."
+    },
+    {
+      "type": "example",
+      "narration": "Real-world Database Sharding Strategies example: pending hand-authoring."
+    },
+    {
+      "type": "recap",
+      "narration": "Database Sharding Strategies recap: pending hand-authoring."
+    }
+  ]
+}

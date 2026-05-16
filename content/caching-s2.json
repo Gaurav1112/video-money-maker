@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "fps": 30,
+  "width": 1080,
+  "height": 1920,
+  "topic": "Caching",
+  "session": 2,
+  "totalSessions": 10,
+  "siteTopicSlug": "caching",
+  "siteSessionSlug": "cache-eviction-policies-lru",
+  "siteSessionTitle": "Cache Eviction Policies (LRU, LFU, FIFO)",
+  "siteSessionFocus": "algorithms, implementation, tradeoffs",
+  "durationInFrames": 1500,
+  "audioFile": "assets/voice/caching-s2.mp3",
+  "scenes": [
+    {
+      "sceneIndex": 0,
+      "startFrame": 0,
+      "endFrame": 150,
+      "durationFrames": 150,
+      "type": "hook",
+      "narration": "LRU cache implement kiya — phir bhi OOM hua. Eviction policy galat choose karna FAANG mein sabse bada trap hai.",
+      "templateId": "CachingArch"
+    },
+    {
+      "sceneIndex": 1,
+      "startFrame": 150,
+      "endFrame": 600,
+      "durationFrames": 450,
+      "type": "body",
+      "narration": "LRU (Least Recently Used): sabse kam recently access hua item evict karo. HashMap + Doubly Linked List se O(1) implementation. Best for temporal locality — recently accessed data likely reused hoga. LFU (Least Frequently Used): sabse kam baar access hua item evict karo. More complex — min-heap ya frequency bucket list. Best for Zipf distribution — popular items permanently cached. FIFO (First In First Out): simple queue, oldest item evict karo. Simple but ignores access pattern. Variants: LRU-K, 2Q, ARC (Adaptive Replacement Cache).",
+      "templateId": "CachingArch"
+    },
+    {
+      "sceneIndex": 2,
+      "startFrame": 600,
+      "endFrame": 1050,
+      "durationFrames": 450,
+      "type": "body",
+      "narration": "LRU ka scan resistance problem: sequential scan — ek baar database table scan kiya toh saare hot items cache se evict ho jaate hain because scan items \"recently used\" ban jaate hain. Solution: 2Q algorithm — new items sirf probation queue mein jaate hain, repeated access hone par main cache mein promote hote hain. MySQL InnoDB ka buffer pool exactly yahi use karta hai. LFU iske against better hai but frequency counter overflow problem hai.",
+      "templateId": "CachingArch"
+    },
+    {
+      "sceneIndex": 3,
+      "startFrame": 1050,
+      "endFrame": 1500,
+      "durationFrames": 450,
+      "type": "outro",
+      "narration": "Eviction policy choose karo use case ke basis pe: LRU for general web cache, LFU for popularity-skewed data, FIFO for time-ordered queues. Wrong policy = low hit rate = performance regression. Guru-sishya.in pe implementation code dekho.",
+      "templateId": "CachingArch"
+    }
+  ]
+}

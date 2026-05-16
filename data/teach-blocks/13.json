@@ -1,0 +1,35 @@
+{
+  "topicId": 13,
+  "topic": "Saga Pattern for Distributed Transactions",
+  "quality": "placeholder",
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "Bhai sun, ye Saga Pattern for Distributed Transactions ki ek mistake teri ₹45-65LPA ki Razorpay offer cancel kara dega."
+    },
+    {
+      "type": "problem",
+      "narration": "Why Saga Pattern for Distributed Transactions matters: pending hand-authoring."
+    },
+    {
+      "type": "intuition",
+      "narration": "Intuition for Saga Pattern for Distributed Transactions: pending hand-authoring."
+    },
+    {
+      "type": "mechanism",
+      "narration": "Mechanism for Saga Pattern for Distributed Transactions: pending hand-authoring."
+    },
+    {
+      "type": "mechanism-detail",
+      "narration": "Details for Saga Pattern for Distributed Transactions: pending hand-authoring."
+    },
+    {
+      "type": "example",
+      "narration": "Real-world Saga Pattern for Distributed Transactions example: pending hand-authoring."
+    },
+    {
+      "type": "recap",
+      "narration": "Saga Pattern for Distributed Transactions recap: pending hand-authoring."
+    }
+  ]
+}

@@ -191,7 +191,7 @@ const ComparisonTable: React.FC<ComparisonTableProps> = ({
   return (
     <AbsoluteFill
       style={{
-        backgroundColor: COLORS.dark,
+        backgroundColor: COLORS.bgBase,
         justifyContent: 'center',
         alignItems: 'center',
         padding: '48px 60px',
@@ -221,7 +221,7 @@ const ComparisonTable: React.FC<ComparisonTableProps> = ({
           transform: `translateY(${titleY}px)`,
           fontSize: SIZES.heading2,
           fontWeight: 800,
-          color: COLORS.white,
+          color: COLORS.textPrimary,
           marginBottom: 32,
           textAlign: 'center',
           fontFamily: FONTS.heading,
@@ -250,7 +250,7 @@ const ComparisonTable: React.FC<ComparisonTableProps> = ({
             justifyContent: 'center',
             fontSize: 28,
             fontWeight: 900,
-            color: COLORS.dark,
+            color: COLORS.bgBase,
             boxShadow: `0 0 40px ${COLORS.saffron}66, 0 0 80px ${COLORS.gold}33`,
             letterSpacing: '2px',
             opacity: vsScale,
@@ -268,7 +268,7 @@ const ComparisonTable: React.FC<ComparisonTableProps> = ({
           borderRadius: 16,
           overflow: 'hidden',
           border: `1.5px solid ${COLORS.indigo}44`,
-          boxShadow: `0 8px 64px ${COLORS.dark}CC, 0 0 0 1px ${COLORS.indigo}22`,
+          boxShadow: `0 8px 64px ${COLORS.bgBase}CC, 0 0 0 1px ${COLORS.indigo}22`,
           opacity: headerOpacity,
         }}
       >
@@ -332,7 +332,7 @@ const ComparisonTable: React.FC<ComparisonTableProps> = ({
 
           const isHighlightedRow = isNearEnd && rowIndex === visibleRowCount - 1;
           const evenRow = rowIndex % 2 === 0;
-          const rowBg = evenRow ? COLORS.darkAlt : `${COLORS.dark}EE`;
+          const rowBg = evenRow ? COLORS.darkAlt : `${COLORS.bgBase}EE`;
 
           return (
             <div
@@ -374,12 +374,12 @@ const ComparisonTable: React.FC<ComparisonTableProps> = ({
                       color: isHighlightedRow
                         ? COLORS.gold
                         : isLabelCol
-                          ? COLORS.white
+                          ? COLORS.textPrimary
                           : isWinnerCell
                             ? COLORS.teal
                             : isLoserCell
                               ? COLORS.red
-                              : COLORS.white,
+                              : COLORS.textPrimary,
                       backgroundColor: cellBg,
                       textAlign: isLabelCol ? 'left' : 'center',
                       fontWeight: isLabelCol || isWinnerCell || isHighlightedRow ? 700 : 400,

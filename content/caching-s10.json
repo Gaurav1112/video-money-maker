@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "fps": 30,
+  "width": 1080,
+  "height": 1920,
+  "topic": "Caching",
+  "session": 10,
+  "totalSessions": 10,
+  "siteTopicSlug": "caching",
+  "siteSessionSlug": "complete-interview-masterclass",
+  "siteSessionTitle": "Complete Interview Masterclass",
+  "siteSessionFocus": "model answers, cache design problems, cheat sheet",
+  "durationInFrames": 1500,
+  "audioFile": "assets/voice/caching-s10.mp3",
+  "scenes": [
+    {
+      "sceneIndex": 0,
+      "startFrame": 0,
+      "endFrame": 150,
+      "durationFrames": 150,
+      "type": "hook",
+      "narration": "Caching interview mein ek question poochha jaata hai jo 80% candidates galat answer dete hain. Final masterclass mein yeh clear ho jaayega.",
+      "templateId": "CachingArch"
+    },
+    {
+      "sceneIndex": 1,
+      "startFrame": 150,
+      "endFrame": 600,
+      "durationFrames": 450,
+      "type": "body",
+      "narration": "Model answer framework for cache design: 1. Data characterize karo — read vs write ratio, data size, staleness tolerance. 2. Cache topology — in-process vs distributed, single node vs cluster. 3. Eviction policy — LRU for recency, LFU for frequency, FIFO for queue. 4. Write strategy — write-through for consistency, write-behind for throughput, cache-aside for flexibility. 5. Invalidation — TTL + event-driven hybrid. 6. Failure modes — cache miss storm, stampede, poisoning. Cheat sheet: Redis for rich data, Memcached for simple distributed, CDN for static, in-process for ultra-low latency.",
+      "templateId": "CachingArch"
+    },
+    {
+      "sceneIndex": 2,
+      "startFrame": 600,
+      "endFrame": 1050,
+      "durationFrames": 450,
+      "type": "body",
+      "narration": "Most common mistake: designing cache without defining \"what is success.\" Cache hit rate target, acceptable staleness window, consistency requirement, memory budget — inhe clarify kiye bina architecture present karna junior behavior hai. Example: \"Cache hit rate 95% target, 1-second staleness acceptable for feed, strict consistency for payment status\" — yeh clarity design decisions drive karti hai. Senior answer always starts with requirements.",
+      "templateId": "CachingArch"
+    },
+    {
+      "sceneIndex": 3,
+      "startFrame": 1050,
+      "endFrame": 1500,
+      "durationFrames": 450,
+      "type": "outro",
+      "narration": "Caching cheat sheet: identify hot data → choose topology → set eviction → handle writes → manage invalidation → monitor hit rate. Guru-sishya.in pe mock interviews karo, sab 10 sessions complete karo — interview ready ho jaoge.",
+      "templateId": "CachingArch"
+    }
+  ]
+}

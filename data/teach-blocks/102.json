@@ -1,0 +1,35 @@
+{
+  "topicId": 102,
+  "topic": "DBMS",
+  "quality": "placeholder",
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "GATE 2026 mein DBMS ke 8-10 marks pakke. Padh lo abhi."
+    },
+    {
+      "type": "problem",
+      "narration": "Why DBMS matters: pending hand-authoring."
+    },
+    {
+      "type": "intuition",
+      "narration": "Intuition for DBMS: pending hand-authoring."
+    },
+    {
+      "type": "mechanism",
+      "narration": "Mechanism for DBMS: pending hand-authoring."
+    },
+    {
+      "type": "mechanism-detail",
+      "narration": "Details for DBMS: pending hand-authoring."
+    },
+    {
+      "type": "example",
+      "narration": "Real-world DBMS example: pending hand-authoring."
+    },
+    {
+      "type": "recap",
+      "narration": "DBMS recap: pending hand-authoring."
+    }
+  ]
+}

@@ -84,7 +84,7 @@ const OutroSlide: React.FC<OutroSlideProps> = ({
   return (
     <AbsoluteFill
       style={{
-        backgroundColor: COLORS.dark,
+        backgroundColor: COLORS.bgBase,
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -204,7 +204,7 @@ const OutroSlide: React.FC<OutroSlideProps> = ({
                     flexShrink: 0,
                     fontSize: 14,
                     fontWeight: 800,
-                    color: COLORS.white,
+                    color: COLORS.textPrimary,
                     transform: `scale(${springScale(frame, delay, fps)})`,
                     boxShadow: `0 0 8px ${COLORS.teal}40`,
                   }}
@@ -216,7 +216,7 @@ const OutroSlide: React.FC<OutroSlideProps> = ({
                     fontSize: 20,
                     fontFamily: FONTS.text,
                     fontWeight: 500,
-                    color: COLORS.white,
+                    color: COLORS.textPrimary,
                     lineHeight: 1.3,
                   }}
                 >
@@ -289,7 +289,7 @@ const OutroSlide: React.FC<OutroSlideProps> = ({
                     fontSize: 17,
                     fontFamily: FONTS.text,
                     fontWeight: 600,
-                    color: COLORS.white,
+                    color: COLORS.textPrimary,
                   }}
                 >
                   {feat.label}
@@ -315,7 +315,7 @@ const OutroSlide: React.FC<OutroSlideProps> = ({
             fontSize: 42,
             fontFamily: FONTS.heading,
             fontWeight: 900,
-            color: COLORS.white,
+            color: COLORS.textPrimary,
             textShadow: `0 0 ${20 + glowPulse * 30}px ${COLORS.teal}${
               Math.round(glowPulse * 200).toString(16).padStart(2, '0')
             }, 0 0 60px ${COLORS.teal}30`,
@@ -351,7 +351,7 @@ const OutroSlide: React.FC<OutroSlideProps> = ({
             top: 0, bottom: 0,
             left: shimmerX,
             width: 60,
-            background: `linear-gradient(90deg, transparent, ${COLORS.white}50, ${COLORS.white}80, ${COLORS.white}50, transparent)`,
+            background: `linear-gradient(90deg, transparent, ${COLORS.textPrimary}50, ${COLORS.textPrimary}80, ${COLORS.textPrimary}50, transparent)`,
             transform: 'skewX(-20deg)',
             pointerEvents: 'none',
           }} />
@@ -361,7 +361,7 @@ const OutroSlide: React.FC<OutroSlideProps> = ({
               fontSize: 22,
               fontFamily: FONTS.text,
               fontWeight: 800,
-              color: COLORS.white,
+              color: COLORS.textPrimary,
               letterSpacing: 0.3,
             }}
           >
@@ -438,7 +438,7 @@ const OutroSlide: React.FC<OutroSlideProps> = ({
                   fontSize: 18,
                   fontFamily: FONTS.text,
                   fontWeight: 800,
-                  color: COLORS.white,
+                  color: COLORS.textPrimary,
                 }}
               >
                 Subscribe
@@ -492,7 +492,7 @@ const OutroSlide: React.FC<OutroSlideProps> = ({
             {/* Next topic title */}
             <div style={{
               fontSize: 20, fontFamily: FONTS.heading, fontWeight: 700,
-              color: COLORS.white, lineHeight: 1.3, marginBottom: 8,
+              color: COLORS.textPrimary, lineHeight: 1.3, marginBottom: 8,
             }}>
               {nextTopic}
             </div>

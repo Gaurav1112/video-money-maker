@@ -49,7 +49,7 @@ const TOKEN_COLORS: Record<TokenType, string> = {
   type: '#4EC9B0',
   punctuation: '#BABED8',
   decorator: '#FFCB6B',
-  plain: '#E2E0DC', // was COLORS.white (#1E293B charcoal) — need light text on dark IDE bg
+  plain: '#E2E0DC', // was COLORS.textPrimary (#1E293B charcoal) — need light text on dark IDE bg
 };
 
 const KEYWORDS = new Set([
@@ -316,7 +316,7 @@ const CodeReveal: React.FC<CodeRevealProps> = ({
   return (
     <AbsoluteFill
       style={{
-        backgroundColor: COLORS.dark,
+        backgroundColor: COLORS.bgBase,
         padding: 50,
         display: 'flex',
         flexDirection: 'column',
@@ -419,7 +419,7 @@ const CodeReveal: React.FC<CodeRevealProps> = ({
           display: 'flex',
           flexDirection: 'column',
           position: 'relative',
-          boxShadow: `0 8px 40px ${COLORS.dark}CC, 0 0 0 1px ${COLORS.gray}10`,
+          boxShadow: `0 8px 40px ${COLORS.bgBase}CC, 0 0 0 1px ${COLORS.gray}10`,
         }}
       >
         {/* Title bar with dots + file tab */}
@@ -447,7 +447,7 @@ const CodeReveal: React.FC<CodeRevealProps> = ({
               borderRadius: '6px 6px 0 0',
               fontSize: SIZES.caption,
               fontFamily: FONTS.code,
-              color: COLORS.white,
+              color: COLORS.textPrimary,
               fontWeight: 500,
               borderTop: `2px solid ${langIconColor}`,
               display: 'flex',

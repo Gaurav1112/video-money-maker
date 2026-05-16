@@ -1,0 +1,43 @@
+{
+  "slug": "load-balancing",
+  "session": 9,
+  "totalSessions": 10,
+  "topic": "Load Balancing",
+  "quality": "authored",
+  "mechanismKeywords": [
+    "Zuul",
+    "Maglev",
+    "envoy"
+  ],
+  "mistakeKeyword": "monolith LB",
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "Ye Session 9 of 10 hai Load Balancing series me — aaj focus: real-world: Netflix Uber Google. Bhai, ek mistake jo 90% engineers karte hain — 8 second me batata hu."
+    },
+    {
+      "type": "problem",
+      "narration": "Common mistake: monolith LB samjhe bina production me lagaya — scale pe pakda gaya. Aaj ke session me exact reason aur fix dono dekhenge."
+    },
+    {
+      "type": "intuition",
+      "narration": "Soch chauraha pe traffic cop — par dumb cop nahi, smart cop. Algorithm dekh ke decide karta hai konsi gaadi konse lane me — yahi load-balancer ka kaam."
+    },
+    {
+      "type": "mechanism",
+      "narration": "Core mechanism: Zuul, Maglev, envoy — ye sab terms aaj clear karenge with concrete examples. Yaad rakh, Load Balancing ka design choice = scale + cost trade-off."
+    },
+    {
+      "type": "mechanism-detail",
+      "narration": "Concrete numbers: L4 LB ~1M conn/sec, L7 LB ~100K req/sec (parsing overhead). Health-check interval 5-10s, fail-threshold 3 misses. Algorithm choice depends on connection-duration + capacity-heterogeneity. Tunables: Zuul, Maglev, envoy."
+    },
+    {
+      "type": "example",
+      "narration": "Real example: Netflix Zuul edge LB Java me, 100K req/sec per node. Google Maglev consistent-hashing pe based, ECMP IP-hash karta hai router level pe — connection-state nahi maintain karta."
+    },
+    {
+      "type": "recap",
+      "narration": "Interview line: Zuul, Maglev, envoy — ye yaad rakh. Session 9/10 complete. agle session me hum load balancing ka next layer dekhenge."
+    }
+  ]
+}

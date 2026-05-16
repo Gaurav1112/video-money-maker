@@ -1,0 +1,35 @@
+{
+  "topicId": 83,
+  "topic": "Virtual Memory & Page Faults",
+  "quality": "placeholder",
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "Bhai, Google ke SDE-2 round mein Virtual Memory & Page Faults pe ye trick poochhi jati hai. 30 second sun le."
+    },
+    {
+      "type": "problem",
+      "narration": "Why Virtual Memory & Page Faults matters: pending hand-authoring."
+    },
+    {
+      "type": "intuition",
+      "narration": "Intuition for Virtual Memory & Page Faults: pending hand-authoring."
+    },
+    {
+      "type": "mechanism",
+      "narration": "Mechanism for Virtual Memory & Page Faults: pending hand-authoring."
+    },
+    {
+      "type": "mechanism-detail",
+      "narration": "Details for Virtual Memory & Page Faults: pending hand-authoring."
+    },
+    {
+      "type": "example",
+      "narration": "Real-world Virtual Memory & Page Faults example: pending hand-authoring."
+    },
+    {
+      "type": "recap",
+      "narration": "Virtual Memory & Page Faults recap: pending hand-authoring."
+    }
+  ]
+}

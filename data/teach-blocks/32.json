@@ -1,0 +1,35 @@
+{
+  "topicId": 32,
+  "topic": "Two-Phase Commit Problem",
+  "quality": "placeholder",
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "Bhai sun, ye Two-Phase Commit Problem ki ek mistake teri ₹45-65LPA ki Google offer cancel kara dega."
+    },
+    {
+      "type": "problem",
+      "narration": "Why Two-Phase Commit Problem matters: pending hand-authoring."
+    },
+    {
+      "type": "intuition",
+      "narration": "Intuition for Two-Phase Commit Problem: pending hand-authoring."
+    },
+    {
+      "type": "mechanism",
+      "narration": "Mechanism for Two-Phase Commit Problem: pending hand-authoring."
+    },
+    {
+      "type": "mechanism-detail",
+      "narration": "Details for Two-Phase Commit Problem: pending hand-authoring."
+    },
+    {
+      "type": "example",
+      "narration": "Real-world Two-Phase Commit Problem example: pending hand-authoring."
+    },
+    {
+      "type": "recap",
+      "narration": "Two-Phase Commit Problem recap: pending hand-authoring."
+    }
+  ]
+}

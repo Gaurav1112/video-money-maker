@@ -1,0 +1,35 @@
+{
+  "topicId": 71,
+  "topic": "Technical Decision With Incomplete Data",
+  "quality": "placeholder",
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "Ek line mein bata — Technical Decision With Incomplete Data? Galat answer = Amazon reject. Sahi answer = ₹35-60LPA."
+    },
+    {
+      "type": "problem",
+      "narration": "Why Technical Decision With Incomplete Data matters: pending hand-authoring."
+    },
+    {
+      "type": "intuition",
+      "narration": "Intuition for Technical Decision With Incomplete Data: pending hand-authoring."
+    },
+    {
+      "type": "mechanism",
+      "narration": "Mechanism for Technical Decision With Incomplete Data: pending hand-authoring."
+    },
+    {
+      "type": "mechanism-detail",
+      "narration": "Details for Technical Decision With Incomplete Data: pending hand-authoring."
+    },
+    {
+      "type": "example",
+      "narration": "Real-world Technical Decision With Incomplete Data example: pending hand-authoring."
+    },
+    {
+      "type": "recap",
+      "narration": "Technical Decision With Incomplete Data recap: pending hand-authoring."
+    }
+  ]
+}

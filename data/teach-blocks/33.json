@@ -1,0 +1,35 @@
+{
+  "topicId": 33,
+  "topic": "Leader Election with Raft",
+  "quality": "placeholder",
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "Bhai sun, ye Leader Election with Raft ki ek mistake teri ₹50-75LPA ki Google offer cancel kara dega."
+    },
+    {
+      "type": "problem",
+      "narration": "Why Leader Election with Raft matters: pending hand-authoring."
+    },
+    {
+      "type": "intuition",
+      "narration": "Intuition for Leader Election with Raft: pending hand-authoring."
+    },
+    {
+      "type": "mechanism",
+      "narration": "Mechanism for Leader Election with Raft: pending hand-authoring."
+    },
+    {
+      "type": "mechanism-detail",
+      "narration": "Details for Leader Election with Raft: pending hand-authoring."
+    },
+    {
+      "type": "example",
+      "narration": "Real-world Leader Election with Raft example: pending hand-authoring."
+    },
+    {
+      "type": "recap",
+      "narration": "Leader Election with Raft recap: pending hand-authoring."
+    }
+  ]
+}

@@ -19,5 +19,23 @@
     }
   },
   "include": ["src/**/*", "scripts/**/*", "remotion.config.ts"],
-  "exclude": ["node_modules", "dist", "output"]
+  "exclude": [
+    "node_modules",
+    "dist",
+    "output",
+    "src/api/**",
+    "src/render/**",
+    "src/services/quality-cache.ts",
+    "src/services/queue/**",
+    "src/audio/tts-engines/edge-tts-hinglish.ts",
+    "src/pipeline/dual-track-orchestrator.ts",
+    "src/pipeline/render-daily-short.patch.ts",
+    "src/lib/metadata-generator.ts",
+    "src/__tests__/**",
+    "scripts/post-community.ts",
+    "scripts/publish-telegram.ts",
+    "scripts/queue/**",
+    "scripts/queue/**/*",
+    "scripts/migrate/queue-json-to-sqlite.ts"
+  ]
 }

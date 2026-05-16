@@ -1,0 +1,35 @@
+{
+  "topicId": 90,
+  "topic": "Firewall vs WAF vs API Gateway",
+  "quality": "placeholder",
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "Bhai, Cloudflare ke SDE-2 round mein Firewall vs WAF vs API Gateway pe ye trick poochhi jati hai. 30 second sun le."
+    },
+    {
+      "type": "problem",
+      "narration": "Why Firewall vs WAF vs API Gateway matters: pending hand-authoring."
+    },
+    {
+      "type": "intuition",
+      "narration": "Intuition for Firewall vs WAF vs API Gateway: pending hand-authoring."
+    },
+    {
+      "type": "mechanism",
+      "narration": "Mechanism for Firewall vs WAF vs API Gateway: pending hand-authoring."
+    },
+    {
+      "type": "mechanism-detail",
+      "narration": "Details for Firewall vs WAF vs API Gateway: pending hand-authoring."
+    },
+    {
+      "type": "example",
+      "narration": "Real-world Firewall vs WAF vs API Gateway example: pending hand-authoring."
+    },
+    {
+      "type": "recap",
+      "narration": "Firewall vs WAF vs API Gateway recap: pending hand-authoring."
+    }
+  ]
+}

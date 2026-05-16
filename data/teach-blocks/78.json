@@ -1,0 +1,35 @@
+{
+  "topicId": 78,
+  "topic": "Notice Period Buyout Negotiation",
+  "quality": "placeholder",
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "Ek line mein bata — Notice Period Buyout Negotiation? Galat answer = Flipkart reject. Sahi answer = ₹30-55LPA."
+    },
+    {
+      "type": "problem",
+      "narration": "Why Notice Period Buyout Negotiation matters: pending hand-authoring."
+    },
+    {
+      "type": "intuition",
+      "narration": "Intuition for Notice Period Buyout Negotiation: pending hand-authoring."
+    },
+    {
+      "type": "mechanism",
+      "narration": "Mechanism for Notice Period Buyout Negotiation: pending hand-authoring."
+    },
+    {
+      "type": "mechanism-detail",
+      "narration": "Details for Notice Period Buyout Negotiation: pending hand-authoring."
+    },
+    {
+      "type": "example",
+      "narration": "Real-world Notice Period Buyout Negotiation example: pending hand-authoring."
+    },
+    {
+      "type": "recap",
+      "narration": "Notice Period Buyout Negotiation recap: pending hand-authoring."
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+{
+  "topicId": 10,
+  "topic": "Caching: Cache-Aside vs Write-Through vs Write-Behind",
+  "quality": "authored",
+  "mechanismKeywords": [
+    "cache-aside",
+    "write-through",
+    "write-behind",
+    "lazy load"
+  ],
+  "mistakeKeyword": "stale",
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "Tera cache aur DB me data alag hai? Bhai, stale read ho raha hai — pattern galat chuna."
+    },
+    {
+      "type": "problem",
+      "narration": "Mistake: cache-aside laga ke DB write ke baad cache invalidate karna bhul gaya — stale data 1 hour tak serve hota raha. Ya write-through laga ke DB down hone pe write fail ho rahe — entire path tight-coupled. Pattern selection matters."
+    },
+    {
+      "type": "intuition",
+      "narration": "Cache-aside — tu khud market jaata hai (cache check), nahi mila to godown se laata hai (DB), ghar pe rakh leta hai (cache fill). Write-through — tu cashier ko deta hai, cashier ek copy locker me, ek shelf pe — synchronous. Write-behind — tu shelf pe rakhta hai, koi background worker baad me locker me daal deta hai — fast write, durability risk."
+    },
+    {
+      "type": "mechanism",
+      "narration": "Cache-aside: read me cache miss → DB se laao → cache me daalo. Write me DB update → cache invalidate (ya update). Write-through: write cache+DB synchronously — slow but consistent. Write-behind (write-back): write cache, DB async batch — fast but data loss if cache crashes."
+    },
+    {
+      "type": "mechanism-detail",
+      "narration": "TTL set kar always — staleness bound chahiye. Cache stampede rokne ke liye probabilistic early refresh use kar (XFetch algorithm). Write-through me retry+timeout chahiye, write-behind me WAL chahiye otherwise crash recovery fail. Read-through alag pattern hai — cache khud DB se fetch karta hai, app ko miss handle nahi karna padta."
+    },
+    {
+      "type": "example",
+      "narration": "Instagram feed cache-aside use karta hai — Memcached me posts, miss pe Cassandra. Twitter timeline write-behind — tweet aaya to user-cache update, fanout async. PayPal balance write-through — durability mandatory, latency 5ms acceptable."
+    },
+    {
+      "type": "recap",
+      "narration": "Interview line: read-heavy + tolerant staleness → cache-aside; consistency-mandatory → write-through; write-heavy + idempotent → write-behind. Ye Session 3 of 10 Caching series — agla: cache invalidation strategies."
+    }
+  ]
+}

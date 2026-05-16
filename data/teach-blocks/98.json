@@ -1,0 +1,35 @@
+{
+  "topicId": 98,
+  "topic": "Elasticsearch Indexing & Inverted Index",
+  "quality": "placeholder",
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "Tu agar Elasticsearch Indexing & Inverted Index samajh nahi paya, toh Flipkart ka ₹35-60LPA ka offer bhool ja."
+    },
+    {
+      "type": "problem",
+      "narration": "Why Elasticsearch Indexing & Inverted Index matters: pending hand-authoring."
+    },
+    {
+      "type": "intuition",
+      "narration": "Intuition for Elasticsearch Indexing & Inverted Index: pending hand-authoring."
+    },
+    {
+      "type": "mechanism",
+      "narration": "Mechanism for Elasticsearch Indexing & Inverted Index: pending hand-authoring."
+    },
+    {
+      "type": "mechanism-detail",
+      "narration": "Details for Elasticsearch Indexing & Inverted Index: pending hand-authoring."
+    },
+    {
+      "type": "example",
+      "narration": "Real-world Elasticsearch Indexing & Inverted Index example: pending hand-authoring."
+    },
+    {
+      "type": "recap",
+      "narration": "Elasticsearch Indexing & Inverted Index recap: pending hand-authoring."
+    }
+  ]
+}

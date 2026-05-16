@@ -8,6 +8,9 @@ import { ViralShort, calculateViralShortMetadata } from './ViralShort';
 import { VerticalLong, calculateVerticalLongMetadata } from './VerticalLong';
 import { AtomicShort, calculateAtomicShortMetadata } from './AtomicShort';
 import { ThumbnailComposition } from './Thumbnail';
+import { HookCardShort } from './HookCardShort';
+import { OutroCardShort } from './OutroCardShort';
+import { ThumbnailShortPortrait } from './ThumbnailShortPortrait';
 import type { Storyboard } from '../types';
 import type { ClipType } from './MultiShort';
 
@@ -153,6 +156,35 @@ export const RemotionRoot: React.FC = () => {
           defaultProps={{ storyboard: defaultStoryboard, clipType }}
         />
       ))}
+
+      {/* Stock-pipeline book-end cards (rendered standalone, then ffmpeg-muxed) */}
+      <Composition
+        id="HookCardShort"
+        component={asCompositionComponent(HookCardShort)}
+        durationInFrames={90}
+        fps={30}
+        width={1080}
+        height={1920}
+        defaultProps={{ hookText: 'Master CAP Theorem in 60s', topic: 'CAP Theorem' }}
+      />
+      <Composition
+        id="OutroCardShort"
+        component={asCompositionComponent(OutroCardShort)}
+        durationInFrames={90}
+        fps={30}
+        width={1080}
+        height={1920}
+        defaultProps={{ topic: 'CAP Theorem', ctaText: 'Follow @GuruSishya-India for daily tech in 60 seconds' }}
+      />
+      <Composition
+        id="ThumbnailShortPortrait"
+        component={asCompositionComponent(ThumbnailShortPortrait)}
+        durationInFrames={1}
+        fps={30}
+        width={1080}
+        height={1920}
+        defaultProps={{ topic: 'CAP Theorem', subtitle: '60-Second System Design' }}
+      />
     </>
   );
 };

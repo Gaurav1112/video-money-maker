@@ -1,0 +1,35 @@
+{
+  "topicId": 19,
+  "topic": "Design: Notification System (Push + In-App)",
+  "quality": "placeholder",
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "Bhai sun, ye Design: Notification System (Push + In-App) ki ek mistake teri ₹35-55LPA ki Swiggy offer cancel kara dega."
+    },
+    {
+      "type": "problem",
+      "narration": "Why Design: Notification System (Push + In-App) matters: pending hand-authoring."
+    },
+    {
+      "type": "intuition",
+      "narration": "Intuition for Design: Notification System (Push + In-App): pending hand-authoring."
+    },
+    {
+      "type": "mechanism",
+      "narration": "Mechanism for Design: Notification System (Push + In-App): pending hand-authoring."
+    },
+    {
+      "type": "mechanism-detail",
+      "narration": "Details for Design: Notification System (Push + In-App): pending hand-authoring."
+    },
+    {
+      "type": "example",
+      "narration": "Real-world Design: Notification System (Push + In-App) example: pending hand-authoring."
+    },
+    {
+      "type": "recap",
+      "narration": "Design: Notification System (Push + In-App) recap: pending hand-authoring."
+    }
+  ]
+}

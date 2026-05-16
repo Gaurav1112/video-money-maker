@@ -1,0 +1,35 @@
+{
+  "topicId": 25,
+  "topic": "Design: Google Drive / Dropbox",
+  "quality": "placeholder",
+  "scenes": [
+    {
+      "type": "hook",
+      "narration": "Bhai sun, ye Design: Google Drive / Dropbox ki ek mistake teri ₹45-70LPA ki Google offer cancel kara dega."
+    },
+    {
+      "type": "problem",
+      "narration": "Why Design: Google Drive / Dropbox matters: pending hand-authoring."
+    },
+    {
+      "type": "intuition",
+      "narration": "Intuition for Design: Google Drive / Dropbox: pending hand-authoring."
+    },
+    {
+      "type": "mechanism",
+      "narration": "Mechanism for Design: Google Drive / Dropbox: pending hand-authoring."
+    },
+    {
+      "type": "mechanism-detail",
+      "narration": "Details for Design: Google Drive / Dropbox: pending hand-authoring."
+    },
+    {
+      "type": "example",
+      "narration": "Real-world Design: Google Drive / Dropbox example: pending hand-authoring."
+    },
+    {
+      "type": "recap",
+      "narration": "Design: Google Drive / Dropbox recap: pending hand-authoring."
+    }
+  ]
+}

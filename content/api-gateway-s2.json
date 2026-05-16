@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "fps": 30,
+  "width": 1080,
+  "height": 1920,
+  "topic": "API Gateway",
+  "session": 2,
+  "totalSessions": 10,
+  "siteTopicSlug": "api-gateway",
+  "siteSessionSlug": "rate-limiting-throttling",
+  "siteSessionTitle": "Rate Limiting & Throttling",
+  "siteSessionFocus": "token bucket, sliding window, distributed rate limiting",
+  "durationInFrames": 1500,
+  "audioFile": "assets/voice/api-gateway-s2.mp3",
+  "scenes": [
+    {
+      "sceneIndex": 0,
+      "startFrame": 0,
+      "endFrame": 150,
+      "durationFrames": 150,
+      "type": "hook",
+      "narration": "Free API banayi — 10 minutes mein DDoS se database down. Rate limiting nahi implement kiya? FAANG security design mein yeh basic hai.",
+      "templateId": "ApiGatewayArch"
+    },
+    {
+      "sceneIndex": 1,
+      "startFrame": 150,
+      "endFrame": 600,
+      "durationFrames": 450,
+      "type": "body",
+      "narration": "Token Bucket: bucket mein tokens hain, har request ek token consume karta hai, tokens time ke saath refill hote hain at fixed rate. Burst allowed (bucket full hai toh). Leaky Bucket: fixed rate se requests process karo — no burst, smooth output. Sliding Window Counter: last N seconds ke requests count karo. More accurate than fixed window. Sliding Window Log: exact timestamps store karo — most accurate, most memory. Fixed Window: per minute/hour count — simple but boundary burst attack possible. Distributed rate limiting: Redis pe counter store karo — atomic INCR + EXPIRE.",
+      "templateId": "ApiGatewayArch"
+    },
+    {
+      "sceneIndex": 2,
+      "startFrame": 600,
+      "endFrame": 1050,
+      "durationFrames": 450,
+      "type": "body",
+      "narration": "Fixed window boundary attack: rate limit 100 req/minute. Attacker sends 100 requests at 0:59 aur 100 at 1:01 — 200 requests in 2 seconds but both windows show exactly 100. Solution: sliding window algorithm. Distributed rate limiting race condition: two gateway instances simultaneously check counter, both see 99, both allow request — 101st request sneaks through. Solution: Redis Lua script for atomic check-and-increment, or Redis INCR return value use karo (if return > limit, reject). FAANG: \"How do you implement distributed rate limiting without race conditions?\"",
+      "templateId": "ApiGatewayArch"
+    },
+    {
+      "sceneIndex": 3,
+      "startFrame": 1050,
+      "endFrame": 1500,
+      "durationFrames": 450,
+      "type": "outro",
+      "narration": "Token bucket for burst-allowed APIs, sliding window for precise rate control, distributed Redis counter for multi-instance gateways. Rate limiting logic must be atomic. Guru-sishya.in pe rate limiting implementation labs hain.",
+      "templateId": "ApiGatewayArch"
+    }
+  ]
+}

@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "fps": 30,
+  "width": 1080,
+  "height": 1920,
+  "topic": "Database Design",
+  "session": 9,
+  "totalSessions": 10,
+  "siteTopicSlug": "database-design",
+  "siteSessionSlug": "database-at-uber-airbnb-stripe",
+  "siteSessionTitle": "Database at Uber, Airbnb & Stripe",
+  "siteSessionFocus": "real-world migrations, lessons learned",
+  "durationInFrames": 1500,
+  "audioFile": "assets/voice/database-design-s9.mp3",
+  "scenes": [
+    {
+      "sceneIndex": 0,
+      "startFrame": 0,
+      "endFrame": 150,
+      "durationFrames": 150,
+      "type": "hook",
+      "narration": "Uber ne MySQL se Schemaless migrate kiya. Airbnb ne Monorail se microservices. Stripe ne Postgres scale ki. Yeh real stories FAANG mein direct use hoti hain.",
+      "templateId": "DatabaseDesignArch"
+    },
+    {
+      "sceneIndex": 1,
+      "startFrame": 150,
+      "endFrame": 600,
+      "durationFrames": 450,
+      "type": "body",
+      "narration": "Uber migration: MySQL master-slave → custom Schemaless (built on MySQL) → per-service databases with Kafka CDC. Lesson: generic ORM nahi chalti at scale — domain-specific storage. Airbnb: PostgreSQL monolith → Apache Cassandra for timeline/activity → Druid for analytics. Lesson: different access patterns need different databases — polyglot persistence. Stripe: PostgreSQL sharding — custom Vitess-like solution. Database-per-service with Saga pattern for distributed transactions. Lesson: schema migration at scale needs tooling, not just ALTER TABLE.",
+      "templateId": "DatabaseDesignArch"
+    },
+    {
+      "sceneIndex": 2,
+      "startFrame": 600,
+      "endFrame": 1050,
+      "durationFrames": 450,
+      "type": "body",
+      "narration": "Database migration trap: zero-downtime migration. ALTER TABLE on 100GB table — hours of lock, zero writes. Solution: pt-online-schema-change (Percona) ya gh-ost (GitHub) — shadow table banaao, gradually copy, atomic swap. Expand-contract pattern: add column → backfill → use new column → remove old column — never in single deployment. FAANG: \"How do you add a NOT NULL column to a 1-billion-row production table without downtime?\" — yeh answer clearly know karna chahiye.",
+      "templateId": "DatabaseDesignArch"
+    },
+    {
+      "sceneIndex": 3,
+      "startFrame": 1050,
+      "endFrame": 1500,
+      "durationFrames": 450,
+      "type": "outro",
+      "narration": "Real-world database evolution = incremental migration, expand-contract pattern, CDC for live migration, polyglot persistence. No big-bang rewrites in production. Guru-sishya.in pe all three case studies detailed walkthrough ke saath hain.",
+      "templateId": "DatabaseDesignArch"
+    }
+  ]
+}

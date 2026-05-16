@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "fps": 30,
+  "width": 1080,
+  "height": 1920,
+  "topic": "Database Design",
+  "session": 10,
+  "totalSessions": 10,
+  "siteTopicSlug": "database-design",
+  "siteSessionSlug": "complete-interview-masterclass",
+  "siteSessionTitle": "Complete Interview Masterclass",
+  "siteSessionFocus": "model answers, design problems, cheat sheet",
+  "durationInFrames": 1500,
+  "audioFile": "assets/voice/database-design-s10.mp3",
+  "scenes": [
+    {
+      "sceneIndex": 0,
+      "startFrame": 0,
+      "endFrame": 150,
+      "durationFrames": 150,
+      "type": "hook",
+      "narration": "Database design interview mein interviewer ek trap set karta hai — 80% candidates isme fall karte hain. Masterclass mein woh trap aur uska perfect answer.",
+      "templateId": "DatabaseDesignArch"
+    },
+    {
+      "sceneIndex": 1,
+      "startFrame": 150,
+      "endFrame": 600,
+      "durationFrames": 450,
+      "type": "body",
+      "narration": "Model answer framework for database design: 1. Clarify — data volume, access patterns, consistency requirements. 2. Choose SQL vs NoSQL with justification. 3. Schema design — entity relationships, normalization level. 4. Indexing strategy — identify hot queries, index accordingly. 5. Scaling — replication for reads, sharding for writes. 6. Reliability — transactions, failover, backup strategy. Cheat sheet: PostgreSQL for OLTP, Cassandra for write-heavy time-series, DynamoDB for key-value at scale, Elasticsearch for full-text search, Redis for cache + session.",
+      "templateId": "DatabaseDesignArch"
+    },
+    {
+      "sceneIndex": 2,
+      "startFrame": 600,
+      "endFrame": 1050,
+      "durationFrames": 450,
+      "type": "body",
+      "narration": "Common interview mistake: choosing a database before understanding access patterns. \"I'll use MongoDB\" without knowing query patterns — this is premature optimization. Interviewer sees this as junior behavior. Senior answer: \"Let me understand what questions we need to answer. If we need flexible schema with complex queries → MongoDB. If write throughput is the constraint → Cassandra. If we need ACID transactions → PostgreSQL.\" Requirements first, technology second.",
+      "templateId": "DatabaseDesignArch"
+    },
+    {
+      "sceneIndex": 3,
+      "startFrame": 1050,
+      "endFrame": 1500,
+      "durationFrames": 450,
+      "type": "outro",
+      "narration": "Database design cheat sheet committed karo: SQL vs NoSQL decision matrix, indexing rules, sharding strategies, replication patterns. FAANG mein yeh sab explain karna with tradeoffs = senior-level signal. Guru-sishya.in pe all 10 sessions complete karo.",
+      "templateId": "DatabaseDesignArch"
+    }
+  ]
+}
