@@ -1,8 +1,8 @@
 name: Daily Short (Render + Upload)
 
 # Standalone 45-second YouTube Shorts -- one per day, fully automated.
-# 660 unique Shorts (66 topics x 10 formats) = ~22 months of daily content.
-# Uses VerticalLong composition (proven stable) instead of AtomicShort.
+# 924 unique Shorts (66 topics x 14 formats) = ~28 months of daily content.
+# Uses ViralShort composition at 60fps with 3-phase content + viral titles.
 
 on:
   schedule:
@@ -81,6 +81,8 @@ jobs:
 
       - name: Render daily Short (3x retry)
         id: render
+        env:
+          EDGE_TTS: '1'  # Use Edge TTS on CI (fast, no Docker needed)
         run: |
           ARGS=""
           if [ -n "${{ inputs.short_number }}" ]; then
@@ -169,6 +171,8 @@ jobs:
 
       - name: "[FALLBACK] Render daily Short"
         if: steps.check.outputs.found != 'true' && inputs.dry_run != 'true'
+        env:
+          EDGE_TTS: '1'
         run: |
           ARGS=""
           if [ -n "${{ inputs.short_number }}" ]; then
