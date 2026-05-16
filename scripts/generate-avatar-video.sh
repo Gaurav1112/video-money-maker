@@ -50,7 +50,7 @@ fi
 # Check SadTalker image
 if ! docker images | grep -q sadtalker; then
   echo "Pulling SadTalker Docker image (one-time, ~4GB)..."
-  docker pull vinthony/sadtalker --platform linux/amd64
+  docker pull wawa9000/sadtalker --platform linux/amd64
 fi
 
 FACE_ABS=$(realpath "$FACE")
@@ -64,7 +64,7 @@ docker run --rm \
   -v "$AUDIO_ABS:/app/input/audio.mp3:ro" \
   -v "$OUTPUT_DIR:/app/output" \
   --platform linux/amd64 \
-  vinthony/sadtalker \
+  wawa9000/sadtalker \
   --driven_audio /app/input/audio.mp3 \
   --source_image /app/input/face.jpg \
   --result_dir /app/output \
@@ -91,6 +91,6 @@ if [ -f "$OUTPUT" ]; then
 else
   echo ""
   echo "Error: SadTalker did not produce output."
-  echo "Try: docker pull vinthony/sadtalker"
+  echo "Try: docker pull wawa9000/sadtalker"
   exit 1
 fi
