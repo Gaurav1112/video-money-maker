@@ -33,7 +33,7 @@
     "@remotion/cli": "^4.0.457",
     "@remotion/google-fonts": "^4.0.457",
     "@remotion/lottie": "^4.0.457",
-    "@remotion/paths": "^4.0.457",
+    "@remotion/paths": "^4.0.463",
     "@remotion/transitions": "^4.0.457",
     "axios": "^1.16.0",
     "fs-extra": "^11.3.4",
