@@ -1,0 +1,93 @@
+name: Trending Topic Short
+
+# Checks HackerNews + Reddit every 6 hours for viral tech events.
+# If a trending topic scores high enough, auto-renders a quiz Short
+# and uploads to YouTube for maximum timeliness.
+
+on:
+  schedule:
+    # Check 4 times daily: 6am, 12pm, 6pm, 12am IST
+    - cron: '30 0 * * *'
+    - cron: '30 6 * * *'
+    - cron: '30 12 * * *'
+    - cron: '30 18 * * *'
+
+  workflow_dispatch:
+    inputs:
+      force_render:
+        description: 'Render even if no trending topic found'
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  detect-and-render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
+      YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
+      YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
+      EDGE_TTS: '1'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Chrome + TTS + ffmpeg
+        run: |
+          npx remotion browser ensure
+          pip install --break-system-packages edge-tts
+          sudo apt-get update -qq && sudo apt-get install -y ffmpeg
+
+      - name: Scan for trending topics
+        id: trends
+        run: |
+          echo "=== Scanning HackerNews + Reddit ==="
+          RESULT=$(npx tsx scripts/trend-detector.ts 2>&1) || true
+          echo "$RESULT"
+          if echo "$RESULT" | grep -q "TRENDING"; then
+            echo "found=true" >> $GITHUB_OUTPUT
+          else
+            echo "found=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Render trending Short
+        if: steps.trends.outputs.found == 'true' || inputs.force_render == true
+        id: render
+        run: |
+          echo "=== Rendering trending topic Short ==="
+          npx tsx scripts/trend-detector.ts --render || echo "Render failed"
+          VIDEO=$(ls -t output/trends/*.mp4 2>/dev/null | head -1)
+          if [ -n "$VIDEO" ]; then
+            echo "video=$VIDEO" >> $GITHUB_OUTPUT
+            echo "meta=${VIDEO%.mp4}-metadata.json" >> $GITHUB_OUTPUT
+            echo "Rendered: $VIDEO"
+          fi
+
+      - name: Upload to YouTube
+        if: steps.render.outputs.video != ''
+        run: |
+          npx tsx scripts/upload-youtube.ts "${{ steps.render.outputs.video }}" "${{ steps.render.outputs.meta }}" --shorts || echo "Upload failed"
+
+      - name: Summary
+        run: |
+          echo "## Trend Detection Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ steps.trends.outputs.found }}" = "true" ]; then
+            echo "🔥 Trending topic found and rendered!" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "📭 No trending topics scored high enough." >> $GITHUB_STEP_SUMMARY
+          fi
