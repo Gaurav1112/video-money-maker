@@ -7,10 +7,12 @@
  * this script detects it and generates a quiz Short you can record and render
  * within hours — catching the viral wave.
  *
+ * Sources: HackerNews, Reddit, GitHub Trending, Cloud Status Pages
+ *
  * Usage:
  *   npx tsx scripts/trend-detector.ts              # Check for trends
  *   npx tsx scripts/trend-detector.ts --generate    # Generate quiz template for recording
- *   npx tsx scripts/trend-detector.ts --render      # Auto-render top trend with TTS
+ *   npx tsx scripts/trend-detector.ts --render      # Auto-render top trend via ViralShort
  *   npx tsx scripts/trend-detector.ts --min-score 5 # Lower the threshold (default 8)
  *   npx tsx scripts/trend-detector.ts --limit 5     # Show top N trends (default 10)
  */
@@ -24,13 +26,20 @@ import { execSync } from 'child_process';
 interface TrendStory {
   title: string;
   url: string;
-  source: 'hackernews' | 'reddit';
+  source: 'hackernews' | 'reddit' | 'github' | 'status';
   subreddit?: string;
-  score: number;           // upvotes on the platform
+  score: number;           // upvotes on the platform (or stars for GitHub)
   trendScore: number;      // our computed trend-worthiness score
   commentsCount: number;
   postedAt: Date;
   id: string;
+}
+
+interface CloudStatusResult {
+  provider: string;
+  status: 'operational' | 'degraded' | 'outage' | 'unknown';
+  description: string;
+  url: string;
 }
 
 interface QuizTemplate {
@@ -73,14 +82,38 @@ const TECH_BRAND_KEYWORDS = [
 
 const USER_AGENT = 'video-pipeline-trend-detector/1.0 (educational content)';
 
-async function fetchJSON(url: string): Promise<any> {
-  const res = await fetch(url, {
-    headers: { 'User-Agent': USER_AGENT },
-  });
-  if (!res.ok) {
-    throw new Error(`HTTP ${res.status} fetching ${url}`);
+async function fetchJSON(url: string, timeoutMs: number = 15000): Promise<any> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const res = await fetch(url, {
+      headers: { 'User-Agent': USER_AGENT },
+      signal: controller.signal,
+    });
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status} fetching ${url}`);
+    }
+    return res.json();
+  } finally {
+    clearTimeout(timer);
   }
-  return res.json();
+}
+
+async function fetchHTML(url: string, timeoutMs: number = 15000): Promise<string> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const res = await fetch(url, {
+      headers: { 'User-Agent': USER_AGENT },
+      signal: controller.signal,
+    });
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status} fetching ${url}`);
+    }
+    return res.text();
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 // ─── HackerNews ──────────────────────────────────────────────────────────────
@@ -155,6 +188,168 @@ async function fetchRedditHot(subreddit: string, limit: number = 25): Promise<Tr
   return stories;
 }
 
+// ─── GitHub Trending ────────────────────────────────────────────────────────
+
+async function fetchGitHubTrending(): Promise<TrendStory[]> {
+  console.log('  Fetching GitHub Trending repos...');
+  try {
+    const html = await fetchHTML('https://github.com/trending', 20000);
+    const stories: TrendStory[] = [];
+
+    // Parse repo names and star counts from the trending page HTML
+    // Each trending repo has: <h2 class="h3 lh-condensed"><a href="/owner/repo">...
+    // Stars are in: <span class="d-inline-block float-sm-right">N stars today</span>
+    const repoPattern = /<h2[^>]*>\s*<a\s+href="\/([^"]+)"[^>]*>/g;
+    const starPattern = /(\d[\d,]*)\s+stars?\s+today/g;
+
+    const repoMatches: string[] = [];
+    let match: RegExpExecArray | null;
+    while ((match = repoPattern.exec(html)) !== null) {
+      repoMatches.push(match[1]);
+    }
+
+    const starMatches: number[] = [];
+    while ((match = starPattern.exec(html)) !== null) {
+      starMatches.push(parseInt(match[1].replace(/,/g, ''), 10) || 0);
+    }
+
+    for (let i = 0; i < repoMatches.length; i++) {
+      const repoFullName = repoMatches[i];
+      const starsToday = starMatches[i] || 0;
+      const repoName = repoFullName.split('/').pop() || repoFullName;
+
+      stories.push({
+        title: `${repoFullName} (${starsToday} stars today)`,
+        url: `https://github.com/${repoFullName}`,
+        source: 'github',
+        score: starsToday,
+        trendScore: 0,
+        commentsCount: 0,
+        postedAt: new Date(),
+        id: `gh-${repoFullName.replace('/', '-')}`,
+      });
+    }
+
+    console.log(`    Found ${stories.length} GitHub trending repos`);
+    return stories;
+  } catch (err) {
+    console.warn(`    GitHub Trending fetch failed: ${(err as Error).message}`);
+    return [];
+  }
+}
+
+// ─── Cloud Status Pages ─────────────────────────────────────────────────────
+
+async function fetchCloudStatus(): Promise<{ statuses: CloudStatusResult[]; stories: TrendStory[] }> {
+  console.log('  Checking cloud provider status pages...');
+  const statuses: CloudStatusResult[] = [];
+  const stories: TrendStory[] = [];
+
+  // GitHub Status (JSON API -- most reliable)
+  try {
+    const ghStatus = await fetchJSON('https://www.githubstatus.com/api/v2/status.json', 10000);
+    const indicator = ghStatus?.status?.indicator || 'none';
+    const description = ghStatus?.status?.description || 'Unknown';
+
+    let status: CloudStatusResult['status'] = 'operational';
+    if (indicator === 'critical' || indicator === 'major') status = 'outage';
+    else if (indicator === 'minor') status = 'degraded';
+
+    statuses.push({
+      provider: 'GitHub',
+      status,
+      description,
+      url: 'https://www.githubstatus.com/',
+    });
+
+    if (status !== 'operational') {
+      stories.push({
+        title: `GitHub Status: ${description} (${status})`,
+        url: 'https://www.githubstatus.com/',
+        source: 'status',
+        score: status === 'outage' ? 1000 : 500,
+        trendScore: 0,
+        commentsCount: 0,
+        postedAt: new Date(),
+        id: `status-github-${Date.now()}`,
+      });
+    }
+  } catch (err) {
+    console.warn(`    GitHub Status fetch failed: ${(err as Error).message}`);
+    statuses.push({ provider: 'GitHub', status: 'unknown', description: 'fetch failed', url: 'https://www.githubstatus.com/' });
+  }
+
+  // AWS Health Status -- HTML page, check for non-operational indicators
+  try {
+    const awsHtml = await fetchHTML('https://health.aws.amazon.com/health/status', 10000);
+    // Look for service event indicators in the HTML
+    const hasIssues = /service\s+disruption|degraded|outage|operational\s+issue/i.test(awsHtml);
+    const status: CloudStatusResult['status'] = hasIssues ? 'degraded' : 'operational';
+
+    statuses.push({
+      provider: 'AWS',
+      status,
+      description: hasIssues ? 'Service issues detected' : 'All services operational',
+      url: 'https://health.aws.amazon.com/health/status',
+    });
+
+    if (hasIssues) {
+      stories.push({
+        title: `AWS Service Health: issues detected`,
+        url: 'https://health.aws.amazon.com/health/status',
+        source: 'status',
+        score: 800,
+        trendScore: 0,
+        commentsCount: 0,
+        postedAt: new Date(),
+        id: `status-aws-${Date.now()}`,
+      });
+    }
+  } catch (err) {
+    console.warn(`    AWS Status fetch failed: ${(err as Error).message}`);
+    statuses.push({ provider: 'AWS', status: 'unknown', description: 'fetch failed', url: 'https://health.aws.amazon.com/health/status' });
+  }
+
+  // GCP Status -- HTML page
+  try {
+    const gcpHtml = await fetchHTML('https://status.cloud.google.com/', 10000);
+    const hasIssues = /service\s+disruption|incident|outage|degraded/i.test(gcpHtml);
+    const status: CloudStatusResult['status'] = hasIssues ? 'degraded' : 'operational';
+
+    statuses.push({
+      provider: 'GCP',
+      status,
+      description: hasIssues ? 'Service issues detected' : 'All services operational',
+      url: 'https://status.cloud.google.com/',
+    });
+
+    if (hasIssues) {
+      stories.push({
+        title: `GCP Status: service issues detected`,
+        url: 'https://status.cloud.google.com/',
+        source: 'status',
+        score: 800,
+        trendScore: 0,
+        commentsCount: 0,
+        postedAt: new Date(),
+        id: `status-gcp-${Date.now()}`,
+      });
+    }
+  } catch (err) {
+    console.warn(`    GCP Status fetch failed: ${(err as Error).message}`);
+    statuses.push({ provider: 'GCP', status: 'unknown', description: 'fetch failed', url: 'https://status.cloud.google.com/' });
+  }
+
+  // Print status summary
+  console.log('    Cloud Status Summary:');
+  for (const s of statuses) {
+    const icon = s.status === 'operational' ? 'OK' : s.status === 'unknown' ? '??' : 'ALERT';
+    console.log(`      [${icon}] ${s.provider}: ${s.description}`);
+  }
+
+  return { statuses, stories };
+}
+
 // ─── Scoring ─────────────────────────────────────────────────────────────────
 
 function scoreTrend(story: TrendStory): number {
@@ -187,6 +382,17 @@ function scoreTrend(story: TrendStory): number {
   }
   if (story.source === 'reddit' && story.score > 2000) {
     score += 3;
+  }
+  // GitHub trending repos with high star velocity are strong signals
+  if (story.source === 'github' && story.score > 100) {
+    score += 5;
+  }
+  if (story.source === 'github' && story.score > 500) {
+    score += 5;
+  }
+  // Cloud status outages are always high-impact content
+  if (story.source === 'status') {
+    score += 15;
   }
 
   // High comment count is a strong signal for controversy/engagement
@@ -340,9 +546,12 @@ function generateQuizFromTrend(story: TrendStory): QuizTemplate {
 // ─── Output Formatting ──────────────────────────────────────────────────────
 
 function printTrend(story: TrendStory, rank: number): void {
-  const sourceLabel = story.source === 'hackernews'
-    ? `HN (score: ${story.score})`
-    : `r/${story.subreddit} (${story.score} up)`;
+  let sourceLabel: string;
+  if (story.source === 'hackernews') sourceLabel = `HN (score: ${story.score})`;
+  else if (story.source === 'reddit') sourceLabel = `r/${story.subreddit} (${story.score} up)`;
+  else if (story.source === 'github') sourceLabel = `GitHub Trending (${story.score} stars today)`;
+  else if (story.source === 'status') sourceLabel = `Cloud Status`;
+  else sourceLabel = story.source;
   const age = Math.round((Date.now() - story.postedAt.getTime()) / (1000 * 60 * 60));
 
   console.log(`  #${rank} [trend-score: ${story.trendScore}] ${sourceLabel} (${age}h ago)`);
@@ -412,16 +621,25 @@ async function main() {
   let allStories: TrendStory[] = [];
   const errors: string[] = [];
 
-  // Fetch HackerNews and Reddit in parallel
+  // Fetch HackerNews, Reddit, GitHub Trending, and Cloud Status in parallel
   const results = await Promise.allSettled([
     fetchHackerNewsTop(30),
     fetchRedditHot('programming', 25),
     fetchRedditHot('technology', 25),
+    fetchGitHubTrending(),
+    fetchCloudStatus(),
   ]);
 
-  for (const result of results) {
+  for (let i = 0; i < results.length; i++) {
+    const result = results[i];
     if (result.status === 'fulfilled') {
-      allStories.push(...result.value);
+      if (i === 4) {
+        // Cloud status returns { statuses, stories }
+        const cloudResult = result.value as { statuses: CloudStatusResult[]; stories: TrendStory[] };
+        allStories.push(...cloudResult.stories);
+      } else {
+        allStories.push(...(result.value as TrendStory[]));
+      }
     } else {
       errors.push(result.reason?.message || 'Unknown fetch error');
     }
@@ -529,76 +747,76 @@ async function main() {
     console.log(`\n=== Auto-Rendering Top Trend ===`);
     console.log(`  Topic: ${quiz.sourceTitle}\n`);
 
-    // Write props for QuizShort composition
-    const propsPath = path.join(outputDir, `trend-quiz-props.json`);
-    const quizProps = {
-      quiz: {
-        topic: quiz.topic,
-        hookText: quiz.hookText,
-        spokenHook: quiz.spokenHook,
-        question: quiz.question,
-        options: quiz.options,
-        correctIndex: quiz.correctIndex,
-        explanation: quiz.explanation,
-        twist: quiz.twist,
-        endQuestion: quiz.endQuestion,
-        title: quiz.title,
-      },
-    };
-    fs.writeFileSync(propsPath, JSON.stringify(quizProps, null, 2));
-    console.log(`  Props: ${propsPath}`);
-
-    // Generate TTS audio
+    // Generate TTS audio and build ViralShort storyboard
     console.log(`  Generating TTS audio...`);
 
     // Dynamic import to avoid loading heavy deps in scan mode
     const { generateSceneAudios } = await import('../src/pipeline/tts-engine');
     const { generateStoryboard } = await import('../src/pipeline/storyboard');
 
-    const fullNarration = `${quiz.spokenHook} ${quiz.question} ${quiz.explanation} ${quiz.twist}`;
+    // Build scene narrations for multi-scene ViralShort
+    const narrationParts = [
+      quiz.spokenHook,
+      quiz.question,
+      quiz.explanation,
+      quiz.twist,
+      quiz.endQuestion,
+    ];
+
+    const sceneInputs = narrationParts.map((text) => ({
+      narration: text,
+      type: 'text' as const,
+    }));
 
     const audioResults = await generateSceneAudios(
-      [{ narration: fullNarration, type: 'text' }],
-      'en-IN-PrabhatNeural',
-      'indian-english',
-      { text: '+10%' },
+      sceneInputs,
+      'en-US-AndrewMultilingualNeural',
+      'english',
+      { text: '+20%' },
     );
 
-    // Build storyboard for audio stitching
-    const audioDuration = audioResults[0]?.duration ?? 38;
-    const quizScene = {
-      type: 'text' as const,
-      content: fullNarration,
-      narration: fullNarration,
-      duration: audioDuration,
-      startFrame: 0,
-      endFrame: Math.round(audioDuration * 30),
-    };
+    // Build scenes for ViralShort storyboard
+    const FPS = 30;
+    const scenes: Array<{ type: 'title' | 'text' | 'summary'; content: string; narration: string; heading?: string; duration: number; startFrame: number; endFrame: number }> = [];
 
-    const storyboard = generateStoryboard([quizScene], audioResults, {
+    const sceneHeadings = ['Hook', quiz.topic, 'The Answer', 'Plot Twist', 'Your Turn'];
+    for (let i = 0; i < narrationParts.length; i++) {
+      const dur = audioResults[i]?.duration ?? 5;
+      scenes.push({
+        type: i === 0 ? 'title' : i === narrationParts.length - 1 ? 'summary' : 'text',
+        content: narrationParts[i],
+        narration: narrationParts[i],
+        heading: sceneHeadings[i],
+        duration: dur,
+        startFrame: 0,
+        endFrame: Math.round(dur * FPS),
+      });
+    }
+
+    const storyboard = generateStoryboard(scenes, audioResults, {
       topic: quiz.topic,
       sessionNumber: 0,
-      fps: 30,
+      fps: FPS,
       width: 1080,
       height: 1920,
       format: 'vertical',
     });
 
-    // Update props with audio info
-    const updatedProps = {
-      ...quizProps,
-      audioFile: storyboard.audioFile ? path.basename(storyboard.audioFile) : undefined,
-    };
-    fs.writeFileSync(propsPath, JSON.stringify(updatedProps, null, 2));
+    storyboard.bgmFile = 'audio/bgm/warm-ambient.mp3';
 
-    // Render via Remotion
-    console.log(`  Rendering video via Remotion...`);
+    // Write props for ViralShort composition
+    const propsPath = path.join(outputDir, `trend-quiz-props.json`);
+    fs.writeFileSync(propsPath, JSON.stringify({ storyboard }, null, 2));
+    console.log(`  Props: ${propsPath}`);
+
+    // Render via Remotion ViralShort (not QuizShort)
+    console.log(`  Rendering video via Remotion ViralShort...`);
     const videoOutput = path.join(outputDir, `trend-${quiz.topic}-${timestamp}.mp4`);
 
     const renderCmd = [
       'npx', 'remotion', 'render',
       'src/compositions/index.tsx',
-      'QuizShort',
+      'ViralShort',
       videoOutput,
       `--props=${propsPath}`,
       '--codec=h264',
@@ -610,9 +828,40 @@ async function main() {
 
     execSync(renderCmd, { stdio: 'inherit', cwd: PROJECT_ROOT });
 
+    // Generate viral metadata
+    const metadata = {
+      slug: quiz.topic,
+      title: quiz.title,
+      source: quiz.sourceUrl,
+      youtube: {
+        title: quiz.title,
+        description: [
+          quiz.hookText.replace('\n', ' '),
+          '',
+          quiz.question,
+          '',
+          `Source: ${quiz.sourceOrigin}`,
+          '',
+          'Full courses: guru-sishya.in',
+          '',
+          `#trending #${quiz.topic.replace(/-/g, '')} #tech #coding #shorts`,
+        ].join('\n'),
+        tags: [quiz.topic, 'trending', 'tech news', 'coding'],
+        categoryId: '27',
+      },
+      x_post: {
+        text: `${quiz.hookText.replace('\n', ' ')}\n\n${quiz.sourceUrl}`,
+      },
+      generatedAt: quiz.generatedAt,
+    };
+
+    const metadataPath = path.join(outputDir, `trend-${quiz.topic}-${timestamp}-metadata.json`);
+    fs.writeFileSync(metadataPath, JSON.stringify(metadata, null, 2));
+
     const fileSize = fs.statSync(videoOutput).size;
     console.log(`\n=== Trend Short Rendered ===`);
     console.log(`  Video:    ${videoOutput} (${(fileSize / 1024 / 1024).toFixed(1)} MB)`);
+    console.log(`  Metadata: ${metadataPath}`);
     console.log(`  Props:    ${propsPath}`);
     console.log(`  Title:    ${quiz.title}`);
     console.log(`  Source:   ${quiz.sourceUrl}`);
