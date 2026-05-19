@@ -35,7 +35,7 @@ env:
   # Pinned versions for the python pip + apt + npx external dependencies
   # so a malicious upstream tag bump can't ingest into the render
   # pipeline mid-run (Eng4 supply-chain P0).
-  EDGE_TTS_VERSION: '7.0.0'
+  EDGE_TTS_VERSION: '7.2.8'
   REMOTION_VERSION: '4.0.279'
 
 # B4: prevent overlapping runs (manual + scheduled) from racing the
@@ -89,6 +89,8 @@ jobs:
       FREESOUND_API_KEY: ${{ secrets.FREESOUND_API_KEY }}
       FREESOUND_CLIENT_ID: ${{ secrets.FREESOUND_CLIENT_ID }}
       UNSPLASH_ACCESS_KEY: ${{ secrets.UNSPLASH_ACCESS_KEY }}
+      FFMPEG_PATH: /usr/bin/ffmpeg
+      FFPROBE_PATH: /usr/bin/ffprobe
     outputs:
       artifact_name: daily-short-${{ github.run_number }}
       queue_item_id: ${{ steps.enqueue.outputs.queue_item_id }}
