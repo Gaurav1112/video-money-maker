@@ -35,7 +35,7 @@ env:
   # Pinned versions for the python pip + apt + npx external dependencies
   # so a malicious upstream tag bump can't ingest into the render
   # pipeline mid-run (Eng4 supply-chain P0).
-  EDGE_TTS_VERSION: '7.0.0'
+  EDGE_TTS_VERSION: '7.2.8'
   REMOTION_VERSION: '4.0.279'
 
 # B4: prevent overlapping runs (manual + scheduled) from racing the
