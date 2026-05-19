@@ -1,11 +1,11 @@
 #!/usr/bin/env npx tsx
 /**
- * render-daily-short.ts — Render one standalone 45-second Short per day
+ * render-daily-short.ts — Render one 38-second Quiz Short per day
  *
  * Usage:
  *   npx tsx scripts/render-daily-short.ts              # auto-pick based on today's date
  *   npx tsx scripts/render-daily-short.ts --date 2026-05-15  # specific date
- *   npx tsx scripts/render-daily-short.ts --short 42   # specific short number (0-659)
+ *   npx tsx scripts/render-daily-short.ts --short 0    # specific quiz index (0-N)
  *   npx tsx scripts/render-daily-short.ts --dry-run     # preview without rendering
  *
  * Outputs to: output/daily-short/<id>.mp4 + metadata JSON
@@ -14,33 +14,15 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { execSync } from 'child_process';
-import {
-  generateShort,
-  getShortForDate,
-  resolveShortNumber,
-  TOTAL_SHORTS,
-} from '../src/pipeline/shorts-generator';
+import { getDailyQuiz, getQuizByIndex, QUIZ_BANK } from '../src/lib/quiz-content';
 import { generateSceneAudios } from '../src/pipeline/tts-engine';
 import { generateStoryboard } from '../src/pipeline/storyboard';
-import type { Scene, Storyboard } from '../src/types';
-import { buildTERarcFromScenes, generateStatusThreatHook } from '../src/pipeline/short-arc-builder';
 
 // ─── Paths ──────────────────────────────────────────────────────────────────
 
 const PROJECT_ROOT = path.resolve(__dirname, '..');
 const OUTPUT_DIR = path.join(PROJECT_ROOT, 'output', 'daily-short');
 const PROPS_DIR = path.join(PROJECT_ROOT, 'output');
-
-const BGM_FILES = [
-  'audio/bgm/gentle-drone.mp3',
-  'audio/bgm/study-pad.mp3',
-  'audio/bgm/warm-ambient.mp3',
-];
-
-function pickBgm(seed: string): string {
-  const hash = seed.split('').reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
-  return BGM_FILES[hash % BGM_FILES.length];
-}
 
 // ─── CLI Args ───────────────────────────────────────────────────────────────
 
@@ -70,52 +52,38 @@ function parseArgs(): { date: Date; shortNumber: number | null; dryRun: boolean 
 async function main() {
   const { date, shortNumber: explicitShort, dryRun } = parseArgs();
 
-  // Determine which Short to render
-  let topicSlug: string;
-  let shortIndex: number;
-  let shortNum: number;
+  // Determine which quiz to render
+  const quiz = explicitShort !== null
+    ? getQuizByIndex(explicitShort)
+    : getDailyQuiz(date);
 
-  if (explicitShort !== null) {
-    const resolved = resolveShortNumber(explicitShort);
-    topicSlug = resolved.topicSlug;
-    shortIndex = resolved.shortIndex;
-    shortNum = explicitShort;
-  } else {
-    const result = getShortForDate(date);
-    topicSlug = result.topicSlug;
-    shortIndex = result.shortIndex;
-    shortNum = result.shortNumber;
-  }
+  // Build a stable ID for file naming
+  const quizIndex = explicitShort !== null
+    ? explicitShort % QUIZ_BANK.length
+    : (() => {
+        const startOfYear = new Date(date.getFullYear(), 0, 0);
+        const diff = date.getTime() - startOfYear.getTime();
+        return Math.floor(diff / (1000 * 60 * 60 * 24)) % QUIZ_BANK.length;
+      })();
+  const episodeId = `${quiz.topic}-quiz-${quizIndex}`;
 
-  // Generate the Short content
-  const episode = generateShort(topicSlug, shortIndex);
-
-  // Apply TER arc — transforms flat educational scenes into tension→escalation→resolution
-  const hookScript = generateStatusThreatHook(episode.topicSlug, episode.heading);
-  episode.scenes = buildTERarcFromScenes(
-    episode.scenes,
-    episode.topicSlug,
-    episode.heading,
-    { forceOpenLoop: true, targetDurationSec: 50 },
-  );
-  // Use viral title generator for maximum CTR
-  const { generateViralTitle } = await import('../src/lib/viral-strategy');
-  const viralTitles = generateViralTitle(topicSlug, episode.formatName, episode.narration);
-  episode.title = viralTitles[0]; // Use top-ranked viral title
-
-  console.log(`\n=== Daily Short #${shortNum} ===`);
-  console.log(`Date:    ${date.toISOString().slice(0, 10)}`);
-  console.log(`Topic:   ${topicSlug}`);
-  console.log(`Format:  ${episode.formatName} (index ${shortIndex})`);
-  console.log(`Title:   ${episode.title} (${episode.title.length} chars)`);
-  console.log(`Words:   ${episode.narration.split(/\s+/).length}`);
-  console.log(`ID:      ${episode.id}`);
+  console.log(`\n=== Daily Quiz Short ===`);
+  console.log(`Date:     ${date.toISOString().slice(0, 10)}`);
+  console.log(`Topic:    ${quiz.topic}`);
+  console.log(`Index:    ${quizIndex} / ${QUIZ_BANK.length - 1}`);
+  console.log(`Title:    ${quiz.title}`);
+  console.log(`Question: ${quiz.question}`);
 
   if (dryRun) {
-    console.log(`\n--- Narration ---\n${episode.narration}`);
-    console.log(`\n--- Heading ---\n${episode.heading}`);
-    console.log(`\n--- Bullets ---`);
-    episode.bullets.forEach((b, i) => console.log(`  ${i + 1}. ${b}`));
+    console.log(`\n--- Hook ---\n${quiz.hookText}`);
+    console.log(`\n--- Spoken Hook ---\n${quiz.spokenHook}`);
+    console.log(`\n--- Options ---`);
+    quiz.options.forEach((o, i) =>
+      console.log(`  ${String.fromCharCode(65 + i)}) ${o}${i === quiz.correctIndex ? '  ✓' : ''}`)
+    );
+    console.log(`\n--- Explanation ---\n${quiz.explanation}`);
+    console.log(`\n--- Twist ---\n${quiz.twist}`);
+    console.log(`\n--- End Question ---\n${quiz.endQuestion}`);
     console.log('\n[DRY RUN — not rendering]');
     return;
   }
@@ -123,60 +91,61 @@ async function main() {
   // Ensure output directory
   fs.mkdirSync(OUTPUT_DIR, { recursive: true });
 
-  // ── Step 1: Generate TTS audio for each scene ──
+  // ── Step 1: Generate TTS audio from quiz narration ──
   console.log('\n[1/4] Generating TTS audio...');
+  const fullNarration = `${quiz.spokenHook} ${quiz.question} ${quiz.explanation} ${quiz.twist}`;
+
   const audioResults = await generateSceneAudios(
-    episode.scenes,
+    [{ narration: fullNarration, type: 'text' }],
     'en-IN-PrabhatNeural',
     'indian-english',
-    { text: '+45%', code: '+25%', table: '+38%', interview: '+45%', title: '+50%', diagram: '+35%', review: '+42%', summary: '+48%' },
+    { text: '+10%' },
   );
 
-  // ── Step 2: Build storyboard ──
+  // ── Step 2: Build storyboard (for audio stitching only) ──
   console.log('[2/4] Building storyboard...');
-  const storyboard = generateStoryboard(episode.scenes, audioResults, {
-    topic: topicSlug,
-    sessionNumber: 0, // 0 = standalone short
-    fps: 60,
+  const audioDuration = audioResults[0]?.duration ?? 38;
+  const quizScene = {
+    type: 'text' as const,
+    content: fullNarration,
+    narration: fullNarration,
+    duration: audioDuration,
+    startFrame: 0,
+    endFrame: Math.round(audioDuration * 30),
+  };
+  const storyboard = generateStoryboard([quizScene], audioResults, {
+    topic: quiz.topic,
+    sessionNumber: quizIndex,
+    fps: 30,
     width: 1080,
     height: 1920,
     format: 'vertical',
   });
 
-  // Override duration to exactly 2700 frames (45s at 60fps)
-  storyboard.durationInFrames = 2700;
-  storyboard.bgmFile = pickBgm(episode.id);
-
-  // ── Optional: SadTalker lip-sync (run separately with SADTALKER=1) ──
-  // SadTalker is slow (~5min) and optional. Run it separately:
-  //   bash scripts/generate-avatar-video.sh public/audio/master-kafka-s0.mp3
-  // The avatar video at public/video/avatar-talking.mp4 will be auto-detected.
+  storyboard.bgmFile = 'audio/bgm/warm-ambient.mp3';
 
   // Save props JSON
-  const propsPath = path.join(PROPS_DIR, `daily-short-${episode.id}.json`);
+  const propsPath = path.join(PROPS_DIR, `daily-short-${episodeId}.json`);
   const propsData = {
-    storyboard,
-    heading: episode.heading,
-    bullets: episode.bullets,
-    visualCue: episode.visualCue,
+    quiz,
+    audioFile: storyboard.audioFile ? path.basename(storyboard.audioFile) : undefined,
   };
   fs.writeFileSync(propsPath, JSON.stringify(propsData, null, 2));
   console.log(`   Props: ${propsPath}`);
 
   // ── Step 3: Render via Remotion ──
   console.log('[3/4] Rendering video...');
-  const outputPath = path.join(OUTPUT_DIR, `${episode.id}.mp4`);
+  const outputPath = path.join(OUTPUT_DIR, `${episodeId}.mp4`);
 
   const renderCmd = [
     'npx', 'remotion', 'render',
     'src/compositions/index.tsx',
-    'ViralShort',
+    'QuizShort',
     outputPath,
     `--props=${propsPath}`,
     '--codec=h264',
     '--crf=18',
     '--audio-bitrate=192K',
-    // Use concurrency=1 on cloud runners (7GB RAM) to avoid OOM
     `--concurrency=${process.env.CI ? '1' : '4'}`,
     '--timeout=180000',
   ].join(' ');
@@ -186,8 +155,28 @@ async function main() {
 
   // ── Step 4: Generate metadata ──
   console.log('[4/4] Generating metadata...');
-  const metadata = generateShortMetadata(episode);
-  const metadataPath = path.join(OUTPUT_DIR, `${episode.id}-metadata.json`);
+  const metadata = {
+    youtube: {
+      title: quiz.title,
+      description: [
+        quiz.question,
+        '',
+        `A) ${quiz.options[0]}`,
+        `B) ${quiz.options[1]}`,
+        `C) ${quiz.options[2]}`,
+        '',
+        `💬 Comment your answer!`,
+        '',
+        `Full course: guru-sishya.in`,
+        '',
+        `#systemdesign #${quiz.topic.replace(/-/g, '')} #codinginterview #softwareengineer`,
+      ].join('\n'),
+      tags: [quiz.topic, 'system design', 'coding interview', 'software engineer', 'tech shorts'],
+      categoryId: '27', // Education
+    },
+  };
+
+  const metadataPath = path.join(OUTPUT_DIR, `${episodeId}-metadata.json`);
   fs.writeFileSync(metadataPath, JSON.stringify(metadata, null, 2));
   console.log(`   Metadata: ${metadataPath}`);
 
@@ -196,60 +185,7 @@ async function main() {
   console.log(`\n=== Done ===`);
   console.log(`Video:    ${outputPath} (${(fileSize / 1024 / 1024).toFixed(1)} MB)`);
   console.log(`Metadata: ${metadataPath}`);
-  console.log(`Title:    ${episode.title}`);
-}
-
-// ─── Metadata Generator ─────────────────────────────────────────────────────
-
-interface ShortMetadata {
-  youtube: {
-    title: string;
-    description: string;
-    tags: string[];
-    categoryId: string;
-    playlistTitle: string;
-  };
-}
-
-function generateShortMetadata(episode: ReturnType<typeof generateShort>): ShortMetadata {
-  const topicDisplay = episode.topicSlug
-    .split('-')
-    .map(w => w.charAt(0).toUpperCase() + w.slice(1))
-    .join(' ');
-
-  // NO #Shorts in title — YouTube auto-detects vertical content
-  const title = episode.title;
-
-  // Use the episode's SEO-optimized description (includes lead magnet link)
-  const description = (episode as any).description || [
-    `${episode.heading}`,
-    '',
-    episode.bullets.map(b => `- ${b}`).join('\n'),
-    '',
-    `Full deep-dive series available on our channel.`,
-    '',
-    `${((episode as any).hashtags || []).join(' ')}`,
-  ].join('\n');
-
-  const tags = [
-    topicDisplay.toLowerCase(),
-    'system design',
-    'coding interview',
-    'software engineering',
-    'tech shorts',
-    'programming',
-    episode.formatName,
-  ];
-
-  return {
-    youtube: {
-      title,
-      description,
-      tags,
-      categoryId: '28', // Science & Technology
-      playlistTitle: `${topicDisplay} Shorts`,
-    },
-  };
+  console.log(`Title:    ${quiz.title}`);
 }
 
 // ─── Run ────────────────────────────────────────────────────────────────────
