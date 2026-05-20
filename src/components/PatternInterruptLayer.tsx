@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-  useCurrentFrame, AbsoluteFill, interpolate, Easing,
+  useCurrentFrame, AbsoluteFill, interpolate,
   spring, useVideoConfig, Sequence, Audio, staticFile,
 } from 'remotion';
 import { COLORS, FONTS } from '../lib/theme';
@@ -114,27 +114,23 @@ export const PatternInterruptLayer: React.FC<PatternInterruptLayerProps> = ({
 
   switch (activeInterrupt.type) {
     case 'zoom': {
-      // NOTE: Zoom interrupt cannot scale sibling content from an overlay.
-      // Instead, we render a brief "flash zoom" visual cue — a translucent
-      // expanding circle that draws the eye inward, simulating a zoom feel.
-      const half = 9; // 18 frames total
-      if (age > 18) return null;
-      const ringScale = age < half
-        ? interpolate(age, [0, half], [0.8, 1.3], { easing: Easing.out(Easing.cubic), extrapolateRight: 'clamp' })
-        : interpolate(age, [half, 18], [1.3, 1.5], { easing: Easing.out(Easing.cubic), extrapolateRight: 'clamp' });
-      const ringOpacity = interpolate(age, [0, 3, 15, 18], [0, 0.2, 0.1, 0], {
+      // Real zoom requires a shared scale context to push sibling content,
+      // which an overlay cannot provide. The previous expanding-ring effect
+      // was a polite lie. Replace with an honest hard cut: a 6-frame white
+      // flash. A momentary luminance spike functions as a pattern interrupt
+      // (the eye re-fixates) without misrepresenting what's happening on
+      // screen.
+      if (age < 0 || age > 6) return null;
+      const opacity = interpolate(age, [0, 3, 6], [0, 0.92, 0], {
         extrapolateLeft: 'clamp', extrapolateRight: 'clamp',
       });
       return (
-        <AbsoluteFill style={{ pointerEvents: 'none', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-          <div style={{
-            width: 400, height: 400, borderRadius: '50%',
-            border: `3px solid ${COLORS.saffron}`,
-            transform: `scale(${ringScale})`,
-            opacity: ringOpacity,
-            boxShadow: `0 0 40px ${COLORS.saffron}30`,
-          }} />
-        </AbsoluteFill>
+        <AbsoluteFill style={{
+          backgroundColor: '#FFFFFF',
+          opacity,
+          zIndex: 60,
+          pointerEvents: 'none',
+        }} />
       );
     }
 
