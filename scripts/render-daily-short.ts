@@ -25,6 +25,25 @@ const PROJECT_ROOT = path.resolve(__dirname, '..');
 const OUTPUT_DIR = path.join(PROJECT_ROOT, 'output', 'daily-short');
 const PROPS_DIR = path.join(PROJECT_ROOT, 'output');
 
+// ─── Loudness Normalization ──────────────────────────────────────────────────
+
+function loudnormPass(inputPath: string, outputPath: string): void {
+  console.log('   [loudnorm] pass 1 (measure)...');
+  const measureCmd = `ffmpeg -y -i "${inputPath}" -af loudnorm=I=-14:TP=-1.5:LRA=11:print_format=json -f null - 2>&1 | tail -20`;
+  const measureOut = execSync(measureCmd, { cwd: PROJECT_ROOT, encoding: 'utf8', shell: '/bin/bash' });
+  const jsonStart = measureOut.indexOf('{');
+  const jsonEnd = measureOut.lastIndexOf('}');
+  if (jsonStart < 0 || jsonEnd < 0) {
+    console.warn('   [loudnorm] could not parse pass-1 output; falling back to single-pass');
+    execSync(`ffmpeg -y -i "${inputPath}" -af loudnorm=I=-14:TP=-1.5:LRA=11 -c:v copy "${outputPath}"`, { cwd: PROJECT_ROOT, stdio: 'inherit' });
+    return;
+  }
+  const m = JSON.parse(measureOut.slice(jsonStart, jsonEnd + 1));
+  console.log(`   [loudnorm] pass 2 (apply, measured_I=${m.input_i})...`);
+  const applyFilter = `loudnorm=I=-14:TP=-1.5:LRA=11:measured_I=${m.input_i}:measured_LRA=${m.input_lra}:measured_TP=${m.input_tp}:measured_thresh=${m.input_thresh}:offset=${m.target_offset}:linear=true`;
+  execSync(`ffmpeg -y -i "${inputPath}" -af "${applyFilter}" -c:v copy "${outputPath}"`, { cwd: PROJECT_ROOT, stdio: 'inherit' });
+}
+
 // ─── CLI Args ───────────────────────────────────────────────────────────────
 
 function parseArgs(): { date: Date; shortNumber: number | null; dryRun: boolean } {
@@ -165,6 +184,16 @@ async function main() {
 
   execSync(renderCmd, { stdio: 'inherit', cwd: PROJECT_ROOT });
   console.log(`   Video: ${outputPath}`);
+
+  // ── Two-pass loudness normalize to -14 LUFS ──
+  const normalizedPath = outputPath.replace(/\.mp4$/, '-normalized.mp4');
+  try {
+    loudnormPass(outputPath, normalizedPath);
+    fs.renameSync(normalizedPath, outputPath);
+    console.log(`   ✓ Loudness normalized to -14 LUFS`);
+  } catch (err) {
+    console.warn(`   [warn] loudnorm failed: ${String(err).slice(0, 100)} — keeping original`);
+  }
 
   // ── Export frame-0 thumbnail ──
   const thumbnailPath = path.join(OUTPUT_DIR, `${episodeId}-thumbnail.jpg`);
