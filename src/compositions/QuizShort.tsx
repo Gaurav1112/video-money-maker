@@ -18,6 +18,7 @@ import { Lottie } from '@remotion/lottie';
 import type { LottieAnimationData } from '@remotion/lottie';
 import type { QuizQuestion } from '../lib/quiz-content';
 import { FONTS } from '../lib/theme';
+import CaptionOverlay from '../components/CaptionOverlay';
 import { AnimatedBox } from '../components/viz/AnimatedBox';
 import { AnimatedArrow } from '../components/viz/AnimatedArrow';
 
@@ -49,6 +50,7 @@ interface QuizShortProps {
   audioFile?: string;
   /** Total narration duration in seconds. Drives composition length. */
   audioDurationSec?: number;
+  wordTimestamps?: Array<{ word: string; start: number; end: number }>;
 }
 
 // ── Topic to Diagram Mapping ────────────────────────────────────────
@@ -644,7 +646,7 @@ const LoopTrigger: React.FC<{ startFrame: number }> = ({ startFrame }) => {
 // ══════════════════════════════════════════════════════════════════════
 // ── Main Composition ────────────────────────────────────────────────
 // ══════════════════════════════════════════════════════════════════════
-export const QuizShort: React.FC<QuizShortProps> = ({ quiz, audioFile }) => {
+export const QuizShort: React.FC<QuizShortProps> = ({ quiz, audioFile, wordTimestamps }) => {
   const frame = useCurrentFrame();
   const { fps, durationInFrames: TOTAL_FRAMES } = useVideoConfig();
 
@@ -859,6 +861,24 @@ export const QuizShort: React.FC<QuizShortProps> = ({ quiz, audioFile }) => {
                 startFrame={FLASH_END}
                 bigStat={bigStat}
               />
+
+              {/* Burned-in hormozi captions during explain phase */}
+              {wordTimestamps && wordTimestamps.length > 0 && (
+                <div style={{
+                  position: 'absolute',
+                  bottom: 380,
+                  left: 0, right: 0,
+                  zIndex: 30,
+                }}>
+                  <CaptionOverlay
+                    text={quiz.explanation}
+                    startFrame={FLASH_END}
+                    durationInFrames={EXPLAIN_END - FLASH_END}
+                    wordTimestamps={wordTimestamps}
+                    captionMode="hormozi"
+                  />
+                </div>
+              )}
             </>
           )}
 

@@ -141,6 +141,7 @@ async function main() {
     quiz,
     audioFile: storyboard.audioFile ? path.basename(storyboard.audioFile) : undefined,
     audioDurationSec: audioDuration,
+    wordTimestamps,
   };
   fs.writeFileSync(propsPath, JSON.stringify(propsData, null, 2));
   console.log(`   Props: ${propsPath}`);
