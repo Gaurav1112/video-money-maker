@@ -25,14 +25,29 @@ import { AnimatedBox } from '../components/viz/AnimatedBox';
 import { AnimatedArrow } from '../components/viz/AnimatedArrow';
 
 const FPS = 30;
-const DEFAULT_DURATION_S = 25;
+const DEFAULT_DURATION_S = 120; // v3 baseline (was 25s)
 
-// Phase ratios within total duration (relative to 25s baseline)
-// Hook: 0-2s | Question+Options: 2-6s | Flash cut: 6-6.5s | Explain: 6.5-20s | Loop trigger: 20-25s
-const HOOK_RATIO = 2 / 25;        // 0-2s of 25s baseline
-const QUESTION_RATIO = 4 / 25;    // +4s for question reveal
-const FLASH_RATIO = 0.5 / 25;     // +0.5s for flash cut
-const LOOP_RATIO = 2.5 / 25;      // last 2.5s for "But wait..." loop trigger
+// v3: ABSOLUTE phase boundaries in seconds. Total = 120s baseline. The middle
+// three phases (code, explain, example) absorb slack when audio is longer.
+//
+//   HOOK            0    → 3.5s   (was 2s)
+//   QUESTION        3.5  → 13s    (longer; lets viewer read options properly)
+//   FLASH           13   → 13.5s
+//   ANSWER SPLASH   13.5 → 14s    (the .5s of FLASH plus 15-frame splash)
+//   CODE SNIPPET    14   → 30s    (NEW)
+//   EXPLAIN BEATS   30   → 80s    (was 3 phrases, now full sentences)
+//   WORKED EXAMPLE  80   → 110s   (NEW)
+//   LOOP TRIGGER    110  → 116s
+//   END CTA         116  → 120s
+const HOOK_END_S = 3.5;
+const QUESTION_END_S = 13;
+const FLASH_END_S = 13.5;
+const ANSWER_SPLASH_END_S = 14;
+const CODE_END_S = 30;
+const EXPLAIN_END_S = 80;
+const EXAMPLE_END_S = 110;
+const LOOP_END_S = 116;
+const END_CTA_DURATION_S = 4; // last 4s of total
 
 // Colors — dark theme for Shorts (proven higher retention)
 const BG_DARK = '#0A0A12';
@@ -989,19 +1004,46 @@ export const QuizShort: React.FC<QuizShortProps> = ({ quiz, audioFile, wordTimes
   const frame = useCurrentFrame();
   const { fps, durationInFrames: TOTAL_FRAMES } = useVideoConfig();
 
-  const HOOK_END = Math.round(HOOK_RATIO * TOTAL_FRAMES);
-  const QUESTION_END = HOOK_END + Math.round(QUESTION_RATIO * TOTAL_FRAMES);
-  const FLASH_END = QUESTION_END + Math.round(FLASH_RATIO * TOTAL_FRAMES);
-  const LOOP_START = TOTAL_FRAMES - Math.round(LOOP_RATIO * TOTAL_FRAMES);
-  const EXPLAIN_END = LOOP_START;
+  // v3: ABSOLUTE phase boundaries (not ratios). Hook/question/flash/loop/cta
+  // do NOT scale with total length. The slack between baseline 120s and actual
+  // audio length is absorbed by the middle three phases (code, explain, example).
+  const HOOK_END = Math.round(HOOK_END_S * fps);
+  const QUESTION_END = Math.round(QUESTION_END_S * fps);
+  const FLASH_END = Math.round(FLASH_END_S * fps);
+  const ANSWER_SPLASH_END = Math.round(ANSWER_SPLASH_END_S * fps);
+  // Baseline boundaries for middle three phases.
+  const BASE_CODE_END = Math.round(CODE_END_S * fps);
+  const BASE_EXPLAIN_END = Math.round(EXPLAIN_END_S * fps);
+  const BASE_EXAMPLE_END = Math.round(EXAMPLE_END_S * fps);
+  // Loop/end-cta are anchored to the END of the composition, NOT the baseline.
+  const END_CTA_FRAMES = Math.round(END_CTA_DURATION_S * fps);
+  const LOOP_DURATION = Math.round((LOOP_END_S - EXAMPLE_END_S) * fps); // 6s
+  const END_CTA_START = TOTAL_FRAMES - END_CTA_FRAMES;
+  const LOOP_START_FRAME = END_CTA_START - LOOP_DURATION;
+  // Stretch the middle phases proportionally to fill (TOTAL - hook/question/flash/loop/cta).
+  const FIXED_HEAD = ANSWER_SPLASH_END; // 14s of fixed head
+  const FIXED_TAIL = LOOP_DURATION + END_CTA_FRAMES; // 10s of fixed tail
+  const middleAvailable = Math.max(1, TOTAL_FRAMES - FIXED_HEAD - FIXED_TAIL);
+  const baseMiddle = BASE_EXAMPLE_END - FIXED_HEAD; // 96s baseline middle
+  const stretch = middleAvailable / baseMiddle;
+  const CODE_END = FIXED_HEAD + Math.round((BASE_CODE_END - FIXED_HEAD) * stretch);
+  const EXPLAIN_END = FIXED_HEAD + Math.round((BASE_EXPLAIN_END - FIXED_HEAD) * stretch);
+  const EXAMPLE_END = FIXED_HEAD + middleAvailable;
 
   const isHookPhase = frame < HOOK_END;
   const isQuestionPhase = frame >= HOOK_END && frame < QUESTION_END;
   const isFlashPhase = frame >= QUESTION_END && frame < FLASH_END;
-  const isExplainPhase = frame >= FLASH_END && frame < EXPLAIN_END;
-  const isLoopPhase = frame >= EXPLAIN_END;
+  const isAnswerSplashPhase = frame >= FLASH_END && frame < ANSWER_SPLASH_END;
+  const isCodePhase = frame >= ANSWER_SPLASH_END && frame < CODE_END;
+  const isExplainPhase = frame >= CODE_END && frame < EXPLAIN_END;
+  const isExamplePhase = frame >= EXPLAIN_END && frame < EXAMPLE_END;
+  const isLoopPhase = frame >= LOOP_START_FRAME && frame < END_CTA_START;
+  const isEndCtaPhase = frame >= END_CTA_START;
   const isRevealed = frame >= FLASH_END;
-  const showDiagram = frame >= HOOK_END;
+  // Diagram hidden during code phase and worked-example phase — those phases
+  // have their own visual content. Visible during question + explain only.
+  const showDiagram =
+    frame >= HOOK_END && (isQuestionPhase || isFlashPhase || isAnswerSplashPhase || isExplainPhase);
 
   const keyPhrases = useMemo(() => extractKeyPhrases(quiz.explanation), [quiz.explanation]);
   const bigStat = useMemo(() => extractBigStat(quiz.explanation), [quiz.explanation]);
@@ -1312,13 +1354,14 @@ export const QuizShort: React.FC<QuizShortProps> = ({ quiz, audioFile, wordTimes
       )}
 
       {/* ═══════════════════════════════════════════════════════════════
-          Phase 5: LOOP TRIGGER (20-25s) — Zeigarnik effect
+          Phase 8: LOOP TRIGGER (last 6s before CTA) + END CTA (last 4s)
+          v3: anchored to the END of composition, not after explain.
           ═══════════════════════════════════════════════════════════════ */}
-      <LoopTrigger startFrame={EXPLAIN_END} twistText={quiz.twist} />
+      <LoopTrigger startFrame={LOOP_START_FRAME} twistText={quiz.twist} />
       <EndCardCTA
         endQuestion={quiz.endQuestion}
-        startFrame={Math.max(0, TOTAL_FRAMES - Math.round(1.5 * fps))}
-        durationFrames={Math.round(1.5 * fps)}
+        startFrame={END_CTA_START}
+        durationFrames={END_CTA_FRAMES}
       />
 
       {/* ── Audio ── */}
@@ -1355,7 +1398,7 @@ export const QuizShort: React.FC<QuizShortProps> = ({ quiz, audioFile, wordTimes
       <Sfx name="impact" from={FLASH_END - 5} durationFrames={20} volume={1.0} />
       <Sfx name="success-chime" from={FLASH_END} volume={0.7} />
       <Sfx name="riser" from={Math.max(0, FLASH_END + 5)} durationFrames={45} volume={0.5} />
-      <Sfx name="swoosh" from={Math.max(0, EXPLAIN_END - 10)} durationFrames={20} volume={0.8} />
+      <Sfx name="swoosh" from={Math.max(0, LOOP_START_FRAME - 10)} durationFrames={20} volume={0.8} />
 
       {/* ── Channel logo bug (top-right, always visible) ── */}
       <div style={{
@@ -1393,10 +1436,15 @@ export const QuizShort: React.FC<QuizShortProps> = ({ quiz, audioFile, wordTimes
 };
 
 // ── Metadata ────────────────────────────────────────────────────────
+// v3: enforces a 120s baseline. Audio shorter than 120s -> composition is
+// still 120s (fadeOut handles the silent tail). Audio longer -> composition
+// grows to fit (audio + 1s tail).
 export const calculateQuizShortMetadata: CalculateMetadataFunction<Record<string, unknown>> = ({ props }) => {
-  const seconds = (props.audioDurationSec as number | undefined) ?? DEFAULT_DURATION_S;
+  const seconds = (props.audioDurationSec as number | undefined) ?? 0;
+  const baselineFrames = DEFAULT_DURATION_S * FPS;
+  const audioFrames = Math.ceil(seconds * FPS) + FPS; // audio + 1s tail
   return {
-    durationInFrames: Math.ceil(seconds * FPS) + FPS, // audio + 1s tail
+    durationInFrames: Math.max(baselineFrames, audioFrames),
     fps: FPS,
     width: 1080,
     height: 1920,
