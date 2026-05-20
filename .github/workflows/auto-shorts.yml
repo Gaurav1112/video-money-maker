@@ -7,9 +7,9 @@ name: Auto Shorts Pipeline (2 Quiz Shorts Daily)
 
 on:
   schedule:
-    # Run at 6:30 AM IST (1:00 UTC) — renders + uploads
-    # Peak India tech audience: 7-9 AM morning commute
-    - cron: '0 1 * * *'
+    # 1:15 PM IST (07:45 UTC) Mon/Wed/Fri — lunch break scrolling peak
+    # (per optimal_schedule memory: 6:15 PM IST is for long-form; 1:15 PM IST is Shorts)
+    - cron: '45 7 * * 1,3,5'
 
   workflow_dispatch:
     inputs:
