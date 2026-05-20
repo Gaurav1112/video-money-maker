@@ -319,13 +319,14 @@ const KeyPhraseReveal: React.FC<{
   phrases: string[];
   startFrame: number;
   bigStat: { number: string; context: string } | null;
-}> = ({ phrases, startFrame, bigStat }) => {
+  beatAlignFrames?: number;
+}> = ({ phrases, startFrame, bigStat, beatAlignFrames }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
   // Each phrase gets ~3 seconds (90 frames), big stat gets 2s (60 frames)
   const bigStatDuration = bigStat ? 60 : 0;
-  const phraseDuration = 90;
+  const phraseDuration = beatAlignFrames ?? 90;
 
   return (
     <div style={{
@@ -402,6 +403,29 @@ const KeyPhraseReveal: React.FC<{
         );
       })}
     </div>
+  );
+};
+
+// ── Per-beat background pulse (re-engagement signal) ─────────────────
+const BeatBackground: React.FC<{
+  beatIndex: number;
+  beatStartFrame: number;
+  beatDurationFrames: number;
+}> = ({ beatIndex, beatStartFrame, beatDurationFrames }) => {
+  const frame = useCurrentFrame();
+  const age = frame - beatStartFrame;
+  if (age < 0 || age > beatDurationFrames) return null;
+  const colors = ['rgba(34, 211, 238, 0.12)', 'rgba(251, 191, 36, 0.12)', 'rgba(255, 68, 68, 0.12)'];
+  const color = colors[beatIndex % colors.length];
+  const opacity = interpolate(age, [0, 8, beatDurationFrames - 10, beatDurationFrames], [0, 1, 1, 0], { extrapolateRight: 'clamp' });
+  return (
+    <div style={{
+      position: 'absolute', inset: 0,
+      background: `radial-gradient(ellipse at 50% 70%, ${color} 0%, transparent 60%)`,
+      opacity,
+      pointerEvents: 'none',
+      zIndex: 6,
+    }} />
   );
 };
 
@@ -872,7 +896,44 @@ export const QuizShort: React.FC<QuizShortProps> = ({ quiz, audioFile, wordTimes
                 phrases={keyPhrases}
                 startFrame={FLASH_END}
                 bigStat={bigStat}
+                beatAlignFrames={Math.floor((EXPLAIN_END - FLASH_END) / 3)}
               />
+
+              {/* Per-beat background pulses — re-engagement every ~4s */}
+              {[0, 1, 2].map(i => {
+                const beatDur = Math.floor((EXPLAIN_END - FLASH_END) / 3);
+                return (
+                  <BeatBackground
+                    key={`beat-${i}`}
+                    beatIndex={i}
+                    beatStartFrame={FLASH_END + i * beatDur}
+                    beatDurationFrames={beatDur}
+                  />
+                );
+              })}
+
+              {/* Beat counter pill — bottom-left progress indicator */}
+              {(() => {
+                const explainSpan = EXPLAIN_END - FLASH_END;
+                const beatDur = Math.floor(explainSpan / 3);
+                const explainAge = frame - FLASH_END;
+                const currentBeat = Math.min(2, Math.floor(explainAge / beatDur));
+                return (
+                  <div style={{
+                    position: 'absolute',
+                    bottom: 110, left: 30,
+                    zIndex: 31,
+                    padding: '6px 14px',
+                    borderRadius: 20,
+                    backgroundColor: 'rgba(34, 211, 238, 0.18)',
+                    border: '1px solid rgba(34, 211, 238, 0.5)',
+                    fontSize: 22, fontFamily: FONTS.heading, fontWeight: 700,
+                    color: '#22D3EE',
+                  }}>
+                    {currentBeat + 1}/3
+                  </div>
+                );
+              })()}
 
               {/* Burned-in hormozi captions during explain phase */}
               {wordTimestamps && wordTimestamps.length > 0 && (
