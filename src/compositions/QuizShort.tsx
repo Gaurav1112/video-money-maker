@@ -720,6 +720,8 @@ export const QuizShort: React.FC<QuizShortProps> = ({ quiz, audioFile, wordTimes
               const opacity = Math.max(0.85, interpolate(s, [0, 1], [0.85, 1]));
               const scale = interpolate(s, [0, 1], [0.92, 1]);
               const lines = hookText.split('\n');
+              // Auto-fit font size by line count (88/70/58 for 1-2, 3, 4+ lines)
+              const autoFontSize = lines.length <= 2 ? 88 : lines.length === 3 ? 70 : 58;
               return (
                 <div style={{
                   transform: `scale(${scale})`,
@@ -729,7 +731,7 @@ export const QuizShort: React.FC<QuizShortProps> = ({ quiz, audioFile, wordTimes
                 }}>
                   {lines.map((line, i) => (
                     <div key={i} style={{
-                      fontSize: 88,
+                      fontSize: autoFontSize,
                       fontFamily: FONTS.heading,
                       fontWeight: 900,
                       color: i === 0 ? TEXT : ACCENT,
