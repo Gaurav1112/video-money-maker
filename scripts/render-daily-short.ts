@@ -112,8 +112,27 @@ async function main() {
   fs.mkdirSync(OUTPUT_DIR, { recursive: true });
 
   // ── Step 1: Generate TTS audio from quiz narration ──
+  // v3: extended narration to fill the 120s baseline composition. Bridge
+  // sentences are added at phase boundaries so TTS aligns with visual
+  // beats (code panel, worked example, twist). If the quiz has a codeSnippet
+  // we also speak its caption to anchor the panel.
   console.log('\n[1/4] Generating TTS audio...');
-  const fullNarration = `${quiz.spokenHook} ${quiz.question} ${quiz.explanation} ${quiz.twist}`;
+  const codeContext = quiz.codeSnippet?.caption
+    ? `Here is what most developers get wrong. ${quiz.codeSnippet.caption}. Look at this.`
+    : 'Here is what most developers get wrong.';
+  const fullNarration = [
+    quiz.spokenHook,
+    quiz.question,
+    'Take a moment to think about it.',
+    codeContext,
+    quiz.explanation,
+    'Let me show you a real example of this in production.',
+    quiz.workedExample
+      ? `${quiz.workedExample.scenario}. ${quiz.workedExample.before}. The fix? ${quiz.workedExample.after}.`
+      : 'One config line is the difference between data safety and data loss.',
+    'But here is the part nobody talks about.',
+    quiz.twist,
+  ].filter(Boolean).join(' ');
 
   const audioResults = await generateSceneAudios(
     [{ narration: fullNarration, type: 'text' }],
@@ -124,7 +143,8 @@ async function main() {
 
   // ── Step 2: Build storyboard (for audio stitching only) ──
   console.log('[2/4] Building storyboard...');
-  const audioDuration = audioResults[0]?.duration ?? 38;
+  // v3: default to 120s baseline (composition enforces minimum via metadata).
+  const audioDuration = audioResults[0]?.duration ?? 120;
 
   // ── Emit SRT from TTS word timestamps ──
   const wordTimestamps = audioResults[0]?.wordTimestamps ?? [];
