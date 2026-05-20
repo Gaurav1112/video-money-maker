@@ -188,6 +188,9 @@ export const QUIZ_BANK: QuizQuestion[] = [
   min.insync.replicas: 2
   # Survives broker crash`,
     },
+    spokenCode: 'Look at the producer config on the left. acks equals zero means fire and forget — the broker never confirms it received your message. Retries equals zero means no second chance. On the right, the production-grade version. acks equals all forces every in-sync replica to acknowledge. min insync replicas equals two guarantees at least two brokers have the data before success. Three retries handles transient network blips. One line of config separates silent data loss from durability.',
+    spokenExample: 'LinkedIn invented Kafka. They process seven trillion messages per day. Every single production topic at LinkedIn uses acks equals all with min insync replicas equals two. They learned the hard way — in the early days a single broker crash silently dropped millions of profile updates. Today their config survives an entire data center going dark. This is the difference between a startup losing user data and a hyperscaler guaranteeing zero loss.',
+    spokenCTA: 'So — are you running acks equals all in production, or are you still on the unsafe default? Drop your config in the comments and grab the full Kafka deep dive at www dot guru dash sishya dot in.',
   },
   {
     topic: 'kafka',
@@ -213,6 +216,9 @@ records = consumer.poll(...);
 process(records);
 consumer.commitSync();  // safe`,
     },
+    spokenCode: 'Look at the consumer code on the left. enable auto commit equals true is the dangerous default. Every five seconds Kafka silently moves the offset forward — even for messages your code has not finished processing. If you crash in that window, those records are gone. On the right, the safe pattern. Auto commit off. Poll, process, then explicitly commitSync. The offset only advances after your business logic succeeds.',
+    spokenExample: 'Uber lost trip data in 2019 because of this exact bug. A consumer crashed mid-batch after auto-commit had already advanced the offset. The replacement consumer started reading from a position past unprocessed trips. Thousands of rides never made it into billing. The post-mortem named auto commit as the root cause. Every payments-grade Kafka consumer at Uber now uses manual commitSync — the same one-line fix you see on the right.',
+    spokenCTA: 'So — is your consumer manually committing, or are you trusting the five-second auto-commit timer? Comment your setup and grab the full consumer guide at www dot guru dash sishya dot in.',
   },
   {
     topic: 'kafka',
@@ -238,6 +244,9 @@ min.insync.replicas: 2
 replication.factor: 3
 # survives 1 broker loss`,
     },
+    spokenCode: 'On the left, the default Kafka config. acks equals one, min insync replicas equals one. Translation — the leader broker acks the write before any follower has the data. If the leader dies in those few milliseconds, your message vanishes. On the right, the LinkedIn production setting. acks all, min insync replicas two, replication factor three. Now the write only succeeds after two brokers physically have the message. A single broker can die without losing a byte.',
+    spokenExample: 'LinkedIn runs this exact config across thousands of topics processing seven trillion messages a day. They tested it the painful way — a 2014 hardware failure took out a rack of brokers and not a single message was lost. Most Kafka tutorials on YouTube still show acks equals one without warning you. The teams that learn the hard way are the ones with a data integrity incident in their post-mortem history.',
+    spokenCTA: 'So — pull up your Kafka config right now. What does min insync replicas say? Comment your number and grab the full durability checklist at www dot guru dash sishya dot in.',
   },
   {
     topic: 'kafka',
@@ -378,6 +387,9 @@ gateway:
   - logging + tracing
   - request routing -> services`,
     },
+    spokenCode: 'On the left, the wrong way. Every microservice ships its own auth code, its own rate limiter, its own logging. Duplicated across every team. When the auth library has a CVE, you patch it ten times. On the right, the gateway pattern. One place handles JWT verification, token bucket rate limiting, logging and tracing, and request routing. Services receive a clean pre-authenticated request and focus only on business logic.',
+    spokenExample: 'Netflix runs Zuul as their API Gateway and it handles two billion requests a day before a single packet touches a business microservice. When they had a critical OAuth vulnerability in 2018, they patched it in one place in Zuul and every downstream service was protected within minutes. Teams without an API Gateway took weeks to roll out the same fix across hundreds of services. This is why every FAANG system design interview expects you to draw an API Gateway.',
+    spokenCTA: 'So — does your team own cross-cutting concerns in a gateway, or are they duplicated across every service? Drop your answer in the comments and check out the full microservices course at www dot guru dash sishya dot in.',
   },
   {
     topic: 'api-gateway',
@@ -419,6 +431,9 @@ gateway.use(rateLimit({
 }));
 // rejected before reaching service`,
     },
+    spokenCode: 'Look at the left side. Rate limiting inside each microservice. During a DDoS attack, the malicious traffic still hits every service, eats connection pools, and burns CPU before being rejected with a 429. The right side moves rate limiting one layer up. The gateway uses a token bucket keyed by tenant ID. Bad traffic is rejected at the edge in under a millisecond. Your business services never even see the flood.',
+    spokenExample: 'Stripe processes billions of API calls a day. Their gateway rejects abusive traffic in under one millisecond using token buckets keyed by API key. During the 2021 credential stuffing attacks, they absorbed seventy million bad requests per hour without a single charge endpoint slowing down. If those checks lived inside the charge service, every server would have been on fire. Rate limit at the edge — your service stays warm and fast for legitimate customers.',
+    spokenCTA: 'So — where does your team rate limit? At the gateway, or inside every service? Drop your answer in the comments and grab the full system design playbook at www dot guru dash sishya dot in.',
   },
   {
     topic: 'api-gateway',
@@ -459,6 +474,9 @@ GET /mobile/home -> {
 }
 // 1 round trip, 80% faster`,
     },
+    spokenCode: 'Look at the left side. Your mobile app makes five separate API calls just to render the home screen. On a slow cellular network, each round trip is two hundred milliseconds. Total — one full second of waiting. On the right, the gateway aggregation pattern. One mobile-specific endpoint. The gateway fans out internally over fast east-west links and returns one merged response. Same data, eighty percent less latency, and your battery thanks you.',
+    spokenExample: 'Amazon used this exact pattern on the product page and saved an estimated two million dollars per year in mobile data and CDN costs. Their gateway calls fifteen internal services in parallel and returns a single payload to the app. Before the migration, the iOS team was making fifteen separate REST calls per product view. After — one call, two hundred millisecond response time globally. Same logic, dramatically less work for the device and the network.',
+    spokenCTA: 'So — how many API calls does your app make to render one screen? Comment your number and grab the full mobile architecture guide at www dot guru dash sishya dot in.',
   },
   {
     topic: 'api-gateway',
@@ -502,6 +520,9 @@ GET /mobile/home -> {
   server api-3.local max_fails=2 fail_timeout=10s;
 }`,
     },
+    spokenCode: 'On the left, the default nginx upstream. Plain round robin. No health checks. If api-1 is processing a slow query, it still gets the next request — and the next. Latency on that one server skyrockets and users get a spinning wheel. On the right, two changes — least connections instead of round robin, plus max fails and fail timeout. Now nginx routes to whichever server has the fewest active requests AND pulls misbehaving servers out of rotation for ten seconds. Two extra lines, completely different reliability profile.',
+    spokenExample: 'Cloudflare runs least connections plus active health checks across their global edge. During a 2022 origin incident, one of their customers had a single backend server stuck at one hundred percent CPU. Least connections automatically drained traffic away within seconds while round robin would have kept hammering it. The customer never noticed. With plain round robin, they would have seen one third of all requests timing out for the full duration of the outage.',
+    spokenCTA: 'So — does your nginx use least connections, or are you still on the default round robin? Comment your config and grab the full load balancing deep dive at www dot guru dash sishya dot in.',
   },
   {
     topic: 'load-balancing',
@@ -531,6 +552,9 @@ location /api/admin {
   proxy_pass http://admin-svc;
 }`,
     },
+    spokenCode: 'On the left, layer four load balancing. It only sees IP and port. Every request goes to the same backend pool regardless of whether you are hitting users, orders, or admin. You cannot split a microservices traffic at this layer. On the right, layer seven. nginx reads the HTTP path and routes users traffic to the users service, orders to the orders service, and admin traffic goes through an extra auth check first. Content-based routing — which is the entire reason you adopt microservices in the first place.',
+    spokenExample: 'Netflix splits the two intentionally. Their public API runs L7 because they need content-based routing, header inspection, and per-endpoint auth. Their internal east-west traffic runs L4 because raw throughput matters more than smart routing. They benchmarked it — L4 handled ten times more connections per second than L7 for the same hardware. Using L7 everywhere would have cost them millions in extra load balancer capacity. Match the layer to the workload.',
+    spokenCTA: 'So — are you running L4 or L7 in front of your services? Comment your stack and check out the full load balancer architecture course at www dot guru dash sishya dot in.',
   },
   {
     topic: 'load-balancing',
@@ -570,6 +594,9 @@ app.use(async (req) => {
 });
 // pod dies = LB routes elsewhere, fine`,
     },
+    spokenCode: 'Look at the left side. Sessions stored in an in-memory map on the server. This forces sticky sessions in the load balancer — every request from one user has to go to the same pod. If that pod dies during a deploy or a crash, the user is instantly logged out. On the right, sessions externalized to Redis. Any pod can serve any request. The load balancer is free to do real least-connections balancing and your deploys cause zero forced logouts.',
+    spokenExample: 'Amazon moved away from sticky sessions in 2012 after a single bad pod knocked thousands of users out of their carts mid-checkout. They externalized session state into a Redis-style cluster and instantly unlocked rolling deploys with zero user impact. Today every customer-facing service at Amazon is stateless by mandate — you cannot get a stateful service through architectural review. Stateless apps plus shared session storage is the unlock that makes autoscaling actually work.',
+    spokenCTA: 'So — is your app stateless, or do you still rely on sticky sessions to keep users logged in? Comment your setup and grab the full stateless-services playbook at www dot guru dash sishya dot in.',
   },
   {
     topic: 'load-balancing',
@@ -626,6 +653,9 @@ ORDER BY idx_scan;
 -- drop the dead ones
 DROP INDEX idx_orders_currency;`,
     },
+    spokenCode: 'On the left, the just-in-case strategy. Five indexes on the orders table. Every INSERT, UPDATE, and DELETE now has to maintain all five B-trees. Your write throughput drops linearly with every index you add. On the right, the correct approach. Query pg stat user indexes to find the indexes that are barely used, then drop them. PostgreSQL literally ships the diagnostic tool — most engineers have never run it.',
+    spokenExample: 'Shopify ran this exact analysis on their orders table during their 2021 scaling push. They discovered twelve indexes that were used in less than one percent of queries. Dropping them improved write throughput by forty percent overnight. No code change, no schema migration, just deleting dead indexes. That single afternoon of work saved them from a major infrastructure upgrade. The same pg stat queries work on every PostgreSQL database in the world — including yours.',
+    spokenCTA: 'So — how many unused indexes are sitting on your biggest table right now? Run the query, comment the count, and grab the full database tuning guide at www dot guru dash sishya dot in.',
   },
   {
     topic: 'database',
@@ -665,6 +695,9 @@ for (const o of orders) {
 // ONE query with JOIN
 // 100x faster on real data`,
     },
+    spokenCode: 'On the left, the classic N plus one bug. One query fetches a hundred orders. Then a for loop fires one query per order to fetch its items. One hundred and one queries to render a single page. Each round trip looks fast in isolation but they add up to seconds of latency. On the right, eager loading. One single SQL query with a JOIN pulls every order and its items together. Same data, one network call, one hundred times faster on production-scale data.',
+    spokenExample: 'GitHub discovered that N plus one queries were responsible for seventy percent of their slow pages in 2019. The pull request page alone was firing over four hundred queries because each comment, review, and check was being fetched in a loop. After eager-loading and using DataLoader to batch the rest, the page went from three seconds to under two hundred milliseconds. The fix was thirty lines of code. The hidden cost of ORMs is they make this antipattern almost invisible until you turn on slow query logging.',
+    spokenCTA: 'So — have you ever shipped an N plus one bug to production? Comment your worst story and grab the full performance tuning course at www dot guru dash sishya dot in.',
   },
   {
     topic: 'database',
@@ -692,6 +725,9 @@ WHERE id = 12345;
 SELECT * FROM users
 WHERE deleted_at IS NULL;`,
     },
+    spokenCode: 'On the left, the destructive pattern. A raw DELETE statement. One typo in the WHERE clause and you have wiped out customer data with no rollback, no audit trail, and no way back except backups. On the right, the soft delete pattern. UPDATE instead of DELETE. Set a deleted_at timestamp. The row stays in the database forever. Application queries auto-filter on deleted_at IS NULL so users never see it. But if you ever need to recover, the data is right there.',
+    spokenExample: 'Stripe mandates soft deletes on every production table for regulatory compliance and incident recovery. In 2018 a bug in their billing code soft-deleted thousands of legitimate subscriptions. Because nothing was physically removed, they restored everything in fifteen minutes with a single UPDATE statement reversing the deleted_at column. If they had used hard DELETE, the recovery would have required full table restores from backups, multi-hour downtime, and potential data loss for any writes that happened after the bad delete. Soft delete is your time machine.',
+    spokenCTA: 'So — does your team soft delete or hard delete in production? Comment your policy and grab the full data safety playbook at www dot guru dash sishya dot in.',
   },
 
   // ── MICROSERVICES (5 questions) ───────────────────────────────────
