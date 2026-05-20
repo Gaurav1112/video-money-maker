@@ -564,6 +564,14 @@ export const LongVideo: React.FC<LongVideoProps> = ({ storyboard, noOverlays = f
         />
       )}
 
+      {/* Hook period audio — the CinematicOpener (frames 0..INTRO_DURATION) used to
+          play in silence because the master narration starts at INTRO_DURATION.
+          Three seconds of dead air made viewers think the video was broken.
+          A riser SFX gives clear audio feedback that the hook is alive. */}
+      <Sequence from={0} durationInFrames={INTRO_DURATION}>
+        <Audio src={staticFile('audio/sfx/riser.wav')} volume={0.6} />
+      </Sequence>
+
       {/* Single master narration audio — synced to content start at INTRO_DURATION */}
       {storyboard.audioFile && (
         <Sequence from={INTRO_DURATION}>
