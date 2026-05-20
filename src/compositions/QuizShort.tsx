@@ -25,6 +25,7 @@ import { AnimatedBox } from '../components/viz/AnimatedBox';
 import { AnimatedArrow } from '../components/viz/AnimatedArrow';
 import CodeSnippetPanel from '../components/CodeSnippetPanel';
 import ExplanationBeats from '../components/ExplanationBeats';
+import WorkedExample, { deriveWorkedExample } from '../components/WorkedExample';
 
 const FPS = 30;
 const DEFAULT_DURATION_S = 120; // v3 baseline (was 25s)
@@ -1348,6 +1349,25 @@ export const QuizShort: React.FC<QuizShortProps> = ({ quiz, audioFile, wordTimes
           durationFrames={Math.max(1, CODE_END - ANSWER_SPLASH_END)}
         />
       )}
+
+      {/* ═══════════════════════════════════════════════════════════════
+          Phase 7: WORKED EXAMPLE (80-110s) — BEFORE/AFTER scenario
+          Uses quiz.workedExample if provided; otherwise derives heuristically
+          from the explanation, with the twist as a final fallback.
+          ═══════════════════════════════════════════════════════════════ */}
+      {isExamplePhase && (() => {
+        const derived = quiz.workedExample ?? deriveWorkedExample(
+          quiz.explanation, quiz.options as unknown as string[], quiz.correctIndex,
+        );
+        return (
+          <WorkedExample
+            data={derived}
+            twistFallback={quiz.twist}
+            startFrame={EXPLAIN_END}
+            durationFrames={Math.max(1, EXAMPLE_END - EXPLAIN_END)}
+          />
+        );
+      })()}
 
       {/* ═══════════════════════════════════════════════════════════════
           Phase 8: LOOP TRIGGER (last 6s before CTA) + END CTA (last 4s)
