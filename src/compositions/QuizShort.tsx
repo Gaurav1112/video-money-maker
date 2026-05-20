@@ -17,6 +17,7 @@ import type { CalculateMetadataFunction } from 'remotion';
 import { Lottie } from '@remotion/lottie';
 import type { LottieAnimationData } from '@remotion/lottie';
 import type { QuizQuestion } from '../lib/quiz-content';
+import { getSpecificHook } from '../lib/quiz-hook';
 import { FONTS } from '../lib/theme';
 import EndCardCTA from '../components/EndCardCTA';
 import CaptionOverlay from '../components/CaptionOverlay';
@@ -181,32 +182,7 @@ function extractBigStat(explanation: string): { number: string; context: string 
   return null;
 }
 
-// ── Get specific hook — extracts impressive stat from explanation ────
-function getSpecificHook(quiz: QuizQuestion): string {
-  // Topic-specific overrides for known high-performing hooks
-  const topicHooks: Record<string, string> = {
-    kafka: 'LinkedIn serves\n7 TRILLION messages/day\nwith THIS setting',
-  };
-  if (topicHooks[quiz.topic]) return topicHooks[quiz.topic];
-
-  // Extract most impressive number from explanation to build a specific hook
-  const bigMatch = quiz.explanation.match(/(\d[\d,.]*\s*(?:trillion|billion|million|thousand))\s+([\w\s]+?)(?:\.|,|and)/i);
-  if (bigMatch) {
-    const num = bigMatch[1].trim().toUpperCase();
-    const ctx = bigMatch[2].trim();
-    return `${num}\n${ctx}\nwith THIS setting`;
-  }
-
-  // Look for company names + dramatic context
-  const companyMatch = quiz.explanation.match(/(Google|Netflix|Uber|LinkedIn|Meta|Amazon|Stripe|Cloudflare)\s+[\w\s]+?(?:\.|,)/i);
-  if (companyMatch) {
-    const company = companyMatch[0].replace(/[.,]$/, '').trim();
-    if (company.length < 50) return `${company}\nbecause of THIS`;
-  }
-
-  // Fallback to original hookText
-  return quiz.hookText;
-}
+// getSpecificHook moved to src/lib/quiz-hook.ts (shared with QuizThumbnail).
 
 // ── Pulsing Red Vignette ─────────────────────────────────────────────
 const PulsingVignette: React.FC = () => {

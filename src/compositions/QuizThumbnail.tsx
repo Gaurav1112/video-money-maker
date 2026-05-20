@@ -5,27 +5,12 @@ import React from 'react';
 import { AbsoluteFill, Img, staticFile } from 'remotion';
 import { FONTS } from '../lib/theme';
 import type { QuizQuestion } from '../lib/quiz-content';
+import { getSpecificHook } from '../lib/quiz-hook';
 
 const FPS = 30;
 
 interface QuizThumbnailProps {
   quiz: QuizQuestion;
-}
-
-// Same hook-derivation helper as QuizShort — duplicated locally to avoid
-// pulling in the entire composition.
-function getSpecificHook(quiz: QuizQuestion): string {
-  const topicHooks: Record<string, string> = {
-    kafka: 'LinkedIn serves\n7 TRILLION messages/day\nwith THIS setting',
-  };
-  if (topicHooks[quiz.topic]) return topicHooks[quiz.topic];
-  const bigMatch = quiz.explanation.match(/(\d[\d,.]*\s*(?:trillion|billion|million|thousand))\s+([\w\s]+?)(?:\.|,|and)/i);
-  if (bigMatch) {
-    const num = bigMatch[1].trim().toUpperCase();
-    const ctx = bigMatch[2].trim();
-    return `${num}\n${ctx}\nwith THIS setting`;
-  }
-  return quiz.hookText;
 }
 
 export const QuizThumbnail: React.FC<QuizThumbnailProps> = ({ quiz }) => {
