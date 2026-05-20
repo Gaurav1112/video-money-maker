@@ -71,71 +71,73 @@ interface DiagramConfig {
 }
 
 function getTopicDiagram(topic: string): DiagramConfig {
-  // All diagrams centered for 1080-wide, positioned in top area (~y: 280-480)
+  // v3: shifted down ~130px so diagram occupies y: 380-700 (visual center)
+  // instead of y: 250-470 (top quarter). Frees top area for question card and
+  // pushes diagram into the safe zone between question (top) and options (mid).
   const configs: Record<string, DiagramConfig> = {
     kafka: {
       nodes: [
-        { label: 'Producer', x: 180, y: 320, width: 180, height: 70, color: 'blue' },
-        { label: 'Kafka Broker', x: 540, y: 320, width: 200, height: 70, color: 'orange' },
-        { label: 'Consumer', x: 900, y: 320, width: 180, height: 70, color: 'green' },
+        { label: 'Producer', x: 180, y: 450, width: 180, height: 70, color: 'blue' },
+        { label: 'Kafka Broker', x: 540, y: 450, width: 200, height: 70, color: 'orange' },
+        { label: 'Consumer', x: 900, y: 450, width: 180, height: 70, color: 'green' },
       ],
       arrows: [
-        { from: { x: 270, y: 320 }, to: { x: 440, y: 320 }, label: 'publish' },
-        { from: { x: 640, y: 320 }, to: { x: 810, y: 320 }, label: 'consume' },
+        { from: { x: 270, y: 450 }, to: { x: 440, y: 450 }, label: 'publish' },
+        { from: { x: 640, y: 450 }, to: { x: 810, y: 450 }, label: 'consume' },
       ],
     },
     'api-gateway': {
       nodes: [
-        { label: 'Client', x: 540, y: 250, width: 160, height: 65, color: 'blue' },
-        { label: 'API Gateway', x: 540, y: 370, width: 200, height: 70, color: 'orange' },
-        { label: 'Auth', x: 250, y: 470, width: 140, height: 60, color: 'red' },
-        { label: 'Service A', x: 540, y: 470, width: 160, height: 60, color: 'green' },
-        { label: 'Service B', x: 830, y: 470, width: 160, height: 60, color: 'teal' },
+        { label: 'Client', x: 540, y: 380, width: 160, height: 65, color: 'blue' },
+        { label: 'API Gateway', x: 540, y: 500, width: 200, height: 70, color: 'orange' },
+        { label: 'Auth', x: 250, y: 600, width: 140, height: 60, color: 'red' },
+        { label: 'Service A', x: 540, y: 600, width: 160, height: 60, color: 'green' },
+        { label: 'Service B', x: 830, y: 600, width: 160, height: 60, color: 'teal' },
       ],
       arrows: [
-        { from: { x: 540, y: 283 }, to: { x: 540, y: 335 } },
-        { from: { x: 440, y: 405 }, to: { x: 320, y: 440 } },
-        { from: { x: 540, y: 405 }, to: { x: 540, y: 440 } },
-        { from: { x: 640, y: 405 }, to: { x: 760, y: 440 } },
+        { from: { x: 540, y: 413 }, to: { x: 540, y: 465 } },
+        { from: { x: 440, y: 535 }, to: { x: 320, y: 570 } },
+        { from: { x: 540, y: 535 }, to: { x: 540, y: 570 } },
+        { from: { x: 640, y: 535 }, to: { x: 760, y: 570 } },
       ],
     },
     'load-balancing': {
       nodes: [
-        { label: 'Clients', x: 540, y: 250, width: 160, height: 65, color: 'blue' },
-        { label: 'Load Balancer', x: 540, y: 370, width: 210, height: 70, color: 'gold' },
-        { label: 'Server 1', x: 250, y: 470, width: 160, height: 60, color: 'green' },
-        { label: 'Server 2', x: 540, y: 470, width: 160, height: 60, color: 'green' },
-        { label: 'Server 3', x: 830, y: 470, width: 160, height: 60, color: 'green' },
+        { label: 'Clients', x: 540, y: 380, width: 160, height: 65, color: 'blue' },
+        { label: 'Load Balancer', x: 540, y: 500, width: 210, height: 70, color: 'gold' },
+        { label: 'Server 1', x: 250, y: 600, width: 160, height: 60, color: 'green' },
+        { label: 'Server 2', x: 540, y: 600, width: 160, height: 60, color: 'green' },
+        { label: 'Server 3', x: 830, y: 600, width: 160, height: 60, color: 'green' },
       ],
       arrows: [
-        { from: { x: 540, y: 283 }, to: { x: 540, y: 335 } },
-        { from: { x: 435, y: 405 }, to: { x: 320, y: 440 } },
-        { from: { x: 540, y: 405 }, to: { x: 540, y: 440 } },
-        { from: { x: 645, y: 405 }, to: { x: 760, y: 440 } },
+        { from: { x: 540, y: 413 }, to: { x: 540, y: 465 } },
+        { from: { x: 435, y: 535 }, to: { x: 320, y: 570 } },
+        { from: { x: 540, y: 535 }, to: { x: 540, y: 570 } },
+        { from: { x: 645, y: 535 }, to: { x: 760, y: 570 } },
       ],
     },
     database: {
       nodes: [
-        { label: 'Application', x: 540, y: 260, width: 190, height: 65, color: 'blue' },
-        { label: 'Primary DB', x: 370, y: 400, width: 180, height: 65, color: 'orange' },
-        { label: 'Replica DB', x: 720, y: 400, width: 180, height: 65, color: 'teal' },
+        { label: 'Application', x: 540, y: 390, width: 190, height: 65, color: 'blue' },
+        { label: 'Primary DB', x: 370, y: 530, width: 180, height: 65, color: 'orange' },
+        { label: 'Replica DB', x: 720, y: 530, width: 180, height: 65, color: 'teal' },
       ],
       arrows: [
-        { from: { x: 445, y: 293 }, to: { x: 370, y: 368 }, label: 'write' },
-        { from: { x: 635, y: 293 }, to: { x: 720, y: 368 }, label: 'read' },
-        { from: { x: 460, y: 400 }, to: { x: 630, y: 400 }, label: 'replicate' },
+        { from: { x: 445, y: 423 }, to: { x: 370, y: 498 }, label: 'write' },
+        { from: { x: 635, y: 423 }, to: { x: 720, y: 498 }, label: 'read' },
+        { from: { x: 460, y: 530 }, to: { x: 630, y: 530 }, label: 'replicate' },
       ],
     },
   };
 
-  // Default fallback: simple client-server diagram
+  // Default fallback: simple client-server diagram (also shifted by 130)
   return configs[topic] || {
     nodes: [
-      { label: 'Client', x: 300, y: 330, width: 170, height: 70, color: 'blue' },
-      { label: 'Server', x: 780, y: 330, width: 170, height: 70, color: 'green' },
+      { label: 'Client', x: 300, y: 460, width: 170, height: 70, color: 'blue' },
+      { label: 'Server', x: 780, y: 460, width: 170, height: 70, color: 'green' },
     ],
     arrows: [
-      { from: { x: 385, y: 330 }, to: { x: 695, y: 330 }, label: 'request' },
+      { from: { x: 385, y: 460 }, to: { x: 695, y: 460 }, label: 'request' },
     ],
   };
 }
@@ -1277,7 +1279,9 @@ export const QuizShort: React.FC<QuizShortProps> = ({ quiz, audioFile, wordTimes
                 const captionStartFrame = Math.round(offsetSec * fps);
                 return (
                   <div style={{
-                    position: 'absolute', bottom: 380, left: 0, right: 0, zIndex: 30,
+                    // v3: moved from bottom:380 (collided with options at top:560-855)
+                    // to bottom:170 (safe zone below options, above progress bar).
+                    position: 'absolute', bottom: 170, left: 0, right: 0, zIndex: 30,
                   }}>
                     <CaptionOverlay
                       text={quiz.explanation}
