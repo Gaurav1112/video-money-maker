@@ -18,6 +18,7 @@ import { Lottie } from '@remotion/lottie';
 import type { LottieAnimationData } from '@remotion/lottie';
 import type { QuizQuestion } from '../lib/quiz-content';
 import { FONTS } from '../lib/theme';
+import EndCardCTA from '../components/EndCardCTA';
 import CaptionOverlay from '../components/CaptionOverlay';
 import { AnimatedBox } from '../components/viz/AnimatedBox';
 import { AnimatedArrow } from '../components/viz/AnimatedArrow';
@@ -910,6 +911,11 @@ export const QuizShort: React.FC<QuizShortProps> = ({ quiz, audioFile, wordTimes
           Phase 5: LOOP TRIGGER (20-25s) — Zeigarnik effect
           ═══════════════════════════════════════════════════════════════ */}
       <LoopTrigger startFrame={EXPLAIN_END} />
+      <EndCardCTA
+        endQuestion={quiz.endQuestion}
+        startFrame={Math.max(0, TOTAL_FRAMES - Math.round(1.5 * fps))}
+        durationFrames={Math.round(1.5 * fps)}
+      />
 
       {/* ── Audio ── */}
       {audioFile && (
