@@ -747,8 +747,9 @@ export const QuizShort: React.FC<QuizShortProps> = ({ quiz, audioFile, wordTimes
           }}>
             {(() => {
               const s = spring({ frame, fps, config: { stiffness: 180, damping: 12, mass: 0.7 } });
-              const opacity = Math.max(0.85, interpolate(s, [0, 1], [0.85, 1]));
-              const scale = interpolate(s, [0, 1], [0.92, 1]);
+              // Frame 0 must be fully opaque so in-feed previews show readable text
+              const opacity = interpolate(s, [0, 1], [1, 1]);
+              const scale = interpolate(s, [0, 1], [0.95, 1]);
               const lines = hookText.split('\n');
               // Auto-fit font size by line count (88/70/58 for 1-2, 3, 4+ lines)
               const autoFontSize = lines.length <= 2 ? 88 : lines.length === 3 ? 70 : 58;
