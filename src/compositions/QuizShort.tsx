@@ -339,17 +339,58 @@ const KeyPhraseReveal: React.FC<{
       position: 'absolute', top: 950, left: 50, right: 50,
       display: 'flex', flexDirection: 'column', gap: 16,
     }}>
-      {/* Big stat number — 2 seconds, centered, HUGE */}
+      {/* Big stat number — 2 seconds, centered, HUGE, animated tick-up */}
       {bigStat && (() => {
         const statEntry = startFrame + 10;
         const age = frame - statEntry;
         if (age < 0) return null;
         const s = spring({ frame: age, fps, config: { stiffness: 160, damping: 12, mass: 0.6 } });
         const fadeOut = interpolate(age, [bigStatDuration - 15, bigStatDuration], [1, 0], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
+
+        // Parse the number: prefix + numeric + suffix
+        const parseMatch = bigStat.number.match(/^([^\d]*)([\d,.]+)(.*)$/);
+        let displayValue: string;
+        let countCompletePulse = 1;
+        if (parseMatch) {
+          const prefix = parseMatch[1];
+          const digitGroup = parseMatch[2].replace(/,/g, '');
+          const suffix = parseMatch[3];
+          const targetValue = parseFloat(digitGroup);
+          const isInteger = !digitGroup.includes('.');
+
+          const tickProgress = interpolate(age, [0, 45], [0, targetValue], {
+            extrapolateLeft: 'clamp',
+            extrapolateRight: 'clamp',
+          });
+
+          let formatted: string;
+          if (isInteger) {
+            formatted = String(Math.round(tickProgress));
+          } else {
+            formatted = tickProgress.toFixed(1);
+          }
+
+          // If original had thousands separators, re-add them when integer
+          if (isInteger && parseMatch[2].includes(',')) {
+            formatted = Number(formatted).toLocaleString('en-US');
+          }
+
+          displayValue = `${prefix}${formatted}${suffix}`;
+
+          // Scale pulse when count completes: frames 45 → 52 → 60 → scale 1 → 1.08 → 1
+          if (age >= 45 && age <= 60) {
+            countCompletePulse = age <= 52
+              ? interpolate(age, [45, 52], [1, 1.08], { extrapolateRight: 'clamp' })
+              : interpolate(age, [52, 60], [1.08, 1], { extrapolateRight: 'clamp' });
+          }
+        } else {
+          displayValue = bigStat.number;
+        }
+
         return (
           <div style={{
             opacity: interpolate(s, [0, 1], [0, 1]) * fadeOut,
-            transform: `scale(${interpolate(s, [0, 1], [0.5, 1])})`,
+            transform: `scale(${interpolate(s, [0, 1], [0.5, 1]) * countCompletePulse})`,
             textAlign: 'center',
             marginBottom: 8,
           }}>
@@ -359,7 +400,7 @@ const KeyPhraseReveal: React.FC<{
               textShadow: `0 0 40px rgba(251, 191, 36, 0.4)`,
               letterSpacing: -2,
             }}>
-              {bigStat.number}
+              {displayValue}
             </span>
             <br />
             <span style={{
@@ -610,6 +651,168 @@ const FlashCut: React.FC<{ startFrame: number }> = ({ startFrame }) => {
   );
 };
 
+// ── Feature B: Sticky Question Strip ─────────────────────────────────
+const StickyQuestionStrip: React.FC<{ question: string; startFrame: number }> = ({
+  question, startFrame,
+}) => {
+  const frame = useCurrentFrame();
+  const age = frame - startFrame;
+  if (age < 0) return null;
+  const slide = interpolate(age, [0, 15], [-100, 0], { extrapolateRight: 'clamp' });
+  return (
+    <div style={{
+      position: 'absolute',
+      top: 0, left: 0, right: 0,
+      height: 70,
+      backgroundColor: 'rgba(10, 10, 18, 0.88)',
+      backdropFilter: 'blur(20px)',
+      borderBottom: '2px solid rgba(251, 191, 36, 0.3)',
+      zIndex: 80,
+      transform: `translateY(${slide}%)`,
+      display: 'flex',
+      alignItems: 'center',
+      padding: '14px 70px',
+    }}>
+      <span style={{
+        fontSize: 22,
+        fontFamily: FONTS.heading,
+        fontWeight: 700,
+        color: '#fff',
+        lineHeight: 1.2,
+        whiteSpace: 'nowrap',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        width: '100%',
+      }}>
+        {`❓ ${question}`}
+      </span>
+    </div>
+  );
+};
+
+// ── Feature C: Countdown Timer ───────────────────────────────────────
+const CountdownTimer: React.FC<{ startFrame: number; durationFrames: number }> = ({
+  startFrame, durationFrames,
+}) => {
+  const frame = useCurrentFrame();
+  const age = frame - startFrame;
+  if (age < 0 || age > durationFrames) return null;
+
+  const size = 120;
+  const stroke = 8;
+  const radius = (size - stroke) / 2;
+  const circumference = 2 * Math.PI * radius;
+
+  const progress = Math.min(1, age / durationFrames);
+  const dashOffset = circumference * progress;
+
+  // Compute seconds remaining (3...2...1...0)
+  const totalSeconds = Math.ceil(durationFrames / 30);
+  const elapsedSeconds = age / 30;
+  const remainingSeconds = Math.max(0, Math.ceil(totalSeconds - elapsedSeconds));
+
+  // Ring color transitions: cyan → yellow at midpoint → red in final second
+  let strokeColor = '#22D3EE';
+  if (progress >= 0.5 && progress < (durationFrames - 30) / durationFrames) {
+    strokeColor = '#FBBF24';
+  } else if (age >= durationFrames - 30) {
+    strokeColor = '#FF4444';
+  }
+
+  // Pulse on each second change — pulse triggered when crossing a second boundary
+  const secondFrame = age % 30;
+  const pulseScale = interpolate(secondFrame, [0, 6, 12], [1.15, 1.0, 1.0], {
+    extrapolateRight: 'clamp',
+    extrapolateLeft: 'clamp',
+  });
+
+  return (
+    <div style={{
+      position: 'absolute',
+      top: 110,
+      right: 30,
+      width: size,
+      height: size,
+      zIndex: 82,
+    }}>
+      <svg width={size} height={size} style={{ position: 'absolute', inset: 0 }}>
+        {/* Background track */}
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          fill="rgba(10, 10, 18, 0.6)"
+          stroke="rgba(255,255,255,0.1)"
+          strokeWidth={stroke}
+        />
+        {/* Drain ring */}
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          fill="none"
+          stroke={strokeColor}
+          strokeWidth={stroke}
+          strokeLinecap="round"
+          strokeDasharray={circumference}
+          strokeDashoffset={dashOffset}
+          transform={`rotate(-90 ${size / 2} ${size / 2})`}
+          style={{ filter: `drop-shadow(0 0 8px ${strokeColor})` }}
+        />
+      </svg>
+      <div style={{
+        position: 'absolute', inset: 0,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        fontSize: 42,
+        fontFamily: FONTS.heading,
+        fontWeight: 900,
+        color: strokeColor,
+        transform: `scale(${pulseScale})`,
+        textShadow: `0 0 12px ${strokeColor}`,
+      }}>
+        {remainingSeconds}
+      </div>
+    </div>
+  );
+};
+
+// ── Feature H: Answer Splash Card ────────────────────────────────────
+const AnswerSplashCard: React.FC<{ startFrame: number }> = ({ startFrame }) => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+  const age = frame - startFrame;
+  if (age < 0 || age >= 15) return null;
+
+  const s = spring({ frame: age, fps, config: { stiffness: 200, damping: 12, mass: 0.5 } });
+  // Scale from 0.5 → 1.1 → 1.0 over 15 frames
+  const scale = age < 8
+    ? interpolate(s, [0, 1], [0.5, 1.1])
+    : interpolate(age, [8, 15], [1.1, 1.0], { extrapolateRight: 'clamp' });
+
+  return (
+    <AbsoluteFill style={{
+      backgroundColor: 'rgba(16, 185, 129, 0.92)',
+      zIndex: 65,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+    }}>
+      <span style={{
+        fontSize: 140,
+        fontFamily: FONTS.heading,
+        fontWeight: 900,
+        color: '#fff',
+        textTransform: 'uppercase',
+        letterSpacing: -3,
+        textShadow: '0 8px 30px rgba(0,0,0,0.5), 0 0 60px rgba(0,0,0,0.3)',
+        transform: `scale(${scale})`,
+      }}>
+        {'▼ ANSWER'}
+      </span>
+    </AbsoluteFill>
+  );
+};
+
 // ── Loop Trigger (Zeigarnik effect — incomplete thought) ────────────
 const LoopTrigger: React.FC<{ startFrame: number; twistText: string }> = ({ startFrame, twistText }) => {
   const frame = useCurrentFrame();
@@ -729,6 +932,15 @@ export const QuizShort: React.FC<QuizShortProps> = ({ quiz, audioFile, wordTimes
       {/* Animated grid background */}
       <GridBackground />
       <ScanLine />
+
+      {/* Feature B: Sticky question strip — visible from HOOK_END onwards */}
+      <StickyQuestionStrip question={quiz.question} startFrame={HOOK_END} />
+
+      {/* Feature C: Countdown timer — fills question phase */}
+      <CountdownTimer
+        startFrame={HOOK_END + 30}
+        durationFrames={Math.max(1, QUESTION_END - HOOK_END - 30)}
+      />
 
       {/* ═══════════════════════════════════════════════════════════════
           Phase 1: HOOK (0-2s) — Lottie + bold text + avatar + vignette
@@ -885,44 +1097,48 @@ export const QuizShort: React.FC<QuizShortProps> = ({ quiz, audioFile, wordTimes
               ═══════════════════════════════════════════════════════════ */}
           <FlashCut startFrame={QUESTION_END} />
 
+          {/* Feature H: ANSWER splash card — 15 frames at FLASH_END */}
+          <AnswerSplashCard startFrame={FLASH_END} />
+
           {/* ═══════════════════════════════════════════════════════════
               Phase 4: REVEAL + EXPLAIN (6.5-20s) — Confetti, key phrases
+              Delayed by 15 frames to follow the ANSWER splash card.
               ═══════════════════════════════════════════════════════════ */}
           {isExplainPhase && (
             <>
               {/* Confetti burst on reveal */}
-              {frame - FLASH_END < 60 && (
+              {frame - (FLASH_END + 15) >= 0 && frame - (FLASH_END + 15) < 60 && (
                 <LottieOverlay
                   file="lottie/confetti.json"
                   style={{
                     width: 600, height: 600,
                     top: 400, left: '50%',
                     transform: 'translateX(-50%)',
-                    opacity: interpolate(frame - FLASH_END, [0, 10, 50, 60], [0, 0.8, 0.6, 0]),
+                    opacity: interpolate(frame - (FLASH_END + 15), [0, 10, 50, 60], [0, 0.8, 0.6, 0]),
                   }}
                   loop={false}
                 />
               )}
 
               {/* Green flash on reveal */}
-              <DramaticFlash triggerFrame={FLASH_END} color="rgba(16, 185, 129, 0.3)" />
+              <DramaticFlash triggerFrame={FLASH_END + 15} color="rgba(16, 185, 129, 0.3)" />
 
               {/* Key phrases + big stat */}
               <KeyPhraseReveal
                 phrases={keyPhrases}
-                startFrame={FLASH_END}
+                startFrame={FLASH_END + 15}
                 bigStat={bigStat}
-                beatAlignFrames={Math.floor((EXPLAIN_END - FLASH_END) / 3)}
+                beatAlignFrames={Math.floor((EXPLAIN_END - (FLASH_END + 15)) / 3)}
               />
 
               {/* Per-beat background pulses — re-engagement every ~4s */}
               {[0, 1, 2].map(i => {
-                const beatDur = Math.floor((EXPLAIN_END - FLASH_END) / 3);
+                const beatDur = Math.floor((EXPLAIN_END - (FLASH_END + 15)) / 3);
                 return (
                   <BeatBackground
                     key={`beat-${i}`}
                     beatIndex={i}
-                    beatStartFrame={FLASH_END + i * beatDur}
+                    beatStartFrame={(FLASH_END + 15) + i * beatDur}
                     beatDurationFrames={beatDur}
                   />
                 );
@@ -930,10 +1146,10 @@ export const QuizShort: React.FC<QuizShortProps> = ({ quiz, audioFile, wordTimes
 
               {/* Beat counter pill — bottom-left progress indicator */}
               {(() => {
-                const explainSpan = EXPLAIN_END - FLASH_END;
+                const explainSpan = EXPLAIN_END - (FLASH_END + 15);
                 const beatDur = Math.floor(explainSpan / 3);
-                const explainAge = frame - FLASH_END;
-                const currentBeat = Math.min(2, Math.floor(explainAge / beatDur));
+                const explainAge = frame - (FLASH_END + 15);
+                const currentBeat = Math.min(2, Math.max(0, Math.floor(explainAge / beatDur)));
                 return (
                   <div style={{
                     position: 'absolute',
