@@ -1215,8 +1215,19 @@ export const QuizShort: React.FC<QuizShortProps> = ({ quiz, audioFile, wordTimes
         />
       )}
 
-      {/* ── BGM ── */}
-      <Audio src={staticFile('audio/bgm/study-pad.mp3')} volume={0.06} loop />
+      {/* ── BGM with sidechain ducking during narration ──
+          Drops to 0.025 when a word is being spoken (within ±0.15s),
+          rises to 0.09 during silence so the gap-fill effect is felt. */}
+      <Audio
+        src={staticFile('audio/bgm/study-pad.mp3')}
+        loop
+        volume={(f) => {
+          if (!wordTimestamps || wordTimestamps.length === 0) return 0.06;
+          const sec = f / fps;
+          const speaking = wordTimestamps.some(wt => sec >= wt.start - 0.05 && sec <= wt.end + 0.15);
+          return speaking ? 0.025 : 0.09;
+        }}
+      />
 
       {/* ── SFX cues ── */}
       <Sfx name="whoosh-in" from={0} volume={0.8} />
