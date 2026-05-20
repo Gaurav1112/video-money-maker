@@ -698,17 +698,6 @@ export const QuizShort: React.FC<QuizShortProps> = ({ quiz, audioFile }) => {
             playbackRate={0.8}
           />
 
-          {/* Warning triangle Lottie */}
-          <LottieOverlay
-            file="lottie/warning-triangle.json"
-            style={{
-              width: 200, height: 200,
-              top: 280, left: '50%',
-              transform: 'translateX(-50%)',
-              opacity: 0.6,
-            }}
-          />
-
           {/* Hook text — uses specific hook */}
           <div style={{
             position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
@@ -749,21 +738,17 @@ export const QuizShort: React.FC<QuizShortProps> = ({ quiz, audioFile }) => {
           <div style={{
             position: 'absolute', bottom: 350, left: '50%',
             transform: 'translateX(-50%)',
-            width: 140, height: 140, borderRadius: '50%',
+            width: 110, height: 110, borderRadius: '50%',
             overflow: 'hidden',
-            border: `4px solid ${ACCENT}`,
-            boxShadow: `0 0 30px rgba(255, 68, 68, 0.4)`,
+            border: `3px solid ${ACCENT}`,
+            boxShadow: `0 0 20px rgba(255, 68, 68, 0.4)`,
           }}>
             <Img src={avatarSrc} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           </div>
 
-          {/* Red accent bars — top and bottom */}
+          {/* Red accent bar — top only (declutter) */}
           <div style={{
             position: 'absolute', top: 0, left: 0, right: 0, height: 6,
-            background: `linear-gradient(90deg, transparent, ${ACCENT}, transparent)`,
-          }} />
-          <div style={{
-            position: 'absolute', bottom: 0, left: 0, right: 0, height: 6,
             background: `linear-gradient(90deg, transparent, ${ACCENT}, transparent)`,
           }} />
         </AbsoluteFill>
