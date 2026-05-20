@@ -13,6 +13,7 @@ import {
   Img,
   Sequence,
 } from 'remotion';
+import type { CalculateMetadataFunction } from 'remotion';
 import { Lottie } from '@remotion/lottie';
 import type { LottieAnimationData } from '@remotion/lottie';
 import type { QuizQuestion } from '../lib/quiz-content';
@@ -21,16 +22,14 @@ import { AnimatedBox } from '../components/viz/AnimatedBox';
 import { AnimatedArrow } from '../components/viz/AnimatedArrow';
 
 const FPS = 30;
-const TOTAL_DURATION_S = 25;
-const TOTAL_FRAMES = FPS * TOTAL_DURATION_S;
+const DEFAULT_DURATION_S = 25;
 
-// Phase timings (in frames at 30fps)
+// Phase ratios within total duration (relative to 25s baseline)
 // Hook: 0-2s | Question+Options: 2-6s | Flash cut: 6-6.5s | Explain: 6.5-20s | Loop trigger: 20-25s
-const HOOK_END = 2 * FPS;           // 60 frames — 0-2s
-const QUESTION_END = 6 * FPS;       // 180 frames — 2-6s
-const FLASH_END = QUESTION_END + 15; // 195 frames — 6-6.5s (15 frames = 0.5s)
-const EXPLAIN_END = 20 * FPS;       // 600 frames — 6.5-20s
-// LOOP_END = TOTAL_FRAMES          // 750 frames — 20-25s
+const HOOK_RATIO = 2 / 25;        // 0-2s of 25s baseline
+const QUESTION_RATIO = 4 / 25;    // +4s for question reveal
+const FLASH_RATIO = 0.5 / 25;     // +0.5s for flash cut
+const LOOP_RATIO = 2.5 / 25;      // last 2.5s for "But wait..." loop trigger
 
 // Colors — dark theme for Shorts (proven higher retention)
 const BG_DARK = '#0A0A12';
@@ -48,6 +47,8 @@ const CYAN = '#22D3EE';
 interface QuizShortProps {
   quiz: QuizQuestion;
   audioFile?: string;
+  /** Total narration duration in seconds. Drives composition length. */
+  audioDurationSec?: number;
 }
 
 // ── Topic to Diagram Mapping ────────────────────────────────────────
@@ -223,10 +224,12 @@ const OptionCard: React.FC<{
   label: string; text: string; index: number;
   revealed: boolean; isCorrect: boolean;
   compact?: boolean;
-}> = ({ label, text, index, revealed, isCorrect, compact = false }) => {
+  hookEnd: number;
+  flashEnd: number;
+}> = ({ label, text, index, revealed, isCorrect, compact = false, hookEnd, flashEnd }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
-  const entryFrame = HOOK_END + index * 6;
+  const entryFrame = hookEnd + index * 6;
   const s = spring({
     frame: Math.max(0, frame - entryFrame),
     fps,
@@ -234,7 +237,7 @@ const OptionCard: React.FC<{
   });
 
   // After reveal: correct glows green, wrong fades
-  const revealAge = frame - FLASH_END;
+  const revealAge = frame - flashEnd;
   const revealProgress = revealed
     ? interpolate(revealAge, [0, 20], [0, 1], { extrapolateRight: 'clamp' })
     : 0;
@@ -646,7 +649,13 @@ const LoopTrigger: React.FC<{ startFrame: number }> = ({ startFrame }) => {
 // ══════════════════════════════════════════════════════════════════════
 export const QuizShort: React.FC<QuizShortProps> = ({ quiz, audioFile }) => {
   const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
+  const { fps, durationInFrames: TOTAL_FRAMES } = useVideoConfig();
+
+  const HOOK_END = Math.round(HOOK_RATIO * TOTAL_FRAMES);
+  const QUESTION_END = HOOK_END + Math.round(QUESTION_RATIO * TOTAL_FRAMES);
+  const FLASH_END = QUESTION_END + Math.round(FLASH_RATIO * TOTAL_FRAMES);
+  const LOOP_START = TOTAL_FRAMES - Math.round(LOOP_RATIO * TOTAL_FRAMES);
+  const EXPLAIN_END = LOOP_START;
 
   const isHookPhase = frame < HOOK_END;
   const isQuestionPhase = frame >= HOOK_END && frame < QUESTION_END;
@@ -827,6 +836,8 @@ export const QuizShort: React.FC<QuizShortProps> = ({ quiz, audioFile }) => {
                 revealed={isRevealed}
                 isCorrect={i === quiz.correctIndex}
                 compact={isExplainPhase || isLoopPhase}
+                hookEnd={HOOK_END}
+                flashEnd={FLASH_END}
               />
             ))}
           </div>
@@ -921,13 +932,14 @@ export const QuizShort: React.FC<QuizShortProps> = ({ quiz, audioFile }) => {
 };
 
 // ── Metadata ────────────────────────────────────────────────────────
-export function calculateQuizShortMetadata() {
+export const calculateQuizShortMetadata: CalculateMetadataFunction<Record<string, unknown>> = ({ props }) => {
+  const seconds = (props.audioDurationSec as number | undefined) ?? DEFAULT_DURATION_S;
   return {
-    durationInFrames: TOTAL_FRAMES,
+    durationInFrames: Math.ceil(seconds * FPS) + FPS, // audio + 1s tail
     fps: FPS,
     width: 1080,
     height: 1920,
   };
-}
+};
 
 export default QuizShort;

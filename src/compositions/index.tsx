@@ -190,7 +190,11 @@ export const RemotionRoot: React.FC = () => {
       <Composition
         id="QuizShort"
         component={asCompositionComponent(QuizShort)}
-        {...calculateQuizShortMetadata()}
+        calculateMetadata={calculateQuizShortMetadata}
+        durationInFrames={750}
+        fps={30}
+        width={1080}
+        height={1920}
         defaultProps={{
           quiz: {
             topic: 'kafka',
