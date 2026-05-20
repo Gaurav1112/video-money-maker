@@ -152,7 +152,8 @@ async function main() {
     format: 'vertical',
   });
 
-  storyboard.bgmFile = 'audio/bgm/warm-ambient.mp3';
+  // BGM is set directly inside QuizShort.tsx (study-pad.mp3) — storyboard.bgmFile
+  // is unused by the QuizShort composition; do not set it here.
 
   // Save props JSON
   const propsPath = path.join(PROPS_DIR, `daily-short-${episodeId}.json`);
@@ -254,9 +255,14 @@ async function main() {
     },
   };
 
+  const descriptionWords = metadata.youtube.description.split(/\s+/).filter(Boolean).length;
+  if (descriptionWords < 150) {
+    console.warn(`   [warn] description is ${descriptionWords} words (<150). Quiz "${quiz.title}" has short explanation/twist — consider expanding.`);
+  }
+
   const metadataPath = path.join(OUTPUT_DIR, `${episodeId}-metadata.json`);
   fs.writeFileSync(metadataPath, JSON.stringify(metadata, null, 2));
-  console.log(`   Metadata: ${metadataPath}`);
+  console.log(`   Metadata: ${metadataPath} (${descriptionWords} words)`);
 
   // Summary
   const fileSize = fs.statSync(outputPath).size;
