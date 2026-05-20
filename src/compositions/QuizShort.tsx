@@ -951,23 +951,36 @@ export const QuizShort: React.FC<QuizShortProps> = ({ quiz, audioFile, wordTimes
                 );
               })()}
 
-              {/* Burned-in hormozi captions during explain phase */}
-              {wordTimestamps && wordTimestamps.length > 0 && (
-                <div style={{
-                  position: 'absolute',
-                  bottom: 380,
-                  left: 0, right: 0,
-                  zIndex: 30,
-                }}>
-                  <CaptionOverlay
-                    text={quiz.explanation}
-                    startFrame={FLASH_END}
-                    durationInFrames={EXPLAIN_END - FLASH_END}
-                    wordTimestamps={wordTimestamps}
-                    captionMode="hormozi"
-                  />
-                </div>
-              )}
+              {/* Burned-in hormozi captions during explain phase.
+                  wordTimestamps are absolute (start=0 is start of full narration:
+                  spokenHook + question + explanation + twist). CaptionOverlay's
+                  `text` is only the explanation, so we slice the timestamps to
+                  the explanation window and rebase to zero, AND set startFrame
+                  to the audio position where the explanation actually begins. */}
+              {wordTimestamps && wordTimestamps.length > 0 && (() => {
+                const prefixWords = `${quiz.spokenHook} ${quiz.question}`.split(/\s+/).filter(Boolean).length;
+                const explanationWords = quiz.explanation.split(/\s+/).filter(Boolean).length;
+                const slice = wordTimestamps.slice(prefixWords, prefixWords + explanationWords);
+                if (slice.length === 0) return null;
+                const offsetSec = slice[0].start;
+                const rebased = slice.map(wt => ({
+                  word: wt.word, start: wt.start - offsetSec, end: wt.end - offsetSec,
+                }));
+                const captionStartFrame = Math.round(offsetSec * fps);
+                return (
+                  <div style={{
+                    position: 'absolute', bottom: 380, left: 0, right: 0, zIndex: 30,
+                  }}>
+                    <CaptionOverlay
+                      text={quiz.explanation}
+                      startFrame={captionStartFrame}
+                      durationInFrames={EXPLAIN_END - captionStartFrame}
+                      wordTimestamps={rebased}
+                      captionMode="hormozi"
+                    />
+                  </div>
+                );
+              })()}
             </>
           )}
 
