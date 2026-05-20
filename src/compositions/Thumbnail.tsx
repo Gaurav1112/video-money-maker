@@ -1,5 +1,5 @@
 import React from 'react';
-import { AbsoluteFill } from 'remotion';
+import { AbsoluteFill, Img, staticFile } from 'remotion';
 import { FONTS } from '../lib/theme';
 
 export interface ThumbnailProps {
@@ -193,27 +193,27 @@ export const ThumbnailComposition: React.FC<ThumbnailProps> = ({
         </div>
       </div>
 
-      {/* Bold hook text - centered */}
+      {/* Bold hook text - shifted right to avoid avatar at bottom-left */}
       <div
         style={{
           position: 'absolute',
           inset: 0,
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'center',
-          padding: '100px 80px 80px 80px',
+          justifyContent: 'flex-end',
+          padding: '100px 80px 80px 360px',
         }}
       >
         <div
           style={{
-            fontSize: hookText.length > 25 ? 64 : 72,
+            fontSize: hookText.length > 25 ? 60 : 68,
             fontWeight: 900,
             color: '#FFFFFF',
-            textAlign: 'center',
+            textAlign: 'right',
             lineHeight: 1.15,
             letterSpacing: -1.5,
             textShadow: `0 4px 12px rgba(0,0,0,0.8), 0 0 40px ${accent}50, 0 2px 4px rgba(0,0,0,0.9)`,
-            maxWidth: 1100,
+            maxWidth: 840,
           }}
         >
           {hookText}
@@ -249,14 +249,15 @@ export const ThumbnailComposition: React.FC<ThumbnailProps> = ({
         </div>
       </div>
 
-      {/* Brand watermark - bottom left */}
+      {/* Brand watermark - top right (moved from bottom-left to make room for avatar) */}
       <div
         style={{
           position: 'absolute',
-          bottom: 36,
-          left: 60,
+          top: 50,
+          right: 60,
           display: 'flex',
           flexDirection: 'column',
+          alignItems: 'flex-end',
         }}
       >
         <div
@@ -284,6 +285,22 @@ export const ThumbnailComposition: React.FC<ThumbnailProps> = ({
           guru-sishya.in
         </div>
       </div>
+
+      {/* AI-generated avatar — bottom-left, ~30% of frame width.
+          Faces in thumbnails drive 20-40% CTR uplift per industry benchmarks.
+          Per project memory: ALWAYS use guru-avatar-crop.png, NEVER raw photo. */}
+      <Img
+        src={staticFile('images/guru-avatar-crop.png')}
+        style={{
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          width: 380,
+          height: 'auto',
+          filter: `drop-shadow(8px -8px 24px ${accent}66)`,
+          pointerEvents: 'none',
+        }}
+      />
 
       {/* Bottom accent bar */}
       <div
