@@ -24,6 +24,7 @@ import CaptionOverlay from '../components/CaptionOverlay';
 import { AnimatedBox } from '../components/viz/AnimatedBox';
 import { AnimatedArrow } from '../components/viz/AnimatedArrow';
 import CodeSnippetPanel from '../components/CodeSnippetPanel';
+import ExplanationBeats from '../components/ExplanationBeats';
 
 const FPS = 30;
 const DEFAULT_DURATION_S = 120; // v3 baseline (was 25s)
@@ -1046,7 +1047,8 @@ export const QuizShort: React.FC<QuizShortProps> = ({ quiz, audioFile, wordTimes
   const showDiagram =
     frame >= HOOK_END && (isQuestionPhase || isFlashPhase || isAnswerSplashPhase || isExplainPhase);
 
-  const keyPhrases = useMemo(() => extractKeyPhrases(quiz.explanation), [quiz.explanation]);
+  // v3: keyPhrases/KeyPhraseReveal are kept defined above but no longer rendered;
+  // ExplanationBeats now walks the full explanation sentence-by-sentence.
   const bigStat = useMemo(() => extractBigStat(quiz.explanation), [quiz.explanation]);
   const hookText = useMemo(() => pickHook(quiz, hashStr(quiz.title + quiz.topic)), [quiz]);
 
@@ -1231,71 +1233,52 @@ export const QuizShort: React.FC<QuizShortProps> = ({ quiz, audioFile, wordTimes
           <AnswerSplashCard startFrame={FLASH_END} />
 
           {/* ═══════════════════════════════════════════════════════════
-              Phase 4: REVEAL + EXPLAIN (6.5-20s) — Confetti, key phrases
-              Delayed by 15 frames to follow the ANSWER splash card.
+              Phase 4 + 6: REVEAL flash (right after FLASH_END) and
+              EXPLAIN BEATS (30-80s). Confetti + green flash anchored to
+              ANSWER_SPLASH_END so they still fire on reveal.
               ═══════════════════════════════════════════════════════════ */}
-          {isExplainPhase && (
+          {(isAnswerSplashPhase || isCodePhase) && (
             <>
               {/* Confetti burst on reveal */}
-              {frame - (FLASH_END + 15) >= 0 && frame - (FLASH_END + 15) < 60 && (
+              {frame - ANSWER_SPLASH_END >= 0 && frame - ANSWER_SPLASH_END < 60 && (
                 <LottieOverlay
                   file="lottie/confetti.json"
                   style={{
                     width: 600, height: 600,
                     top: 400, left: '50%',
                     transform: 'translateX(-50%)',
-                    opacity: interpolate(frame - (FLASH_END + 15), [0, 10, 50, 60], [0, 0.8, 0.6, 0]),
+                    opacity: interpolate(frame - ANSWER_SPLASH_END, [0, 10, 50, 60], [0, 0.8, 0.6, 0]),
                   }}
                   loop={false}
                 />
               )}
-
               {/* Green flash on reveal */}
-              <DramaticFlash triggerFrame={FLASH_END + 15} color="rgba(16, 185, 129, 0.3)" />
+              <DramaticFlash triggerFrame={ANSWER_SPLASH_END} color="rgba(16, 185, 129, 0.3)" />
+            </>
+          )}
 
-              {/* Key phrases + big stat */}
-              <KeyPhraseReveal
-                phrases={keyPhrases}
-                startFrame={FLASH_END + 15}
+          {isExplainPhase && (
+            <>
+              {/* v3: full sentence-by-sentence walk-through */}
+              <ExplanationBeats
+                text={quiz.explanation}
+                startFrame={CODE_END}
+                durationFrames={Math.max(1, EXPLAIN_END - CODE_END)}
                 bigStat={bigStat}
-                beatAlignFrames={Math.floor((EXPLAIN_END - (FLASH_END + 15)) / 3)}
               />
 
-              {/* Per-beat background pulses — re-engagement every ~4s */}
+              {/* Per-beat background pulses — recycle 3 beats across the span */}
               {[0, 1, 2].map(i => {
-                const beatDur = Math.floor((EXPLAIN_END - (FLASH_END + 15)) / 3);
+                const beatDur = Math.floor((EXPLAIN_END - CODE_END) / 3);
                 return (
                   <BeatBackground
                     key={`beat-${i}`}
                     beatIndex={i}
-                    beatStartFrame={(FLASH_END + 15) + i * beatDur}
+                    beatStartFrame={CODE_END + i * beatDur}
                     beatDurationFrames={beatDur}
                   />
                 );
               })}
-
-              {/* Beat counter pill — bottom-left progress indicator */}
-              {(() => {
-                const explainSpan = EXPLAIN_END - (FLASH_END + 15);
-                const beatDur = Math.floor(explainSpan / 3);
-                const explainAge = frame - (FLASH_END + 15);
-                const currentBeat = Math.min(2, Math.max(0, Math.floor(explainAge / beatDur)));
-                return (
-                  <div style={{
-                    position: 'absolute',
-                    bottom: 110, left: 30,
-                    zIndex: 31,
-                    padding: '6px 14px',
-                    borderRadius: 20,
-                    backgroundColor: 'rgba(34, 211, 238, 0.18)',
-                    border: '1px solid rgba(34, 211, 238, 0.5)',
-                    fontSize: 22, fontFamily: FONTS.heading, fontWeight: 700,
-                    color: '#22D3EE',
-                  }}>
-                    {currentBeat + 1}/3
-                  </div>
-                );
-              })()}
 
               {/* Feature P1: Emoji bursts on power words (TRILLION/WRONG/$10M etc).
                   Renders within explain phase; uses absolute wordTimestamps so
