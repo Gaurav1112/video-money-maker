@@ -51,6 +51,53 @@ export const TOPIC_TAGS: Record<string, string[]> = {
     'cap theorem', 'acid transactions', 'database scaling',
     'system design interview', 'oltp vs olap',
   ],
+  redis: [
+    'redis', 'redis tutorial', 'redis cache', 'caching',
+    'in memory database', 'redis cluster', 'redis persistence',
+    'pub sub', 'redis interview', 'cache invalidation',
+    'lru cache', 'distributed cache',
+  ],
+  kubernetes: [
+    'kubernetes', 'k8s', 'kubernetes tutorial', 'container orchestration',
+    'docker', 'pods', 'deployments', 'kubernetes services',
+    'kubernetes interview', 'helm', 'ingress', 'kubernetes networking',
+  ],
+  docker: [
+    'docker', 'docker tutorial', 'containers', 'containerization',
+    'dockerfile', 'docker compose', 'container image',
+    'docker vs vm', 'devops', 'microservices', 'docker interview',
+    'container runtime',
+  ],
+  microservices: [
+    'microservices', 'microservices architecture', 'service mesh',
+    'event driven architecture', 'saga pattern', 'circuit breaker',
+    'distributed systems', 'monolith vs microservices',
+    'api design', 'system design interview', 'grpc', 'service discovery',
+  ],
+  'system-design': [
+    'system design', 'system design interview', 'distributed systems',
+    'scalability', 'high availability', 'cap theorem',
+    'load balancing', 'caching', 'database sharding',
+    'consistent hashing', 'faang interview', 'tech interview',
+  ],
+  'rest-api': [
+    'rest api', 'api design', 'http methods', 'rest vs graphql',
+    'api versioning', 'http status codes', 'idempotency',
+    'rate limiting', 'api authentication', 'openapi',
+    'swagger', 'backend interview',
+  ],
+  authentication: [
+    'authentication', 'jwt', 'oauth', 'session management',
+    'authorization', 'security', 'sso', 'oidc',
+    'api security', 'auth interview', 'token authentication',
+    'rbac',
+  ],
+  cicd: [
+    'cicd', 'ci cd pipeline', 'continuous integration',
+    'continuous deployment', 'github actions', 'jenkins',
+    'gitlab ci', 'devops', 'deployment strategies',
+    'blue green deployment', 'canary deployment', 'docker build',
+  ],
 };
 
 /**
