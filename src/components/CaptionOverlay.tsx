@@ -285,16 +285,32 @@ const CaptionOverlay: React.FC<CaptionOverlayProps> = ({
               if (isFuture) return null;
 
               const emphasis = isEmphasis(word);
+              const wordStartF = getWordStartFrame(activeGroup.start + localIdx);
               const wordSpring = isCurrent
                 ? spring({
-                    frame: elapsed - getWordStartFrame(activeGroup.start + localIdx),
+                    frame: elapsed - wordStartF,
                     fps,
                     config: { damping: 8, stiffness: 250, mass: 0.4 },
                   })
                 : 0;
-              const wordScale = isCurrent
+              let wordScale = isCurrent
                 ? interpolate(wordSpring, [0, 1], [1.0, 1.3])
                 : 1.0;
+
+              // ── Feature P2: per-word emphasis pop ──
+              // If the CURRENT word is also ALL-CAPS emphasis, give it an
+              // extra 1.3x scale boost decaying back to 1.0 over ~10 frames,
+              // peaking at frames 0-5 around when the word becomes current.
+              if (isCurrent && emphasis) {
+                const emphasisAge = elapsed - wordStartF;
+                const boost = interpolate(
+                  emphasisAge,
+                  [0, 5, 10],
+                  [1.3, 1.3, 1.0],
+                  { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
+                );
+                wordScale *= boost;
+              }
 
               return (
                 <span
@@ -304,7 +320,9 @@ const CaptionOverlay: React.FC<CaptionOverlayProps> = ({
                     fontFamily: FONTS.text,
                     fontSize: isCurrent ? 44 : 38,
                     fontWeight: 800,
-                    color: isCurrent ? '#FFFFFF' : (emphasis ? COLORS.gold : '#FFFFFFdd'),
+                    color: isCurrent
+                      ? (emphasis ? COLORS.saffron : '#FFFFFF')
+                      : (emphasis ? COLORS.gold : '#FFFFFFdd'),
                     textTransform: 'uppercase',
                     transform: `scale(${wordScale})`,
                     transformOrigin: 'center bottom',
