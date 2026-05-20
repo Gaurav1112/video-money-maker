@@ -14,8 +14,18 @@ export interface VideoMetrics {
   estimatedMinutesWatched: number;
 }
 
+const METRIC_NAMES = [
+  'views',
+  'likes',
+  'comments',
+  'averageViewDuration',
+  'averageViewPercentage',
+  'shares',
+  'estimatedMinutesWatched',
+] as const;
+
 export async function getYouTubeAnalyticsClient(): Promise<youtubeAnalytics_v2.Youtubeanalytics> {
-  const auth = await getYouTubeAuthClient();
+  const auth = getYouTubeAuthClient();
   return google.youtubeAnalytics({ version: 'v2', auth });
 }
 
@@ -34,21 +44,24 @@ export async function fetchVideoMetrics(videoIds: string[], days = 30): Promise<
     const resp = await analytics.reports.query({
       ids: 'channel==MINE',
       startDate, endDate,
-      metrics: 'views,likes,comments,averageViewDuration,averageViewPercentage,shares,estimatedMinutesWatched',
+      metrics: METRIC_NAMES.join(','),
       filters: `video==${videoId}`,
     });
     const row = resp.data.rows?.[0];
-    if (!row) continue;
+    if (!row) {
+      console.warn(`[youtube-analytics] no rows for videoId=${videoId} (${startDate}→${endDate}), skipping`);
+      continue;
+    }
     out.push({
       videoId,
       fetchedAt: new Date().toISOString(),
-      views: Number(row[0] ?? 0),
-      likes: Number(row[1] ?? 0),
-      comments: Number(row[2] ?? 0),
-      averageViewDuration: Number(row[3] ?? 0),
-      averageViewPercentage: Number(row[4] ?? 0),
-      shares: Number(row[5] ?? 0),
-      estimatedMinutesWatched: Number(row[6] ?? 0),
+      views: Number(row[METRIC_NAMES.indexOf('views')] ?? 0),
+      likes: Number(row[METRIC_NAMES.indexOf('likes')] ?? 0),
+      comments: Number(row[METRIC_NAMES.indexOf('comments')] ?? 0),
+      averageViewDuration: Number(row[METRIC_NAMES.indexOf('averageViewDuration')] ?? 0),
+      averageViewPercentage: Number(row[METRIC_NAMES.indexOf('averageViewPercentage')] ?? 0),
+      shares: Number(row[METRIC_NAMES.indexOf('shares')] ?? 0),
+      estimatedMinutesWatched: Number(row[METRIC_NAMES.indexOf('estimatedMinutesWatched')] ?? 0),
     });
   }
   return out;
