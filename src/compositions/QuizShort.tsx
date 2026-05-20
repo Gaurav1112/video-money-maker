@@ -611,19 +611,26 @@ const FlashCut: React.FC<{ startFrame: number }> = ({ startFrame }) => {
 };
 
 // ── Loop Trigger (Zeigarnik effect — incomplete thought) ────────────
-const LoopTrigger: React.FC<{ startFrame: number }> = ({ startFrame }) => {
+const LoopTrigger: React.FC<{ startFrame: number; twistText: string }> = ({ startFrame, twistText }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const age = frame - startFrame;
   if (age < 0) return null;
 
   // 0-1s: "But wait..."
-  // 1-2.5s: "Most tutorials teach you the WRONG default..."
-  // 2.5-5s: hard cut to black (loop)
+  // 1-2.5s: per-quiz twist line (was hardcoded — now uses quiz.twist)
 
   const phase1End = 1 * fps;       // 30 frames
   const phase2End = 2.5 * fps;     // 75 frames
-  // Phase 3: black until end
+
+  // Truncate twist to one screen-readable sentence. Highlight first ALL-CAPS
+  // power-word found (WRONG / NEVER / NOT / EVERY / ONLY etc).
+  const sentence = (twistText.split(/[.!?]/)[0] ?? twistText).trim();
+  const truncated = sentence.length > 90 ? sentence.slice(0, 87) + '...' : sentence;
+  const powerWordMatch = truncated.match(/\b(NOT|NEVER|WRONG|LOST|EVERY|ALWAYS|ALL|ONLY|MOST|CRITICAL|ZERO|NONE)\b/);
+  const before = powerWordMatch ? truncated.slice(0, powerWordMatch.index) : truncated;
+  const power = powerWordMatch ? powerWordMatch[0] : '';
+  const after = powerWordMatch ? truncated.slice((powerWordMatch.index ?? 0) + power.length) : '';
 
   if (age < phase1End) {
     // "But wait..."
@@ -667,12 +674,14 @@ const LoopTrigger: React.FC<{ startFrame: number }> = ({ startFrame }) => {
             textAlign: 'center',
           }}>
             <span style={{
-              fontSize: 48, fontFamily: FONTS.heading, fontWeight: 800,
+              fontSize: 44, fontFamily: FONTS.heading, fontWeight: 800,
               color: TEXT, lineHeight: 1.3,
             }}>
-              Most tutorials teach you the{' '}
-              <span style={{ color: ACCENT, textDecoration: 'underline' }}>WRONG</span>
-              {' '}default...
+              {before}
+              {power && (
+                <span style={{ color: ACCENT, textDecoration: 'underline' }}>{power}</span>
+              )}
+              {after}
             </span>
           </div>
         </div>
@@ -980,7 +989,7 @@ export const QuizShort: React.FC<QuizShortProps> = ({ quiz, audioFile, wordTimes
       {/* ═══════════════════════════════════════════════════════════════
           Phase 5: LOOP TRIGGER (20-25s) — Zeigarnik effect
           ═══════════════════════════════════════════════════════════════ */}
-      <LoopTrigger startFrame={EXPLAIN_END} />
+      <LoopTrigger startFrame={EXPLAIN_END} twistText={quiz.twist} />
       <EndCardCTA
         endQuestion={quiz.endQuestion}
         startFrame={Math.max(0, TOTAL_FRAMES - Math.round(1.5 * fps))}
