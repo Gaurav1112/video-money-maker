@@ -1034,6 +1034,25 @@ export const QuizShort: React.FC<QuizShortProps> = ({ quiz, audioFile, wordTimes
       <Sfx name="riser" from={Math.max(0, FLASH_END + 5)} durationFrames={45} volume={0.5} />
       <Sfx name="swoosh" from={Math.max(0, EXPLAIN_END - 10)} durationFrames={20} volume={0.8} />
 
+      {/* ── Channel logo bug (top-right, always visible) ── */}
+      <div style={{
+        position: 'absolute', top: 28, right: 28,
+        zIndex: 95,
+        padding: '6px 12px',
+        borderRadius: 8,
+        backgroundColor: 'rgba(10, 10, 18, 0.55)',
+        border: '1px solid rgba(251, 191, 36, 0.4)',
+        backdropFilter: 'blur(8px)',
+        display: 'flex', alignItems: 'center', gap: 6,
+      }}>
+        <span style={{
+          fontSize: 16, fontFamily: FONTS.heading, fontWeight: 900,
+          color: YELLOW, letterSpacing: 1.5, textTransform: 'uppercase',
+        }}>
+          guru-sishya
+        </span>
+      </div>
+
       {/* ── Progress bar ── */}
       <div style={{
         position: 'absolute', bottom: 0, left: 0, right: 0, height: 4,
