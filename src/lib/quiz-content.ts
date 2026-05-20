@@ -1,5 +1,28 @@
 // src/lib/quiz-content.ts
 
+/**
+ * v3: a per-quiz wrong→right code/config snippet. Renders inside QuizShort
+ * during the 16-second CODE phase. Optional — if unset, the panel doesn't
+ * render and the phase becomes part of the explain expansion.
+ */
+export interface CodeSnippet {
+  language: 'ts' | 'java' | 'python' | 'yaml' | 'json' | 'sql' | 'bash' | 'go';
+  wrong: string;     // The buggy / suboptimal version
+  right: string;     // The correct version
+  caption?: string;  // 1-line label like "Kafka producer config"
+}
+
+/**
+ * v3: optional worked-example payload that the WorkedExample component renders
+ * as a BEFORE/AFTER split-screen. If unset, the component derives a scenario
+ * heuristically from `explanation`.
+ */
+export interface WorkedExample {
+  scenario: string;  // e.g. "LinkedIn at 7T msgs/day"
+  before: string;    // problem state with the wrong approach
+  after: string;     // happy state with the right approach
+}
+
 export interface QuizQuestion {
   topic: string;
   hookText: string;           // Bold text shown on screen (works on mute)
@@ -11,6 +34,8 @@ export interface QuizQuestion {
   twist: string;              // Counterintuitive insight / hot take
   endQuestion: string;        // Comment-driving question at the end
   title: string;              // YouTube title
+  codeSnippet?: CodeSnippet;  // v3: optional wrong-vs-right code panel
+  workedExample?: WorkedExample; // v3: optional BEFORE/AFTER scenario
 }
 
 // High-performing topics (based on real channel data + search volume expansion)
@@ -143,6 +168,19 @@ export const QUIZ_BANK: QuizQuestion[] = [
     twist: 'The scary part? acks=0 is not even the default. acks=1 is — and that is ALSO unsafe if the leader crashes before replication.',
     endQuestion: 'Are you acks=all or acks=1? Comment below.',
     title: '90% of devs get Kafka acks WRONG',
+    codeSnippet: {
+      language: 'yaml',
+      caption: 'Kafka producer config',
+      wrong: `producer:
+  acks: 0
+  retries: 0
+  # Messages can be silently dropped`,
+      right: `producer:
+  acks: all
+  retries: 3
+  min.insync.replicas: 2
+  # Survives broker crash`,
+    },
   },
   {
     topic: 'kafka',
@@ -155,6 +193,19 @@ export const QUIZ_BANK: QuizQuestion[] = [
     twist: 'Here is the part nobody tells you: auto-commit is ON by default. Every 5 seconds. So your "safe" consumer is actually committing offsets for messages you have not finished processing.',
     endQuestion: 'Did you know about auto-commit? Comment YES or NO.',
     title: 'This Kafka bug cost Uber $10M',
+    codeSnippet: {
+      language: 'java',
+      caption: 'Kafka consumer commit',
+      wrong: `// auto-commit fires every 5s
+props.put("enable.auto.commit", "true");
+consumer.poll(Duration.ofSeconds(1));
+// crash here = offsets ALREADY committed`,
+      right: `// commit ONLY after processing
+props.put("enable.auto.commit", "false");
+records = consumer.poll(...);
+process(records);
+consumer.commitSync();  // safe`,
+    },
   },
   {
     topic: 'kafka',
@@ -167,6 +218,19 @@ export const QUIZ_BANK: QuizQuestion[] = [
     twist: 'Most Kafka tutorials on YouTube teach you the WRONG defaults. They show you acks=1 and never mention min.insync.replicas.',
     endQuestion: 'Check your Kafka config right now. What is your min.insync.replicas?',
     title: '90% of Kafka setups are LOSING data silently',
+    codeSnippet: {
+      language: 'yaml',
+      caption: 'Topic durability config',
+      wrong: `# default — leader-only ack
+acks: 1
+min.insync.replicas: 1
+# leader crash = data LOST`,
+      right: `# LinkedIn production
+acks: all
+min.insync.replicas: 2
+replication.factor: 3
+# survives 1 broker loss`,
+    },
   },
   {
     topic: 'kafka',
@@ -289,6 +353,24 @@ export const QUIZ_BANK: QuizQuestion[] = [
     twist: 'Hot take: most startups do NOT need an API Gateway. A simple reverse proxy with 20 lines of nginx config does 90% of what Kong or AWS API Gateway does. The API Gateway industry is built on over-engineering.',
     endQuestion: 'Do you use an API Gateway? Or is nginx enough? Comment.',
     title: '90% of devs get API Gateway WRONG',
+    codeSnippet: {
+      language: 'yaml',
+      caption: 'API Gateway responsibilities',
+      wrong: `# every service handles its own
+service-a:
+  - auth check
+  - rate limit
+  - logging
+service-b:
+  - auth check  # duplicated
+  - rate limit  # duplicated`,
+      right: `# gateway owns cross-cutting concerns
+gateway:
+  - auth (JWT verify)
+  - rate limit (token bucket)
+  - logging + tracing
+  - request routing -> services`,
+    },
   },
   {
     topic: 'api-gateway',
@@ -313,6 +395,23 @@ export const QUIZ_BANK: QuizQuestion[] = [
     twist: 'The advanced answer Stripe wants: you need BOTH. Gateway-level for global protection, and service-level for tenant isolation. One without the other leaves a gap.',
     endQuestion: 'Where do you rate limit? Gateway or service? Comment.',
     title: 'Stripe rejected me because of THIS API answer',
+    codeSnippet: {
+      language: 'ts',
+      caption: 'Rate limit placement',
+      wrong: `// in each service
+app.post('/charge', async (req, res) => {
+  if (await rateLimit(req.ip)) return res.status(429);
+  await chargeCard(req.body);
+});
+// DDoS still hits every service`,
+      right: `// at the gateway, once
+gateway.use(rateLimit({
+  windowMs: 60_000,
+  max: 100,
+  keyGenerator: r => r.tenantId,
+}));
+// rejected before reaching service`,
+    },
   },
   {
     topic: 'api-gateway',
@@ -337,6 +436,22 @@ export const QUIZ_BANK: QuizQuestion[] = [
     twist: 'The trap: if you aggregate too aggressively, your gateway becomes a monolith. Amazon calls this the "God Gateway" anti-pattern. The rule: aggregate for the client, never for business logic.',
     endQuestion: 'How many API calls does your app make per screen? Comment the number.',
     title: 'This API pattern saved Amazon $2M per year',
+    codeSnippet: {
+      language: 'ts',
+      caption: 'Gateway aggregation',
+      wrong: `// mobile makes 5 round trips
+GET /user/me
+GET /user/me/orders
+GET /user/me/cart
+GET /products/recommended
+GET /notifications  // 5x latency`,
+      right: `// gateway fans out internally
+GET /mobile/home -> {
+  user, orders, cart,
+  recommended, notifications
+}
+// 1 round trip, 80% faster`,
+    },
   },
   {
     topic: 'api-gateway',
@@ -363,6 +478,23 @@ export const QUIZ_BANK: QuizQuestion[] = [
     twist: 'The algorithm that beats everything for most use cases: least connections. Two words. It automatically routes to the server with the fewest active connections. No configuration needed.',
     endQuestion: 'What load balancing algorithm do you use? Comment.',
     title: '90% of devs use the WRONG load balancing algorithm',
+    codeSnippet: {
+      language: 'yaml',
+      caption: 'nginx upstream config',
+      wrong: `upstream api {
+  # round-robin, no health checks
+  server api-1.local;
+  server api-2.local;
+  server api-3.local;
+}
+# one slow server tanks everyone`,
+      right: `upstream api {
+  least_conn;
+  server api-1.local max_fails=2 fail_timeout=10s;
+  server api-2.local max_fails=2 fail_timeout=10s;
+  server api-3.local max_fails=2 fail_timeout=10s;
+}`,
+    },
   },
   {
     topic: 'load-balancing',
@@ -375,6 +507,23 @@ export const QUIZ_BANK: QuizQuestion[] = [
     twist: 'The counterintuitive truth: L4 load balancers handle 10x more connections per second than L7. If you do not need content-based routing, L7 is wasting CPU cycles inspecting every packet.',
     endQuestion: 'L4 or L7 for your API? Comment your choice.',
     title: 'L4 vs L7 load balancing — this answer is worth $50K',
+    codeSnippet: {
+      language: 'yaml',
+      caption: 'L7 vs L4 routing',
+      wrong: `# L4: only sees IP:port
+upstream api {
+  server backend.local:8080;
+}
+# cannot route by path - one backend
+# for /users AND /orders AND /admin`,
+      right: `# L7: routes by path
+location /api/users { proxy_pass http://users-svc; }
+location /api/orders { proxy_pass http://orders-svc; }
+location /api/admin {
+  auth_request /verify-admin;
+  proxy_pass http://admin-svc;
+}`,
+    },
   },
   {
     topic: 'load-balancing',
@@ -399,6 +548,21 @@ export const QUIZ_BANK: QuizQuestion[] = [
     twist: 'The dirty secret: most teams use sticky sessions because their app stores state in memory. The fix is not a better load balancer — it is making your app stateless. But nobody wants to refactor.',
     endQuestion: 'Are your apps stateless? Or still using sticky sessions? Comment.',
     title: 'Sticky sessions are a TRAP — here is why',
+    codeSnippet: {
+      language: 'ts',
+      caption: 'Session storage',
+      wrong: `// in-memory map = sticky required
+const sessions = new Map<string, User>();
+app.use((req) => {
+  req.user = sessions.get(req.cookies.sid);
+});
+// pod dies = user logged out`,
+      right: `// externalized = any server works
+app.use(async (req) => {
+  req.user = await redis.get(\`sess:\${req.cookies.sid}\`);
+});
+// pod dies = LB routes elsewhere, fine`,
+    },
   },
   {
     topic: 'load-balancing',
@@ -437,6 +601,24 @@ export const QUIZ_BANK: QuizQuestion[] = [
     twist: 'The rule of thumb: if an index is used in less than 5 percent of your queries, drop it. PostgreSQL has pg_stat_user_indexes that shows exactly which indexes are unused. Most teams have never checked.',
     endQuestion: 'How many indexes does your biggest table have? Comment the number.',
     title: '90% of devs use database indexes WRONG',
+    codeSnippet: {
+      language: 'sql',
+      caption: 'Index strategy',
+      wrong: `-- index everything "just in case"
+CREATE INDEX ON orders(user_id);
+CREATE INDEX ON orders(status);
+CREATE INDEX ON orders(created_at);
+CREATE INDEX ON orders(updated_at);
+CREATE INDEX ON orders(currency);
+-- every INSERT writes 5 B-trees`,
+      right: `-- find unused first
+SELECT indexrelname, idx_scan
+FROM pg_stat_user_indexes
+WHERE idx_scan < 100
+ORDER BY idx_scan;
+-- drop the dead ones
+DROP INDEX idx_orders_currency;`,
+    },
   },
   {
     topic: 'database',
@@ -461,6 +643,21 @@ export const QUIZ_BANK: QuizQuestion[] = [
     twist: 'ORMs are the biggest N+1 offender. Rails Active Record, Django ORM, and Hibernate all make it trivially easy to write N+1 queries without realizing it. The ORM hides the SQL, which hides the problem.',
     endQuestion: 'Have you been bitten by N+1 queries? Comment your worst story.',
     title: 'The N+1 query that crashed GitHub',
+    codeSnippet: {
+      language: 'ts',
+      caption: 'Eager loading',
+      wrong: `const orders = await Order.findAll();
+for (const o of orders) {
+  // each iteration = 1 SQL query
+  o.items = await Item.findBy({ orderId: o.id });
+}
+// 1 + N queries, slow as hell`,
+      right: `const orders = await Order.findAll({
+  include: [{ model: Item }],
+});
+// ONE query with JOIN
+// 100x faster on real data`,
+    },
   },
   {
     topic: 'database',
@@ -473,6 +670,21 @@ export const QUIZ_BANK: QuizQuestion[] = [
     twist: 'The cost of soft deletes: your table grows forever. Stripe runs a background job that hard-deletes soft-deleted records older than 90 days. Without this, their largest tables would be 60 percent deleted rows — wasting storage and slowing queries.',
     endQuestion: 'Soft delete or hard delete? What does your team use? Comment.',
     title: 'Amazon BANNED the DELETE statement — here is why',
+    codeSnippet: {
+      language: 'sql',
+      caption: 'Soft delete pattern',
+      wrong: `-- destructive, no recovery
+DELETE FROM users WHERE id = 12345;
+-- typo in WHERE = catastrophic
+-- no audit trail, no rollback`,
+      right: `-- mark instead of remove
+UPDATE users
+SET deleted_at = NOW()
+WHERE id = 12345;
+-- queries auto-filter
+SELECT * FROM users
+WHERE deleted_at IS NULL;`,
+    },
   },
 
   // ── MICROSERVICES (5 questions) ───────────────────────────────────
