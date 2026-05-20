@@ -266,7 +266,11 @@ const OptionCard: React.FC<{
       : 'rgba(255,255,255,0.08)';
 
   const py = compact ? 14 : 18;
-  const fontSize = compact ? 28 : 32;
+  // Auto-fit: shrink long options (>28 chars) to 26/24 instead of 32/28.
+  const longText = text.length > 28;
+  const fontSize = longText
+    ? (compact ? 22 : 26)
+    : (compact ? 28 : 32);
 
   return (
     <div style={{
@@ -298,6 +302,8 @@ const OptionCard: React.FC<{
         fontSize, fontFamily: FONTS.text, fontWeight: 600,
         color: TEXT, flex: 1, opacity: textOpacity,
         lineHeight: 1.2,
+        // Long options wrap to 2 lines instead of overflowing the card width.
+        whiteSpace: 'normal', wordBreak: 'break-word',
       }}>
         {text}
       </span>
