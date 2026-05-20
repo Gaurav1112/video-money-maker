@@ -366,7 +366,13 @@ export const LongVideo: React.FC<LongVideoProps> = ({ storyboard, noOverlays = f
 
             // SPLIT LAYOUT: Left 42% text panel + Right 58% full ConceptViz
             // The visualization is the STAR — it fills the right side completely
-            const isSplitScene = false; // Disabled — text scenes now use full-screen TemplateFactory/D2/Terminal
+            // Enable split layout (left text panel + right ConceptViz) for
+            // architecture-style scenes where the visualization deserves a dedicated
+            // canvas. 'diagram' already takes the full-width branch above, so this
+            // predicate primarily triggers when scene.templateId hints at architecture.
+            // We compare via the templateId string (broader vocabulary than SceneType).
+            const tplId = (scene.templateId || '').toLowerCase();
+            const isSplitScene = tplId.includes('architecture');
             const renderedScene = isFullWidthScene ? (
               <AbsoluteFill style={{ zIndex: 2 }}>
                 <Component {...props} {...syncProps} />
