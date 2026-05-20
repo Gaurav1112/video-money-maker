@@ -926,7 +926,7 @@ export const QuizShort: React.FC<QuizShortProps> = ({ quiz, audioFile, wordTimes
       )}
 
       {/* ── BGM ── */}
-      <Audio src={staticFile('audio/bgm/warm-ambient.mp3')} volume={0.06} loop />
+      <Audio src={staticFile('audio/bgm/study-pad.mp3')} volume={0.06} loop />
 
       {/* ── SFX cues ── */}
       <Sfx name="whoosh-in" from={0} volume={0.8} />
