@@ -300,6 +300,8 @@ interface SessionFiles {
   thumbnail: string | null;
   /** Per-part metadata JSON files (from generate-upload-metadata.ts) */
   partMetadataJsons: (string | null)[];
+  /** SRT captions for the long-form video (from export-dialogue.ts) */
+  longFormSrt: string | null;
 }
 
 function discoverSessionFiles(topicSlug: string, sessionNum: number): SessionFiles {
@@ -311,6 +313,7 @@ function discoverSessionFiles(topicSlug: string, sessionNum: number): SessionFil
     metadataMd: null,
     thumbnail: null,
     partMetadataJsons: [],
+    longFormSrt: null,
   };
 
   if (!fs.existsSync(sessionDir)) {
@@ -381,6 +384,22 @@ function discoverSessionFiles(topicSlug: string, sessionNum: number): SessionFil
     }
   }
 
+  // SRT captions for long-form (from export-dialogue.ts).
+  // Filename pattern: dialogue-<topic-slug-sanitised>-s<N>.srt
+  const sanitised = topicSlug.replace(/[^a-z0-9]/gi, '-');
+  const srtCandidates = [
+    path.join(sessionDir, `dialogue-${sanitised}-s${sessionNum}.srt`),
+    path.join(sessionDir, 'long', `dialogue-${sanitised}-s${sessionNum}.srt`),
+    path.join(sessionDir, 'captions.srt'),
+    path.join(sessionDir, 'long', 'captions.srt'),
+  ];
+  for (const candidate of srtCandidates) {
+    if (fs.existsSync(candidate)) {
+      result.longFormSrt = candidate;
+      break;
+    }
+  }
+
   return result;
 }
 
@@ -430,6 +449,7 @@ async function uploadToYouTube(
     scheduledAt?: string; // ISO 8601 for scheduled publishing
     thumbnailPath?: string;
     playlistId?: string;
+    captionsPath?: string;
   },
 ): Promise<{ videoId: string; url: string }> {
   const auth = getYouTubeAuth();
@@ -526,6 +546,30 @@ async function uploadToYouTube(
       log('SUCCESS', `Thumbnail uploaded for ${videoId}`);
     } catch (err) {
       log('WARN', `Thumbnail upload failed (video still uploaded): ${(err as Error).message}`);
+    }
+  }
+
+  // Upload SRT captions if available
+  if (metadata.captionsPath && fs.existsSync(metadata.captionsPath)) {
+    try {
+      await youtube.captions.insert({
+        part: ['snippet'],
+        requestBody: {
+          snippet: {
+            videoId,
+            language: 'en',
+            name: 'English (auto)',
+            isDraft: false,
+          },
+        },
+        media: {
+          mimeType: 'application/octet-stream',
+          body: fs.createReadStream(metadata.captionsPath),
+        },
+      });
+      log('SUCCESS', `Captions uploaded for ${videoId} (${path.basename(metadata.captionsPath)})`);
+    } catch (err) {
+      log('WARN', `Captions upload failed (video still uploaded): ${(err as Error).message}`);
     }
   }
 
@@ -1253,6 +1297,7 @@ async function publish(options: {
   log('INFO', `Metadata JSON: ${files.metadataJson ? 'found' : 'MISSING'}`);
   log('INFO', `Metadata MD: ${files.metadataMd ? 'found' : 'missing'}`);
   log('INFO', `Thumbnail: ${files.thumbnail ? 'found' : 'missing'}`);
+  log('INFO', `Captions (SRT): ${files.longFormSrt ? 'found' : 'missing'}`);
 
   if (!files.longFormVideo && files.verticalParts.length === 0) {
     log('ERROR', 'No video files found. Nothing to publish.');
@@ -1376,6 +1421,7 @@ async function publish(options: {
               privacy: config.youtube.defaultPrivacy,
               thumbnailPath: files.thumbnail || undefined,
               playlistId,
+              captionsPath: files.longFormSrt || undefined,
             }),
           'YouTube long-form',
           config,
