@@ -638,10 +638,7 @@ const LoopTrigger: React.FC<{ startFrame: number }> = ({ startFrame }) => {
     );
   }
 
-  // Hard cut to black — the video loops
-  return (
-    <AbsoluteFill style={{ zIndex: 55, backgroundColor: '#000000' }} />
-  );
+  return null;
 };
 
 // ══════════════════════════════════════════════════════════════════════
