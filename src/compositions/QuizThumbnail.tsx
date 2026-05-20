@@ -5,7 +5,14 @@ import React from 'react';
 import { AbsoluteFill, Img, staticFile } from 'remotion';
 import { FONTS } from '../lib/theme';
 import type { QuizQuestion } from '../lib/quiz-content';
-import { getSpecificHook } from '../lib/quiz-hook';
+import { pickHook } from '../lib/quiz-hook';
+
+// Feature P8: same hash as QuizShort.tsx so thumbnail hook == video hook.
+function hashStr(s: string): number {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = ((h << 5) - h + s.charCodeAt(i)) | 0;
+  return Math.abs(h);
+}
 
 const FPS = 30;
 
@@ -14,7 +21,7 @@ interface QuizThumbnailProps {
 }
 
 export const QuizThumbnail: React.FC<QuizThumbnailProps> = ({ quiz }) => {
-  const hookText = getSpecificHook(quiz);
+  const hookText = pickHook(quiz, hashStr(quiz.title + quiz.topic));
   const lines = hookText.split('\n');
   const autoFontSize = lines.length <= 2 ? 120 : lines.length === 3 ? 96 : 78;
   const avatarSrc = staticFile('images/guru-avatar-crop.png');

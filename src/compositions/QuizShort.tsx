@@ -17,7 +17,7 @@ import type { CalculateMetadataFunction } from 'remotion';
 import { Lottie } from '@remotion/lottie';
 import type { LottieAnimationData } from '@remotion/lottie';
 import type { QuizQuestion } from '../lib/quiz-content';
-import { getSpecificHook } from '../lib/quiz-hook';
+import { pickHook } from '../lib/quiz-hook';
 import { FONTS } from '../lib/theme';
 import EndCardCTA from '../components/EndCardCTA';
 import CaptionOverlay from '../components/CaptionOverlay';
@@ -183,6 +183,15 @@ function extractBigStat(explanation: string): { number: string; context: string 
 }
 
 // getSpecificHook moved to src/lib/quiz-hook.ts (shared with QuizThumbnail).
+
+// Feature P8: deterministic hash for A/B hook rotation.
+// Same quiz → same slot → same hook variant. Balanced across the bank
+// without needing to thread the explicit bank index through props.
+function hashStr(s: string): number {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = ((h << 5) - h + s.charCodeAt(i)) | 0;
+  return Math.abs(h);
+}
 
 // ── Pulsing Red Vignette ─────────────────────────────────────────────
 const PulsingVignette: React.FC = () => {
@@ -994,7 +1003,7 @@ export const QuizShort: React.FC<QuizShortProps> = ({ quiz, audioFile, wordTimes
 
   const keyPhrases = useMemo(() => extractKeyPhrases(quiz.explanation), [quiz.explanation]);
   const bigStat = useMemo(() => extractBigStat(quiz.explanation), [quiz.explanation]);
-  const hookText = useMemo(() => getSpecificHook(quiz), [quiz]);
+  const hookText = useMemo(() => pickHook(quiz, hashStr(quiz.title + quiz.topic)), [quiz]);
 
   const avatarSrc = staticFile('images/guru-avatar-crop.png');
 
