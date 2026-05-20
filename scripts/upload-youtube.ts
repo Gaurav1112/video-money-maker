@@ -2,15 +2,17 @@
  * YouTube Video Upload Script
  *
  * Usage:
- *   npx tsx scripts/upload-youtube.ts output/video.mp4 output/metadata.json [--shorts] [--private]
+ *   npx tsx scripts/upload-youtube.ts output/video.mp4 output/metadata.json [--shorts] [--private] [--thumbnail <path>] [--captions <srt-path>]
  *
  * Prerequisites:
  *   1. Run `npx tsx scripts/auth-youtube.ts` first to generate .youtube-token.json
  *   2. Set YOUTUBE_CLIENT_ID and YOUTUBE_CLIENT_SECRET env vars
  *
  * Flags:
- *   --shorts   Add #Shorts to title, optimized for vertical (9:16) content
- *   --private  Upload as private (default: public)
+ *   --shorts    Add #Shorts to title, optimized for vertical (9:16) content
+ *   --private   Upload as private (default: public)
+ *   --thumbnail Path to a JPEG thumbnail to set after upload
+ *   --captions  Path to an SRT caption file to upload after video is live
  */
 
 import { google, youtube_v3 } from 'googleapis';
@@ -311,8 +313,11 @@ async function main(): Promise<void> {
   const thumbnailIdx = process.argv.indexOf('--thumbnail');
   const thumbnailPath = thumbnailIdx > -1 ? process.argv[thumbnailIdx + 1] : undefined;
 
+  const captionsIdx = process.argv.indexOf('--captions');
+  const captionsPath = captionsIdx > -1 ? process.argv[captionsIdx + 1] : undefined;
+
   if (positional.length < 2) {
-    console.error('Usage: npx tsx scripts/upload-youtube.ts <video.mp4> <metadata.json> [--shorts] [--private] [--thumbnail <path>]');
+    console.error('Usage: npx tsx scripts/upload-youtube.ts <video.mp4> <metadata.json> [--shorts] [--private] [--thumbnail <path>] [--captions <srt-path>]');
     console.error('');
     console.error('Arguments:');
     console.error('  video.mp4       Path to the video file');
@@ -322,6 +327,7 @@ async function main(): Promise<void> {
     console.error('  --shorts        Upload as YouTube Short (adds #Shorts to title)');
     console.error('  --private       Upload as private instead of public');
     console.error('  --thumbnail     Path to a JPEG thumbnail to set after upload');
+    console.error('  --captions      Path to an SRT caption file to upload');
     process.exit(1);
   }
 
@@ -373,6 +379,25 @@ async function main(): Promise<void> {
         media: { mimeType: 'image/jpeg', body: fs.createReadStream(thumbnailPath) },
       });
       console.log(`   ✓ Custom thumbnail uploaded`);
+    }
+
+    // ── Captions upload ──
+    if (captionsPath && fs.existsSync(captionsPath)) {
+      const auth = getAuthClient();
+      const youtube = google.youtube({ version: 'v3', auth });
+      await youtube.captions.insert({
+        part: ['snippet'],
+        requestBody: {
+          snippet: {
+            videoId: result.videoId,
+            language: 'en',
+            name: 'English (auto)',
+            isDraft: false,
+          },
+        },
+        media: { mimeType: 'application/octet-stream', body: fs.createReadStream(captionsPath) },
+      });
+      console.log(`   ✓ Captions uploaded`);
     }
 
     // Write result to a sidecar file for pipeline integration

@@ -17,6 +17,7 @@ import { execSync } from 'child_process';
 import { getDailyQuiz, getQuizByIndex, QUIZ_BANK } from '../src/lib/quiz-content';
 import { generateSceneAudios } from '../src/pipeline/tts-engine';
 import { generateStoryboard } from '../src/pipeline/storyboard';
+import { wordTimestampsToSrt } from '../src/lib/srt';
 
 // ─── Paths ──────────────────────────────────────────────────────────────────
 
@@ -105,6 +106,16 @@ async function main() {
   // ── Step 2: Build storyboard (for audio stitching only) ──
   console.log('[2/4] Building storyboard...');
   const audioDuration = audioResults[0]?.duration ?? 38;
+
+  // ── Emit SRT from TTS word timestamps ──
+  const wordTimestamps = audioResults[0]?.wordTimestamps ?? [];
+  if (wordTimestamps.length > 0) {
+    const srt = wordTimestampsToSrt(wordTimestamps);
+    const srtPath = path.join(OUTPUT_DIR, `${episodeId}.srt`);
+    fs.writeFileSync(srtPath, srt);
+    console.log(`   Captions: ${srtPath}`);
+  }
+
   const quizScene = {
     type: 'text' as const,
     content: fullNarration,
