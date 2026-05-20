@@ -928,8 +928,9 @@ const LoopTrigger: React.FC<{ startFrame: number; twistText: string }> = ({ star
   // 0-1s: "But wait..."
   // 1-2.5s: per-quiz twist line (was hardcoded — now uses quiz.twist)
 
-  const phase1End = 1 * fps;       // 30 frames
-  const phase2End = 2.5 * fps;     // 75 frames
+  const phase1End = 1 * fps;       // 30 frames ("But wait...")
+  // v3: removed phase2End upper bound — the twist line now holds for the full
+  // remaining loop phase (typically 6s) instead of disappearing after 1.5s.
 
   // Truncate twist to one screen-readable sentence. Highlight first ALL-CAPS
   // power-word found (WRONG / NEVER / NOT / EVERY / ONLY etc).
@@ -964,40 +965,37 @@ const LoopTrigger: React.FC<{ startFrame: number; twistText: string }> = ({ star
     );
   }
 
-  if (age < phase2End) {
-    // "Most tutorials teach you the WRONG default..."
-    const textAge = age - phase1End;
-    const s = spring({ frame: textAge, fps, config: { stiffness: 200, damping: 14, mass: 0.5 } });
-    return (
-      <AbsoluteFill style={{ zIndex: 55 }}>
+  // v3: hold the twist line until the loop phase ends (no early null).
+  // Same content as the original phase2 but without an upper bound on age.
+  const textAge = age - phase1End;
+  const s = spring({ frame: textAge, fps, config: { stiffness: 200, damping: 14, mass: 0.5 } });
+  return (
+    <AbsoluteFill style={{ zIndex: 55 }}>
+      <div style={{
+        position: 'absolute', inset: 0,
+        backgroundColor: 'rgba(10, 10, 18, 0.92)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        padding: '0 60px',
+      }}>
         <div style={{
-          position: 'absolute', inset: 0,
-          backgroundColor: 'rgba(10, 10, 18, 0.92)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          padding: '0 60px',
+          opacity: interpolate(s, [0, 1], [0, 1]),
+          transform: `translateY(${interpolate(s, [0, 1], [20, 0])}px)`,
+          textAlign: 'center',
         }}>
-          <div style={{
-            opacity: interpolate(s, [0, 1], [0, 1]),
-            transform: `translateY(${interpolate(s, [0, 1], [20, 0])}px)`,
-            textAlign: 'center',
+          <span style={{
+            fontSize: 44, fontFamily: FONTS.heading, fontWeight: 800,
+            color: TEXT, lineHeight: 1.3,
           }}>
-            <span style={{
-              fontSize: 44, fontFamily: FONTS.heading, fontWeight: 800,
-              color: TEXT, lineHeight: 1.3,
-            }}>
-              {before}
-              {power && (
-                <span style={{ color: ACCENT, textDecoration: 'underline' }}>{power}</span>
-              )}
-              {after}
-            </span>
-          </div>
+            {before}
+            {power && (
+              <span style={{ color: ACCENT, textDecoration: 'underline' }}>{power}</span>
+            )}
+            {after}
+          </span>
         </div>
-      </AbsoluteFill>
-    );
-  }
-
-  return null;
+      </div>
+    </AbsoluteFill>
+  );
 };
 
 // ══════════════════════════════════════════════════════════════════════

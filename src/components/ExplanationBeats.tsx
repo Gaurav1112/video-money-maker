@@ -136,10 +136,10 @@ export const ExplanationBeats: React.FC<Props> = ({
 }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
+  // Hooks must run unconditionally — pre-compute before any early return.
+  const sentences = useMemo(() => splitSentences(text), [text]);
   const age = frame - startFrame;
   if (age < 0 || age >= durationFrames) return null;
-
-  const sentences = useMemo(() => splitSentences(text), [text]);
   const statFrames = bigStat ? Math.round(fps * 2) : 0; // 2s
   const beatsSpan = Math.max(1, durationFrames - statFrames);
   const beatDur = Math.max(1, Math.floor(beatsSpan / Math.max(1, sentences.length)));

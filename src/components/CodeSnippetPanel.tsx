@@ -187,21 +187,17 @@ const CodeBlock: React.FC<{
 export const CodeSnippetPanel: React.FC<Props> = ({ snippet, startFrame, durationFrames }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
+
+  // Hooks MUST run unconditionally — pre-compute before any early return.
+  const wrongTokens = useMemo(() => tokenize(snippet.wrong, snippet.language), [snippet.wrong, snippet.language]);
+  const rightTokens = useMemo(() => tokenize(snippet.right, snippet.language), [snippet.right, snippet.language]);
+
   const age = frame - startFrame;
-  if (age < 0 || age >= durationFrames) return null;
 
   // Sub-phases relative to startFrame (480 frames @ 30fps = 16s default).
   // Phase boundaries are proportional in case duration changes.
   const wrongEnd = Math.round(durationFrames * (6 / 16));   // ~180 frames
   const transEnd = Math.round(durationFrames * (10 / 16));  // ~300 frames
-
-  const wrongTokens = useMemo(() => tokenize(snippet.wrong, snippet.language), [snippet.wrong, snippet.language]);
-  const rightTokens = useMemo(() => tokenize(snippet.right, snippet.language), [snippet.right, snippet.language]);
-
-  const typewriterCharsFor = (typingFrames: number, totalChars: number) => {
-    // ~25 chars/sec = 25 / 30 frames-per-sec ≈ 0.83 chars/frame
-    return Math.min(totalChars, Math.round((typingFrames / fps) * 25));
-  };
 
   // Entry/exit springs for slide animation
   const enterSpring = spring({
@@ -209,6 +205,13 @@ export const CodeSnippetPanel: React.FC<Props> = ({ snippet, startFrame, duratio
     fps,
     config: { stiffness: 180, damping: 18, mass: 0.6 },
   });
+
+  if (age < 0 || age >= durationFrames) return null;
+
+  const typewriterCharsFor = (typingFrames: number, totalChars: number) => {
+    // ~25 chars/sec = 25 / 30 frames-per-sec ≈ 0.83 chars/frame
+    return Math.min(totalChars, Math.round((typingFrames / fps) * 25));
+  };
 
   if (age < wrongEnd) {
     // WRONG phase: typewriter wrong code

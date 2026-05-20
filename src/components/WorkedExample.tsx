@@ -44,11 +44,11 @@ export function deriveWorkedExample(explanation: string, options: string[], corr
 
   const sentences = explanation.split(/(?<=[.!?])\s+/).map(s => s.trim()).filter(Boolean);
   const before = sentences.find((s) =>
-    /\b(lost|crashed|failed|wrong|broken|outage|down|deleted|leak|stale|bug)\b/i.test(s),
+    /\b(lost|lose|losing|crashed|crash|failed|fail|wrong|broken|outage|down|deleted|leak|stale|bug|gone|forget|drop|silently)\b/i.test(s),
   );
   const correctAnswer = options[correctIndex] ?? '';
   const after = sentences.find((s) =>
-    /\b(fixed|saved|works|solved|safe|durable|stable|recovered|reduced|cut)\b/i.test(s),
+    /\b(fixed|saved|works|solved|safe|durable|stable|recovered|reduced|cut|uses|processes|handles)\b/i.test(s),
   ) ?? (correctAnswer ? `Switch to: ${correctAnswer}` : sentences[sentences.length - 1] ?? '');
 
   if (!before) return null;

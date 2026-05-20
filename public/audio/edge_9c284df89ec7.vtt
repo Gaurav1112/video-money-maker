@@ -1,0 +1,28 @@
+1
+00:00:00,100 --> 00:00:06,447
+Google asked me this exact Kafka question in the second round of my system design interview.
+
+2
+00:00:06,397 --> 00:00:09,568
+How does Kafka achieve ordering guarantees?
+
+3
+00:00:09,568 --> 00:00:13,738
+Kafka only guarantees ordering within a single partition.
+
+4
+00:00:13,738 --> 00:00:17,727
+Messages across partitions have no ordering guarantee.
+
+5
+00:00:17,727 --> 00:00:23,193
+This is the number one mistake candidates make in system design interviews.
+
+6
+00:00:23,193 --> 00:00:28,579
+The interviewer wants to hear: use a single partition key for related events.
+
+7
+00:00:28,579 --> 00:00:38,034
+Here is the follow-up that trips people: if you add more partitions for throughput, you lose ordering for existing keys because of partition reassignment.
+
