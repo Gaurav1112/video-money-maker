@@ -99,6 +99,14 @@ export const EndCardCTA: React.FC<Props> = ({ endQuestion, startFrame, durationF
         }}>
           👇 Pick a side
         </div>
+        {/* v3.1: third brand touchpoint — URL anchored under the CTA */}
+        <div style={{
+          fontSize: 22, color: '#FBBF24', marginTop: 8, letterSpacing: 1.5,
+          fontFamily: FONTS.heading, fontWeight: 700,
+          textShadow: '0 2px 8px rgba(0,0,0,0.5)',
+        }}>
+          🌐 www.guru-sishya.in
+        </div>
       </div>
     );
   }
@@ -124,6 +132,14 @@ export const EndCardCTA: React.FC<Props> = ({ endQuestion, startFrame, durationF
         boxShadow: '0 8px 30px rgba(0,0,0,0.4)',
       }}>
         💬 {endQuestion}
+      </div>
+      {/* v3.1: third brand touchpoint — URL anchored under the CTA */}
+      <div style={{
+        fontSize: 22, color: '#FBBF24', marginTop: 8, letterSpacing: 1.5,
+        fontFamily: FONTS.heading, fontWeight: 700,
+        textShadow: '0 2px 8px rgba(0,0,0,0.5)',
+      }}>
+        🌐 www.guru-sishya.in
       </div>
     </div>
   );

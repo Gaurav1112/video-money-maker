@@ -38,10 +38,10 @@ export const QuizThumbnail: React.FC<QuizThumbnailProps> = ({ quiz }) => {
         display: 'flex', alignItems: 'center', justifyContent: 'center',
       }}>
         <span style={{
-          fontSize: 36, fontFamily: FONTS.heading, fontWeight: 900,
-          color: '#0A0A12', letterSpacing: 4, textTransform: 'uppercase',
+          fontSize: 30, fontFamily: FONTS.heading, fontWeight: 900,
+          color: '#0A0A12', letterSpacing: 3, textTransform: 'uppercase',
         }}>
-          {quiz.topic.replace(/-/g, ' ')} · QUIZ
+          {quiz.topic.replace(/-/g, ' ')} · QUIZ · guru-sishya.in
         </span>
       </div>
 

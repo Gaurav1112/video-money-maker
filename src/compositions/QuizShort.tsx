@@ -1415,6 +1415,7 @@ export const QuizShort: React.FC<QuizShortProps> = ({ quiz, audioFile, wordTimes
       <Sfx name="swoosh" from={Math.max(0, LOOP_START_FRAME - 10)} durationFrames={20} volume={0.8} />
 
       {/* ── Channel logo bug (top-right, always visible) ── */}
+      {/* v3.1: show the full domain so the brand is searchable, not just a name. */}
       <div style={{
         position: 'absolute', top: 28, right: 28,
         zIndex: 95,
@@ -1426,11 +1427,31 @@ export const QuizShort: React.FC<QuizShortProps> = ({ quiz, audioFile, wordTimes
         display: 'flex', alignItems: 'center', gap: 6,
       }}>
         <span style={{
-          fontSize: 16, fontFamily: FONTS.heading, fontWeight: 900,
-          color: YELLOW, letterSpacing: 1.5, textTransform: 'uppercase',
+          fontSize: 13, fontFamily: FONTS.heading, fontWeight: 900,
+          color: '#FBBF24', letterSpacing: 1.2, opacity: 0.85,
+          textTransform: 'lowercase',
         }}>
-          guru-sishya
+          ●
         </span>
+        <span style={{
+          fontSize: 17, fontFamily: FONTS.heading, fontWeight: 900,
+          color: YELLOW, letterSpacing: 1.5, textTransform: 'lowercase',
+        }}>
+          guru-sishya.in
+        </span>
+      </div>
+
+      {/* ── Persistent URL watermark (bottom-left, always visible) ── */}
+      {/* v3.1: a second discrete touchpoint so the URL is on screen during every */}
+      {/* phase. Color matches the brand yellow but at 70% to stay non-intrusive. */}
+      <div style={{
+        position: 'absolute', bottom: 14, left: 30,
+        zIndex: 92,
+        fontSize: 13, fontFamily: FONTS.heading, fontWeight: 600,
+        color: 'rgba(251, 191, 36, 0.7)',
+        letterSpacing: 1.2,
+      }}>
+        🌐 www.guru-sishya.in
       </div>
 
       {/* ── Progress bar ── */}
