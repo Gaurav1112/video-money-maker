@@ -61,6 +61,25 @@ export const QuizThumbnail: React.FC<QuizThumbnailProps> = ({ quiz }) => {
         </div>
       </div>
 
+      {/* Teaser caption — small line under hook teasing the question */}
+      <div style={{
+        position: 'absolute', bottom: 470, left: 60, right: 60,
+        textAlign: 'center',
+      }}>
+        <div style={{
+          display: 'inline-block',
+          padding: '10px 24px',
+          backgroundColor: 'rgba(34, 211, 238, 0.15)',
+          border: '2px solid rgba(34, 211, 238, 0.6)',
+          borderRadius: 24,
+          fontSize: 26, fontFamily: FONTS.heading, fontWeight: 700,
+          color: '#22D3EE',
+          letterSpacing: 1.5, textTransform: 'uppercase',
+        }}>
+          ▶ Can you answer this?
+        </div>
+      </div>
+
       {/* Avatar — bottom center, large */}
       <div style={{
         position: 'absolute', bottom: 80, left: '50%',
@@ -71,6 +90,18 @@ export const QuizThumbnail: React.FC<QuizThumbnailProps> = ({ quiz }) => {
         boxShadow: '0 0 60px rgba(255, 68, 68, 0.6)',
       }}>
         <Img src={avatarSrc} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+      </div>
+
+      {/* WATCH play indicator — overlaps avatar to draw eye */}
+      <div style={{
+        position: 'absolute', bottom: 60, right: 60,
+        width: 90, height: 90, borderRadius: '50%',
+        backgroundColor: 'rgba(251, 191, 36, 0.95)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        boxShadow: '0 8px 30px rgba(251, 191, 36, 0.6)',
+        border: '3px solid #fff',
+      }}>
+        <span style={{ fontSize: 44, color: '#0A0A12', marginLeft: 6 }}>▶</span>
       </div>
 
       {/* Bottom emphasis bar */}
