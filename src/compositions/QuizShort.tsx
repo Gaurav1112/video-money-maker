@@ -23,6 +23,7 @@ import EndCardCTA from '../components/EndCardCTA';
 import CaptionOverlay from '../components/CaptionOverlay';
 import { AnimatedBox } from '../components/viz/AnimatedBox';
 import { AnimatedArrow } from '../components/viz/AnimatedArrow';
+import CodeSnippetPanel from '../components/CodeSnippetPanel';
 
 const FPS = 30;
 const DEFAULT_DURATION_S = 120; // v3 baseline (was 25s)
@@ -1351,6 +1352,18 @@ export const QuizShort: React.FC<QuizShortProps> = ({ quiz, audioFile, wordTimes
             </div>
           )}
         </AbsoluteFill>
+      )}
+
+      {/* ═══════════════════════════════════════════════════════════════
+          Phase 5: CODE SNIPPET (14-30s) — wrong vs right typewriter
+          Renders only if the quiz has a codeSnippet payload.
+          ═══════════════════════════════════════════════════════════════ */}
+      {quiz.codeSnippet && (
+        <CodeSnippetPanel
+          snippet={quiz.codeSnippet}
+          startFrame={ANSWER_SPLASH_END}
+          durationFrames={Math.max(1, CODE_END - ANSWER_SPLASH_END)}
+        />
       )}
 
       {/* ═══════════════════════════════════════════════════════════════
