@@ -716,11 +716,13 @@ export const QuizShort: React.FC<QuizShortProps> = ({ quiz, audioFile }) => {
           }}>
             {(() => {
               const s = spring({ frame, fps, config: { stiffness: 180, damping: 12, mass: 0.7 } });
+              const opacity = Math.max(0.85, interpolate(s, [0, 1], [0.85, 1]));
+              const scale = interpolate(s, [0, 1], [0.92, 1]);
               const lines = hookText.split('\n');
               return (
                 <div style={{
-                  transform: `scale(${interpolate(s, [0, 1], [0.6, 1])})`,
-                  opacity: interpolate(s, [0, 1], [0, 1]),
+                  transform: `scale(${scale})`,
+                  opacity,
                   textAlign: 'center',
                   padding: '0 50px',
                 }}>

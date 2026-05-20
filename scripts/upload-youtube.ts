@@ -308,8 +308,11 @@ async function main(): Promise<void> {
   const flags = args.filter((a) => a.startsWith('--'));
   const positional = args.filter((a) => !a.startsWith('--'));
 
+  const thumbnailIdx = process.argv.indexOf('--thumbnail');
+  const thumbnailPath = thumbnailIdx > -1 ? process.argv[thumbnailIdx + 1] : undefined;
+
   if (positional.length < 2) {
-    console.error('Usage: npx tsx scripts/upload-youtube.ts <video.mp4> <metadata.json> [--shorts] [--private]');
+    console.error('Usage: npx tsx scripts/upload-youtube.ts <video.mp4> <metadata.json> [--shorts] [--private] [--thumbnail <path>]');
     console.error('');
     console.error('Arguments:');
     console.error('  video.mp4       Path to the video file');
@@ -318,6 +321,7 @@ async function main(): Promise<void> {
     console.error('Flags:');
     console.error('  --shorts        Upload as YouTube Short (adds #Shorts to title)');
     console.error('  --private       Upload as private instead of public');
+    console.error('  --thumbnail     Path to a JPEG thumbnail to set after upload');
     process.exit(1);
   }
 
@@ -359,6 +363,17 @@ async function main(): Promise<void> {
 
   try {
     const result = await uploadVideo(resolvedVideoPath, metadata, options);
+
+    // ── Thumbnail upload ──
+    if (thumbnailPath && fs.existsSync(thumbnailPath)) {
+      const auth = getAuthClient();
+      const youtube = google.youtube({ version: 'v3', auth });
+      await youtube.thumbnails.set({
+        videoId: result.videoId,
+        media: { mimeType: 'image/jpeg', body: fs.createReadStream(thumbnailPath) },
+      });
+      console.log(`   ✓ Custom thumbnail uploaded`);
+    }
 
     // Write result to a sidecar file for pipeline integration
     const resultPath = resolvedVideoPath.replace(/\.[^.]+$/, '.upload-result.json');

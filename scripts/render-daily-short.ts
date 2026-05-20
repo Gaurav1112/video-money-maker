@@ -154,6 +154,25 @@ async function main() {
   execSync(renderCmd, { stdio: 'inherit', cwd: PROJECT_ROOT });
   console.log(`   Video: ${outputPath}`);
 
+  // ── Export frame-0 thumbnail ──
+  const thumbnailPath = path.join(OUTPUT_DIR, `${episodeId}-thumbnail.jpg`);
+  const thumbCmd = [
+    'npx', 'remotion', 'still',
+    'src/compositions/index.tsx',
+    'QuizShort',
+    thumbnailPath,
+    `--props=${propsPath}`,
+    '--frame=0',
+    '--image-format=jpeg',
+    '--jpeg-quality=92',
+  ].join(' ');
+  try {
+    execSync(thumbCmd, { stdio: 'inherit', cwd: PROJECT_ROOT });
+    console.log(`   Thumbnail: ${thumbnailPath}`);
+  } catch (err) {
+    console.warn(`   [warn] thumbnail export failed; YouTube will auto-pick`);
+  }
+
   // ── Step 4: Generate metadata ──
   console.log('[4/4] Generating metadata...');
   const metadata = {
