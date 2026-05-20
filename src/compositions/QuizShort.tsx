@@ -752,6 +752,106 @@ const CountdownTimer: React.FC<{ startFrame: number; durationFrames: number }> =
   );
 };
 
+// ── Feature P1: Emoji Burst Layer ────────────────────────────────────
+// Float a large emoji over the explain phase at the moment specific power
+// words are spoken. Deterministic positions cycle to avoid overlap.
+const EMOJI_POSITIONS: Array<{ top: string; left: string }> = [
+  { top: '18%', left: '12%' },   // top-left
+  { top: '18%', left: '70%' },   // top-right
+  { top: '38%', left: '8%' },    // middle-left
+  { top: '38%', left: '74%' },   // middle-right
+  { top: '58%', left: '14%' },   // lower-left
+  { top: '58%', left: '68%' },   // lower-right
+];
+
+// Order matters: longer/more specific patterns first so $10M wins over generic numbers.
+const POWER_WORD_RULES: Array<{ re: RegExp; emoji: string }> = [
+  { re: /\$[\d,]+\s*[MB]\b/i, emoji: '💰' },
+  { re: /\b(?:WRONG|FAIL|FAILED)\b/, emoji: '💀' },
+  { re: /\b(?:LOST|LOSE|LOSING)\b/, emoji: '💸' },
+  { re: /\b(?:TRILLION|BILLION)\b/i, emoji: '🚀' },
+  { re: /\b(?:CRITICAL|URGENT|DANGER)\b/, emoji: '⚠️' },
+  { re: /\b(?:NEVER|ZERO)\b/, emoji: '❌' },
+  { re: /\b(?:ALWAYS|EVERY)\b/, emoji: '✅' },
+  { re: /\bKAFKA\b/i, emoji: '📨' },
+  { re: /\b(?:BUG|CRASH|OUTAGE)\b/i, emoji: '💥' },
+];
+
+function matchPowerEmoji(word: string): string | null {
+  for (const rule of POWER_WORD_RULES) {
+    if (rule.re.test(word)) return rule.emoji;
+  }
+  return null;
+}
+
+const EmojiBurstLayer: React.FC<{
+  wordTimestamps: Array<{ word: string; start: number; end: number }>;
+  audioOffsetFrames?: number;
+}> = ({ wordTimestamps, audioOffsetFrames = 0 }) => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+
+  // Pre-compute matches (deterministic).
+  const matches = useMemo(() => {
+    const out: Array<{ emoji: string; startFrame: number; posIndex: number }> = [];
+    let idx = 0;
+    for (const wt of wordTimestamps) {
+      const emoji = matchPowerEmoji(wt.word);
+      if (!emoji) continue;
+      out.push({
+        emoji,
+        startFrame: Math.round(wt.start * fps) + audioOffsetFrames,
+        posIndex: idx % EMOJI_POSITIONS.length,
+      });
+      idx++;
+    }
+    return out;
+  }, [wordTimestamps, fps, audioOffsetFrames]);
+
+  return (
+    <>
+      {matches.map((m, i) => {
+        const age = frame - m.startFrame;
+        if (age < 0 || age >= 18) return null;
+        const pos = EMOJI_POSITIONS[m.posIndex];
+        // Spring scale 0 → 1.2 → 1 → 0 across 18 frames.
+        let scale: number;
+        if (age < 6) {
+          scale = interpolate(age, [0, 6], [0, 1.2]);
+        } else if (age < 12) {
+          scale = interpolate(age, [6, 12], [1.2, 1]);
+        } else {
+          scale = interpolate(age, [12, 18], [1, 0]);
+        }
+        const opacity = interpolate(age, [0, 3, 14, 18], [0, 1, 1, 0], {
+          extrapolateLeft: 'clamp', extrapolateRight: 'clamp',
+        });
+        return (
+          <div
+            key={`emoji-${i}-${m.startFrame}`}
+            style={{
+              position: 'absolute',
+              top: pos.top,
+              left: pos.left,
+              fontSize: 200,
+              lineHeight: 1,
+              transform: `scale(${scale})`,
+              transformOrigin: 'center center',
+              opacity,
+              pointerEvents: 'none',
+              zIndex: 33,
+              textShadow: '0 0 30px rgba(0,0,0,0.5)',
+              filter: 'drop-shadow(0 0 12px rgba(0,0,0,0.4))',
+            }}
+          >
+            {m.emoji}
+          </div>
+        );
+      })}
+    </>
+  );
+};
+
 // ── Feature H: Answer Splash Card ────────────────────────────────────
 const AnswerSplashCard: React.FC<{ startFrame: number }> = ({ startFrame }) => {
   const frame = useCurrentFrame();
@@ -1142,6 +1242,13 @@ export const QuizShort: React.FC<QuizShortProps> = ({ quiz, audioFile, wordTimes
                   </div>
                 );
               })()}
+
+              {/* Feature P1: Emoji bursts on power words (TRILLION/WRONG/$10M etc).
+                  Renders within explain phase; uses absolute wordTimestamps so
+                  timing is exact. zIndex 33 sits above captions, below answer splash. */}
+              {wordTimestamps && wordTimestamps.length > 0 && (
+                <EmojiBurstLayer wordTimestamps={wordTimestamps} />
+              )}
 
               {/* Burned-in hormozi captions during explain phase.
                   wordTimestamps are absolute (start=0 is start of full narration:
