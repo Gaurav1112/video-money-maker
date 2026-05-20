@@ -172,7 +172,7 @@ async function main() {
         `#systemdesign #${quiz.topic.replace(/-/g, '')} #codinginterview #softwareengineer`,
       ].join('\n'),
       tags: [quiz.topic, 'system design', 'coding interview', 'software engineer', 'tech shorts'],
-      categoryId: '27', // Education
+      categoryId: '28', // Science & Technology (per optimal_schedule memory)
     },
   };
 
