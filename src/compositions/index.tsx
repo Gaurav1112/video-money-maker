@@ -12,6 +12,7 @@ import { HookCardShort } from './HookCardShort';
 import { OutroCardShort } from './OutroCardShort';
 import { ThumbnailShortPortrait } from './ThumbnailShortPortrait';
 import { QuizShort, calculateQuizShortMetadata } from './QuizShort';
+import { QuizThumbnail, calculateQuizThumbnailMetadata } from './QuizThumbnail';
 import type { Storyboard } from '../types';
 import type { ClipType } from './MultiShort';
 
@@ -195,6 +196,25 @@ export const RemotionRoot: React.FC = () => {
         fps={30}
         width={1080}
         height={1920}
+        defaultProps={{
+          quiz: {
+            topic: 'kafka',
+            hookText: 'Only 2% of devs\nget this right',
+            spokenHook: 'Only two percent of developers get this Kafka question right.',
+            question: 'If your Kafka producer sets acks=0 and the broker crashes, what happens to your message?',
+            options: ['It retries automatically', 'Gone forever', 'Consumer replays it'],
+            correctIndex: 1,
+            explanation: 'The answer is B — gone forever. acks=0 means fire and forget.',
+            twist: 'acks=1 is the default — and that is ALSO unsafe if the leader crashes before replication.',
+            endQuestion: 'Are you acks=all or acks=1? Comment below.',
+            title: '90% of devs get Kafka acks WRONG 😳',
+          },
+        }}
+      />
+      <Composition
+        id="QuizThumbnail"
+        component={asCompositionComponent(QuizThumbnail)}
+        {...calculateQuizThumbnailMetadata()}
         defaultProps={{
           quiz: {
             topic: 'kafka',

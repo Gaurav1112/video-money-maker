@@ -201,7 +201,7 @@ async function main() {
   const thumbCmd = [
     'npx', 'remotion', 'still',
     'src/compositions/index.tsx',
-    'QuizShort',
+    'QuizThumbnail',
     thumbnailPath,
     `--props=${propsPath}`,
     '--frame=0',
