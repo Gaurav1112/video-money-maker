@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { buildVideoIdList, persistMetrics } from '../ingest-analytics';
+import { buildVideoIdList, persistMetrics } from '../lib/analytics-store';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
