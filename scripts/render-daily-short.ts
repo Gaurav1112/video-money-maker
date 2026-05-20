@@ -14,7 +14,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { execSync } from 'child_process';
-import { getDailyQuiz, getQuizByIndex, QUIZ_BANK } from '../src/lib/quiz-content';
+import { getDailyQuiz, getQuizByIndex, QUIZ_BANK, buildTags } from '../src/lib/quiz-content';
 import { generateSceneAudios } from '../src/pipeline/tts-engine';
 import { generateStoryboard } from '../src/pipeline/storyboard';
 import { wordTimestampsToSrt } from '../src/lib/srt';
@@ -250,7 +250,7 @@ async function main() {
         '',
         `#systemdesign #${quiz.topic.replace(/-/g, '')} #codinginterview #softwareengineer #techinterview #backend #distributedsystems`,
       ].join('\n'),
-      tags: [quiz.topic, 'system design', 'coding interview', 'software engineer', 'tech shorts'],
+      tags: buildTags(quiz.topic),
       categoryId: '28', // Science & Technology (per optimal_schedule memory)
     },
   };

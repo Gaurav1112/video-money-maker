@@ -20,6 +20,69 @@ export const FOCUS_TOPICS = [
   'system-design', 'rest-api', 'authentication', 'cicd',
 ] as const;
 
+/**
+ * Per-topic SEO tag arrays. ~12 deep tags per topic, used by the YouTube
+ * upload metadata. Combined with generic tags by the render script.
+ * Hand-curated; do not auto-generate.
+ */
+export const TOPIC_TAGS: Record<string, string[]> = {
+  kafka: [
+    'kafka', 'apache kafka', 'kafka tutorial', 'kafka interview',
+    'event streaming', 'distributed systems', 'message queue',
+    'kafka producer', 'kafka consumer', 'kafka partitions',
+    'kafka exactly once', 'kafka acks',
+  ],
+  'api-gateway': [
+    'api gateway', 'api design', 'microservices', 'kong',
+    'aws api gateway', 'rate limiting', 'reverse proxy', 'nginx',
+    'system design interview', 'backend for frontend',
+    'api gateway pattern', 'service mesh',
+  ],
+  'load-balancing': [
+    'load balancing', 'load balancer', 'round robin',
+    'least connections', 'nginx load balancer', 'haproxy',
+    'l4 vs l7', 'consistent hashing', 'cdn',
+    'system design interview', 'horizontal scaling',
+    'high availability',
+  ],
+  database: [
+    'database design', 'sql', 'postgres', 'mysql', 'mongodb',
+    'database sharding', 'master slave replication',
+    'cap theorem', 'acid transactions', 'database scaling',
+    'system design interview', 'oltp vs olap',
+  ],
+};
+
+/**
+ * Generic tags applied to every Short. Combined with topic-specific tags.
+ */
+export const GENERIC_TAGS = [
+  'system design',
+  'coding interview',
+  'software engineer',
+  'tech shorts',
+  'computer science',
+];
+
+/**
+ * Build the final tags array for a quiz. Caps total chars at 480 (under
+ * YouTube's 500 limit). Deduplicates.
+ */
+export function buildTags(topic: string): string[] {
+  const topicTags = TOPIC_TAGS[topic] ?? [];
+  const merged = [...new Set([...topicTags, ...GENERIC_TAGS])];
+  // Cap at 480 chars total (YouTube hard limit ~500)
+  const out: string[] = [];
+  let total = 0;
+  for (const t of merged) {
+    const cost = t.length + 2; // ~2 chars overhead for quoting/comma
+    if (total + cost > 480) break;
+    out.push(t);
+    total += cost;
+  }
+  return out;
+}
+
 export const QUIZ_BANK: QuizQuestion[] = [
   // ── KAFKA (12 questions) ──────────────────────────────────────────
   {
