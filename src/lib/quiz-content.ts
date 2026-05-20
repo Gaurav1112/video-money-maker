@@ -36,6 +36,13 @@ export interface QuizQuestion {
   title: string;              // YouTube title
   codeSnippet?: CodeSnippet;  // v3: optional wrong-vs-right code panel
   workedExample?: WorkedExample; // v3: optional BEFORE/AFTER scenario
+  // v3.1: phase-aligned narration fields. All optional — if absent, the render
+  // script derives sensible defaults from the quiz content. These exist so we
+  // can write tight, quiz-specific voice-over for the CODE / EXAMPLE / END phases
+  // and fill the 120s composition with continuous narration (not 30s of dead air).
+  spokenCode?: string;          // narration during 14-30s code panel phase (~15-20s)
+  spokenExample?: string;       // narration during 80-110s worked-example phase (~20-30s)
+  spokenCTA?: string;           // narration during 110-120s end card phase (~6-8s)
 }
 
 // High-performing topics (based on real channel data + search volume expansion)
