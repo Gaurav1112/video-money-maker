@@ -480,6 +480,15 @@ const TopicDiagram: React.FC<{
   );
 };
 
+// ── SFX helper ───────────────────────────────────────────────────────
+const Sfx: React.FC<{ name: string; from: number; durationFrames?: number; volume?: number }> = ({
+  name, from, durationFrames = 30, volume = 1,
+}) => (
+  <Sequence from={from} durationInFrames={durationFrames}>
+    <Audio src={staticFile(`audio/sfx/${name}.wav`)} volume={volume} />
+  </Sequence>
+);
+
 // ── Lottie Wrapper (loads from staticFile) ───────────────────────────
 const LottieOverlay: React.FC<{
   file: string;
@@ -918,6 +927,14 @@ export const QuizShort: React.FC<QuizShortProps> = ({ quiz, audioFile, wordTimes
 
       {/* ── BGM ── */}
       <Audio src={staticFile('audio/bgm/warm-ambient.mp3')} volume={0.06} loop />
+
+      {/* ── SFX cues ── */}
+      <Sfx name="whoosh-in" from={0} volume={0.8} />
+      <Sfx name="tension-build" from={HOOK_END} durationFrames={QUESTION_END - HOOK_END} volume={0.4} />
+      <Sfx name="impact" from={FLASH_END - 5} durationFrames={20} volume={1.0} />
+      <Sfx name="success-chime" from={FLASH_END} volume={0.7} />
+      <Sfx name="riser" from={Math.max(0, FLASH_END + 5)} durationFrames={45} volume={0.5} />
+      <Sfx name="swoosh" from={Math.max(0, EXPLAIN_END - 10)} durationFrames={20} volume={0.8} />
 
       {/* ── Progress bar ── */}
       <div style={{
