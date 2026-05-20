@@ -2,17 +2,18 @@
  * YouTube Video Upload Script
  *
  * Usage:
- *   npx tsx scripts/upload-youtube.ts output/video.mp4 output/metadata.json [--shorts] [--private] [--thumbnail <path>] [--captions <srt-path>]
+ *   npx tsx scripts/upload-youtube.ts output/video.mp4 output/metadata.json [--shorts] [--private] [--thumbnail <path>] [--captions <srt-path>] [--first-comment <text>]
  *
  * Prerequisites:
  *   1. Run `npx tsx scripts/auth-youtube.ts` first to generate .youtube-token.json
  *   2. Set YOUTUBE_CLIENT_ID and YOUTUBE_CLIENT_SECRET env vars
  *
  * Flags:
- *   --shorts    Add #Shorts to title, optimized for vertical (9:16) content
- *   --private   Upload as private (default: public)
- *   --thumbnail Path to a JPEG thumbnail to set after upload
- *   --captions  Path to an SRT caption file to upload after video is live
+ *   --shorts          Add #Shorts to title, optimized for vertical (9:16) content
+ *   --private         Upload as private (default: public)
+ *   --thumbnail       Path to a JPEG thumbnail to set after upload
+ *   --captions        Path to an SRT caption file to upload after video is live
+ *   --first-comment   Text to post as the first (pinned) comment after upload
  */
 
 import { google, youtube_v3 } from 'googleapis';
@@ -316,18 +317,22 @@ async function main(): Promise<void> {
   const captionsIdx = process.argv.indexOf('--captions');
   const captionsPath = captionsIdx > -1 ? process.argv[captionsIdx + 1] : undefined;
 
+  const firstCommentIdx = process.argv.indexOf('--first-comment');
+  const firstCommentText = firstCommentIdx > -1 ? process.argv[firstCommentIdx + 1] : undefined;
+
   if (positional.length < 2) {
-    console.error('Usage: npx tsx scripts/upload-youtube.ts <video.mp4> <metadata.json> [--shorts] [--private] [--thumbnail <path>] [--captions <srt-path>]');
+    console.error('Usage: npx tsx scripts/upload-youtube.ts <video.mp4> <metadata.json> [--shorts] [--private] [--thumbnail <path>] [--captions <srt-path>] [--first-comment <text>]');
     console.error('');
     console.error('Arguments:');
     console.error('  video.mp4       Path to the video file');
     console.error('  metadata.json   Path to the metadata JSON (from pipeline)');
     console.error('');
     console.error('Flags:');
-    console.error('  --shorts        Upload as YouTube Short (adds #Shorts to title)');
-    console.error('  --private       Upload as private instead of public');
-    console.error('  --thumbnail     Path to a JPEG thumbnail to set after upload');
-    console.error('  --captions      Path to an SRT caption file to upload');
+    console.error('  --shorts          Upload as YouTube Short (adds #Shorts to title)');
+    console.error('  --private         Upload as private instead of public');
+    console.error('  --thumbnail       Path to a JPEG thumbnail to set after upload');
+    console.error('  --captions        Path to an SRT caption file to upload');
+    console.error('  --first-comment   Text to post as first (channel-owner) comment after upload');
     process.exit(1);
   }
 
@@ -398,6 +403,30 @@ async function main(): Promise<void> {
         media: { mimeType: 'application/octet-stream', body: fs.createReadStream(captionsPath) },
       });
       console.log(`   ✓ Captions uploaded`);
+    }
+
+    // ── First comment (channel-owner comment appears at top for Shorts) ──
+    if (firstCommentText && result.videoId) {
+      try {
+        const auth = getAuthClient();
+        const youtube = google.youtube({ version: 'v3', auth });
+        await youtube.commentThreads.insert({
+          part: ['snippet'],
+          requestBody: {
+            snippet: {
+              videoId: result.videoId,
+              topLevelComment: {
+                snippet: {
+                  textOriginal: firstCommentText,
+                },
+              },
+            },
+          },
+        });
+        console.log(`   ✓ First comment posted: "${firstCommentText.slice(0, 60)}..."`);
+      } catch (err) {
+        console.warn(`   [warn] first comment failed: ${String(err).slice(0, 120)}`);
+      }
     }
 
     // Write result to a sidecar file for pipeline integration

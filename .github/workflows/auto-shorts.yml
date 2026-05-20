@@ -115,13 +115,33 @@ jobs:
         if: inputs.dry_run != true
         run: |
           echo "=== Uploading Short 1 ==="
-          npx tsx scripts/upload-youtube.ts "${{ steps.render1.outputs.video }}" "${{ steps.render1.outputs.meta }}" --shorts || echo "Upload 1 failed"
+          VIDEO="${{ steps.render1.outputs.video }}"
+          META="${{ steps.render1.outputs.meta }}"
+          PROPS="output/daily-short-$(basename "${VIDEO%.mp4}").json"
+          EQ=$(node -e "const j=require('./'+process.argv[1]); console.log((j.quiz?.endQuestion ?? '').replace(/[\"\\\\]/g, ''))" "$PROPS" 2>/dev/null || echo "")
+          THUMB="${VIDEO%.mp4}-thumbnail.jpg"
+          SRT="${VIDEO%.mp4}.srt"
+          npx tsx scripts/upload-youtube.ts "$VIDEO" "$META" --shorts \
+            $([ -f "$THUMB" ] && echo "--thumbnail $THUMB") \
+            $([ -f "$SRT" ] && echo "--captions $SRT") \
+            $([ -n "$EQ" ] && echo "--first-comment \"$EQ 👀\"") \
+            || echo "Upload 1 failed"
 
       - name: Upload Short 2 to YouTube
         if: inputs.dry_run != true
         run: |
           echo "=== Uploading Short 2 ==="
-          npx tsx scripts/upload-youtube.ts "${{ steps.render2.outputs.video }}" "${{ steps.render2.outputs.meta }}" --shorts || echo "Upload 2 failed"
+          VIDEO="${{ steps.render2.outputs.video }}"
+          META="${{ steps.render2.outputs.meta }}"
+          PROPS="output/daily-short-$(basename "${VIDEO%.mp4}").json"
+          EQ=$(node -e "const j=require('./'+process.argv[1]); console.log((j.quiz?.endQuestion ?? '').replace(/[\"\\\\]/g, ''))" "$PROPS" 2>/dev/null || echo "")
+          THUMB="${VIDEO%.mp4}-thumbnail.jpg"
+          SRT="${VIDEO%.mp4}.srt"
+          npx tsx scripts/upload-youtube.ts "$VIDEO" "$META" --shorts \
+            $([ -f "$THUMB" ] && echo "--thumbnail $THUMB") \
+            $([ -f "$SRT" ] && echo "--captions $SRT") \
+            $([ -n "$EQ" ] && echo "--first-comment \"$EQ 👀\"") \
+            || echo "Upload 2 failed"
 
       - name: Generate distribution packages
         run: |
