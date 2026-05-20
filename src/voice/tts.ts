@@ -246,8 +246,8 @@ async function synthesizeHinglishHotPath(
   return { durationSec, wordTimestamps };
 }
 
-/** Runs edge-tts-synth.py, piping SSML via stdin. */
-function runSynthWithStdin(args: {
+/** Runs edge-tts-synth.py, piping SSML via stdin. Retries up to 3 times with backoff. */
+async function runSynthWithStdin(args: {
   voice: string;
   rate: string;
   pitch: string;
@@ -264,18 +264,42 @@ function runSynthWithStdin(args: {
     '--out', args.outPath,
     ...(args.wordsJsonPath ? ['--write-words', args.wordsJsonPath] : []),
   ];
-  return new Promise((resolve, reject) => {
-    const proc = spawn('python3', cliArgs, { stdio: ['pipe', 'pipe', 'pipe'] });
-    let stderr = '';
-    proc.stderr?.on('data', (d) => { stderr += String(d); });
-    proc.on('error', reject);
-    proc.on('close', (code) => {
-      if (code === 0) resolve();
-      else reject(new Error(`edge-tts-synth.py exited ${code}: ${stderr.slice(0, 300)}`));
-    });
-    proc.stdin!.write(args.ssml, 'utf8');
-    proc.stdin!.end();
-  });
+
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      await new Promise<void>((resolve, reject) => {
+        const proc = spawn('python3', cliArgs, { stdio: ['pipe', 'pipe', 'pipe'] });
+        let stderr = '';
+        const timeout = setTimeout(() => {
+          proc.kill();
+          reject(new Error(`edge-tts-synth.py timed out after 30s (attempt ${attempt})`));
+        }, 30000);
+        proc.stderr?.on('data', (d) => { stderr += String(d); });
+        proc.on('error', (e) => { clearTimeout(timeout); reject(e); });
+        proc.on('close', (code) => {
+          clearTimeout(timeout);
+          if (code === 0) resolve();
+          else reject(new Error(`edge-tts-synth.py exited ${code}: ${stderr.slice(0, 300)}`));
+        });
+        proc.stdin!.write(args.ssml, 'utf8');
+        proc.stdin!.end();
+      });
+      // Verify output file has content
+      if (existsSync(args.outPath)) {
+        const stat = require('fs').statSync(args.outPath);
+        if (stat.size > 100) return; // Success
+      }
+      throw new Error(`TTS output empty at ${args.outPath}`);
+    } catch (err) {
+      console.warn(`[tts] attempt ${attempt}/3 failed: ${String(err).slice(0, 150)}`);
+      if (attempt < 3) {
+        const delay = attempt * 2000; // 2s, 4s backoff
+        await new Promise(r => setTimeout(r, delay));
+      } else {
+        throw err;
+      }
+    }
+  }
 }
 
 async function synthesizeEdge(opts: TtsOptions, wordsJsonPath?: string): Promise<void> {
