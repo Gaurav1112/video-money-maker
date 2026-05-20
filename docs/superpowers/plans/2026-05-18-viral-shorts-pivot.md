@@ -734,8 +734,8 @@ git commit -m "feat: render pipeline uses QuizShort — 38s quiz format"
 set -e
 cd "$(dirname "$0")/.."
 
-export YOUTUBE_CLIENT_ID="REDACTED_CLIENT_ID"
-export YOUTUBE_CLIENT_SECRET="REDACTED_CLIENT_SECRET"
+export YOUTUBE_CLIENT_ID="${YOUTUBE_CLIENT_ID:?must be set via env, never hardcoded}"
+export YOUTUBE_CLIENT_SECRET="${YOUTUBE_CLIENT_SECRET:?must be set via env, never hardcoded}"
 
 DATE=$(date +%Y-%m-%d)
 DOY=$(date +%j)
