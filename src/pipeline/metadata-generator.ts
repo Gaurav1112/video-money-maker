@@ -388,22 +388,46 @@ function generateDescriptionHook(topic: string, language: string, sessionNumber:
 }
 
 function generateChapters(storyboard: Storyboard): { time: string; title: string }[] {
+  // YouTube chapter spec:
+  //   1. First chapter MUST start at 0:00
+  //   2. Each subsequent chapter MUST be >=10s after the previous
+  //   3. Minimum 3 chapters required for chapters to activate
   const seen = new Set<string>();
-  const chapters: { time: string; title: string }[] = [];
+  const collected: { seconds: number; title: string }[] = [];
 
   for (const scene of storyboard.scenes) {
     const label = scene.heading || scene.type.charAt(0).toUpperCase() + scene.type.slice(1);
-    // Skip duplicate headings, overly long headings, and generic types
     if (seen.has(label) || label.length > 60 || label === 'text') continue;
     seen.add(label);
-
     const seconds = Math.floor(scene.startFrame / storyboard.fps);
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    const time = `${mins}:${String(secs).padStart(2, '0')}`;
-    chapters.push({ time, title: label });
+    collected.push({ seconds, title: label });
   }
 
+  // Sort by time (should already be in order, but be defensive).
+  collected.sort((a, b) => a.seconds - b.seconds);
+
+  const chapters: { time: string; title: string }[] = [];
+  let prev = -Infinity;
+  for (let i = 0; i < collected.length; i++) {
+    const c = collected[i];
+    if (i === 0) {
+      // First chapter MUST be 0:00 — clamp it.
+      const time = '0:00';
+      chapters.push({ time, title: c.title });
+      prev = 0;
+      continue;
+    }
+    // Skip any chapter that would violate the >=10s gap requirement.
+    if (c.seconds - prev < 10) continue;
+    const mins = Math.floor(c.seconds / 60);
+    const secs = c.seconds % 60;
+    const time = `${mins}:${String(secs).padStart(2, '0')}`;
+    chapters.push({ time, title: c.title });
+    prev = c.seconds;
+  }
+
+  // YouTube requires >=3 chapters to activate; return what we have, caller
+  // can decide whether to render them. We don't fabricate filler.
   return chapters;
 }
 
