@@ -84,6 +84,7 @@ interface ParsedArgs {
   dryRun: boolean;
   forceFormula: HookFormula | 'both' | null;
   useWinner: boolean;
+  topic: string | null;
 }
 
 function parseArgs(): ParsedArgs {
@@ -93,6 +94,7 @@ function parseArgs(): ParsedArgs {
   let dryRun = false;
   let forceFormula: HookFormula | 'both' | null = null;
   let useWinner = true;
+  let topic: string | null = null;
 
   for (let i = 0; i < args.length; i++) {
     if (args[i] === '--date' && args[i + 1]) {
@@ -118,10 +120,14 @@ function parseArgs(): ParsedArgs {
       i++;
     } else if (args[i] === '--no-winner') {
       useWinner = false;
+    } else if (args[i] === '--topic' && args[i + 1]) {
+      // Feature 002: per-call override of the niche-down topic lock.
+      topic = args[i + 1];
+      i++;
     }
   }
 
-  return { date, shortNumber, dryRun, forceFormula, useWinner };
+  return { date, shortNumber, dryRun, forceFormula, useWinner, topic };
 }
 
 // Pick the set of formulas to render based on flags + persisted analytics.
@@ -148,12 +154,17 @@ function resolveFormulas(opts: {
 // ─── Main ───────────────────────────────────────────────────────────────────
 
 async function main() {
-  const { date, shortNumber: explicitShort, dryRun, forceFormula, useWinner } = parseArgs();
+  const { date, shortNumber: explicitShort, dryRun, forceFormula, useWinner, topic } = parseArgs();
 
-  // Determine which quiz to render
+  // Determine which quiz to render.
+  // Feature 002: when no explicit --short index is given, `topic` (CLI flag)
+  // takes precedence over the QUIZ_TOPIC_LOCK env / default lock-date logic.
   const quiz = explicitShort !== null
     ? getQuizByIndex(explicitShort)
-    : getDailyQuiz(date);
+    : getDailyQuiz(date, topic ?? undefined);
+  if (explicitShort === null) {
+    console.log(`Topic filter (resolved): ${quiz.topic} (CLI=${topic ?? '-'}, env=${process.env.QUIZ_TOPIC_LOCK ?? '-'})`);
+  }
 
   // Build a stable ID for file naming
   const quizIndex = explicitShort !== null
