@@ -15,6 +15,7 @@ import { QuizShort, calculateQuizShortMetadata } from './QuizShort';
 import { QuizThumbnail, calculateQuizThumbnailMetadata } from './QuizThumbnail';
 import { OpinionLong, calculateOpinionLongMetadata } from './OpinionLong';
 import { OpinionShort, calculateOpinionShortMetadata } from './OpinionShort';
+import { OpinionThumbnail, calculateOpinionThumbnailMetadata } from './OpinionThumbnail';
 import type { OpinionLongProps } from './OpinionLong';
 import type { OpinionShortProps } from './OpinionShort';
 import type { Storyboard } from '../types';
@@ -255,6 +256,16 @@ export const RemotionRoot: React.FC = () => {
         width={1080}
         height={1920}
         defaultProps={defaultOpinionShortProps as unknown as Record<string, unknown>}
+      />
+      {/* Feature 007 — Opinion-Piece 1280x720 long-form YouTube thumbnail */}
+      <Composition
+        id="OpinionThumbnail"
+        component={asCompositionComponent(OpinionThumbnail)}
+        {...calculateOpinionThumbnailMetadata()}
+        defaultProps={{
+          title: 'Are Microservices Killing Customer Experience?',
+          slug: '001-microservices-vs-monolith',
+        }}
       />
     </>
   );
