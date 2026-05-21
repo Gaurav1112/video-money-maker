@@ -1,0 +1,33 @@
+name: Channel Inventory
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '30 4 * * *'  # 10 AM IST daily — after Asia/Pacific peak
+
+permissions:
+  contents: write
+
+jobs:
+  inventory:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
+      YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
+      YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '20' }
+      - run: npm ci
+      - run: npx tsx scripts/channel-inventory.ts
+      - run: npx tsx scripts/ingest-analytics.ts
+      - run: npx tsx scripts/weekly-report.ts > data/analytics/weekly-report.md || true
+      - name: Commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/
+          git diff --staged --quiet || git commit -m "chore(analytics): inventory + ingestion $(date -u +%Y-%m-%d)"
+          git push

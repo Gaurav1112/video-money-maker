@@ -1,0 +1,59 @@
+name: Channel Cleanup (set-to-private or delete low-view videos)
+
+on:
+  workflow_dispatch:
+    inputs:
+      threshold:
+        description: 'View threshold (videos below this are candidates)'
+        required: true
+        default: '50'
+      min_age_days:
+        description: 'Minimum age in days (younger videos protected)'
+        required: true
+        default: '7'
+      action:
+        description: 'private (reversible) or delete (PERMANENT)'
+        required: true
+        default: 'private'
+        type: choice
+        options: [private, delete]
+      execute:
+        description: 'Execute? Otherwise DRY-RUN.'
+        required: true
+        default: 'false'
+        type: choice
+        options: ['false', 'true']
+      confirm_delete:
+        description: 'For delete only — type EXACTLY: DELETE_CONFIRMED'
+        required: false
+        default: ''
+
+permissions:
+  contents: read
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
+      YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
+      YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '20' }
+      - run: npm ci
+      - name: Refresh inventory
+        run: npx tsx scripts/channel-inventory.ts
+      - name: Run cleanup
+        run: |
+          FLAGS="--threshold ${{ inputs.threshold }} --min-age ${{ inputs.min_age_days }} --action ${{ inputs.action }}"
+          if [ "${{ inputs.execute }}" = "true" ]; then
+            FLAGS="$FLAGS --execute"
+          fi
+          if [ "${{ inputs.action }}" = "delete" ] && [ "${{ inputs.confirm_delete }}" = "DELETE_CONFIRMED" ]; then
+            FLAGS="$FLAGS --confirm-delete"
+          fi
+          echo "Running: npx tsx scripts/channel-cleanup.ts $FLAGS"
+          npx tsx scripts/channel-cleanup.ts $FLAGS
