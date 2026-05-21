@@ -18,6 +18,11 @@ import { getDailyQuiz, getQuizByIndex, QUIZ_BANK, buildTags, type QuizQuestion }
 import { generateSceneAudios } from '../src/pipeline/tts-engine';
 import { generateStoryboard } from '../src/pipeline/storyboard';
 import { wordTimestampsToSrt } from '../src/lib/srt';
+import { applyHook, type HookFormula } from '../src/lib/quiz-hook';
+import {
+  readPairedComparisons,
+  pickWinningFormula,
+} from './lib/variant-store';
 
 // ─── Paths ──────────────────────────────────────────────────────────────────
 
@@ -73,11 +78,21 @@ function loudnormPass(inputPath: string, outputPath: string): void {
 
 // ─── CLI Args ───────────────────────────────────────────────────────────────
 
-function parseArgs(): { date: Date; shortNumber: number | null; dryRun: boolean } {
+interface ParsedArgs {
+  date: Date;
+  shortNumber: number | null;
+  dryRun: boolean;
+  forceFormula: HookFormula | 'both' | null;
+  useWinner: boolean;
+}
+
+function parseArgs(): ParsedArgs {
   const args = process.argv.slice(2);
   let date = new Date();
   let shortNumber: number | null = null;
   let dryRun = false;
+  let forceFormula: HookFormula | 'both' | null = null;
+  let useWinner = true;
 
   for (let i = 0; i < args.length; i++) {
     if (args[i] === '--date' && args[i + 1]) {
@@ -88,16 +103,52 @@ function parseArgs(): { date: Date; shortNumber: number | null; dryRun: boolean 
       i++;
     } else if (args[i] === '--dry-run') {
       dryRun = true;
+    } else if (args[i] === '--force-formula' && args[i + 1]) {
+      const v = args[i + 1];
+      if (
+        v === 'specific_stat' ||
+        v === 'wrong_answer_first' ||
+        v === 'company_dramatic' ||
+        v === 'both'
+      ) {
+        forceFormula = v;
+      } else {
+        throw new Error(`Unknown --force-formula value: ${v}`);
+      }
+      i++;
+    } else if (args[i] === '--no-winner') {
+      useWinner = false;
     }
   }
 
-  return { date, shortNumber, dryRun };
+  return { date, shortNumber, dryRun, forceFormula, useWinner };
+}
+
+// Pick the set of formulas to render based on flags + persisted analytics.
+function resolveFormulas(opts: {
+  forceFormula: HookFormula | 'both' | null;
+  useWinner: boolean;
+}): HookFormula[] {
+  if (opts.forceFormula && opts.forceFormula !== 'both') {
+    return [opts.forceFormula];
+  }
+  if (opts.forceFormula === 'both') {
+    return ['specific_stat', 'wrong_answer_first'];
+  }
+  if (opts.useWinner) {
+    const variantDir = path.join(PROJECT_ROOT, 'data', 'variants');
+    const analyticsDir = path.join(PROJECT_ROOT, 'data', 'analytics');
+    const pairs = readPairedComparisons(variantDir, analyticsDir);
+    const winner = pickWinningFormula(pairs);
+    if (winner) return [winner];
+  }
+  return ['specific_stat', 'wrong_answer_first'];
 }
 
 // ─── Main ───────────────────────────────────────────────────────────────────
 
 async function main() {
-  const { date, shortNumber: explicitShort, dryRun } = parseArgs();
+  const { date, shortNumber: explicitShort, dryRun, forceFormula, useWinner } = parseArgs();
 
   // Determine which quiz to render
   const quiz = explicitShort !== null
@@ -114,16 +165,24 @@ async function main() {
       })();
   const episodeId = `${quiz.topic}-quiz-${quizIndex}`;
 
+  // Feature 001 (A/B): pick which hook formulas to render.
+  const formulas = resolveFormulas({ forceFormula, useWinner });
+
   console.log(`\n=== Daily Quiz Short ===`);
   console.log(`Date:     ${date.toISOString().slice(0, 10)}`);
   console.log(`Topic:    ${quiz.topic}`);
   console.log(`Index:    ${quizIndex} / ${QUIZ_BANK.length - 1}`);
   console.log(`Title:    ${quiz.title}`);
   console.log(`Question: ${quiz.question}`);
+  console.log(`Formulas: ${formulas.join(', ')}`);
 
   if (dryRun) {
-    console.log(`\n--- Hook ---\n${quiz.hookText}`);
-    console.log(`\n--- Spoken Hook ---\n${quiz.spokenHook}`);
+    console.log(`\n--- Spoken Hook (shared) ---\n${quiz.spokenHook}`);
+    console.log(`\nWould render ${formulas.length} variant(s): ${formulas.join(', ')}`);
+    for (const f of formulas) {
+      const { hookText } = applyHook(quiz, f);
+      console.log(`\n--- Hook [${f}] ---\n${hookText}`);
+    }
     console.log(`\n--- Options ---`);
     quiz.options.forEach((o, i) =>
       console.log(`  ${String.fromCharCode(65 + i)}) ${o}${i === quiz.correctIndex ? '  ✓' : ''}`)
@@ -202,6 +261,8 @@ async function main() {
     startFrame: 0,
     endFrame: Math.round(audioDuration * 30),
   };
+  // BGM is set directly inside QuizShort.tsx (study-pad.mp3) — storyboard.bgmFile
+  // is unused by the QuizShort composition; do not set it here.
   const storyboard = generateStoryboard([quizScene], audioResults, {
     topic: quiz.topic,
     sessionNumber: quizIndex,
@@ -211,68 +272,99 @@ async function main() {
     format: 'vertical',
   });
 
-  // BGM is set directly inside QuizShort.tsx (study-pad.mp3) — storyboard.bgmFile
-  // is unused by the QuizShort composition; do not set it here.
+  // ── Step 3: Per-formula render loop ──
+  // Audio + wordTimestamps are SHARED across formulas (spokenHook is identical
+  // for all variants — only on-screen hook text differs). This keeps the second
+  // render fast because Remotion + the TTS cache reuse the same audio file.
+  console.log(`[3/4] Rendering ${formulas.length} variant(s)...`);
+  for (let i = 0; i < formulas.length; i++) {
+    const formula = formulas[i];
+    const variantLabel =
+      formulas.length === 1 ? '' : i === 0 ? '-variantA' : '-variantB';
+    const variantId = `${episodeId}${variantLabel}`;
+    console.log(`\n  -- Variant ${variantLabel || '(single)'} | ${formula} --`);
 
-  // Save props JSON
-  const propsPath = path.join(PROPS_DIR, `daily-short-${episodeId}.json`);
-  const propsData = {
-    quiz,
-    audioFile: storyboard.audioFile ? path.basename(storyboard.audioFile) : undefined,
-    audioDurationSec: audioDuration,
-    wordTimestamps,
-  };
-  fs.writeFileSync(propsPath, JSON.stringify(propsData, null, 2));
-  console.log(`   Props: ${propsPath}`);
+    const propsPath = path.join(PROPS_DIR, `daily-short-${variantId}.json`);
+    const propsData = {
+      quiz,
+      audioFile: storyboard.audioFile ? path.basename(storyboard.audioFile) : undefined,
+      audioDurationSec: audioDuration,
+      wordTimestamps,
+      hookFormula: formula,
+    };
+    fs.writeFileSync(propsPath, JSON.stringify(propsData, null, 2));
+    console.log(`   Props: ${propsPath}`);
 
-  // ── Step 3: Render via Remotion ──
-  console.log('[3/4] Rendering video...');
-  const outputPath = path.join(OUTPUT_DIR, `${episodeId}.mp4`);
+    const outputPath = path.join(OUTPUT_DIR, `${variantId}.mp4`);
+    const renderCmd = [
+      'npx', 'remotion', 'render',
+      'src/compositions/index.tsx',
+      'QuizShort',
+      outputPath,
+      `--props=${propsPath}`,
+      '--codec=h264',
+      '--crf=18',
+      '--audio-bitrate=192K',
+      `--concurrency=${process.env.CI ? '1' : '4'}`,
+      '--timeout=180000',
+    ].join(' ');
+    execSync(renderCmd, { stdio: 'inherit', cwd: PROJECT_ROOT });
+    console.log(`   Video: ${outputPath}`);
 
-  const renderCmd = [
-    'npx', 'remotion', 'render',
-    'src/compositions/index.tsx',
-    'QuizShort',
-    outputPath,
-    `--props=${propsPath}`,
-    '--codec=h264',
-    '--crf=18',
-    '--audio-bitrate=192K',
-    `--concurrency=${process.env.CI ? '1' : '4'}`,
-    '--timeout=180000',
-  ].join(' ');
+    // Two-pass loudness normalize to -14 LUFS
+    const normalizedPath = outputPath.replace(/\.mp4$/, '-normalized.mp4');
+    try {
+      loudnormPass(outputPath, normalizedPath);
+      fs.renameSync(normalizedPath, outputPath);
+      console.log(`   ✓ Loudness normalized to -14 LUFS`);
+    } catch (err) {
+      console.warn(`   [warn] loudnorm failed: ${String(err).slice(0, 100)} — keeping original`);
+    }
 
-  execSync(renderCmd, { stdio: 'inherit', cwd: PROJECT_ROOT });
-  console.log(`   Video: ${outputPath}`);
+    // Export thumbnail per variant (uses same formula so frame matches)
+    const thumbnailPath = path.join(OUTPUT_DIR, `${variantId}-thumbnail.jpg`);
+    const thumbCmd = [
+      'npx', 'remotion', 'still',
+      'src/compositions/index.tsx',
+      'QuizThumbnail',
+      thumbnailPath,
+      `--props=${propsPath}`,
+      '--frame=0',
+      '--image-format=jpeg',
+      '--jpeg-quality=92',
+    ].join(' ');
+    try {
+      execSync(thumbCmd, { stdio: 'inherit', cwd: PROJECT_ROOT });
+      console.log(`   Thumbnail: ${thumbnailPath}`);
+    } catch {
+      console.warn(`   [warn] thumbnail export failed; YouTube will auto-pick`);
+    }
 
-  // ── Two-pass loudness normalize to -14 LUFS ──
-  const normalizedPath = outputPath.replace(/\.mp4$/, '-normalized.mp4');
-  try {
-    loudnormPass(outputPath, normalizedPath);
-    fs.renameSync(normalizedPath, outputPath);
-    console.log(`   ✓ Loudness normalized to -14 LUFS`);
-  } catch (err) {
-    console.warn(`   [warn] loudnorm failed: ${String(err).slice(0, 100)} — keeping original`);
+    // Write a "partial" variant record alongside the upload artifacts. The
+    // upload-youtube.ts step fills in videoId + uploadedAt after upload.
+    const partialDir = path.join(PROJECT_ROOT, 'data', 'variants');
+    fs.mkdirSync(partialDir, { recursive: true });
+    const partialPath = path.join(partialDir, `${variantId}.partial.json`);
+    fs.writeFileSync(
+      partialPath,
+      JSON.stringify(
+        {
+          quizIndex,
+          variant: formulas.length === 1 ? 'A' : i === 0 ? 'A' : 'B',
+          hookFormula: formula,
+          // siblingVideoId is filled in by the upload step once both ids exist.
+        },
+        null,
+        2,
+      ),
+    );
+    console.log(`   Variant partial: ${partialPath}`);
   }
 
-  // ── Export frame-0 thumbnail ──
-  const thumbnailPath = path.join(OUTPUT_DIR, `${episodeId}-thumbnail.jpg`);
-  const thumbCmd = [
-    'npx', 'remotion', 'still',
-    'src/compositions/index.tsx',
-    'QuizThumbnail',
-    thumbnailPath,
-    `--props=${propsPath}`,
-    '--frame=0',
-    '--image-format=jpeg',
-    '--jpeg-quality=92',
-  ].join(' ');
-  try {
-    execSync(thumbCmd, { stdio: 'inherit', cwd: PROJECT_ROOT });
-    console.log(`   Thumbnail: ${thumbnailPath}`);
-  } catch (err) {
-    console.warn(`   [warn] thumbnail export failed; YouTube will auto-pick`);
-  }
+  // For downstream metadata (single output path used by callers expecting the
+  // legacy layout): use the first variant's MP4 as the canonical output.
+  const firstVariantLabel = formulas.length === 1 ? '' : '-variantA';
+  const outputPath = path.join(OUTPUT_DIR, `${episodeId}${firstVariantLabel}.mp4`);
 
   // ── Step 4: Generate metadata ──
   console.log('[4/4] Generating metadata...');
