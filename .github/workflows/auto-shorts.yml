@@ -40,7 +40,7 @@ env:
 jobs:
   render-and-upload:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 70  # 4 renders (2 quizzes × 2 A/B variants) + 4 uploads ≈ 50 min; 70 gives buffer
     env:
       YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
       YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
