@@ -1158,12 +1158,68 @@ export function getQuizByIndex(index: number): QuizQuestion {
 }
 
 /**
- * Get today's quiz based on date (deterministic daily rotation).
+ * Feature 002 — niche-down to a single topic for 30 days so the YouTube
+ * algorithm can categorize the channel. Auto-expires unless extended.
+ *
+ * Override at runtime with `QUIZ_TOPIC_LOCK=<slug>` (or `=off` to disable),
+ * or per-call with the `topicFilter` arg to `getDailyQuiz`.
  */
-export function getDailyQuiz(date: Date = new Date()): QuizQuestion {
-  const startOfYear = new Date(date.getFullYear(), 0, 0);
+export const LOCK_EXPIRES = new Date('2026-06-20T23:59:59Z');
+export const DEFAULT_LOCK_TOPIC = 'kafka';
+
+/**
+ * Resolve which topic (if any) to filter the quiz pool by, given the date
+ * and the QUIZ_TOPIC_LOCK env value. Pure / testable.
+ *
+ * Rules:
+ *   - envValue === 'off'      → no filter
+ *   - envValue truthy + other → use envValue
+ *   - envValue undefined and date ≤ LOCK_EXPIRES → DEFAULT_LOCK_TOPIC
+ *   - envValue undefined and date > LOCK_EXPIRES → no filter
+ */
+export function resolveTopicLock(
+  date: Date,
+  envValue: string | undefined,
+): string | undefined {
+  if (envValue !== undefined && envValue !== '') {
+    if (envValue === 'off') return undefined;
+    return envValue;
+  }
+  if (date.getTime() <= LOCK_EXPIRES.getTime()) {
+    return DEFAULT_LOCK_TOPIC;
+  }
+  return undefined;
+}
+
+/**
+ * Get today's quiz based on date (deterministic daily rotation).
+ *
+ * Optional `topicFilter` restricts the candidate pool to quizzes with
+ * matching `topic`. If `topicFilter` is omitted, `QUIZ_TOPIC_LOCK` env +
+ * the LOCK_EXPIRES date determine the filter. If the filter matches zero
+ * quizzes (e.g. typo), falls back to the unfiltered rotation rather than
+ * crashing.
+ */
+export function getDailyQuiz(
+  date: Date = new Date(),
+  topicFilter?: string,
+): QuizQuestion {
+  const filter =
+    topicFilter !== undefined && topicFilter !== ''
+      ? topicFilter
+      : resolveTopicLock(date, process.env.QUIZ_TOPIC_LOCK);
+
+  const startOfYear = new Date(Date.UTC(date.getUTCFullYear(), 0, 0));
   const diff = date.getTime() - startOfYear.getTime();
   const dayOfYear = Math.floor(diff / (1000 * 60 * 60 * 24));
+
+  if (filter) {
+    const pool = QUIZ_BANK.filter(q => q.topic === filter);
+    if (pool.length > 0) {
+      return pool[dayOfYear % pool.length];
+    }
+    // Unknown topic → fall through to unfiltered rotation.
+  }
   return getQuizByIndex(dayOfYear);
 }
 
