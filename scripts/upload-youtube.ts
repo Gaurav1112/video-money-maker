@@ -20,6 +20,7 @@ import { google, youtube_v3 } from 'googleapis';
 import * as fs from 'fs';
 import * as path from 'path';
 import { getYouTubeAuthClient } from './lib/youtube-oauth.js';
+import { writeVariantRecord, type VariantRecord } from './lib/variant-store.js';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -320,6 +321,14 @@ async function main(): Promise<void> {
   const firstCommentIdx = process.argv.indexOf('--first-comment');
   const firstCommentText = firstCommentIdx > -1 ? process.argv[firstCommentIdx + 1] : undefined;
 
+  // Feature 001 (A/B): --variant-record <partial.json>
+  // The partial file holds { quizIndex, variant, hookFormula, siblingVideoId? }
+  // After upload we fill in videoId + uploadedAt and write the final record
+  // to <dirname(partial)>/<videoId>.json so analytics can join by videoId.
+  const variantRecordIdx = process.argv.indexOf('--variant-record');
+  const variantRecordPath =
+    variantRecordIdx > -1 ? process.argv[variantRecordIdx + 1] : undefined;
+
   if (positional.length < 2) {
     console.error('Usage: npx tsx scripts/upload-youtube.ts <video.mp4> <metadata.json> [--shorts] [--private] [--thumbnail <path>] [--captions <srt-path>] [--first-comment <text>]');
     console.error('');
@@ -333,6 +342,7 @@ async function main(): Promise<void> {
     console.error('  --thumbnail       Path to a JPEG thumbnail to set after upload');
     console.error('  --captions        Path to an SRT caption file to upload');
     console.error('  --first-comment   Text to post as first (channel-owner) comment after upload');
+    console.error('  --variant-record  Path to partial variant JSON (A/B test); upload fills in videoId + uploadedAt');
     process.exit(1);
   }
 
@@ -433,6 +443,38 @@ async function main(): Promise<void> {
     const resultPath = resolvedVideoPath.replace(/\.[^.]+$/, '.upload-result.json');
     fs.writeFileSync(resultPath, JSON.stringify(result, null, 2));
     console.log(`\nResult saved to: ${resultPath}`);
+
+    // ── Variant record (Feature 001 A/B) ──
+    // Read the partial JSON written by render-daily-short.ts, fill in videoId
+    // + uploadedAt, and persist the final record next to the partial so the
+    // analytics ingestor can join by videoId.
+    if (variantRecordPath && fs.existsSync(variantRecordPath)) {
+      try {
+        const partial = JSON.parse(fs.readFileSync(variantRecordPath, 'utf-8')) as Partial<VariantRecord>;
+        if (
+          partial.quizIndex === undefined ||
+          partial.variant === undefined ||
+          partial.hookFormula === undefined
+        ) {
+          throw new Error('variant-record partial missing required fields');
+        }
+        const final: VariantRecord = {
+          videoId: result.videoId,
+          quizIndex: partial.quizIndex,
+          variant: partial.variant,
+          hookFormula: partial.hookFormula,
+          uploadedAt: new Date().toISOString(),
+          siblingVideoId: partial.siblingVideoId ?? '',
+        };
+        const dir = path.dirname(path.resolve(variantRecordPath));
+        writeVariantRecord(dir, final);
+        console.log(`   ✓ Variant record: ${path.join(dir, `${result.videoId}.json`)}`);
+      } catch (err) {
+        console.warn(
+          `   [warn] variant record write failed: ${String(err).slice(0, 120)}`,
+        );
+      }
+    }
   } catch (err: unknown) {
     const error = err as Error & { code?: number; errors?: Array<{ message: string }> };
     console.error('');
