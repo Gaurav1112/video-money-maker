@@ -13,6 +13,10 @@ import { OutroCardShort } from './OutroCardShort';
 import { ThumbnailShortPortrait } from './ThumbnailShortPortrait';
 import { QuizShort, calculateQuizShortMetadata } from './QuizShort';
 import { QuizThumbnail, calculateQuizThumbnailMetadata } from './QuizThumbnail';
+import { OpinionLong, calculateOpinionLongMetadata } from './OpinionLong';
+import { OpinionShort, calculateOpinionShortMetadata } from './OpinionShort';
+import type { OpinionLongProps } from './OpinionLong';
+import type { OpinionShortProps } from './OpinionShort';
 import type { Storyboard } from '../types';
 import type { ClipType } from './MultiShort';
 
@@ -232,8 +236,63 @@ export const RemotionRoot: React.FC = () => {
           hookFormula: 'specific_stat',
         }}
       />
+      {/* Feature 006 — Opinion-Piece long-form (1920x1080) */}
+      <Composition
+        id="OpinionLong"
+        component={asCompositionComponent(OpinionLong)}
+        calculateMetadata={calculateOpinionLongMetadata as never}
+        fps={30}
+        width={1920}
+        height={1080}
+        defaultProps={defaultOpinionLongProps as unknown as Record<string, unknown>}
+      />
+      {/* Feature 006 — Opinion-Piece 60s vertical cold-open Short */}
+      <Composition
+        id="OpinionShort"
+        component={asCompositionComponent(OpinionShort)}
+        calculateMetadata={calculateOpinionShortMetadata as never}
+        fps={30}
+        width={1080}
+        height={1920}
+        defaultProps={defaultOpinionShortProps as unknown as Record<string, unknown>}
+      />
     </>
   );
+};
+
+// ─── Feature 006 default props ───────────────────────────────────────────
+const defaultOpinionLongProps: OpinionLongProps = {
+  opinion: {
+    slug: 'demo',
+    title: 'Are Microservices Killing Customer Experience?',
+    publishDate: '2026-05-21',
+    durationSec: 600,
+    hook: 'From 30 minutes delivery to please verify OTP again.',
+    thenNow: {
+      thenLines: ['Simple flow.', 'Limited options.', 'Fast outcome.'],
+      nowLines: ['Apps are smarter.', 'Features are richer.', 'Customization is endless.'],
+    },
+    pros: ['Independent scaling', 'Faster deployments', 'Team autonomy'],
+    cons: ['40+ services for a simple workflow', 'API dependency chains nobody understands'],
+    pivot: 'Did the architecture improve customer experience and operational efficiency?',
+    lesson: 'Technology evolution should reduce friction, not transfer it from developers to customers.',
+    question: 'Have microservices simplified your ecosystem or introduced a new layer of operational drama?',
+  },
+  sceneAudios: [
+    { type: 'hook', audioFile: '', duration: 6 },
+    { type: 'then-now', audioFile: '', duration: 12 },
+    { type: 'pros', audioFile: '', duration: 8 },
+    { type: 'cons', audioFile: '', duration: 10 },
+    { type: 'pivot', audioFile: '', duration: 8 },
+    { type: 'lesson', audioFile: '', duration: 8 },
+    { type: 'question', audioFile: '', duration: 8 },
+  ],
+};
+
+const defaultOpinionShortProps: OpinionShortProps = {
+  hookText: 'From 30 minutes delivery to please verify OTP again.',
+  thenNowFirstLine: 'Apps are smarter — but the user journey became exhausting.',
+  audio: { audioFile: '', duration: 60 },
 };
 
 registerRoot(RemotionRoot);
