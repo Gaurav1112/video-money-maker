@@ -45,6 +45,57 @@ export function getSpecificHook(quiz: QuizQuestion): string {
 }
 
 /**
+ * "Company + dramatic context" hook formula — extracted from the fallback branch
+ * of getSpecificHook so it can be invoked as a stand-alone variant.
+ *
+ * Used as variant C when variants A and B collapse to the same hook text.
+ */
+export function getCompanyDramaticHook(quiz: QuizQuestion): string {
+  const companyMatch = quiz.explanation.match(
+    /(Google|Netflix|Uber|LinkedIn|Meta|Amazon|Stripe|Cloudflare|GitHub|Twitter)\s+[\w\s]+?(?:\.|,)/i,
+  );
+  if (companyMatch) {
+    const company = companyMatch[0].replace(/[.,]$/, '').trim();
+    if (company.length < 50) return `${company}\nbecause of THIS`;
+  }
+  return quiz.hookText; // final fallback
+}
+
+export type HookFormula = 'specific_stat' | 'wrong_answer_first' | 'company_dramatic';
+
+export const ALL_HOOK_FORMULAS: HookFormula[] = [
+  'specific_stat',
+  'wrong_answer_first',
+  'company_dramatic',
+];
+
+export interface HookResult {
+  hookText: string;
+  spokenHook: string;
+}
+
+/**
+ * Apply a named hook formula to a quiz and return both on-screen and spoken hook.
+ * spokenHook is always the original quiz.spokenHook — only on-screen text varies
+ * between formulas so the audio track is identical (cached) across variants.
+ */
+export function applyHook(quiz: QuizQuestion, formula: HookFormula): HookResult {
+  let hookText: string;
+  switch (formula) {
+    case 'specific_stat':
+      hookText = getSpecificHook(quiz);
+      break;
+    case 'wrong_answer_first':
+      hookText = getWrongAnswerHook(quiz);
+      break;
+    case 'company_dramatic':
+      hookText = getCompanyDramaticHook(quiz);
+      break;
+  }
+  return { hookText, spokenHook: quiz.spokenHook };
+}
+
+/**
  * "Wrong-answer-first" hook variant — opens by stating one of the WRONG options
  * as definitive fact, triggering cognitive dissonance. Alternates with the
  * standard hook based on quiz index parity (deterministic A/B).
