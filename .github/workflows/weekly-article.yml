@@ -1,0 +1,66 @@
+name: Weekly Article (Dev.to + Hashnode)
+
+# F003 — Sundays at 04:30 UTC = 10:00 IST.
+# Synthesizes a digest of the past week's 5 Shorts and cross-posts to
+# Dev.to + Hashnode with canonical_url pointing to @GuruSishya-India.
+
+on:
+  schedule:
+    - cron: '30 4 * * 0'
+  workflow_dispatch:
+    inputs:
+      week:
+        description: 'ISO week override (e.g. 2026-W21). Leave blank for previous week.'
+        required: false
+      dry_run:
+        description: 'Dry run: print article, do not post'
+        required: false
+        default: 'false'
+
+concurrency:
+  group: weekly-article
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install minimal deps
+        run: npm ci --no-audit --no-fund
+
+      - name: Synthesize + publish
+        continue-on-error: true
+        env:
+          DEVTO_API_KEY: ${{ secrets.DEVTO_API_KEY }}
+          HASHNODE_API_KEY: ${{ secrets.HASHNODE_API_KEY }}
+          HASHNODE_PUBLICATION_ID: ${{ secrets.HASHNODE_PUBLICATION_ID }}
+        run: |
+          ARGS=""
+          if [ -n "${{ github.event.inputs.week }}" ]; then
+            ARGS="$ARGS --week ${{ github.event.inputs.week }}"
+          fi
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            ARGS="$ARGS --dry-run"
+          fi
+          npx tsx scripts/synthesize-weekly.ts $ARGS
+
+      - name: Commit dedup record
+        if: github.event.inputs.dry_run != 'true'
+        continue-on-error: true
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git add data/articles-posted/ || true
+          if ! git diff --cached --quiet; then
+            git commit -m "chore(weekly-article): record post for this week"
+            git push
+          else
+            echo "no dedup record to commit"
+          fi
