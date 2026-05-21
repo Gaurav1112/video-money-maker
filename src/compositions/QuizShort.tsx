@@ -17,7 +17,7 @@ import type { CalculateMetadataFunction } from 'remotion';
 import { Lottie } from '@remotion/lottie';
 import type { LottieAnimationData } from '@remotion/lottie';
 import type { QuizQuestion } from '../lib/quiz-content';
-import { pickHook } from '../lib/quiz-hook';
+import { pickHook, applyHook, type HookFormula } from '../lib/quiz-hook';
 import { FONTS } from '../lib/theme';
 import EndCardCTA from '../components/EndCardCTA';
 import CaptionOverlay from '../components/CaptionOverlay';
@@ -71,6 +71,12 @@ interface QuizShortProps {
   /** Total narration duration in seconds. Drives composition length. */
   audioDurationSec?: number;
   wordTimestamps?: Array<{ word: string; start: number; end: number }>;
+  /**
+   * Feature 001 (A/B): named hook formula. When omitted, falls back to the
+   * historical deterministic rotation via `pickHook`. When supplied, overrides
+   * the rotation so the renderer can produce variant A vs variant B.
+   */
+  hookFormula?: HookFormula;
 }
 
 // ── Topic to Diagram Mapping ────────────────────────────────────────
@@ -1001,7 +1007,7 @@ const LoopTrigger: React.FC<{ startFrame: number; twistText: string }> = ({ star
 // ══════════════════════════════════════════════════════════════════════
 // ── Main Composition ────────────────────────────────────────────────
 // ══════════════════════════════════════════════════════════════════════
-export const QuizShort: React.FC<QuizShortProps> = ({ quiz, audioFile, wordTimestamps }) => {
+export const QuizShort: React.FC<QuizShortProps> = ({ quiz, audioFile, wordTimestamps, hookFormula }) => {
   const frame = useCurrentFrame();
   const { fps, durationInFrames: TOTAL_FRAMES } = useVideoConfig();
 
@@ -1049,7 +1055,16 @@ export const QuizShort: React.FC<QuizShortProps> = ({ quiz, audioFile, wordTimes
   // v3: keyPhrases/KeyPhraseReveal are kept defined above but no longer rendered;
   // ExplanationBeats now walks the full explanation sentence-by-sentence.
   const bigStat = useMemo(() => extractBigStat(quiz.explanation), [quiz.explanation]);
-  const hookText = useMemo(() => pickHook(quiz, hashStr(quiz.title + quiz.topic)), [quiz]);
+  // Feature 001: if a hookFormula is explicitly provided (A/B test mode), use
+  // applyHook with that formula. Otherwise, retain the historical rotation
+  // via pickHook so existing single-render flows are byte-identical.
+  const hookText = useMemo(
+    () =>
+      hookFormula
+        ? applyHook(quiz, hookFormula).hookText
+        : pickHook(quiz, hashStr(quiz.title + quiz.topic)),
+    [quiz, hookFormula],
+  );
 
   const avatarSrc = staticFile('images/guru-avatar-crop.png');
 

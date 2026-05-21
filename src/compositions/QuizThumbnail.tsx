@@ -5,7 +5,7 @@ import React from 'react';
 import { AbsoluteFill, Img, staticFile } from 'remotion';
 import { FONTS } from '../lib/theme';
 import type { QuizQuestion } from '../lib/quiz-content';
-import { pickHook } from '../lib/quiz-hook';
+import { pickHook, applyHook, type HookFormula } from '../lib/quiz-hook';
 
 // Feature P8: same hash as QuizShort.tsx so thumbnail hook == video hook.
 function hashStr(s: string): number {
@@ -18,10 +18,18 @@ const FPS = 30;
 
 interface QuizThumbnailProps {
   quiz: QuizQuestion;
+  /**
+   * Feature 001 (A/B): named hook formula. When supplied, the thumbnail uses
+   * the same formula as the video so the still frame matches the rendered
+   * variant. When omitted, falls back to the historical rotation.
+   */
+  hookFormula?: HookFormula;
 }
 
-export const QuizThumbnail: React.FC<QuizThumbnailProps> = ({ quiz }) => {
-  const hookText = pickHook(quiz, hashStr(quiz.title + quiz.topic));
+export const QuizThumbnail: React.FC<QuizThumbnailProps> = ({ quiz, hookFormula }) => {
+  const hookText = hookFormula
+    ? applyHook(quiz, hookFormula).hookText
+    : pickHook(quiz, hashStr(quiz.title + quiz.topic));
   const lines = hookText.split('\n');
   const autoFontSize = lines.length <= 2 ? 120 : lines.length === 3 ? 96 : 78;
   const avatarSrc = staticFile('images/guru-avatar-crop.png');

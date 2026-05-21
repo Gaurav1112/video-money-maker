@@ -209,6 +209,7 @@ export const RemotionRoot: React.FC = () => {
             endQuestion: 'Are you acks=all or acks=1? Comment below.',
             title: '90% of devs get Kafka acks WRONG 😳',
           },
+          hookFormula: 'specific_stat',
         }}
       />
       <Composition
@@ -228,6 +229,7 @@ export const RemotionRoot: React.FC = () => {
             endQuestion: 'Are you acks=all or acks=1? Comment below.',
             title: '90% of devs get Kafka acks WRONG 😳',
           },
+          hookFormula: 'specific_stat',
         }}
       />
     </>
