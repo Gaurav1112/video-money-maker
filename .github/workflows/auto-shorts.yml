@@ -194,6 +194,33 @@ jobs:
             echo "No new variant records to commit"
           fi
 
+      - name: Upload variants to Instagram Reels (F004)
+        if: inputs.dry_run != true
+        continue-on-error: true
+        env:
+          INSTAGRAM_ACCESS_TOKEN: ${{ secrets.INSTAGRAM_ACCESS_TOKEN }}
+          INSTAGRAM_BUSINESS_ID:  ${{ secrets.INSTAGRAM_BUSINESS_ID }}
+          R2_ACCOUNT_ID:          ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID:       ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY:   ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_BUCKET_NAME:         ${{ secrets.R2_BUCKET_NAME }}
+          R2_PUBLIC_URL:          ${{ secrets.R2_PUBLIC_URL }}
+        run: |
+          echo "=== Instagram Reels upload (F004) ==="
+          for VIDEO in output/daily-short/*.mp4; do
+            [ -f "$VIDEO" ] || continue
+            BASE="${VIDEO%-variantA.mp4}"
+            BASE="${BASE%-variantB.mp4}"
+            BASE="${BASE%.mp4}"
+            META="${BASE}-metadata.json"
+            if [ ! -f "$META" ]; then
+              echo "[ig] no metadata for $VIDEO, skipping"
+              continue
+            fi
+            echo "--- IG upload: $(basename $VIDEO) ---"
+            npx tsx scripts/upload-instagram-wrapper.ts "$VIDEO" "$META" || true
+          done
+
       - name: Generate distribution packages
         run: |
           for f in output/daily-short/*.mp4; do
