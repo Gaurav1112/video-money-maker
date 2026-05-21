@@ -162,13 +162,20 @@ Edge TTS PrabhatNeural (fast, default — 30s per video)
 - 7 hook formulas, 4 open loop patterns
 
 ## Rules for Claude
-1. **Never re-read files you already know** — use this architecture map
-2. **Never research what's already been researched** — check memory files first
-3. **Render a 30s preview before full render** — `--frames=150-1050`
-4. **All animations must be deterministic** — use seeded noise, never Math.random()
-5. **One fix → one test → approve → batch** — no 5 iterations on same video
-6. **Minimize token usage** — direct code changes, no planning documents for simple fixes
-7. **Props files are at** `output/test-props-s<N>.json` after running render-session.ts
-8. **Videos go to** `~/Documents/guru-sishya/<topic>/session-<N>/long/`
-9. **Don't rebuild what works** — the pipeline generates good storyboards, TTS works, rendering works
-10. **The bottleneck is UPLOAD + THUMBNAILS + TITLES** — not more code changes
+1. **Read `.specify/memory/constitution.md` FIRST** — 10 binding principles distilled from CLAUDE.md + user memory. Every spec, plan, and implementation must respect them. Non-trivial work goes through `/speckit-specify → /speckit-plan → /speckit-tasks → /speckit-implement`; trivial work still respects the constitution.
+2. **Never re-read files you already know** — use this architecture map
+3. **Never research what's already been researched** — check `.specify/memory/`, `docs/superpowers/{specs,plans}/`, and `~/.claude/projects/.../memory/`
+4. **Render a 30s preview before full render** — `--frames=150-1050`
+5. **All animations must be deterministic** — use seeded noise, never Math.random()
+6. **One fix → one test → approve → batch** — no 5 iterations on same video
+7. **Minimize token usage** — direct code changes, no planning documents for simple fixes
+8. **Props files are at** `output/test-props-s<N>.json` after running render-session.ts
+9. **Videos go to** `~/Documents/guru-sishya/<topic>/session-<N>/long/`
+10. **Don't rebuild what works** — the pipeline generates good storyboards, TTS works, rendering works
+11. **The bottleneck is UPLOAD + THUMBNAILS + TITLES** — not more code changes
+12. **Honor the dev harness** — see `.specify/memory/dev-harness-audit.md`. Pre-commit checks, vitest, tsc, CI workflows, GitHub Push Protection are all mandatory gates.
+
+<!-- SPECKIT START -->
+For additional context about technologies to be used, project structure,
+shell commands, and other important information, read the current plan
+<!-- SPECKIT END -->
