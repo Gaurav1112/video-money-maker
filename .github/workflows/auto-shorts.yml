@@ -20,6 +20,16 @@ on:
         description: 'Render only, no upload'
         type: boolean
         default: false
+      force_formula:
+        description: 'A/B hook formula: auto (data-driven), specific_stat, wrong_answer_first, or both (always render both)'
+        type: choice
+        required: false
+        default: 'auto'
+        options:
+          - auto
+          - specific_stat
+          - wrong_answer_first
+          - both
 
 permissions:
   contents: write
@@ -76,30 +86,39 @@ jobs:
           fi
           echo "Selected quizzes: $Q1, $Q2"
 
+      - name: Compute formula flag
+        id: formula
+        run: |
+          # Feature 001 (A/B): translate workflow_dispatch input to a CLI flag.
+          FF="${{ inputs.force_formula }}"
+          if [ -z "$FF" ] || [ "$FF" = "auto" ]; then
+            echo "flag=" >> $GITHUB_OUTPUT
+          else
+            echo "flag=--force-formula $FF" >> $GITHUB_OUTPUT
+          fi
+          echo "Formula flag: '$FF'"
+
       - name: Render Quiz Short 1
         id: render1
         run: |
           echo "=== Rendering Quiz #${{ steps.quizzes.outputs.quiz1 }} ==="
-          npx tsx scripts/render-daily-short.ts --short ${{ steps.quizzes.outputs.quiz1 }}
-          VIDEO1=$(ls -t output/daily-short/*.mp4 | head -1)
-          META1="${VIDEO1%.mp4}-metadata.json"
-          echo "video=$VIDEO1" >> $GITHUB_OUTPUT
-          echo "meta=$META1" >> $GITHUB_OUTPUT
-          echo "Rendered: $VIDEO1"
-          ls -lh "$VIDEO1"
+          npx tsx scripts/render-daily-short.ts --short ${{ steps.quizzes.outputs.quiz1 }} ${{ steps.formula.outputs.flag }}
+          # When A/B is on, render-daily-short.ts emits *-variantA.mp4 / *-variantB.mp4.
+          # Pick the most-recent base id so downstream steps can iterate variants.
+          BASE=$(ls -t output/daily-short/*.mp4 | head -1 | sed -E 's/-variant[AB]\.mp4$//;s/\.mp4$//')
+          echo "base=$BASE" >> $GITHUB_OUTPUT
+          echo "Rendered base: $BASE"
+          ls -lh "$BASE"*.mp4
 
       - name: Render Quiz Short 2
         id: render2
         run: |
           echo "=== Rendering Quiz #${{ steps.quizzes.outputs.quiz2 }} ==="
-          npx tsx scripts/render-daily-short.ts --short ${{ steps.quizzes.outputs.quiz2 }}
-          # Get the LATEST mp4 (not the first one from render1)
-          VIDEO2=$(ls -t output/daily-short/*.mp4 | head -1)
-          META2="${VIDEO2%.mp4}-metadata.json"
-          echo "video=$VIDEO2" >> $GITHUB_OUTPUT
-          echo "meta=$META2" >> $GITHUB_OUTPUT
-          echo "Rendered: $VIDEO2"
-          ls -lh "$VIDEO2"
+          npx tsx scripts/render-daily-short.ts --short ${{ steps.quizzes.outputs.quiz2 }} ${{ steps.formula.outputs.flag }}
+          BASE=$(ls -t output/daily-short/*.mp4 | head -1 | sed -E 's/-variant[AB]\.mp4$//;s/\.mp4$//')
+          echo "base=$BASE" >> $GITHUB_OUTPUT
+          echo "Rendered base: $BASE"
+          ls -lh "$BASE"*.mp4
 
       - name: Verify renders
         run: |
@@ -111,37 +130,69 @@ jobs:
             echo "  $(basename $f): ${DUR}s, ${RES}, ${SIZE}"
           done
 
-      - name: Upload Short 1 to YouTube
+      - name: Upload Short 1 variants to YouTube
         if: inputs.dry_run != true
         run: |
-          echo "=== Uploading Short 1 ==="
-          VIDEO="${{ steps.render1.outputs.video }}"
-          META="${{ steps.render1.outputs.meta }}"
-          PROPS="output/daily-short-$(basename "${VIDEO%.mp4}").json"
-          EQ=$(node -e "const j=require('./'+process.argv[1]); console.log((j.quiz?.endQuestion ?? '').replace(/[\"\\\\]/g, ''))" "$PROPS" 2>/dev/null || echo "")
-          THUMB="${VIDEO%.mp4}-thumbnail.jpg"
-          SRT="${VIDEO%.mp4}.srt"
-          npx tsx scripts/upload-youtube.ts "$VIDEO" "$META" --shorts \
-            $([ -f "$THUMB" ] && echo "--thumbnail $THUMB") \
-            $([ -f "$SRT" ] && echo "--captions $SRT") \
-            $([ -n "$EQ" ] && echo "--first-comment \"$EQ 👀\"") \
-            || echo "Upload 1 failed"
+          echo "=== Uploading Short 1 variants ==="
+          BASE="${{ steps.render1.outputs.base }}"
+          # Iterate any -variantA / -variantB files plus the single-variant case.
+          # Each upload is wrapped in `|| true` per FR-008 (one failure does not
+          # abort the other variant).
+          for VIDEO in "$BASE.mp4" "$BASE-variantA.mp4" "$BASE-variantB.mp4"; do
+            [ -f "$VIDEO" ] || continue
+            ID=$(basename "${VIDEO%.mp4}")
+            META="output/daily-short/$(basename "$BASE")-metadata.json"
+            PROPS="output/daily-short-$ID.json"
+            EQ=$(node -e "const j=require('./'+process.argv[1]); console.log((j.quiz?.endQuestion ?? '').replace(/[\"\\\\]/g, ''))" "$PROPS" 2>/dev/null || echo "")
+            THUMB="${VIDEO%.mp4}-thumbnail.jpg"
+            SRT="${VIDEO%.mp4}.srt"
+            PARTIAL="data/variants/$ID.partial.json"
+            echo "--- variant $ID ---"
+            npx tsx scripts/upload-youtube.ts "$VIDEO" "$META" --shorts \
+              $([ -f "$THUMB" ] && echo "--thumbnail $THUMB") \
+              $([ -f "$SRT" ] && echo "--captions $SRT") \
+              $([ -n "$EQ" ] && echo "--first-comment \"$EQ 👀\"") \
+              $([ -f "$PARTIAL" ] && echo "--variant-record $PARTIAL") \
+              || echo "Upload $ID failed (continuing)"
+          done
 
-      - name: Upload Short 2 to YouTube
+      - name: Upload Short 2 variants to YouTube
         if: inputs.dry_run != true
         run: |
-          echo "=== Uploading Short 2 ==="
-          VIDEO="${{ steps.render2.outputs.video }}"
-          META="${{ steps.render2.outputs.meta }}"
-          PROPS="output/daily-short-$(basename "${VIDEO%.mp4}").json"
-          EQ=$(node -e "const j=require('./'+process.argv[1]); console.log((j.quiz?.endQuestion ?? '').replace(/[\"\\\\]/g, ''))" "$PROPS" 2>/dev/null || echo "")
-          THUMB="${VIDEO%.mp4}-thumbnail.jpg"
-          SRT="${VIDEO%.mp4}.srt"
-          npx tsx scripts/upload-youtube.ts "$VIDEO" "$META" --shorts \
-            $([ -f "$THUMB" ] && echo "--thumbnail $THUMB") \
-            $([ -f "$SRT" ] && echo "--captions $SRT") \
-            $([ -n "$EQ" ] && echo "--first-comment \"$EQ 👀\"") \
-            || echo "Upload 2 failed"
+          echo "=== Uploading Short 2 variants ==="
+          BASE="${{ steps.render2.outputs.base }}"
+          for VIDEO in "$BASE.mp4" "$BASE-variantA.mp4" "$BASE-variantB.mp4"; do
+            [ -f "$VIDEO" ] || continue
+            ID=$(basename "${VIDEO%.mp4}")
+            META="output/daily-short/$(basename "$BASE")-metadata.json"
+            PROPS="output/daily-short-$ID.json"
+            EQ=$(node -e "const j=require('./'+process.argv[1]); console.log((j.quiz?.endQuestion ?? '').replace(/[\"\\\\]/g, ''))" "$PROPS" 2>/dev/null || echo "")
+            THUMB="${VIDEO%.mp4}-thumbnail.jpg"
+            SRT="${VIDEO%.mp4}.srt"
+            PARTIAL="data/variants/$ID.partial.json"
+            echo "--- variant $ID ---"
+            npx tsx scripts/upload-youtube.ts "$VIDEO" "$META" --shorts \
+              $([ -f "$THUMB" ] && echo "--thumbnail $THUMB") \
+              $([ -f "$SRT" ] && echo "--captions $SRT") \
+              $([ -n "$EQ" ] && echo "--first-comment \"$EQ 👀\"") \
+              $([ -f "$PARTIAL" ] && echo "--variant-record $PARTIAL") \
+              || echo "Upload $ID failed (continuing)"
+          done
+
+      - name: Commit variant records
+        if: inputs.dry_run != true
+        run: |
+          # Persist data/variants/<videoId>.json files written by upload step
+          # so the analytics workflow can join them with metrics later.
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/variants/*.json 2>/dev/null || true
+          if ! git diff --cached --quiet; then
+            git commit -m "data(variants): record uploaded A/B variants $(date -u +%Y-%m-%dT%H:%MZ)"
+            git push || echo "push failed (non-fatal)"
+          else
+            echo "No new variant records to commit"
+          fi
 
       - name: Generate distribution packages
         run: |
