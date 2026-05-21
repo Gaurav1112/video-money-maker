@@ -409,14 +409,17 @@ jobs:
         env:
           INPUT_STORYBOARD: ${{ inputs.storyboard }}
         run: |
+          # render-stock-short.ts requires --out <dir>. Use output/ as the default.
+          OUT_ROOT="output"
+          mkdir -p "$OUT_ROOT"
           if [ -n "$INPUT_STORYBOARD" ]; then
-            npm run render:stock -- --storyboard "$INPUT_STORYBOARD"
+            npm run render:stock -- --storyboard "$INPUT_STORYBOARD" --out "$OUT_ROOT"
           else
             DOY=$(date +%j)
             TOTAL=$(ls content/*.json 2>/dev/null | wc -l)
             IDX=$((DOY % TOTAL))
             BOARD=$(ls content/*.json | sort | sed -n "$((IDX + 1))p")
-            npm run render:stock -- --storyboard "$BOARD"
+            npm run render:stock -- --storyboard "$BOARD" --out "$OUT_ROOT"
           fi
 
       # ── Upload to YouTube ─────────────────────────────────────────────────────

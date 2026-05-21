@@ -22,7 +22,9 @@ jobs:
         with: { node-version: '20' }
       - run: npm ci
       - run: npx tsx scripts/channel-inventory.ts
-      - run: npx tsx scripts/ingest-analytics.ts
+      - name: Ingest analytics (optional — requires Analytics API enabled)
+        continue-on-error: true
+        run: npx tsx scripts/ingest-analytics.ts
       - run: npx tsx scripts/weekly-report.ts > data/analytics/weekly-report.md || true
       - name: Commit
         run: |
