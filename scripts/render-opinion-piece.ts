@@ -42,11 +42,18 @@ interface CliArgs {
 }
 
 function parseArgs(argv: string[]): CliArgs {
-  const positional = argv.filter((a) => !a.startsWith('--'));
+  // Accept either positional slug OR `--episode <slug>`
+  const epIdx = argv.indexOf('--episode');
+  let slug: string | undefined;
+  if (epIdx > -1) {
+    slug = argv[epIdx + 1];
+  } else {
+    const positional = argv.filter((a) => !a.startsWith('--'));
+    slug = positional[0];
+  }
   const flags = new Set(argv.filter((a) => a.startsWith('--')));
-  const slug = positional[0];
   if (!slug) {
-    console.error('Usage: render-opinion-piece.ts <slug> [--skip-render] [--no-preview]');
+    console.error('Usage: render-opinion-piece.ts <slug>|--episode <slug> [--skip-render] [--no-preview]');
     process.exit(2);
   }
   return {
@@ -187,6 +194,157 @@ function runRemotionRender(opts: {
   execSync(cmd, { stdio: 'inherit', cwd: ROOT });
 }
 
+function runRemotionStill(opts: {
+  compositionId: string;
+  propsPath: string;
+  outputPath: string;
+  frame?: number;
+  jpegQuality?: number;
+}): void {
+  const { compositionId, propsPath, outputPath, frame = 0, jpegQuality = 92 } = opts;
+  const args = [
+    'npx',
+    'remotion',
+    'still',
+    'src/compositions/index.tsx',
+    compositionId,
+    outputPath,
+    `--props=${propsPath}`,
+    `--frame=${frame}`,
+    '--image-format=jpeg',
+    `--jpeg-quality=${jpegQuality}`,
+  ];
+  const cmd = args.join(' ');
+  console.log(`\n  $ ${cmd}`);
+  execSync(cmd, { stdio: 'inherit', cwd: ROOT });
+}
+
+// ─── YouTube uploader-compatible metadata ────────────────────────────────
+
+/** Convert seconds → HH:MM:SS (first chapter at 00:00:00). */
+function formatHHMMSS(sec: number): string {
+  const total = Math.max(0, Math.round(sec));
+  const h = Math.floor(total / 3600);
+  const m = Math.floor((total % 3600) / 60);
+  const s = total % 60;
+  const pad = (n: number) => n.toString().padStart(2, '0');
+  return `${pad(h)}:${pad(m)}:${pad(s)}`;
+}
+
+/** Derive simple tags from the title when frontmatter lacks them. */
+function deriveTags(opinion: OpinionPiece): string[] {
+  const base = [
+    'opinion',
+    'software engineering',
+    'engineering leadership',
+    'tech leadership',
+    'architecture',
+  ];
+  const titleWords = opinion.title
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, ' ')
+    .split(/\s+/)
+    .filter((w) => w.length >= 4 && !['that', 'this', 'with', 'from', 'your', 'are', 'and', 'the'].includes(w));
+  const merged = Array.from(new Set([...base, ...titleWords]));
+  return merged.slice(0, 20);
+}
+
+interface YoutubeMetadataFile {
+  youtube: {
+    title: string;
+    description: string;
+    tags: string[];
+    categoryId: string;
+    chapters: string;
+    playlistTitle?: string;
+  };
+  thumbnailText?: string;
+}
+
+function buildLongYoutubeMetadata(
+  opinion: OpinionPiece,
+  longProps: OpinionLongProps,
+  body: string
+): YoutubeMetadataFile {
+  const LABELS: Record<OpinionSceneAudio['type'], string> = {
+    hook: 'Hook',
+    'then-now': '1995 vs 2026',
+    pros: 'The Pros',
+    cons: 'The Reality',
+    pivot: 'The Real Question',
+    lesson: 'The Lesson',
+    question: 'Your Turn',
+  };
+
+  // Chapter markers: respect "first at 0:00, subsequent ≥10s gap"
+  let acc = 0;
+  const rawChapters: { start: number; label: string }[] = [];
+  for (const s of longProps.sceneAudios) {
+    rawChapters.push({ start: Math.round(acc), label: LABELS[s.type] });
+    acc += s.duration;
+  }
+  const chapters: { start: number; label: string }[] = [];
+  for (const c of rawChapters) {
+    if (chapters.length === 0) {
+      chapters.push({ start: 0, label: c.label });
+    } else {
+      const prev = chapters[chapters.length - 1];
+      if (c.start - prev.start >= 10) chapters.push(c);
+    }
+  }
+
+  const chaptersText = chapters.map((c) => `${formatHHMMSS(c.start)} ${c.label}`).join('\n');
+
+  // Description: first 4500 chars of essay body + brand CTA + chapters
+  const essaySnippet = body.trim().slice(0, 4500);
+  const cta =
+    'Subscribe for weekly opinion pieces on software engineering and leadership.\n' +
+    'New episode every Sunday.';
+  const description = [
+    opinion.hook,
+    '',
+    essaySnippet,
+    '',
+    'Chapters:',
+    chaptersText,
+    '',
+    cta,
+  ].join('\n');
+
+  return {
+    youtube: {
+      title: opinion.title,
+      description,
+      tags: deriveTags(opinion),
+      categoryId: '28', // Science & Technology
+      chapters: chaptersText,
+      playlistTitle: 'Weekly Opinion Pieces',
+    },
+    thumbnailText: opinion.title,
+  };
+}
+
+function buildShortYoutubeMetadata(opinion: OpinionPiece): YoutubeMetadataFile {
+  const description = [
+    opinion.hook,
+    '',
+    'Full episode on the channel — weekly opinion pieces on software engineering and leadership.',
+    '',
+    '#Shorts #engineering #leadership #tech',
+  ].join('\n');
+  return {
+    youtube: {
+      title: opinion.title,
+      description,
+      tags: deriveTags(opinion),
+      categoryId: '28',
+      chapters: '',
+      playlistTitle: 'Weekly Opinion Pieces — Shorts',
+    },
+    thumbnailText: opinion.hook.slice(0, 40),
+  };
+}
+
 // ─── main ─────────────────────────────────────────────────────────────────
 
 async function main(): Promise<void> {
@@ -217,6 +375,9 @@ async function main(): Promise<void> {
   const totalLongSec = audios.reduce((s, a) => s + (a.duration || 0), 0);
   console.log(`  long-form narration total : ${totalLongSec.toFixed(1)}s (${(totalLongSec / 60).toFixed(1)} min)`);
 
+  // Strip frontmatter once to get the body essay text used in description.
+  const essayBody = md.replace(/^---[\s\S]*?\n---\s*\n/, '').trim();
+
   // Step 3 — write props + metadata
   const outDir = path.join(OUTPUT_DIR, args.slug);
   ensureDir(outDir);
@@ -225,16 +386,32 @@ async function main(): Promise<void> {
   const shortProps = buildShortProps(opinion, audios[0]);
   const metadata = buildMetadata(opinion, longProps, shortProps.audio.duration);
 
+  // Thumbnail props (OpinionThumbnail expects { title, slug })
+  const thumbnailProps = { title: opinion.title, slug: opinion.slug };
+
+  // Per-output YouTube uploader-compatible metadata
+  const longYoutubeMeta = buildLongYoutubeMetadata(opinion, longProps, essayBody);
+  const shortYoutubeMeta = buildShortYoutubeMetadata(opinion);
+
   const longPropsPath = path.join(outDir, 'long-props.json');
   const shortPropsPath = path.join(outDir, 'short-props.json');
+  const thumbPropsPath = path.join(outDir, 'thumbnail-props.json');
   const metadataPath = path.join(outDir, 'metadata.json');
+  const longMetaPath = path.join(outDir, 'long-metadata.json');
+  const shortMetaPath = path.join(outDir, 'short-metadata.json');
 
   fs.writeFileSync(longPropsPath, JSON.stringify(longProps, null, 2));
   fs.writeFileSync(shortPropsPath, JSON.stringify(shortProps, null, 2));
+  fs.writeFileSync(thumbPropsPath, JSON.stringify(thumbnailProps, null, 2));
   fs.writeFileSync(metadataPath, JSON.stringify(metadata, null, 2));
+  fs.writeFileSync(longMetaPath, JSON.stringify(longYoutubeMeta, null, 2));
+  fs.writeFileSync(shortMetaPath, JSON.stringify(shortYoutubeMeta, null, 2));
   console.log(`\n  wrote ${path.relative(ROOT, longPropsPath)}`);
   console.log(`  wrote ${path.relative(ROOT, shortPropsPath)}`);
+  console.log(`  wrote ${path.relative(ROOT, thumbPropsPath)}`);
   console.log(`  wrote ${path.relative(ROOT, metadataPath)}`);
+  console.log(`  wrote ${path.relative(ROOT, longMetaPath)}`);
+  console.log(`  wrote ${path.relative(ROOT, shortMetaPath)}`);
 
   if (args.skipRender) {
     console.log('\n[opinion-piece] --skip-render → exiting before render step');
@@ -274,6 +451,34 @@ async function main(): Promise<void> {
     outputPath: shortOut,
   });
   console.log(`  short → ${path.relative(ROOT, shortOut)}`);
+
+  // Step 7 — long-form thumbnail still (1280x720 JPEG)
+  const longThumbOut = path.join(outDir, 'long-thumbnail.jpg');
+  console.log('\n[opinion-piece] Rendering long-form thumbnail still…');
+  runRemotionStill({
+    compositionId: 'OpinionThumbnail',
+    propsPath: thumbPropsPath,
+    outputPath: longThumbOut,
+    frame: 0,
+    jpegQuality: 92,
+  });
+  console.log(`  long thumbnail → ${path.relative(ROOT, longThumbOut)}`);
+
+  // Step 8 — short thumbnail still (extracted from OpinionShort frame 30)
+  const shortThumbOut = path.join(outDir, 'short-thumbnail.jpg');
+  console.log('\n[opinion-piece] Rendering Short thumbnail still…');
+  try {
+    runRemotionStill({
+      compositionId: 'OpinionShort',
+      propsPath: shortPropsPath,
+      outputPath: shortThumbOut,
+      frame: 30,
+      jpegQuality: 92,
+    });
+    console.log(`  short thumbnail → ${path.relative(ROOT, shortThumbOut)}`);
+  } catch (e) {
+    console.warn(`  short thumbnail skipped: ${(e as Error).message}`);
+  }
 
   console.log('\n[opinion-piece] DONE.');
 }
