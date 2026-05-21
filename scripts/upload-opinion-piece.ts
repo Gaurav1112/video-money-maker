@@ -58,10 +58,6 @@ function main(): void {
     return;
   }
 
-  // 1. Render (idempotent at the file level — re-running just re-renders).
-  console.log('Rendering...');
-  execSync(`npx tsx scripts/render-opinion-piece.ts --episode ${slug}`, { stdio: 'inherit' });
-
   const outDir = path.join('output/opinions', slug);
   const longMp4 = path.join(outDir, 'long.mp4');
   const shortMp4 = path.join(outDir, 'short.mp4');
@@ -69,6 +65,16 @@ function main(): void {
   const shortMeta = path.join(outDir, 'short-metadata.json');
   const longThumb = path.join(outDir, 'long-thumbnail.jpg');
   const shortThumb = path.join(outDir, 'short-thumbnail.jpg');
+
+  // 1. Render unless all required artifacts already exist (idempotent).
+  const requiredArtifacts = [longMp4, shortMp4, longMeta, shortMeta, longThumb];
+  const allArtifactsPresent = requiredArtifacts.every((f) => fs.existsSync(f));
+  if (allArtifactsPresent) {
+    console.log('All render artifacts present — skipping render step.');
+  } else {
+    console.log('Rendering...');
+    execSync(`npx tsx scripts/render-opinion-piece.ts --episode ${slug}`, { stdio: 'inherit' });
+  }
 
   for (const f of [longMp4, shortMp4, longMeta, shortMeta]) {
     if (!fs.existsSync(f)) {
