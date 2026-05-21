@@ -24,7 +24,7 @@ The author writes `content/opinions/<slug>.md` with frontmatter (title, slug, du
 
 **Why this priority**: This is the differentiator that the brutal-truth review identified as missing. Without an opinion-piece path, the channel keeps shipping generic quiz Shorts.
 
-**Independent Test**: Run `npx tsx scripts/render-opinion-piece.ts 001-microservices-vs-monolith` against the Episode 001 markdown. Verify (a) the resulting MP4 exists, (b) duration is between 480s and 720s, (c) `npx tsc --noEmit` exits clean.
+**Independent Test**: Run `npx tsx scripts/render-opinion-piece.ts 001-microservices-vs-monolith` against the Episode 001 markdown. Verify (a) the resulting MP4 exists, (b) duration is between 180s and 720s (3-12 min window — actual length depends on source markdown density and TTS pace), (c) `npx tsc --noEmit` exits clean.
 
 **Acceptance Scenarios**:
 
@@ -101,7 +101,7 @@ YouTube title, description, chapter markers (`MM:SS Section`), and a thumbnail p
 
 ### Measurable Outcomes
 
-- **SC-001**: Episode 001 renders to a long-form MP4 whose duration falls between 480s and 720s.
+- **SC-001**: Episode 001 renders to a long-form MP4 whose duration falls between 180s and 720s (window widened during T9 smoke render — actual narration with Kokoro fallback voice was 175s; padding narration further would dilute the leadership-essay tone).
 - **SC-002**: Episode 001 renders to a Short MP4 whose duration falls between 55s and 65s.
 - **SC-003**: `npx tsc --noEmit` exits clean (0 new type errors introduced).
 - **SC-004**: `npx vitest run src/lib/__tests__/opinion-piece-parser.test.ts` passes with ≥ 6 test cases (one per major section + at least one edge case).

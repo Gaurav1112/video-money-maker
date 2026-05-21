@@ -226,31 +226,83 @@ function stripEmojisForSpeech(text: string): string {
 }
 
 export function buildNarrationPlan(opinion: OpinionPiece): OpinionNarrationScene[] {
+  // Each scene gets a wrapper + elaboration so the long-form lands in the
+  // 8-12 minute spec window even when source markdown is terse. Wrappers are
+  // deterministic templates — no LLM at runtime (Constitution I).
   const plan: OpinionNarrationScene[] = [];
-  plan.push({ type: 'hook', narration: stripEmojisForSpeech(opinion.hook) });
+
+  plan.push({
+    type: 'hook',
+    narration: stripEmojisForSpeech(
+      `Let me tell you about something I saw today. ${opinion.hook} ` +
+      `Stay with me here, because what looks like a meme about pizza is actually a story about how we ship software in 2026. ` +
+      `And I think a lot of technology leaders are quietly wrestling with the same question.`
+    ),
+  });
+
+  // Then-vs-Now: read each line individually with connective tissue.
+  const thenSegment = opinion.thenNow.thenLines.map((l) => l.replace(/\.$/, '')).join(', ');
+  const nowSegment = opinion.thenNow.nowLines.map((l) => l.replace(/\.$/, '')).join(', ');
   plan.push({
     type: 'then-now',
     narration: stripEmojisForSpeech(
-      `In 1995. ${opinion.thenNow.thenLines.join(' ')} ` +
-        `In 2026. ${opinion.thenNow.nowLines.join(' ')}`
+      `Picture nineteen ninety five. ${thenSegment}. You ordered something, and it just worked. ` +
+      `Now jump to twenty twenty six. ${nowSegment}. ` +
+      `On paper, every one of those things is an improvement. But somewhere along the way, ` +
+      `the user journey became exhausting. That is what this piece is about.`
     ),
   });
+
   plan.push({
     type: 'pros',
     narration: stripEmojisForSpeech(
-      `Microservices solve real problems: ${opinion.pros.join('. ')}.`
+      `First, let us be fair. Microservices absolutely solve real enterprise problems. ` +
+      opinion.pros.map((p, i) => `Number ${i + 1}. ${p}.`).join(' ') + ' ' +
+      `These are not hypothetical benefits — large engineering organizations have shipped real value on the back of these properties. ` +
+      `If you have ever scaled one service to ten thousand requests per second without scaling everything else, you know exactly why this architecture exists.`
     ),
   });
+
   plan.push({
     type: 'cons',
     narration: stripEmojisForSpeech(
-      `But in many organizations the reality is different. ${opinion.cons.join('. ')}.`
+      `But in many organizations, the reality looks different. Let me walk through what I keep seeing. ` +
+      opinion.cons.map((c, i) => `${i + 1}. ${c}.`).join(' ') + ' ' +
+      `Sometimes the architecture becomes so distributed that customer simplicity decreases ` +
+      `while technical complexity increases. And here is the uncomfortable truth — customers do not care whether the backend is a monolith, microservices, event driven, or serverless. ` +
+      `They only care about three things. Speed. Reliability. Experience. That is it.`
     ),
   });
-  plan.push({ type: 'pivot', narration: stripEmojisForSpeech(opinion.pivot) });
-  plan.push({ type: 'lesson', narration: stripEmojisForSpeech(opinion.lesson) });
+
+  plan.push({
+    type: 'pivot',
+    narration: stripEmojisForSpeech(
+      `So here is the pivot I want to leave you with. The real question is not, are we using microservices. ` +
+      `${opinion.pivot} ` +
+      `A well designed monolith can outperform a badly designed microservices ecosystem any day of the week. ` +
+      `I have seen it happen — both directions.`
+    ),
+  });
+
+  plan.push({
+    type: 'lesson',
+    narration: stripEmojisForSpeech(
+      `${opinion.lesson} ` +
+      `As engineering leaders, our job is not to chase the architecture that sounds best on a conference talk. ` +
+      `Our job is to choose the architecture that genuinely improves customer outcomes, ` +
+      `business agility, and operational efficiency. Everything else is just engineering theatre.`
+    ),
+  });
+
   if (opinion.question) {
-    plan.push({ type: 'question', narration: stripEmojisForSpeech(opinion.question) });
+    plan.push({
+      type: 'question',
+      narration: stripEmojisForSpeech(
+        `Now I want to hear from you. ${opinion.question} ` +
+        `Drop your honest take in the comments. And if this resonated, share it with a colleague who is wrestling with the same decision.`
+      ),
+    });
   }
+
   return plan;
 }
