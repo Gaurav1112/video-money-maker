@@ -1,21 +1,45 @@
 #!/usr/bin/env npx tsx
+import { google } from 'googleapis';
+import * as fs from 'fs';
+import * as path from 'path';
+import { getYouTubeAuthClient } from './lib/youtube-oauth.js';
 import { fetchVideoMetrics } from './lib/youtube-analytics-client';
-import { buildVideoIdList, persistMetrics } from './lib/analytics-store';
+import { persistMetrics } from './lib/analytics-store';
 
-const UPLOAD_DIRS = [
-  // ADD NEW OUTPUT DIRS HERE
-  'output',            // long-form upload-result.json files live at output/ root
-  'output/daily-short',
-  'output/shorts',
-];
 const OUT_DIR = 'data/analytics';
+const MAX_VIDEOS = 50; // pull the last 50 uploads
+
+async function listChannelUploads(): Promise<string[]> {
+  const auth = getYouTubeAuthClient();
+  const yt = google.youtube({ version: 'v3', auth });
+  const ch = await yt.channels.list({ part: ['contentDetails'], mine: true });
+  const uploadsPl = ch.data.items?.[0]?.contentDetails?.relatedPlaylists?.uploads;
+  if (!uploadsPl) throw new Error('No uploads playlist found for authenticated channel');
+  const ids: string[] = [];
+  let pageToken: string | undefined = undefined;
+  while (ids.length < MAX_VIDEOS) {
+    const resp: any = await yt.playlistItems.list({
+      part: ['contentDetails'],
+      playlistId: uploadsPl,
+      maxResults: Math.min(50, MAX_VIDEOS - ids.length),
+      pageToken,
+    });
+    for (const item of resp.data.items ?? []) {
+      const vid = item.contentDetails?.videoId;
+      if (vid) ids.push(vid);
+    }
+    pageToken = resp.data.nextPageToken ?? undefined;
+    if (!pageToken) break;
+  }
+  return ids;
+}
 
 async function main() {
-  console.log(`Scanning upload dirs: ${UPLOAD_DIRS.join(', ')}`);
-  const videoIds = [...new Set(UPLOAD_DIRS.flatMap(buildVideoIdList))];
-  console.log(`Ingesting analytics for ${videoIds.length} videos...`);
+  console.log(`Listing channel uploads (max ${MAX_VIDEOS})...`);
+  const videoIds = await listChannelUploads();
+  console.log(`Found ${videoIds.length} videos on channel.`);
   if (videoIds.length === 0) {
-    console.log('No upload-result.json files found. Nothing to ingest.');
+    console.log('Nothing to ingest.');
     return;
   }
   const metrics = await fetchVideoMetrics(videoIds, 30);
