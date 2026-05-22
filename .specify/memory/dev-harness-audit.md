@@ -18,15 +18,15 @@ Snapshot of the development harness as it stands when spec-kit was initialized.
 
 ## Missing — would harden the harness ❌
 
-| Gap | Risk | Fix |
-|---|---|---|
-| **No pre-commit hooks** | Broken code reaches `main`. Today's session caught the secrets-in-doc leak only because GitHub Push Protection caught it server-side. | Add `husky` + `lint-staged`: pre-commit runs `tsc --noEmit` on staged TS + `vitest related` on touched files + `git secrets`-style local scan. |
-| **No ESLint / Prettier** | Style drift across 100+ TS files (different quote styles, trailing-comma inconsistency, semicolon use vary). | Add `eslint` with `@typescript-eslint` + `prettier`; one-time format pass; CI lint gate. |
-| **Type-check is `noEmit` only** | TS errors in non-test code don't fail CI gate unless `test.yml` happens to import them. | Add explicit `tsc --noEmit` step in `test.yml` (fails build on any new TS error). |
-| **Test failures sitting at 18** | Constitution §X says CI failures must be fixed OR documented; the 18 are documented now but not on a deprecation timeline. | Decide: fix shorts-format, drop shorts-generator, add concurrency to flagged workflows. ETA in §X amendment. |
-| **No coverage threshold** | vitest has `test:coverage` available but no CI enforcement of minimum %. | Add `--coverage --reporter=text-summary` gate at e.g. 70% lines on new files only. |
-| **No render smoke test in CI** | Composition changes can break renders silently (we found out only when a manual render failed). | Add a CI job that runs `npx tsx scripts/render-daily-short.ts --short 0` (or `--dry-run` + a fast smoke render at 1080×540) on every PR touching `src/compositions/`. |
-| **No drift check vs constitution** | The constitution lives in `.specify/memory/constitution.md` but nothing enforces it. | Add a lightweight `tests/constitution.test.ts`: forbid `Math.random()` in `src/**`, forbid `en-US-*` voice names, forbid `KumarGaurav.jpg` references in `src/compositions/`. |
+| Gap | Risk | Fix | Status |
+|---|---|---|---|
+| **No pre-commit hooks** | Broken code reaches `main`. Today's session caught the secrets-in-doc leak only because GitHub Push Protection caught it server-side. | Add `husky` + `lint-staged`: pre-commit runs `tsc --noEmit` on staged TS + `vitest related` on touched files + `git secrets`-style local scan. | ✅ **DONE** (F008) — `.husky/pre-commit` runs `lint-staged` (eslint --fix + prettier --write on staged `*.ts/*.tsx`) then `tsc --noEmit -p tsconfig.build.json`. |
+| **No ESLint / Prettier** | Style drift across 100+ TS files (different quote styles, trailing-comma inconsistency, semicolon use vary). | Add `eslint` with `@typescript-eslint` + `prettier`; one-time format pass; CI lint gate. | ✅ **DONE** (F008) — `eslint.config.js` (warn-heavy flat config, 0 errors / 588 warnings), `.prettierrc.json`, one-time format pass over `src/`+`scripts/`, non-blocking CI lint step. |
+| **Type-check is `noEmit` only** | TS errors in non-test code don't fail CI gate unless `test.yml` happens to import them. | Add explicit `tsc --noEmit` step in `test.yml` (fails build on any new TS error). | ✅ **DONE** (F008) — `test.yml` `unit` job runs `npm run typecheck:build` (blocking) against `tsconfig.build.json` (production code only). |
+| **Test failures sitting at 18** | Constitution §X says CI failures must be fixed OR documented; the 18 are documented now but not on a deprecation timeline. | Decide: fix shorts-format, drop shorts-generator, add concurrency to flagged workflows. ETA in §X amendment. | 🟡 **PARTIAL** (F008) — actual count is **25** (estimate was stale). All 25 enumerated with FIX/QUARANTINE dispositions + target dates in `docs/test-burndown.md`. Burn-down execution itself is follow-up work. |
+| **No coverage threshold** | vitest has `test:coverage` available but no CI enforcement of minimum %. | Add `--coverage --reporter=text-summary` gate at e.g. 70% lines on new files only. | ❌ Not in F008 scope — future feature. |
+| **No render smoke test in CI** | Composition changes can break renders silently (we found out only when a manual render failed). | Add a CI job that runs `npx tsx scripts/render-daily-short.ts --short 0` (or `--dry-run` + a fast smoke render at 1080×540) on every PR touching `src/compositions/`. | ❌ Not in F008 scope — future feature. |
+| **No drift check vs constitution** | The constitution lives in `.specify/memory/constitution.md` but nothing enforces it. | Add a lightweight `tests/constitution.test.ts`: forbid `Math.random()` in `src/**`, forbid `en-US-*` voice names, forbid `KumarGaurav.jpg` references in `src/compositions/`. | ✅ **DONE** (F008) — `tests/constitution.test.ts` enforces Principles I + VI. Scan findings: zero real `Math.random()` calls; four `en-US-` files allowlisted with reasons; zero raw-photo avatar refs. |
 
 ## Harness layers in this repo (so you know what owns what)
 
