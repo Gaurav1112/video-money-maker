@@ -8,6 +8,7 @@
     "render": "remotion render",
     "build": "tsc --noEmit",
     "typecheck": "tsc --noEmit",
+    "typecheck:build": "tsc --noEmit -p tsconfig.build.json",
     "render:episode": "tsx scripts/render-episode.ts",
     "render:batch": "tsx scripts/batch-render.ts",
     "upload": "tsx scripts/upload-youtube.ts",
@@ -27,7 +28,16 @@
     "test:security": "vitest run --reporter=verbose --passWithNoTests tests/security",
     "test:fixtures": "bash scripts/build-fixtures.sh",
     "test:ci": "vitest run --reporter=verbose --coverage",
-    "test:topic-bank": "tsx --test tests/topic-bank.test.ts"
+    "test:topic-bank": "tsx --test tests/topic-bank.test.ts",
+    "lint": "eslint .",
+    "format": "prettier --write src scripts",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ]
   },
   "dependencies": {
     "@remotion/cli": "^4.0.457",

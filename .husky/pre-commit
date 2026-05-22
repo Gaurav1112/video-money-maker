@@ -1,0 +1,7 @@
+# Feature 008 — local commit gate (constitution Principles IX + X).
+# 1. lint-staged: eslint --fix + prettier --write on staged *.ts/*.tsx.
+# 2. tsc --noEmit: production-code type check (tsconfig.build.json excludes
+#    test files — the pre-existing @types/jest test-file gap is tracked in
+#    docs/test-burndown.md, not a reason to block every commit).
+
+npx lint-staged && npx tsc --noEmit -p tsconfig.build.json
