@@ -1,7 +1,7 @@
 {
   "name": "cartoon-pipeline",
   "version": "1.0.0",
-  "description": "Fully automated cartoon YouTube channel pipeline — 7 Indian languages",
+  "description": "Fully automated cartoon YouTube channel pipeline \u2014 7 Indian languages",
   "private": true,
   "scripts": {
     "studio": "remotion studio",
@@ -31,7 +31,7 @@
     "test:topic-bank": "tsx --test tests/topic-bank.test.ts",
     "lint": "eslint .",
     "format": "prettier --write src scripts",
-    "prepare": "husky"
+    "prepare": "husky || true"
   },
   "lint-staged": {
     "*.{ts,tsx}": [
