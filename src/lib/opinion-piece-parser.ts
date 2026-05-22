@@ -329,40 +329,47 @@ const ELABORATIONS: Record<OpinionNarrationScene['type'], string[]> = {
     'I have watched this exact pattern play out across very different teams.',
     'Once you notice it, you cannot unsee it on your own systems.',
     'So before we judge anything, let us slow down and look at it honestly.',
+    'Give me the next few minutes and I think this will change how you decide.',
   ],
   'then-now': [
     'Each individual change felt obviously correct at the time it was made.',
     'It is the accumulation, not any single decision, that creates the drag.',
     'That is the trap, every step forward can quietly add a little more friction.',
+    'Progress and complexity often arrive holding hands, and we only invite one of them.',
   ],
   pros: [
     'When these benefits are real, they are genuinely worth the operational cost.',
     'The mistake is assuming they apply uniformly to every team and every product.',
     'A team with the right maturity can turn each of these into a durable advantage.',
+    'Used deliberately, these strengths compound quietly over many quarters of delivery.',
   ],
   cons: [
     'None of this means the architecture is wrong. It means it is often misapplied.',
     'The failure mode is adopting the shape of a solution without its preconditions.',
     'Complexity you did not need is the most expensive thing an engineering team buys.',
+    'Every accidental layer is a tax that every future feature has to keep paying.',
   ],
   pivot: [
     'Architecture is a means to an outcome, never the outcome itself.',
     'Judge it by what your customers and your delivery speed actually experience.',
     'Strip away the labels and ask only whether the system serves the people using it.',
+    'The diagram is never the product, the experience your users feel is the product.',
   ],
   lesson: [
     'Write down the outcome you are optimising for before you pick the pattern.',
     'If you cannot name that outcome, no architecture diagram will rescue the project.',
     'Discipline about that one question separates senior judgement from cargo culting.',
+    'Anchor every technical choice to a customer or business result you can measure.',
   ],
   question: [
     'There is no universally right answer here, only an honest one for your context.',
     'I genuinely change my own mind on this depending on the team in front of me.',
+    'So tell me where you land, because the comments are where the real debate happens.',
   ],
 };
 
 /** A terse markdown should still fill ~4 min; pad up to this word floor. */
-const NARRATION_WORD_FLOOR = 800;
+const NARRATION_WORD_FLOOR = 880;
 
 /**
  * Pad a narration plan UP to {@link NARRATION_WORD_FLOOR} words by appending
