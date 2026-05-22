@@ -30,6 +30,37 @@ function parseDebate(text: string): { left: string; right: string } | null {
   return { left, right };
 }
 
+// ── F010: unmissable comment ask ──
+// Bold "👇 COMMENT YOUR ANSWER" header rendered ABOVE the question in both
+// the VS layout and the flat layout. The arrow pulses via a frame-derived
+// sine — deterministic, no Math.random. Zero comments across 50 videos is an
+// algorithmic distribution killer; this makes the ask impossible to miss.
+const CommentAsk: React.FC<{ age: number }> = ({ age }) => {
+  // Pulse period ~24 frames; scale 1.0 → 1.18.
+  const pulse = 1 + 0.18 * (0.5 + 0.5 * Math.sin((age / 24) * Math.PI * 2));
+  return (
+    <div
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 12,
+        fontSize: 40,
+        fontFamily: FONTS.heading,
+        fontWeight: 900,
+        color: '#FBBF24',
+        letterSpacing: 1,
+        textTransform: 'uppercase',
+        textShadow: '0 0 18px rgba(251, 191, 36, 0.7), 0 3px 10px rgba(0,0,0,0.6)',
+      }}
+    >
+      <span style={{ display: 'inline-block', transform: `scale(${pulse})` }}>👇</span>
+      <span>Comment Your Answer</span>
+      <span style={{ display: 'inline-block', transform: `scale(${pulse})` }}>👇</span>
+    </div>
+  );
+};
+
 export const EndCardCTA: React.FC<Props> = ({ endQuestion, startFrame, durationFrames }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
@@ -60,6 +91,8 @@ export const EndCardCTA: React.FC<Props> = ({ endQuestion, startFrame, durationF
           gap: 10,
         }}
       >
+        {/* F010: unmissable comment ask above the VS pills */}
+        <CommentAsk age={age} />
         {/* Left option pill */}
         <div
           style={{
@@ -157,6 +190,10 @@ export const EndCardCTA: React.FC<Props> = ({ endQuestion, startFrame, durationF
         transform: `translateY(${containerY}px)`,
       }}
     >
+      {/* F010: unmissable comment ask above the question pill */}
+      <div style={{ marginBottom: 14 }}>
+        <CommentAsk age={age} />
+      </div>
       <div
         style={{
           display: 'inline-block',
