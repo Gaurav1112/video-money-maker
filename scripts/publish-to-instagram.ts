@@ -2,10 +2,16 @@
 /**
  * publish-to-instagram.ts — Upload vertical video as Instagram Reel
  *
+ * Uses the newer "Instagram API with Instagram Login" product
+ * (graph.instagram.com, permissions instagram_business_basic +
+ * instagram_business_content_publish). The IG user id and access token come
+ * straight from the app's Instagram product "Generate access tokens" panel —
+ * there is no Facebook Login / /me/accounts discovery step.
+ *
  * Designed for CI (GitHub Actions). The Instagram Graph API requires videos
  * to be hosted at a public URL. This script:
  *   1. Uploads the video to a temporary R2/S3 bucket (or uses --url)
- *   2. Creates an Instagram media container
+ *   2. Creates an Instagram media container (REELS)
  *   3. Polls until processing is complete
  *   4. Publishes the reel
  *   5. Verifies the post is live
@@ -14,13 +20,15 @@
  * then provide that URL to Instagram. After publishing, we delete the temp file.
  *
  * Environment variables:
- *   INSTAGRAM_ACCESS_TOKEN   — Long-lived Graph API access token
- *   INSTAGRAM_BUSINESS_ID   — Instagram Business/Creator account ID
- *   R2_ACCOUNT_ID           — (optional) Cloudflare R2 account ID
- *   R2_ACCESS_KEY_ID        — (optional) R2 access key
- *   R2_SECRET_ACCESS_KEY    — (optional) R2 secret key
- *   R2_BUCKET_NAME          — (optional) R2 bucket name
- *   R2_PUBLIC_URL           — (optional) R2 public URL prefix
+ *   IG_ACCESS_TOKEN          — Instagram user access token (Instagram-Login API)
+ *                              (legacy alias: INSTAGRAM_ACCESS_TOKEN)
+ *   IG_USER_ID               — Instagram user id from the token panel
+ *                              (legacy alias: INSTAGRAM_BUSINESS_ID)
+ *   R2_ACCOUNT_ID            — Cloudflare R2 account ID
+ *   R2_ACCESS_KEY_ID         — R2 access key
+ *   R2_SECRET_ACCESS_KEY     — R2 secret key
+ *   R2_BUCKET_NAME           — R2 bucket name
+ *   R2_PUBLIC_URL            — R2 public URL prefix (used to build the video URL)
  *
  * Usage:
  *   npx tsx scripts/publish-to-instagram.ts \
@@ -51,6 +59,14 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as https from 'https';
 import { execSync } from 'child_process';
+import {
+  GRAPH_API_BASE,
+  POLL_INTERVAL_MS,
+  MAX_POLL_ATTEMPTS,
+  buildGraphUrl,
+  pollDecision,
+  resolveCredentials,
+} from './lib/instagram-api';
 
 // ─── Types ─────────────────────────────────────────────────────────────────
 
@@ -89,11 +105,10 @@ interface MediaResponse {
 }
 
 // ─── Config ────────────────────────────────────────────────────────────────
+// GRAPH_API_BASE / POLL_INTERVAL_MS / MAX_POLL_ATTEMPTS come from
+// ./lib/instagram-api (graph.instagram.com — Instagram-Login API).
 
-const GRAPH_API_BASE = 'https://graph.facebook.com/v21.0';
 const MAX_CAPTION_LENGTH = 2200;
-const POLL_INTERVAL_MS = 5000;
-const MAX_POLL_ATTEMPTS = 60;
 const MAX_RETRIES = 3;
 const VERIFICATION_DELAY_MS = 10000;
 
@@ -105,12 +120,7 @@ function graphApiRequest<T>(
   params?: Record<string, string>
 ): Promise<T> {
   return new Promise((resolve, reject) => {
-    const fullUrl = new URL(`${GRAPH_API_BASE}${urlPath}`);
-    if (params) {
-      for (const [key, value] of Object.entries(params)) {
-        fullUrl.searchParams.set(key, value);
-      }
-    }
+    const fullUrl = new URL(buildGraphUrl(urlPath, params));
 
     const options = {
       method,
@@ -262,7 +272,7 @@ async function uploadReel(
   videoUrl: string,
   caption: string,
   accessToken: string,
-  businessId: string
+  igUserId: string
 ): Promise<string> {
   let lastError: Error | null = null;
 
@@ -272,7 +282,7 @@ async function uploadReel(
 
       // Step 1: Create media container
       console.log('Step 1/3: Creating media container...');
-      const container = await graphApiRequest<ContainerResponse>(`/${businessId}/media`, 'POST', {
+      const container = await graphApiRequest<ContainerResponse>(`/${igUserId}/media`, 'POST', {
         media_type: 'REELS',
         video_url: videoUrl,
         caption,
@@ -283,38 +293,39 @@ async function uploadReel(
       const containerId = container.id;
       console.log(`Container created: ${containerId}`);
 
-      // Step 2: Poll for upload completion
+      // Step 2: Poll for upload completion (deterministic: fixed 5s × 12).
       console.log('Step 2/3: Waiting for video processing...');
-      let pollAttempts = 0;
 
-      while (pollAttempts < MAX_POLL_ATTEMPTS) {
+      for (let pollAttempts = 0; pollAttempts < MAX_POLL_ATTEMPTS; pollAttempts++) {
         const status = await graphApiRequest<StatusResponse>(`/${containerId}`, 'GET', {
           fields: 'status_code',
           access_token: accessToken,
         });
 
-        if (pollAttempts % 6 === 0) {
-          console.log(`  Status: ${status.status_code} (${pollAttempts * 5}s elapsed)`);
+        if (pollAttempts % 3 === 0) {
+          console.log(
+            `  Status: ${status.status_code} (${pollAttempts * (POLL_INTERVAL_MS / 1000)}s elapsed)`
+          );
         }
 
-        if (status.status_code === 'FINISHED') break;
-
-        if (status.status_code === 'ERROR') {
+        const decision = pollDecision(status.status_code, pollAttempts);
+        if (decision === 'finished') break;
+        if (decision === 'error') {
           throw new Error('Video processing failed. Check format: 9:16 MP4, 3-90s, H.264.');
         }
-
-        pollAttempts++;
+        if (decision === 'timeout') {
+          throw new Error(
+            `Timed out waiting for video processing ` +
+              `(${(MAX_POLL_ATTEMPTS * POLL_INTERVAL_MS) / 1000}s).`
+          );
+        }
         await sleep(POLL_INTERVAL_MS);
-      }
-
-      if (pollAttempts >= MAX_POLL_ATTEMPTS) {
-        throw new Error('Timed out waiting for video processing (5 minutes).');
       }
 
       // Step 3: Publish
       console.log('Step 3/3: Publishing reel...');
       const published = await graphApiRequest<PublishResponse>(
-        `/${businessId}/media_publish`,
+        `/${igUserId}/media_publish`,
         'POST',
         {
           creation_id: containerId,
@@ -400,15 +411,12 @@ async function main(): Promise<void> {
   const additionalRaw = getArg('additional');
   const additionalVideos = additionalRaw ? additionalRaw.split(',') : [];
 
-  const accessToken = process.env.INSTAGRAM_ACCESS_TOKEN;
-  const businessId = process.env.INSTAGRAM_BUSINESS_ID;
-
-  if (!accessToken) {
-    console.error('Error: INSTAGRAM_ACCESS_TOKEN env var required.');
-    process.exit(1);
-  }
-  if (!businessId) {
-    console.error('Error: INSTAGRAM_BUSINESS_ID env var required.');
+  let accessToken: string;
+  let igUserId: string;
+  try {
+    ({ igUserId, accessToken } = resolveCredentials());
+  } catch (err) {
+    console.error(`Error: ${(err as Error).message}`);
     process.exit(1);
   }
 
@@ -470,7 +478,7 @@ async function main(): Promise<void> {
       const caption = generateCaption(metadata, video.partNumber);
       console.log(`Caption: ${caption.slice(0, 80)}...`);
 
-      const mediaId = await uploadReel(videoUrl, caption, accessToken, businessId);
+      const mediaId = await uploadReel(videoUrl, caption, accessToken, igUserId);
 
       // Verify
       const verification = await verifyPost(mediaId, accessToken);

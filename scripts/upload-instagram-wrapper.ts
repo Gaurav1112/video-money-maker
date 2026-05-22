@@ -11,9 +11,9 @@
  * Usage (called from .github/workflows/auto-shorts.yml):
  *   npx tsx scripts/upload-instagram-wrapper.ts <video.mp4> <metadata.json>
  *
- * Required env:
- *   INSTAGRAM_ACCESS_TOKEN
- *   INSTAGRAM_BUSINESS_ID
+ * Required env (Instagram-Login API — graph.instagram.com):
+ *   IG_ACCESS_TOKEN       (legacy alias: INSTAGRAM_ACCESS_TOKEN)
+ *   IG_USER_ID            (legacy alias: INSTAGRAM_BUSINESS_ID)
  *   R2_ACCOUNT_ID
  *   R2_ACCESS_KEY_ID
  *   R2_SECRET_ACCESS_KEY
@@ -24,15 +24,20 @@
 import { spawnSync } from 'node:child_process';
 import * as path from 'node:path';
 
-const REQUIRED_ENV = [
-  'INSTAGRAM_ACCESS_TOKEN',
-  'INSTAGRAM_BUSINESS_ID',
-  'R2_ACCOUNT_ID',
-  'R2_ACCESS_KEY_ID',
-  'R2_SECRET_ACCESS_KEY',
-  'R2_BUCKET_NAME',
-  'R2_PUBLIC_URL',
-] as const;
+/**
+ * Each entry is one logical requirement. A string[] means "any one of these
+ * env vars satisfies it" — used so the new IG_* names and the legacy
+ * INSTAGRAM_* names both work.
+ */
+const REQUIRED_ENV: ReadonlyArray<string[]> = [
+  ['IG_ACCESS_TOKEN', 'INSTAGRAM_ACCESS_TOKEN'],
+  ['IG_USER_ID', 'INSTAGRAM_BUSINESS_ID'],
+  ['R2_ACCOUNT_ID'],
+  ['R2_ACCESS_KEY_ID'],
+  ['R2_SECRET_ACCESS_KEY'],
+  ['R2_BUCKET_NAME'],
+  ['R2_PUBLIC_URL'],
+];
 
 function main() {
   const [video, metadata] = process.argv.slice(2);
@@ -41,9 +46,9 @@ function main() {
     process.exit(1);
   }
 
-  for (const key of REQUIRED_ENV) {
-    if (!process.env[key]) {
-      console.log(`[ig-wrapper] ${key} missing — skipping Instagram upload`);
+  for (const aliases of REQUIRED_ENV) {
+    if (!aliases.some((key) => process.env[key])) {
+      console.log(`[ig-wrapper] ${aliases.join('/')} missing — skipping Instagram upload`);
       process.exit(0);
     }
   }
