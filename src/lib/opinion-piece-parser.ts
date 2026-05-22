@@ -311,9 +311,89 @@ export function buildNarrationPlan(opinion: OpinionPiece): OpinionNarrationScene
     });
   }
 
-  // Feature 012: cap the plan to the 4-6 min duration budget. A verbose source
-  // markdown could otherwise inflate past the retention-friendly window.
-  return capNarrationPlan(plan);
+  // Feature 012: fit the plan to the 4-6 min duration budget. A terse source
+  // markdown is padded UP to the floor; a verbose one is capped DOWN to the
+  // ceiling. Both bounds are deterministic (Constitution I).
+  return capNarrationPlan(padNarrationPlan(plan));
+}
+
+// ─── Narration budget bounds (Feature 012) ────────────────────────────────
+
+/**
+ * Per-section deterministic elaboration sentences. Used to pad a terse source
+ * markdown UP toward the 4-6 min retention window so the rendered long-form
+ * does not fall short of 240 s. No LLM, no randomness — fixed templates.
+ */
+const ELABORATIONS: Record<OpinionNarrationScene['type'], string[]> = {
+  hook: [
+    'I have watched this exact pattern play out across very different teams.',
+    'Once you notice it, you cannot unsee it on your own systems.',
+    'So before we judge anything, let us slow down and look at it honestly.',
+  ],
+  'then-now': [
+    'Each individual change felt obviously correct at the time it was made.',
+    'It is the accumulation, not any single decision, that creates the drag.',
+    'That is the trap, every step forward can quietly add a little more friction.',
+  ],
+  pros: [
+    'When these benefits are real, they are genuinely worth the operational cost.',
+    'The mistake is assuming they apply uniformly to every team and every product.',
+    'A team with the right maturity can turn each of these into a durable advantage.',
+  ],
+  cons: [
+    'None of this means the architecture is wrong. It means it is often misapplied.',
+    'The failure mode is adopting the shape of a solution without its preconditions.',
+    'Complexity you did not need is the most expensive thing an engineering team buys.',
+  ],
+  pivot: [
+    'Architecture is a means to an outcome, never the outcome itself.',
+    'Judge it by what your customers and your delivery speed actually experience.',
+    'Strip away the labels and ask only whether the system serves the people using it.',
+  ],
+  lesson: [
+    'Write down the outcome you are optimising for before you pick the pattern.',
+    'If you cannot name that outcome, no architecture diagram will rescue the project.',
+    'Discipline about that one question separates senior judgement from cargo culting.',
+  ],
+  question: [
+    'There is no universally right answer here, only an honest one for your context.',
+    'I genuinely change my own mind on this depending on the team in front of me.',
+  ],
+};
+
+/** A terse markdown should still fill ~4 min; pad up to this word floor. */
+const NARRATION_WORD_FLOOR = 800;
+
+/**
+ * Pad a narration plan UP to {@link NARRATION_WORD_FLOOR} words by appending
+ * deterministic per-section elaboration sentences in a fixed order. Pure +
+ * deterministic; a plan already at/above the floor is returned unchanged.
+ */
+export function padNarrationPlan(
+  plan: OpinionNarrationScene[],
+  minWords = NARRATION_WORD_FLOOR
+): OpinionNarrationScene[] {
+  const total = plan.reduce((n, s) => n + countWords(s.narration), 0);
+  if (total >= minWords || plan.length === 0) return plan;
+
+  const out = plan.map((s) => ({ ...s }));
+  let words = total;
+  let added = true;
+  // Round-robin one elaboration per scene per pass until the floor is met or
+  // the fixed elaboration bank is exhausted (bounded — no infinite loop).
+  for (let pass = 0; added && words < minWords; pass++) {
+    added = false;
+    for (const scene of out) {
+      if (words >= minWords) break;
+      const bank = ELABORATIONS[scene.type];
+      const extra = bank[pass];
+      if (!extra) continue;
+      scene.narration = stripEmojisForSpeech(`${scene.narration} ${extra}`);
+      words += countWords(extra);
+      added = true;
+    }
+  }
+  return out;
 }
 
 // ─── Narration budget cap (Feature 012) ───────────────────────────────────

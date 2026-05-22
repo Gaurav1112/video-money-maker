@@ -1,5 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { capNarrationPlan, type OpinionNarrationScene } from '../opinion-piece-parser';
+import {
+  capNarrationPlan,
+  padNarrationPlan,
+  type OpinionNarrationScene,
+} from '../opinion-piece-parser';
 
 /** Word count of an entire narration plan. */
 function planWords(plan: OpinionNarrationScene[]): number {
@@ -18,10 +22,7 @@ function makeScene(
 
 describe('capNarrationPlan', () => {
   it('returns an under-budget plan unchanged', () => {
-    const plan: OpinionNarrationScene[] = [
-      makeScene('hook', 2, 10),
-      makeScene('lesson', 2, 10),
-    ]; // 40 words total, well under 900
+    const plan: OpinionNarrationScene[] = [makeScene('hook', 2, 10), makeScene('lesson', 2, 10)]; // 40 words total, well under 900
     const out = capNarrationPlan(plan, 900);
     expect(out).toEqual(plan);
   });
@@ -61,10 +62,7 @@ describe('capNarrationPlan', () => {
   });
 
   it('is deterministic — same input yields same output', () => {
-    const plan: OpinionNarrationScene[] = [
-      makeScene('hook', 50, 15),
-      makeScene('cons', 50, 15),
-    ];
+    const plan: OpinionNarrationScene[] = [makeScene('hook', 50, 15), makeScene('cons', 50, 15)];
     const a = capNarrationPlan(plan, 500);
     const b = capNarrationPlan(plan, 500);
     expect(a).toEqual(b);
@@ -74,5 +72,41 @@ describe('capNarrationPlan', () => {
     const plan: OpinionNarrationScene[] = [makeScene('hook', 100, 20)]; // 2000 words
     const out = capNarrationPlan(plan);
     expect(planWords(out)).toBeLessThanOrEqual(900);
+  });
+});
+
+describe('padNarrationPlan', () => {
+  it('returns an at/above-floor plan unchanged', () => {
+    const plan: OpinionNarrationScene[] = [makeScene('hook', 30, 20)]; // 600 words
+    const out = padNarrationPlan(plan, 500);
+    expect(out).toEqual(plan);
+  });
+
+  it('pads a terse plan up toward the word floor', () => {
+    const plan: OpinionNarrationScene[] = [
+      makeScene('hook', 2, 5),
+      makeScene('pros', 2, 5),
+      makeScene('lesson', 2, 5),
+    ]; // 30 words total
+    const out = padNarrationPlan(plan, 60);
+    expect(planWords(out)).toBeGreaterThan(planWords(plan));
+  });
+
+  it('keeps every scene present when padding', () => {
+    const plan: OpinionNarrationScene[] = [makeScene('hook', 1, 4), makeScene('cons', 1, 4)];
+    const out = padNarrationPlan(plan, 80);
+    expect(out.map((s) => s.type)).toEqual(['hook', 'cons']);
+  });
+
+  it('is deterministic — same input yields same output', () => {
+    const plan: OpinionNarrationScene[] = [makeScene('hook', 1, 4), makeScene('lesson', 1, 4)];
+    expect(padNarrationPlan(plan, 100)).toEqual(padNarrationPlan(plan, 100));
+  });
+
+  it('terminates even when the floor exceeds the elaboration bank', () => {
+    const plan: OpinionNarrationScene[] = [makeScene('hook', 1, 3)];
+    // floor far above what the fixed bank can supply — must not loop forever
+    const out = padNarrationPlan(plan, 100000);
+    expect(out).toHaveLength(1);
   });
 });
