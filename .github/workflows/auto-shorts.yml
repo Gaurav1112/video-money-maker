@@ -230,30 +230,9 @@ jobs:
             npx tsx scripts/upload-instagram-wrapper.ts "$VIDEO" "$META" || true
           done
 
-      - name: Upload variants to TikTok (F005)
-        if: inputs.dry_run != true
-        continue-on-error: true
-        env:
-          TIKTOK_CLIENT_KEY:     ${{ secrets.TIKTOK_CLIENT_KEY }}
-          TIKTOK_CLIENT_SECRET:  ${{ secrets.TIKTOK_CLIENT_SECRET }}
-          TIKTOK_ACCESS_TOKEN:   ${{ secrets.TIKTOK_ACCESS_TOKEN }}
-          TIKTOK_OPEN_ID:        ${{ secrets.TIKTOK_OPEN_ID }}
-          TIKTOK_PRIVACY_LEVEL:  ${{ secrets.TIKTOK_PRIVACY_LEVEL }}
-        run: |
-          echo "=== TikTok upload (F005) ==="
-          for VIDEO in output/daily-short/*.mp4; do
-            [ -f "$VIDEO" ] || continue
-            BASE="${VIDEO%-variantA.mp4}"
-            BASE="${BASE%-variantB.mp4}"
-            BASE="${BASE%.mp4}"
-            META="${BASE}-metadata.json"
-            if [ ! -f "$META" ]; then
-              echo "[tiktok] no metadata for $VIDEO, skipping"
-              continue
-            fi
-            echo "--- TikTok upload: $(basename $VIDEO) ---"
-            npx tsx scripts/upload-tiktok.ts "$VIDEO" "$META" || true
-          done
+      # TikTok upload step REMOVED 2026-05-22 (F005 cancelled): TikTok is
+      # banned in India, the operator's market. scripts/upload-tiktok.ts +
+      # lib/tiktok-client.ts kept on disk but no longer wired into the pipeline.
 
       - name: Generate distribution packages
         run: |
