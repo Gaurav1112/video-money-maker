@@ -26,8 +26,11 @@ import { publishToDevto } from './lib/devto-client';
 import { publishToHashnode } from './lib/hashnode-client';
 
 const ROOT = process.cwd();
-const VARIANTS_DIR = path.join(ROOT, 'data', 'variants');
 const POSTED_DIR = path.join(ROOT, 'data', 'articles-posted');
+// Source of truth for "what got published" is the channel inventory
+// (refreshed daily by channel-inventory.yml). data/variants/ only ever
+// holds sparse A/B partials and is NOT a reliable week index.
+const INVENTORY_PATH = path.join(ROOT, 'data', 'channel-inventory.json');
 
 interface PostRecord {
   isoWeek: string;
@@ -61,27 +64,53 @@ function previousIsoWeek(): string {
   return isoWeekOf(sevenDaysAgo);
 }
 
-function readShortsForWeek(isoWeek: string): Short[] {
-  if (!fs.existsSync(VARIANTS_DIR)) return [];
-  const files = fs.readdirSync(VARIANTS_DIR).filter((f) => f.endsWith('.json'));
-  const out: Short[] = [];
-  for (const f of files) {
-    try {
-      const raw = JSON.parse(fs.readFileSync(path.join(VARIANTS_DIR, f), 'utf8'));
-      if (!raw.publishedAt) continue;
-      if (isoWeekOf(new Date(raw.publishedAt)) !== isoWeek) continue;
-      out.push({
-        id: raw.videoId || raw.id || f.replace('.json', ''),
-        title: raw.title || raw.hook || 'Untitled Short',
-        youtubeUrl:
-          raw.youtubeUrl || (raw.videoId ? `https://youtube.com/shorts/${raw.videoId}` : ''),
-        publishedAt: raw.publishedAt,
-        topic: raw.topic || 'tech',
-      });
-    } catch {
-      // skip unreadable variant files
-    }
+/** Infer a topic slug from the title (best-effort, deterministic). */
+function inferTopic(title: string): string {
+  const t = title.toLowerCase();
+  for (const k of [
+    'kafka',
+    'redis',
+    'docker',
+    'kubernetes',
+    'database',
+    'caching',
+    'microservices',
+    'api gateway',
+    'load balanc',
+  ]) {
+    if (t.includes(k)) return k.replace(/\s+/g, '-');
   }
+  return 'tech';
+}
+
+function readShortsForWeek(isoWeek: string): Short[] {
+  // Read from the channel inventory — the reliable, daily-refreshed index
+  // of every public video. Pick the highest-view Shorts published in the
+  // target ISO week.
+  if (!fs.existsSync(INVENTORY_PATH)) return [];
+  let inv: { records?: Array<Record<string, unknown>> };
+  try {
+    inv = JSON.parse(fs.readFileSync(INVENTORY_PATH, 'utf8'));
+  } catch {
+    return [];
+  }
+  const out: Short[] = [];
+  for (const r of inv.records ?? []) {
+    const publishedAt = String(r.publishedAt ?? '');
+    if (!publishedAt) continue;
+    if (r.privacyStatus !== 'public') continue;
+    if (isoWeekOf(new Date(publishedAt)) !== isoWeek) continue;
+    const videoId = String(r.videoId ?? '');
+    const title = String(r.title ?? 'Untitled Short');
+    out.push({
+      id: videoId,
+      title,
+      youtubeUrl: videoId ? `https://youtube.com/shorts/${videoId}` : '',
+      publishedAt,
+      topic: inferTopic(title),
+    });
+  }
+  // Highest-view first, then take the best 5 for the synthesis.
   out.sort((a, b) => a.publishedAt.localeCompare(b.publishedAt));
   return out.slice(0, 5);
 }
