@@ -7,7 +7,9 @@ import { fetchVideoMetrics } from './lib/youtube-analytics-client';
 import { persistMetrics } from './lib/analytics-store';
 
 const OUT_DIR = 'data/analytics';
-const MAX_VIDEOS = 50; // pull the last 50 uploads
+// Feature 012: widened 50 -> 200 so the full channel (incl. older long-form
+// videos) has retention data. YouTube Analytics API quota covers this easily.
+const MAX_VIDEOS = 200;
 
 async function listChannelUploads(): Promise<string[]> {
   const auth = getYouTubeAuthClient();
