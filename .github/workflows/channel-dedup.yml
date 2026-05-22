@@ -1,0 +1,41 @@
+name: Channel Dedup (private redundant duplicate uploads)
+
+# One-shot cleanup: the 13 uncoordinated upload workflows (disabled in F009)
+# re-uploaded the same quizzes repeatedly. This privates the redundant copies,
+# keeping the highest-view version of each. Reversible — sets private, never deletes.
+
+on:
+  workflow_dispatch:
+    inputs:
+      execute:
+        description: 'Execute? Otherwise DRY-RUN.'
+        required: true
+        default: 'false'
+        type: choice
+        options: ['false', 'true']
+
+permissions:
+  contents: read
+
+jobs:
+  dedup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
+      YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
+      YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '20' }
+      - run: npm ci
+      - name: Refresh inventory
+        run: npx tsx scripts/channel-inventory.ts
+      - name: Run dedup
+        run: |
+          if [ "${{ inputs.execute }}" = "true" ]; then
+            npx tsx scripts/channel-dedup.ts --execute
+          else
+            npx tsx scripts/channel-dedup.ts
+          fi
