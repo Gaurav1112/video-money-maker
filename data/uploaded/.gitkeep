@@ -1,0 +1,2 @@
+# F009 upload-ledger: per-quiz dedup records (<quizKey>.json) are committed here
+# by auto-shorts.yml so the same quiz never uploads to YouTube twice.
