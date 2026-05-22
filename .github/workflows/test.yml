@@ -29,6 +29,20 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
+      # F008 — explicit production-code type-check gate (blocking).
+      # tsconfig.build.json excludes test files; the pre-existing
+      # @types/jest test-file gap is tracked in docs/test-burndown.md.
+      - name: Typecheck (production build config)
+        run: npm run typecheck:build
+
+      # F008 — ESLint gate. Non-blocking for now (continue-on-error) so
+      # day-1 CI is not broken by the ~588 pre-existing warnings. Flip to
+      # blocking once the warning backlog is burned down — see
+      # docs/test-burndown.md and the dev-harness audit.
+      - name: Lint (ESLint, non-blocking)
+        run: npm run lint
+        continue-on-error: true
+
       - name: Run integrity tests
         run: npm run test:integrity
 
