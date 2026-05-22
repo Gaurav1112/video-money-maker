@@ -14,17 +14,12 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { execSync } from 'child_process';
-import {
-  getDailyQuiz,
-  getQuizByIndex,
-  QUIZ_BANK,
-  buildTags,
-  type QuizQuestion,
-} from '../src/lib/quiz-content';
+import { getDailyQuiz, getQuizByIndex, QUIZ_BANK, buildTags } from '../src/lib/quiz-content';
 import { generateSceneAudios } from '../src/pipeline/tts-engine';
 import { generateStoryboard } from '../src/pipeline/storyboard';
 import { wordTimestampsToSrt } from '../src/lib/srt';
 import { applyHook, type HookFormula } from '../src/lib/quiz-hook';
+import { pickAnswerSentence } from '../src/compositions/QuizShort';
 import { readPairedComparisons, pickWinningFormula } from './lib/variant-store';
 
 // ─── Paths ──────────────────────────────────────────────────────────────────
@@ -32,37 +27,6 @@ import { readPairedComparisons, pickWinningFormula } from './lib/variant-store';
 const PROJECT_ROOT = path.resolve(__dirname, '..');
 const OUTPUT_DIR = path.join(PROJECT_ROOT, 'output', 'daily-short');
 const PROPS_DIR = path.join(PROJECT_ROOT, 'output');
-
-// ─── Phase-aligned narration helpers ────────────────────────────────────────
-// v3.1: the QuizShort composition is 120s but the original narration only
-// produced ~30s of audio. These helpers derive phase-aligned voice-over so
-// every visual phase has matching narration.
-
-function deriveSpokenCode(quiz: QuizQuestion): string {
-  if (!quiz.codeSnippet) {
-    return 'Most developers get the configuration wrong. Let me show you exactly what to change.';
-  }
-  const lang = quiz.codeSnippet.language;
-  return `Look at this ${lang} configuration. Most engineers write the wrong version. The right version uses a critical setting that survives failures. Compare them carefully — the difference is one line of config but it can save your entire production system.`;
-}
-
-function extractKeyInsight(explanation: string): string {
-  // Find the first sentence containing a power word
-  const sentences = explanation.split(/\.\s+/);
-  const insight = sentences.find((s) =>
-    /NOT|NEVER|WRONG|LOST|EVERY|ALWAYS|CRITICAL|MOST|ONLY/i.test(s)
-  );
-  return (insight ?? sentences[0]).trim();
-}
-
-function deriveSpokenExample(quiz: QuizQuestion): string {
-  // Heuristic: build a "Here's what happens at scale" narration
-  const companyMatch = quiz.explanation.match(
-    /(Google|Netflix|Uber|LinkedIn|Meta|Amazon|Stripe|Cloudflare|GitHub|Twitter)/i
-  );
-  const company = companyMatch?.[1] ?? 'a top tech company';
-  return `Here's how this plays out in the real world. ${company} runs into this exact problem at massive scale. The wrong approach leads to outages, data loss, and angry users. The right approach — the one we just covered — is what they actually use in production. The lesson: this matters. Pay attention to these defaults.`;
-}
 
 // ─── Loudness Normalization ──────────────────────────────────────────────────
 
@@ -228,38 +192,20 @@ async function main() {
   fs.mkdirSync(OUTPUT_DIR, { recursive: true });
 
   // ── Step 1: Generate TTS audio from quiz narration ──
-  // v3: extended narration to fill the 120s baseline composition. Bridge
-  // sentences are added at phase boundaries so TTS aligns with visual
-  // beats (code panel, worked example, twist). If the quiz has a codeSnippet
-  // we also speak its caption to anchor the panel.
+  // F009: SHORT narration for the ~30s retention-optimized Short. Order matches
+  // QuizShort.tsx phase order: HOOK 0-3s | QUESTION 3-12s | FLASH 12-14s |
+  // ONE-SENTENCE ANSWER 14-25s | END CTA 25-30s. The F006-era spokenCode /
+  // spokenExample / key-insight-repeat / bridge sentences are removed — they
+  // ballooned the audio to ~138s and tanked Shorts completion.
   console.log('\n[1/4] Generating TTS audio...');
-  // v3.1: Phase-aligned narration. Order matches QuizShort.tsx phase order:
-  //   HOOK 0-3.5s | QUESTION 3.5-13s | FLASH 13-13.5s | CODE 14-30s |
-  //   EXPLAIN 30-80s | EXAMPLE 80-110s | LOOP 110-116s | END 116-120s.
-  // Quizzes can override CODE/EXAMPLE/END with hand-written spokenCode /
-  // spokenExample / spokenCTA. Otherwise we derive sensible defaults.
+  const answerSentence = pickAnswerSentence(quiz.explanation, quiz.twist);
   const narrationParts = [
     quiz.spokenHook, // ~3s hook
-    '', // pause
     quiz.question, // ~5s question
     'Take a moment. Think about it.', // ~3s pause
-    '',
-    // CODE phase narration — ~16s
-    quiz.spokenCode ?? deriveSpokenCode(quiz),
-    '',
-    // EXPLAIN phase narration — ~50s (this is the main content)
-    quiz.explanation,
-    // Repeat the key insight for emphasis (fills more time, helps retention)
-    `Let me say that again. ${extractKeyInsight(quiz.explanation)}`,
-    '',
-    // WORKED EXAMPLE phase — ~30s
-    quiz.spokenExample ?? deriveSpokenExample(quiz),
-    '',
-    // LOOP TRIGGER — ~6s
-    `But wait. ${quiz.twist}`,
-    // END CTA — ~4s
-    quiz.spokenCTA ??
-      `${quiz.endQuestion}. Drop your answer in the comments and check out the full course at www dot guru dash sishya dot in.`,
+    answerSentence, // ~10s one-sentence answer
+    // END CTA — ~5s
+    `${quiz.endQuestion}. Drop your answer in the comments.`,
   ];
   const fullNarration = narrationParts.filter(Boolean).join(' ');
 
@@ -272,8 +218,8 @@ async function main() {
 
   // ── Step 2: Build storyboard (for audio stitching only) ──
   console.log('[2/4] Building storyboard...');
-  // v3: default to 120s baseline (composition enforces minimum via metadata).
-  const audioDuration = audioResults[0]?.duration ?? 120;
+  // F009: default to the ~30s baseline (composition enforces minimum via metadata).
+  const audioDuration = audioResults[0]?.duration ?? 30;
 
   // ── Emit SRT from TTS word timestamps ──
   const wordTimestamps = audioResults[0]?.wordTimestamps ?? [];

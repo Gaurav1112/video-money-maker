@@ -23,34 +23,26 @@ import EndCardCTA from '../components/EndCardCTA';
 import CaptionOverlay from '../components/CaptionOverlay';
 import { AnimatedBox } from '../components/viz/AnimatedBox';
 import { AnimatedArrow } from '../components/viz/AnimatedArrow';
-import CodeSnippetPanel from '../components/CodeSnippetPanel';
-import ExplanationBeats from '../components/ExplanationBeats';
-import WorkedExample, { deriveWorkedExample } from '../components/WorkedExample';
 
 const FPS = 30;
-const DEFAULT_DURATION_S = 120; // v3 baseline (was 25s)
+// F009: ~30s retention-optimized Short. YouTube Analytics on 50 videos showed
+// 120s v3 Shorts only reached 22-34% completion; old ~30s Shorts hit 100-126%.
+const DEFAULT_DURATION_S = 30;
 
-// v3: ABSOLUTE phase boundaries in seconds. Total = 120s baseline. The middle
-// three phases (code, explain, example) absorb slack when audio is longer.
+// F009: ABSOLUTE phase boundaries in seconds. Total = ~30s. The single
+// answer phase absorbs slack when audio is slightly longer.
 //
-//   HOOK            0    → 3.5s   (was 2s)
-//   QUESTION        3.5  → 13s    (longer; lets viewer read options properly)
-//   FLASH           13   → 13.5s
-//   ANSWER SPLASH   13.5 → 14s    (the .5s of FLASH plus 15-frame splash)
-//   CODE SNIPPET    14   → 30s    (NEW)
-//   EXPLAIN BEATS   30   → 80s    (was 3 phrases, now full sentences)
-//   WORKED EXAMPLE  80   → 110s   (NEW)
-//   LOOP TRIGGER    110  → 116s
-//   END CTA         116  → 120s
-const HOOK_END_S = 3.5;
-const QUESTION_END_S = 13;
-const FLASH_END_S = 13.5;
+//   HOOK            0  → 3s
+//   QUESTION        3  → 12s   (3 options + countdown — time to read)
+//   FLASH           12 → 13s
+//   ANSWER SPLASH   13 → 14s
+//   ONE-SENTENCE    14 → 25s   (single tight answer line — NOT multi-sentence)
+//   END CTA         25 → 30s
+const HOOK_END_S = 3;
+const QUESTION_END_S = 12;
+const FLASH_END_S = 13;
 const ANSWER_SPLASH_END_S = 14;
-const CODE_END_S = 30;
-const EXPLAIN_END_S = 80;
-const EXAMPLE_END_S = 110;
-const LOOP_END_S = 116;
-const END_CTA_DURATION_S = 4; // last 4s of total
+const END_CTA_DURATION_S = 5; // last 5s of total
 
 // Colors — dark theme for Shorts (proven higher retention)
 const BG_DARK = '#0A0A12';
@@ -210,6 +202,22 @@ function extractBigStat(explanation: string): { number: string; context: string 
     return { number: match[1].trim(), context: match[2].trim() };
   }
   return null;
+}
+
+// ── F009: pick the punchiest single sentence for the ~30s answer beat ──
+// Prefers the first sentence of `explanation` that carries a power word; falls
+// back to the first sentence of `explanation`, then `twist`. Shared with the
+// render script so on-screen text and narration stay in sync.
+export function pickAnswerSentence(explanation: string, twist: string): string {
+  const sentences = (explanation ?? '')
+    .split(/(?<=[.!?])\s+/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+  const punchy = sentences.find((s) =>
+    /\b(NOT|NEVER|WRONG|LOST|EVERY|ALWAYS|CRITICAL|MOST|ONLY)\b/i.test(s)
+  );
+  const chosen = punchy ?? sentences[0] ?? (twist ?? '').split(/(?<=[.!?])\s+/)[0] ?? '';
+  return chosen.trim();
 }
 
 // getSpecificHook moved to src/lib/quiz-hook.ts (shared with QuizThumbnail).
@@ -1050,110 +1058,6 @@ const AnswerSplashCard: React.FC<{ startFrame: number }> = ({ startFrame }) => {
   );
 };
 
-// ── Loop Trigger (Zeigarnik effect — incomplete thought) ────────────
-const LoopTrigger: React.FC<{ startFrame: number; twistText: string }> = ({
-  startFrame,
-  twistText,
-}) => {
-  const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
-  const age = frame - startFrame;
-  if (age < 0) return null;
-
-  // 0-1s: "But wait..."
-  // 1-2.5s: per-quiz twist line (was hardcoded — now uses quiz.twist)
-
-  const phase1End = 1 * fps; // 30 frames ("But wait...")
-  // v3: removed phase2End upper bound — the twist line now holds for the full
-  // remaining loop phase (typically 6s) instead of disappearing after 1.5s.
-
-  // Truncate twist to one screen-readable sentence. Highlight first ALL-CAPS
-  // power-word found (WRONG / NEVER / NOT / EVERY / ONLY etc).
-  const sentence = (twistText.split(/[.!?]/)[0] ?? twistText).trim();
-  const truncated = sentence.length > 90 ? sentence.slice(0, 87) + '...' : sentence;
-  const powerWordMatch = truncated.match(
-    /\b(NOT|NEVER|WRONG|LOST|EVERY|ALWAYS|ALL|ONLY|MOST|CRITICAL|ZERO|NONE)\b/
-  );
-  const before = powerWordMatch ? truncated.slice(0, powerWordMatch.index) : truncated;
-  const power = powerWordMatch ? powerWordMatch[0] : '';
-  const after = powerWordMatch ? truncated.slice((powerWordMatch.index ?? 0) + power.length) : '';
-
-  if (age < phase1End) {
-    // "But wait..."
-    const s = spring({ frame: age, fps, config: { stiffness: 250, damping: 12, mass: 0.4 } });
-    return (
-      <AbsoluteFill style={{ zIndex: 55 }}>
-        <div
-          style={{
-            position: 'absolute',
-            inset: 0,
-            backgroundColor: 'rgba(10, 10, 18, 0.85)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          <span
-            style={{
-              fontSize: 72,
-              fontFamily: FONTS.heading,
-              fontWeight: 900,
-              color: YELLOW,
-              opacity: interpolate(s, [0, 1], [0, 1]),
-              transform: `scale(${interpolate(s, [0, 1], [0.5, 1.05])})`,
-              textShadow: `0 0 40px rgba(251, 191, 36, 0.5)`,
-            }}
-          >
-            But wait...
-          </span>
-        </div>
-      </AbsoluteFill>
-    );
-  }
-
-  // v3: hold the twist line until the loop phase ends (no early null).
-  // Same content as the original phase2 but without an upper bound on age.
-  const textAge = age - phase1End;
-  const s = spring({ frame: textAge, fps, config: { stiffness: 200, damping: 14, mass: 0.5 } });
-  return (
-    <AbsoluteFill style={{ zIndex: 55 }}>
-      <div
-        style={{
-          position: 'absolute',
-          inset: 0,
-          backgroundColor: 'rgba(10, 10, 18, 0.92)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: '0 60px',
-        }}
-      >
-        <div
-          style={{
-            opacity: interpolate(s, [0, 1], [0, 1]),
-            transform: `translateY(${interpolate(s, [0, 1], [20, 0])}px)`,
-            textAlign: 'center',
-          }}
-        >
-          <span
-            style={{
-              fontSize: 44,
-              fontFamily: FONTS.heading,
-              fontWeight: 800,
-              color: TEXT,
-              lineHeight: 1.3,
-            }}
-          >
-            {before}
-            {power && <span style={{ color: ACCENT, textDecoration: 'underline' }}>{power}</span>}
-            {after}
-          </span>
-        </div>
-      </div>
-    </AbsoluteFill>
-  );
-};
-
 // ══════════════════════════════════════════════════════════════════════
 // ── Main Composition ────────────────────────────────────────────────
 // ══════════════════════════════════════════════════════════════════════
@@ -1166,46 +1070,29 @@ export const QuizShort: React.FC<QuizShortProps> = ({
   const frame = useCurrentFrame();
   const { fps, durationInFrames: TOTAL_FRAMES } = useVideoConfig();
 
-  // v3: ABSOLUTE phase boundaries (not ratios). Hook/question/flash/loop/cta
-  // do NOT scale with total length. The slack between baseline 120s and actual
-  // audio length is absorbed by the middle three phases (code, explain, example).
+  // F009: ABSOLUTE phase boundaries (not ratios). Hook/question/flash/cta do NOT
+  // scale with total length. The single answer phase absorbs slack when the
+  // narration audio runs slightly longer than the ~30s baseline.
   const HOOK_END = Math.round(HOOK_END_S * fps);
   const QUESTION_END = Math.round(QUESTION_END_S * fps);
   const FLASH_END = Math.round(FLASH_END_S * fps);
   const ANSWER_SPLASH_END = Math.round(ANSWER_SPLASH_END_S * fps);
-  // Baseline boundaries for middle three phases.
-  const BASE_CODE_END = Math.round(CODE_END_S * fps);
-  const BASE_EXPLAIN_END = Math.round(EXPLAIN_END_S * fps);
-  const BASE_EXAMPLE_END = Math.round(EXAMPLE_END_S * fps);
-  // Loop/end-cta are anchored to the END of the composition, NOT the baseline.
+  // End-cta is anchored to the END of the composition.
   const END_CTA_FRAMES = Math.round(END_CTA_DURATION_S * fps);
-  const LOOP_DURATION = Math.round((LOOP_END_S - EXAMPLE_END_S) * fps); // 6s
   const END_CTA_START = TOTAL_FRAMES - END_CTA_FRAMES;
-  const LOOP_START_FRAME = END_CTA_START - LOOP_DURATION;
-  // Stretch the middle phases proportionally to fill (TOTAL - hook/question/flash/loop/cta).
-  const FIXED_HEAD = ANSWER_SPLASH_END; // 14s of fixed head
-  const FIXED_TAIL = LOOP_DURATION + END_CTA_FRAMES; // 10s of fixed tail
-  const middleAvailable = Math.max(1, TOTAL_FRAMES - FIXED_HEAD - FIXED_TAIL);
-  const baseMiddle = BASE_EXAMPLE_END - FIXED_HEAD; // 96s baseline middle
-  const stretch = middleAvailable / baseMiddle;
-  const CODE_END = FIXED_HEAD + Math.round((BASE_CODE_END - FIXED_HEAD) * stretch);
-  const EXPLAIN_END = FIXED_HEAD + Math.round((BASE_EXPLAIN_END - FIXED_HEAD) * stretch);
-  const EXAMPLE_END = FIXED_HEAD + middleAvailable;
+  // The one-sentence answer phase fills everything between the answer splash
+  // and the end CTA.
+  const ANSWER_END = END_CTA_START;
 
   const isHookPhase = frame < HOOK_END;
   const isQuestionPhase = frame >= HOOK_END && frame < QUESTION_END;
   const isFlashPhase = frame >= QUESTION_END && frame < FLASH_END;
   const isAnswerSplashPhase = frame >= FLASH_END && frame < ANSWER_SPLASH_END;
-  const isCodePhase = frame >= ANSWER_SPLASH_END && frame < CODE_END;
-  const isExplainPhase = frame >= CODE_END && frame < EXPLAIN_END;
-  const isExamplePhase = frame >= EXPLAIN_END && frame < EXAMPLE_END;
-  const isLoopPhase = frame >= LOOP_START_FRAME && frame < END_CTA_START;
-  const isEndCtaPhase = frame >= END_CTA_START;
+  const isAnswerPhase = frame >= ANSWER_SPLASH_END && frame < ANSWER_END;
   const isRevealed = frame >= FLASH_END;
-  // Diagram hidden during code phase and worked-example phase — those phases
-  // have their own visual content. Visible during question + explain only.
+  // Diagram visible during question + the one-sentence answer phase.
   const showDiagram =
-    frame >= HOOK_END && (isQuestionPhase || isFlashPhase || isAnswerSplashPhase || isExplainPhase);
+    frame >= HOOK_END && (isQuestionPhase || isFlashPhase || isAnswerSplashPhase || isAnswerPhase);
 
   // v3: keyPhrases/KeyPhraseReveal are kept defined above but no longer rendered;
   // ExplanationBeats now walks the full explanation sentence-by-sentence.
@@ -1223,11 +1110,10 @@ export const QuizShort: React.FC<QuizShortProps> = ({
 
   const avatarSrc = staticFile('images/guru-avatar-crop.png');
 
-  // Diagram fades to background during explain/loop
-  const diagramOpacity =
-    isExplainPhase || isLoopPhase
-      ? interpolate(frame, [FLASH_END, FLASH_END + 30], [1, 0.2], { extrapolateRight: 'clamp' })
-      : 1;
+  // Diagram fades to background during the one-sentence answer phase
+  const diagramOpacity = isAnswerPhase
+    ? interpolate(frame, [FLASH_END, FLASH_END + 30], [1, 0.2], { extrapolateRight: 'clamp' })
+    : 1;
 
   return (
     <AbsoluteFill style={{ background: BG_GRADIENT, width: 1080, height: 1920 }}>
@@ -1425,7 +1311,7 @@ export const QuizShort: React.FC<QuizShortProps> = ({
           <div
             style={{
               position: 'absolute',
-              top: isExplainPhase || isLoopPhase ? 520 : 560,
+              top: isAnswerPhase ? 520 : 560,
               left: 40,
               right: 40,
             }}
@@ -1438,7 +1324,7 @@ export const QuizShort: React.FC<QuizShortProps> = ({
                 index={i}
                 revealed={isRevealed}
                 isCorrect={i === quiz.correctIndex}
-                compact={isExplainPhase || isLoopPhase}
+                compact={isAnswerPhase}
                 hookEnd={HOOK_END}
                 flashEnd={FLASH_END}
               />
@@ -1454,11 +1340,11 @@ export const QuizShort: React.FC<QuizShortProps> = ({
           <AnswerSplashCard startFrame={FLASH_END} />
 
           {/* ═══════════════════════════════════════════════════════════
-              Phase 4 + 6: REVEAL flash (right after FLASH_END) and
-              EXPLAIN BEATS (30-80s). Confetti + green flash anchored to
-              ANSWER_SPLASH_END so they still fire on reveal.
+              Phase 4: REVEAL flash + ONE-SENTENCE ANSWER (14-25s).
+              Confetti + green flash anchored to ANSWER_SPLASH_END so they
+              still fire on reveal.
               ═══════════════════════════════════════════════════════════ */}
-          {(isAnswerSplashPhase || isCodePhase) && (
+          {(isAnswerSplashPhase || isAnswerPhase) && (
             <>
               {/* Confetti burst on reveal */}
               {frame - ANSWER_SPLASH_END >= 0 && frame - ANSWER_SPLASH_END < 60 && (
@@ -1484,50 +1370,42 @@ export const QuizShort: React.FC<QuizShortProps> = ({
             </>
           )}
 
-          {isExplainPhase && (
+          {/* F009: single tight answer beat (14-25s). Replaces the F006-era
+              ExplanationBeats / CodeSnippetPanel / WorkedExample. Renders the
+              punchiest single sentence of the explanation with a brief stat
+              counter + hormozi captions. */}
+          {isAnswerPhase && (
             <>
-              {/* v3: full sentence-by-sentence walk-through */}
-              <ExplanationBeats
-                text={quiz.explanation}
-                startFrame={CODE_END}
-                durationFrames={Math.max(1, EXPLAIN_END - CODE_END)}
-                bigStat={bigStat}
+              {/* Brief animated stat counter — first ~2s of the answer phase */}
+              <KeyPhraseReveal phrases={[]} startFrame={ANSWER_SPLASH_END} bigStat={bigStat} />
+
+              {/* Per-beat background pulse for re-engagement */}
+              <BeatBackground
+                beatIndex={0}
+                beatStartFrame={ANSWER_SPLASH_END}
+                beatDurationFrames={Math.max(1, ANSWER_END - ANSWER_SPLASH_END)}
               />
 
-              {/* Per-beat background pulses — recycle 3 beats across the span */}
-              {[0, 1, 2].map((i) => {
-                const beatDur = Math.floor((EXPLAIN_END - CODE_END) / 3);
-                return (
-                  <BeatBackground
-                    key={`beat-${i}`}
-                    beatIndex={i}
-                    beatStartFrame={CODE_END + i * beatDur}
-                    beatDurationFrames={beatDur}
-                  />
-                );
-              })}
-
-              {/* Feature P1: Emoji bursts on power words (TRILLION/WRONG/$10M etc).
-                  Renders within explain phase; uses absolute wordTimestamps so
-                  timing is exact. zIndex 33 sits above captions, below answer splash. */}
+              {/* Emoji bursts on power words — uses absolute wordTimestamps. */}
               {wordTimestamps && wordTimestamps.length > 0 && (
                 <EmojiBurstLayer wordTimestamps={wordTimestamps} />
               )}
 
-              {/* Burned-in hormozi captions during explain phase.
-                  wordTimestamps are absolute (start=0 is start of full narration:
-                  spokenHook + question + explanation + twist). CaptionOverlay's
-                  `text` is only the explanation, so we slice the timestamps to
-                  the explanation window and rebase to zero, AND set startFrame
-                  to the audio position where the explanation actually begins. */}
+              {/* Burned-in hormozi captions for the one-sentence answer.
+                  wordTimestamps are absolute (start=0 is start of the full
+                  narration: spokenHook + question + answerSentence + endQuestion).
+                  We slice the timestamps to the answer-sentence window, rebase to
+                  zero, and anchor startFrame to where the sentence begins. */}
               {wordTimestamps &&
                 wordTimestamps.length > 0 &&
                 (() => {
+                  const answerSentence = pickAnswerSentence(quiz.explanation, quiz.twist);
+                  if (!answerSentence) return null;
                   const prefixWords = `${quiz.spokenHook} ${quiz.question}`
                     .split(/\s+/)
                     .filter(Boolean).length;
-                  const explanationWords = quiz.explanation.split(/\s+/).filter(Boolean).length;
-                  const slice = wordTimestamps.slice(prefixWords, prefixWords + explanationWords);
+                  const answerWords = answerSentence.split(/\s+/).filter(Boolean).length;
+                  const slice = wordTimestamps.slice(prefixWords, prefixWords + answerWords);
                   if (slice.length === 0) return null;
                   const offsetSec = slice[0].start;
                   const rebased = slice.map((wt) => ({
@@ -1539,8 +1417,6 @@ export const QuizShort: React.FC<QuizShortProps> = ({
                   return (
                     <div
                       style={{
-                        // v3: moved from bottom:380 (collided with options at top:560-855)
-                        // to bottom:170 (safe zone below options, above progress bar).
                         position: 'absolute',
                         bottom: 170,
                         left: 0,
@@ -1549,9 +1425,9 @@ export const QuizShort: React.FC<QuizShortProps> = ({
                       }}
                     >
                       <CaptionOverlay
-                        text={quiz.explanation}
+                        text={answerSentence}
                         startFrame={captionStartFrame}
-                        durationInFrames={EXPLAIN_END - captionStartFrame}
+                        durationInFrames={Math.max(1, ANSWER_END - captionStartFrame)}
                         wordTimestamps={rebased}
                         captionMode="hormozi"
                       />
@@ -1561,68 +1437,30 @@ export const QuizShort: React.FC<QuizShortProps> = ({
             </>
           )}
 
-          {/* Avatar — bottom right during question/explain phases */}
-          {!isLoopPhase && (
-            <div
-              style={{
-                position: 'absolute',
-                bottom: 200,
-                right: 30,
-                width: 100,
-                height: 100,
-                borderRadius: '50%',
-                overflow: 'hidden',
-                border: `3px solid rgba(255,255,255,0.1)`,
-                boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
-              }}
-            >
-              <Img src={avatarSrc} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-            </div>
-          )}
+          {/* Avatar — bottom right (visible throughout question/answer phases) */}
+          <div
+            style={{
+              position: 'absolute',
+              bottom: 200,
+              right: 30,
+              width: 100,
+              height: 100,
+              borderRadius: '50%',
+              overflow: 'hidden',
+              border: `3px solid rgba(255,255,255,0.1)`,
+              boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
+            }}
+          >
+            <Img src={avatarSrc} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          </div>
         </AbsoluteFill>
       )}
 
       {/* ═══════════════════════════════════════════════════════════════
-          Phase 5: CODE SNIPPET (14-30s) — wrong vs right typewriter
-          Renders only if the quiz has a codeSnippet payload.
+          Phase 5: END CTA (last 5s)
+          F009: CodeSnippetPanel / WorkedExample / LoopTrigger removed — those
+          were F006 2-min-era additions. Component files are kept for long-form.
           ═══════════════════════════════════════════════════════════════ */}
-      {quiz.codeSnippet && (
-        <CodeSnippetPanel
-          snippet={quiz.codeSnippet}
-          startFrame={ANSWER_SPLASH_END}
-          durationFrames={Math.max(1, CODE_END - ANSWER_SPLASH_END)}
-        />
-      )}
-
-      {/* ═══════════════════════════════════════════════════════════════
-          Phase 7: WORKED EXAMPLE (80-110s) — BEFORE/AFTER scenario
-          Uses quiz.workedExample if provided; otherwise derives heuristically
-          from the explanation, with the twist as a final fallback.
-          ═══════════════════════════════════════════════════════════════ */}
-      {isExamplePhase &&
-        (() => {
-          const derived =
-            quiz.workedExample ??
-            deriveWorkedExample(
-              quiz.explanation,
-              quiz.options as unknown as string[],
-              quiz.correctIndex
-            );
-          return (
-            <WorkedExample
-              data={derived}
-              twistFallback={quiz.twist}
-              startFrame={EXPLAIN_END}
-              durationFrames={Math.max(1, EXAMPLE_END - EXPLAIN_END)}
-            />
-          );
-        })()}
-
-      {/* ═══════════════════════════════════════════════════════════════
-          Phase 8: LOOP TRIGGER (last 6s before CTA) + END CTA (last 4s)
-          v3: anchored to the END of composition, not after explain.
-          ═══════════════════════════════════════════════════════════════ */}
-      <LoopTrigger startFrame={LOOP_START_FRAME} twistText={quiz.twist} />
       <EndCardCTA
         endQuestion={quiz.endQuestion}
         startFrame={END_CTA_START}
@@ -1671,12 +1509,8 @@ export const QuizShort: React.FC<QuizShortProps> = ({
       <Sfx name="impact" from={FLASH_END - 5} durationFrames={20} volume={1.0} />
       <Sfx name="success-chime" from={FLASH_END} volume={0.7} />
       <Sfx name="riser" from={Math.max(0, FLASH_END + 5)} durationFrames={45} volume={0.5} />
-      <Sfx
-        name="swoosh"
-        from={Math.max(0, LOOP_START_FRAME - 10)}
-        durationFrames={20}
-        volume={0.8}
-      />
+      {/* F009: swoosh now cues the transition into the end CTA. */}
+      <Sfx name="swoosh" from={Math.max(0, END_CTA_START - 10)} durationFrames={20} volume={0.8} />
 
       {/* ── Channel logo bug (top-right, always visible) ── */}
       {/* v3.1: show the full domain so the brand is searchable, not just a name. */}
@@ -1769,8 +1603,8 @@ export const QuizShort: React.FC<QuizShortProps> = ({
 };
 
 // ── Metadata ────────────────────────────────────────────────────────
-// v3: enforces a 120s baseline. Audio shorter than 120s -> composition is
-// still 120s (fadeOut handles the silent tail). Audio longer -> composition
+// F009: floors at a ~30s baseline. Audio shorter than 30s -> composition is
+// still 30s (fadeOut handles the short silent tail). Audio longer -> composition
 // grows to fit (audio + 1s tail).
 export const calculateQuizShortMetadata: CalculateMetadataFunction<Record<string, unknown>> = ({
   props,
