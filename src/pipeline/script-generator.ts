@@ -1750,7 +1750,8 @@ function generateDefaultRecapPoints(topic: string, sessionNumber: number): strin
 // =========================================================================
 
 /**
- * Generate a video script following the Khan GS / Fireship storytelling arc:
+ * Generate a video script following the Khan GS / Fireship storytelling arc.
+ * Feature 012: retargeted to a 4-6 min total runtime (maxScenes default 16).
  *
  *  1. HOOK (5s)          — Dramatic opening that creates curiosity
  *  2. THE PROBLEM (15s)  — "Imagine you have 10 million users..."
@@ -1769,7 +1770,10 @@ export function generateScript(session: SessionInput, options: ScriptOptions = {
 
   const {
     language = 'python',
-    maxScenes = 30,
+    // Feature 012: scene budget cut 30 -> 16 to retarget LongVideo from
+    // 8-12 min down to the 4-6 min retention window. All anchor ratios below
+    // (maxScenes * 0.3/0.5/0.6/0.7) are relative and self-adjust.
+    maxScenes = 16,
     nextTopic,
     sessionNumber: optSessionNumber,
     totalSessions,
