@@ -42,7 +42,11 @@ function selectHookScenes(scenes: Scene[]): Scene[] {
       if (result.length >= 3) break;
     }
     // Stop after we have at least 1 title + 1 content
-    if (result.length >= 2 && result.some(r => r.type === 'title') && result.some(r => r.type !== 'title')) {
+    if (
+      result.length >= 2 &&
+      result.some((r) => r.type === 'title') &&
+      result.some((r) => r.type !== 'title')
+    ) {
       break;
     }
   }
@@ -52,14 +56,14 @@ function selectHookScenes(scenes: Scene[]): Scene[] {
 function selectCodeScenesByLanguage(scenes: Scene[], targetLang: string): Scene[] {
   // Find the first code scene matching the target language and include surrounding context
   const codeIdx = scenes.findIndex(
-    s => s.type === 'code' && s.language?.toLowerCase() === targetLang,
+    (s) => s.type === 'code' && s.language?.toLowerCase() === targetLang
   );
   if (codeIdx === -1) {
     // Fallback: any code scene
-    const anyCodeIdx = scenes.findIndex(s => s.type === 'code');
+    const anyCodeIdx = scenes.findIndex((s) => s.type === 'code');
     if (anyCodeIdx === -1) {
       // Fallback: pick a table or diagram scene
-      const alt = scenes.filter(s => s.type === 'table' || s.type === 'diagram');
+      const alt = scenes.filter((s) => s.type === 'table' || s.type === 'diagram');
       return alt.length > 0 ? alt.slice(0, 2) : scenes.slice(0, 2);
     }
     const start = Math.max(0, anyCodeIdx - 1);
@@ -81,10 +85,10 @@ function selectJavaCodeScenes(scenes: Scene[]): Scene[] {
 
 function selectReviewScenes(scenes: Scene[]): Scene[] {
   // Review question + summary scenes
-  const reviewScenes = scenes.filter(s => s.type === 'review' || s.type === 'summary');
+  const reviewScenes = scenes.filter((s) => s.type === 'review' || s.type === 'summary');
   if (reviewScenes.length > 0) return reviewScenes.slice(0, 3);
   // Fallback: interview scenes
-  const interview = scenes.filter(s => s.type === 'interview');
+  const interview = scenes.filter((s) => s.type === 'interview');
   if (interview.length > 0) return interview.slice(0, 2);
   // Last resort: last 2 scenes
   return scenes.slice(-2);
@@ -101,10 +105,7 @@ const SHORT_DEFINITIONS: ShortDefinition[] = [
 // Build a mini-storyboard from selected scenes
 // ---------------------------------------------------------------------------
 
-function buildMiniStoryboard(
-  original: Storyboard,
-  selectedScenes: Scene[],
-): Storyboard {
+function buildMiniStoryboard(original: Storyboard, selectedScenes: Scene[]): Storyboard {
   // Re-index scene frames sequentially starting after the mini intro
   let cursor = 0;
   const reindexed: Scene[] = [];
@@ -185,7 +186,7 @@ async function main() {
 
     console.log(
       `\nShort ${i + 1} (${def.label}): ${miniStoryboard.scenes.length} scenes, ` +
-      `${miniStoryboard.durationInFrames} frames (${(miniStoryboard.durationInFrames / FPS).toFixed(1)}s)`,
+        `${miniStoryboard.durationInFrames} frames (${(miniStoryboard.durationInFrames / FPS).toFixed(1)}s)`
     );
 
     // Use MultiShort composition for richer rendering (scene backgrounds, CTA overlay)

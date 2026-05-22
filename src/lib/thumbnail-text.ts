@@ -59,7 +59,11 @@ function extractTechLabel(topic: string): string {
   }
 
   // Fallback: take first "word" of topic, uppercase, max 8 chars
-  const firstWord = topic.trim().split(/[\s_-]/)[0].toUpperCase().slice(0, 8);
+  const firstWord = topic
+    .trim()
+    .split(/[\s_-]/)[0]
+    .toUpperCase()
+    .slice(0, 8);
   return firstWord || 'THIS';
 }
 
@@ -159,7 +163,7 @@ const DEVOPS_PATTERNS: PatternBank = [
 ];
 
 const FRONTEND_PATTERNS: PatternBank = [
-  '{TECH} WRONG? HERE\'S WHY',
+  "{TECH} WRONG? HERE'S WHY",
   'FAANG UI TRICK REVEALED',
   '90% RENDER THIS WRONG',
   '{TECH} PATTERN THAT WINS',
@@ -204,14 +208,123 @@ type Category =
 
 function detectCategory(topic: string): Category {
   const lower = topic.toLowerCase();
-  if (['kafka', 'rabbit', 'message', 'queue', 'event', 'pub/sub', 'stream'].some(k => lower.includes(k))) return 'messaging';
-  if (['database', 'sql', 'nosql', 'postgres', 'mongo', 'redis', 'cache', 'memcache', 'storage', 'index'].some(k => lower.includes(k))) return 'database';
-  if (['algo', 'sort', 'tree', 'graph', 'array', 'string', 'hash', 'dynamic', 'dp', 'recursion', 'stack', 'linked list', 'binary', 'bfs', 'dfs', 'greedy', 'heap', 'trie'].some(k => lower.includes(k))) return 'dsa';
-  if (['design pattern', 'architecture', 'system design', 'microservice', 'solid', 'clean', 'domain'].some(k => lower.includes(k))) return 'architecture';
-  if (['network', 'tcp', 'http', 'dns', 'api', 'rest', 'graphql', 'grpc', 'gateway', 'proxy', 'websocket'].some(k => lower.includes(k))) return 'networking';
-  if (['security', 'auth', 'oauth', 'jwt', 'encrypt', 'rate limit', 'throttl', 'firewall', 'xss', 'csrf'].some(k => lower.includes(k))) return 'security';
-  if (['docker', 'kubernetes', 'k8s', 'ci/cd', 'deploy', 'aws', 'cloud', 'nginx', 'terraform', 'helm'].some(k => lower.includes(k))) return 'devops';
-  if (['react', 'frontend', 'css', 'html', 'vue', 'angular', 'next', 'svelte', 'typescript', 'javascript'].some(k => lower.includes(k))) return 'frontend';
+  if (
+    ['kafka', 'rabbit', 'message', 'queue', 'event', 'pub/sub', 'stream'].some((k) =>
+      lower.includes(k)
+    )
+  )
+    return 'messaging';
+  if (
+    [
+      'database',
+      'sql',
+      'nosql',
+      'postgres',
+      'mongo',
+      'redis',
+      'cache',
+      'memcache',
+      'storage',
+      'index',
+    ].some((k) => lower.includes(k))
+  )
+    return 'database';
+  if (
+    [
+      'algo',
+      'sort',
+      'tree',
+      'graph',
+      'array',
+      'string',
+      'hash',
+      'dynamic',
+      'dp',
+      'recursion',
+      'stack',
+      'linked list',
+      'binary',
+      'bfs',
+      'dfs',
+      'greedy',
+      'heap',
+      'trie',
+    ].some((k) => lower.includes(k))
+  )
+    return 'dsa';
+  if (
+    [
+      'design pattern',
+      'architecture',
+      'system design',
+      'microservice',
+      'solid',
+      'clean',
+      'domain',
+    ].some((k) => lower.includes(k))
+  )
+    return 'architecture';
+  if (
+    [
+      'network',
+      'tcp',
+      'http',
+      'dns',
+      'api',
+      'rest',
+      'graphql',
+      'grpc',
+      'gateway',
+      'proxy',
+      'websocket',
+    ].some((k) => lower.includes(k))
+  )
+    return 'networking';
+  if (
+    [
+      'security',
+      'auth',
+      'oauth',
+      'jwt',
+      'encrypt',
+      'rate limit',
+      'throttl',
+      'firewall',
+      'xss',
+      'csrf',
+    ].some((k) => lower.includes(k))
+  )
+    return 'security';
+  if (
+    [
+      'docker',
+      'kubernetes',
+      'k8s',
+      'ci/cd',
+      'deploy',
+      'aws',
+      'cloud',
+      'nginx',
+      'terraform',
+      'helm',
+    ].some((k) => lower.includes(k))
+  )
+    return 'devops';
+  if (
+    [
+      'react',
+      'frontend',
+      'css',
+      'html',
+      'vue',
+      'angular',
+      'next',
+      'svelte',
+      'typescript',
+      'javascript',
+    ].some((k) => lower.includes(k))
+  )
+    return 'frontend';
   return 'generic';
 }
 
@@ -236,7 +349,7 @@ const CATEGORY_PATTERNS: Record<Category, PatternBank> = {
  * impossible to merge.
  */
 export const __ALL_CATEGORY_PATTERNS_FOR_TEST: ReadonlyArray<readonly [Category, PatternBank]> =
-  (Object.entries(CATEGORY_PATTERNS) as Array<[Category, PatternBank]>);
+  Object.entries(CATEGORY_PATTERNS) as Array<[Category, PatternBank]>;
 
 // ---------------------------------------------------------------------------
 // Enforce max-4-words contract

@@ -10,10 +10,28 @@ interface SystemArchVizProps {
 }
 
 const LAYERS = [
-  { label: 'Client', color: '#818CF8', icon: '\uD83D\uDDA5\uFE0F', latency: '~2ms', reqRate: '10K' },
-  { label: 'API Gateway', color: '#E85D26', icon: '\uD83D\uDD00', latency: '~5ms', reqRate: '8.2K' },
+  {
+    label: 'Client',
+    color: '#818CF8',
+    icon: '\uD83D\uDDA5\uFE0F',
+    latency: '~2ms',
+    reqRate: '10K',
+  },
+  {
+    label: 'API Gateway',
+    color: '#E85D26',
+    icon: '\uD83D\uDD00',
+    latency: '~5ms',
+    reqRate: '8.2K',
+  },
   { label: 'Service', color: '#FFD700', icon: '\u2699\uFE0F', latency: '~50ms', reqRate: '6.1K' },
-  { label: 'Database', color: '#20C997', icon: '\uD83D\uDDC4\uFE0F', latency: '~200ms', reqRate: '1.2K' },
+  {
+    label: 'Database',
+    color: '#20C997',
+    icon: '\uD83D\uDDC4\uFE0F',
+    latency: '~200ms',
+    reqRate: '1.2K',
+  },
 ];
 
 const THEME = {
@@ -29,17 +47,24 @@ const THEME = {
 };
 
 // Helper
-function clampVal(v: number, min: number, max: number) { return Math.min(Math.max(v, min), max); }
-function pRange(p: number, start: number, end: number) { return clampVal((p - start) / (end - start), 0, 1); }
+function clampVal(v: number, min: number, max: number) {
+  return Math.min(Math.max(v, min), max);
+}
+function pRange(p: number, start: number, end: number) {
+  return clampVal((p - start) / (end - start), 0, 1);
+}
 
 export const SystemArchViz: React.FC<SystemArchVizProps> = ({ sync, frame, keywords, variant }) => {
   const { fps } = useVideoConfig();
   const progress = sync.sceneProgress;
 
   // --- VARIANT ROUTING ---
-  if (variant === 'failure') return <ArchFailureVariant sync={sync} frame={frame} keywords={keywords} />;
-  if (variant === 'scale-up') return <ArchScaleUpVariant sync={sync} frame={frame} keywords={keywords} />;
-  if (variant === 'caching') return <ArchCachingVariant sync={sync} frame={frame} keywords={keywords} />;
+  if (variant === 'failure')
+    return <ArchFailureVariant sync={sync} frame={frame} keywords={keywords} />;
+  if (variant === 'scale-up')
+    return <ArchScaleUpVariant sync={sync} frame={frame} keywords={keywords} />;
+  if (variant === 'caching')
+    return <ArchCachingVariant sync={sync} frame={frame} keywords={keywords} />;
 
   // --- DEFAULT variant: 'request-flow' ---
 
@@ -64,7 +89,7 @@ export const SystemArchViz: React.FC<SystemArchVizProps> = ({ sync, frame, keywo
   });
 
   // Request dot animation — cycles between 0 and 1
-  const dotCycle = ((frame * 0.015) % 1 + 1) % 1;
+  const dotCycle = (((frame * 0.015) % 1) + 1) % 1;
 
   const containerH = 520;
   const blockH = 72;
@@ -111,7 +136,14 @@ export const SystemArchViz: React.FC<SystemArchVizProps> = ({ sync, frame, keywo
 
       {/* SVG layer — arrows, dots, latency labels */}
       <svg
-        style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none' }}
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          pointerEvents: 'none',
+        }}
         viewBox={`0 0 600 ${containerH + 80}`}
         preserveAspectRatio="xMidYMid meet"
       >
@@ -262,7 +294,9 @@ export const SystemArchViz: React.FC<SystemArchVizProps> = ({ sync, frame, keywo
                 padding: '0 20px',
                 opacity: interpolate(s, [0, 1], [0, 1]),
                 transform: `translateX(${interpolate(s, [0, 1], [60, 0])}px) scale(${interpolate(s, [0, 1], [0.85, 1])})`,
-                boxShadow: isActive ? `0 0 24px ${layer.color}55, inset 0 0 12px ${layer.color}11` : 'none',
+                boxShadow: isActive
+                  ? `0 0 24px ${layer.color}55, inset 0 0 12px ${layer.color}11`
+                  : 'none',
                 flexShrink: 0,
                 position: 'relative',
               }}
@@ -283,33 +317,39 @@ export const SystemArchViz: React.FC<SystemArchVizProps> = ({ sync, frame, keywo
                   {i === 0
                     ? 'Browser / Mobile App'
                     : i === 1
-                    ? 'Load Balancer + Rate Limit'
-                    : i === 2
-                    ? 'Business Logic Layer'
-                    : 'Persistent Storage'}
+                      ? 'Load Balancer + Rate Limit'
+                      : i === 2
+                        ? 'Business Logic Layer'
+                        : 'Persistent Storage'}
                 </div>
               </div>
 
               {/* Request rate badge — right side */}
-              <div style={{
-                marginLeft: 'auto',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 8,
-              }}>
-                <div style={{
-                  background: `${layer.color}15`,
-                  border: `1px solid ${layer.color}44`,
-                  borderRadius: 6,
-                  padding: '2px 8px',
-                  opacity: interpolate(s, [0, 1], [0, 0.9]),
-                }}>
-                  <span style={{
-                    fontSize: 11,
-                    fontWeight: 700,
-                    color: layer.color,
-                    fontFamily: "'JetBrains Mono', 'SF Mono', monospace",
-                  }}>
+              <div
+                style={{
+                  marginLeft: 'auto',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
+                }}
+              >
+                <div
+                  style={{
+                    background: `${layer.color}15`,
+                    border: `1px solid ${layer.color}44`,
+                    borderRadius: 6,
+                    padding: '2px 8px',
+                    opacity: interpolate(s, [0, 1], [0, 0.9]),
+                  }}
+                >
+                  <span
+                    style={{
+                      fontSize: 11,
+                      fontWeight: 700,
+                      color: layer.color,
+                      fontFamily: "'JetBrains Mono', 'SF Mono', monospace",
+                    }}
+                  >
                     {layer.reqRate}
                   </span>
                   <span style={{ fontSize: 8, color: 'rgba(255,255,255,0.4)', marginLeft: 2 }}>
@@ -356,11 +396,41 @@ export const SystemArchViz: React.FC<SystemArchVizProps> = ({ sync, frame, keywo
 // FAILURE VARIANT
 // =====================================================================
 const FAILURE_LAYERS = [
-  { label: 'Client', color: '#818CF8', icon: '\uD83D\uDDA5\uFE0F', subtitle: 'Browser / Mobile App', reqRate: '10K' },
-  { label: 'API Gateway', color: '#E85D26', icon: '\uD83D\uDD00', subtitle: 'Load Balancer + Rate Limit', reqRate: '8.2K' },
-  { label: 'Service A', color: '#FFD700', icon: '\u2699\uFE0F', subtitle: 'Order Service', reqRate: '6.1K' },
-  { label: 'Service B', color: '#20C997', icon: '\u2699\uFE0F', subtitle: 'Payment Service', reqRate: '0' },
-  { label: 'Database', color: '#818CF8', icon: '\uD83D\uDDC4\uFE0F', subtitle: 'Persistent Storage', reqRate: '1.2K' },
+  {
+    label: 'Client',
+    color: '#818CF8',
+    icon: '\uD83D\uDDA5\uFE0F',
+    subtitle: 'Browser / Mobile App',
+    reqRate: '10K',
+  },
+  {
+    label: 'API Gateway',
+    color: '#E85D26',
+    icon: '\uD83D\uDD00',
+    subtitle: 'Load Balancer + Rate Limit',
+    reqRate: '8.2K',
+  },
+  {
+    label: 'Service A',
+    color: '#FFD700',
+    icon: '\u2699\uFE0F',
+    subtitle: 'Order Service',
+    reqRate: '6.1K',
+  },
+  {
+    label: 'Service B',
+    color: '#20C997',
+    icon: '\u2699\uFE0F',
+    subtitle: 'Payment Service',
+    reqRate: '0',
+  },
+  {
+    label: 'Database',
+    color: '#818CF8',
+    icon: '\uD83D\uDDC4\uFE0F',
+    subtitle: 'Persistent Storage',
+    reqRate: '1.2K',
+  },
 ];
 
 const ArchFailureVariant: React.FC<Omit<SystemArchVizProps, 'variant'>> = ({ sync, frame }) => {
@@ -375,7 +445,11 @@ const ArchFailureVariant: React.FC<Omit<SystemArchVizProps, 'variant'>> = ({ syn
   const layerSprings = FAILURE_LAYERS.map((_, i) => {
     const triggerProgress = i * 0.06;
     const triggerFrame = Math.round(triggerProgress * fps * 8);
-    return spring({ frame: frame - triggerFrame, fps, config: { damping: 14, stiffness: 90, mass: 1.1 } });
+    return spring({
+      frame: frame - triggerFrame,
+      fps,
+      config: { damping: 14, stiffness: 90, mass: 1.1 },
+    });
   });
 
   const blockH = 62;
@@ -389,63 +463,146 @@ const ArchFailureVariant: React.FC<Omit<SystemArchVizProps, 'variant'>> = ({ syn
   };
 
   return (
-    <div style={{ width: '100%', height: '100%', background: THEME.dark, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', fontFamily: 'Inter, system-ui, sans-serif', position: 'relative', overflow: 'hidden' }}>
-      <div style={{ position: 'absolute', top: 24, left: 0, right: 0, textAlign: 'center', color: '#EF4444', fontSize: 18, fontWeight: 700, letterSpacing: 2, opacity: interpolate(layerSprings[0], [0, 1], [0, 1]) }}>
+    <div
+      style={{
+        width: '100%',
+        height: '100%',
+        background: THEME.dark,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontFamily: 'Inter, system-ui, sans-serif',
+        position: 'relative',
+        overflow: 'hidden',
+      }}
+    >
+      <div
+        style={{
+          position: 'absolute',
+          top: 24,
+          left: 0,
+          right: 0,
+          textAlign: 'center',
+          color: '#EF4444',
+          fontSize: 18,
+          fontWeight: 700,
+          letterSpacing: 2,
+          opacity: interpolate(layerSprings[0], [0, 1], [0, 1]),
+        }}
+      >
         FAILURE CASCADE + CIRCUIT BREAKER
       </div>
 
-      <div style={{ position: 'relative', width: blockW, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 28, marginTop: 30 }}>
+      <div
+        style={{
+          position: 'relative',
+          width: blockW,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: 28,
+          marginTop: 30,
+        }}
+      >
         {FAILURE_LAYERS.map((layer, i) => {
           const s = layerSprings[i];
           const status = getStatus(i);
-          const borderColor = status === 'down' ? '#EF4444'
-            : status === 'failing' ? THEME.saffron
-            : status === 'protected' ? THEME.teal
-            : layer.color;
+          const borderColor =
+            status === 'down'
+              ? '#EF4444'
+              : status === 'failing'
+                ? THEME.saffron
+                : status === 'protected'
+                  ? THEME.teal
+                  : layer.color;
           const bgOpacity = status === 'down' ? '44' : '22';
 
           return (
-            <div key={layer.label} style={{
-              width: '100%', height: blockH, borderRadius: 12,
-              background: `linear-gradient(135deg, ${borderColor}${bgOpacity}, ${borderColor}11)`,
-              border: `1.5px solid ${borderColor}`,
-              display: 'flex', alignItems: 'center', gap: 16, padding: '0 20px',
-              opacity: interpolate(s, [0, 1], [0, 1]),
-              transform: `translateX(${interpolate(s, [0, 1], [60, 0])}px) scale(${interpolate(s, [0, 1], [0.85, 1])})${status === 'failing' ? ` translateX(${Math.sin(frame * 0.5) * 4}px)` : ''}`,
-              boxShadow: status === 'down' ? '0 0 20px rgba(239,68,68,0.4)' : status === 'protected' ? `0 0 20px ${THEME.teal}44` : 'none',
-              flexShrink: 0,
-            }}>
+            <div
+              key={layer.label}
+              style={{
+                width: '100%',
+                height: blockH,
+                borderRadius: 12,
+                background: `linear-gradient(135deg, ${borderColor}${bgOpacity}, ${borderColor}11)`,
+                border: `1.5px solid ${borderColor}`,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 16,
+                padding: '0 20px',
+                opacity: interpolate(s, [0, 1], [0, 1]),
+                transform: `translateX(${interpolate(s, [0, 1], [60, 0])}px) scale(${interpolate(s, [0, 1], [0.85, 1])})${status === 'failing' ? ` translateX(${Math.sin(frame * 0.5) * 4}px)` : ''}`,
+                boxShadow:
+                  status === 'down'
+                    ? '0 0 20px rgba(239,68,68,0.4)'
+                    : status === 'protected'
+                      ? `0 0 20px ${THEME.teal}44`
+                      : 'none',
+                flexShrink: 0,
+              }}
+            >
               <span style={{ fontSize: 28 }}>{layer.icon}</span>
               <div>
-                <div style={{ fontSize: 16, fontWeight: 700, color: borderColor, letterSpacing: 0.5 }}>{layer.label}</div>
-                <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)', marginTop: 2 }}>{layer.subtitle}</div>
+                <div
+                  style={{ fontSize: 16, fontWeight: 700, color: borderColor, letterSpacing: 0.5 }}
+                >
+                  {layer.label}
+                </div>
+                <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)', marginTop: 2 }}>
+                  {layer.subtitle}
+                </div>
               </div>
               <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8 }}>
                 {/* Request rate */}
-                <div style={{
-                  background: `${borderColor}15`,
-                  border: `1px solid ${borderColor}44`,
-                  borderRadius: 6,
-                  padding: '2px 8px',
-                }}>
-                  <span style={{
-                    fontSize: 10,
-                    fontWeight: 700,
-                    color: status === 'down' ? THEME.red : borderColor,
-                    fontFamily: "'JetBrains Mono', monospace",
-                  }}>
+                <div
+                  style={{
+                    background: `${borderColor}15`,
+                    border: `1px solid ${borderColor}44`,
+                    borderRadius: 6,
+                    padding: '2px 8px',
+                  }}
+                >
+                  <span
+                    style={{
+                      fontSize: 10,
+                      fontWeight: 700,
+                      color: status === 'down' ? THEME.red : borderColor,
+                      fontFamily: "'JetBrains Mono', monospace",
+                    }}
+                  >
                     {status === 'down' ? '0' : layer.reqRate}
                   </span>
-                  <span style={{ fontSize: 8, color: 'rgba(255,255,255,0.4)', marginLeft: 2 }}>req/s</span>
+                  <span style={{ fontSize: 8, color: 'rgba(255,255,255,0.4)', marginLeft: 2 }}>
+                    req/s
+                  </span>
                 </div>
                 {status !== 'normal' && (
-                  <div style={{
-                    fontSize: 10, fontWeight: 700,
-                    color: status === 'down' ? '#EF4444' : status === 'protected' ? THEME.teal : THEME.saffron,
-                    background: status === 'down' ? 'rgba(239,68,68,0.2)' : status === 'protected' ? `${THEME.teal}22` : `${THEME.saffron}22`,
-                    padding: '2px 8px', borderRadius: 4,
-                  }}>
-                    {status === 'down' ? '\u26A0 DOWN' : status === 'protected' ? 'CIRCUIT OPEN' : 'DEGRADED'}
+                  <div
+                    style={{
+                      fontSize: 10,
+                      fontWeight: 700,
+                      color:
+                        status === 'down'
+                          ? '#EF4444'
+                          : status === 'protected'
+                            ? THEME.teal
+                            : THEME.saffron,
+                      background:
+                        status === 'down'
+                          ? 'rgba(239,68,68,0.2)'
+                          : status === 'protected'
+                            ? `${THEME.teal}22`
+                            : `${THEME.saffron}22`,
+                      padding: '2px 8px',
+                      borderRadius: 4,
+                    }}
+                  >
+                    {status === 'down'
+                      ? '\u26A0 DOWN'
+                      : status === 'protected'
+                        ? 'CIRCUIT OPEN'
+                        : 'DEGRADED'}
                   </div>
                 )}
               </div>
@@ -456,11 +613,19 @@ const ArchFailureVariant: React.FC<Omit<SystemArchVizProps, 'variant'>> = ({ syn
 
       {/* Circuit breaker explanation */}
       {breakerP > 0.3 && (
-        <div style={{
-          position: 'absolute', bottom: 30, left: '50%', transform: 'translateX(-50%)',
-          background: `${THEME.teal}22`, border: `1.5px solid ${THEME.teal}`, borderRadius: 10, padding: '10px 24px',
-          opacity: breakerP,
-        }}>
+        <div
+          style={{
+            position: 'absolute',
+            bottom: 30,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            background: `${THEME.teal}22`,
+            border: `1.5px solid ${THEME.teal}`,
+            borderRadius: 10,
+            padding: '10px 24px',
+            opacity: breakerP,
+          }}
+        >
           <span style={{ fontSize: 14, fontWeight: 700, color: THEME.teal }}>
             Circuit Breaker: returning cached/fallback response
           </span>
@@ -485,27 +650,76 @@ const ArchScaleUpVariant: React.FC<Omit<SystemArchVizProps, 'variant'>> = ({ syn
   const serviceColors = [THEME.gold, THEME.teal, THEME.saffron, THEME.indigo];
 
   return (
-    <div style={{ width: '100%', height: '100%', background: THEME.dark, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', fontFamily: 'Inter, system-ui, sans-serif', position: 'relative', overflow: 'hidden' }}>
-      <div style={{ position: 'absolute', top: 24, left: 0, right: 0, textAlign: 'center', color: THEME.gold, fontSize: 18, fontWeight: 700, letterSpacing: 2, opacity: revealP }}>
+    <div
+      style={{
+        width: '100%',
+        height: '100%',
+        background: THEME.dark,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontFamily: 'Inter, system-ui, sans-serif',
+        position: 'relative',
+        overflow: 'hidden',
+      }}
+    >
+      <div
+        style={{
+          position: 'absolute',
+          top: 24,
+          left: 0,
+          right: 0,
+          textAlign: 'center',
+          color: THEME.gold,
+          fontSize: 18,
+          fontWeight: 700,
+          letterSpacing: 2,
+          opacity: revealP,
+        }}
+      >
         HORIZONTAL SCALING
       </div>
 
       {/* Gateway */}
-      <div style={{
-        position: 'absolute', top: 70, left: '50%', transform: 'translateX(-50%)',
-        width: 260, height: 60, borderRadius: 12,
-        background: `${THEME.saffron}22`, border: `1.5px solid ${THEME.saffron}`,
-        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
-        opacity: revealP,
-      }}>
+      <div
+        style={{
+          position: 'absolute',
+          top: 70,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          width: 260,
+          height: 60,
+          borderRadius: 12,
+          background: `${THEME.saffron}22`,
+          border: `1.5px solid ${THEME.saffron}`,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 10,
+          opacity: revealP,
+        }}
+      >
         <span style={{ fontSize: 28 }}>{'\uD83D\uDD00'}</span>
         <span style={{ fontSize: 15, fontWeight: 700, color: THEME.saffron }}>API Gateway</span>
-        <div style={{
-          marginLeft: 'auto', marginRight: 12,
-          background: `${THEME.saffron}15`, border: `1px solid ${THEME.saffron}44`,
-          borderRadius: 6, padding: '2px 8px',
-        }}>
-          <span style={{ fontSize: 10, fontWeight: 700, color: THEME.saffron, fontFamily: "'JetBrains Mono', monospace" }}>
+        <div
+          style={{
+            marginLeft: 'auto',
+            marginRight: 12,
+            background: `${THEME.saffron}15`,
+            border: `1px solid ${THEME.saffron}44`,
+            borderRadius: 6,
+            padding: '2px 8px',
+          }}
+        >
+          <span
+            style={{
+              fontSize: 10,
+              fontWeight: 700,
+              color: THEME.saffron,
+              fontFamily: "'JetBrains Mono', monospace",
+            }}
+          >
             {serviceCount * 1000}
           </span>
           <span style={{ fontSize: 8, color: 'rgba(255,255,255,0.4)', marginLeft: 2 }}>req/s</span>
@@ -513,20 +727,46 @@ const ArchScaleUpVariant: React.FC<Omit<SystemArchVizProps, 'variant'>> = ({ syn
       </div>
 
       {/* Service replicas */}
-      <div style={{ position: 'absolute', top: 180, left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: 16 }}>
+      <div
+        style={{
+          position: 'absolute',
+          top: 180,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          display: 'flex',
+          gap: 16,
+        }}
+      >
         {Array.from({ length: serviceCount }).map((_, i) => {
-          const sSpring = spring({ frame: Math.max(0, frame - (10 + i * 8)), fps, config: { damping: 12, stiffness: 100 } });
+          const sSpring = spring({
+            frame: Math.max(0, frame - (10 + i * 8)),
+            fps,
+            config: { damping: 12, stiffness: 100 },
+          });
           const isNew = i === serviceCount - 1 && scaleP > 0.1 && scaleP < 0.9;
           return (
-            <div key={i} style={{
-              width: 100, height: 70, borderRadius: 10,
-              background: `${serviceColors[i]}22`, border: `1.5px solid ${serviceColors[i]}`,
-              display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 4,
-              opacity: sSpring, transform: `scale(${sSpring})`,
-              boxShadow: isNew ? `0 0 16px ${serviceColors[i]}66` : 'none',
-            }}>
+            <div
+              key={i}
+              style={{
+                width: 100,
+                height: 70,
+                borderRadius: 10,
+                background: `${serviceColors[i]}22`,
+                border: `1.5px solid ${serviceColors[i]}`,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 4,
+                opacity: sSpring,
+                transform: `scale(${sSpring})`,
+                boxShadow: isNew ? `0 0 16px ${serviceColors[i]}66` : 'none',
+              }}
+            >
               <span style={{ fontSize: 22 }}>{'\u2699\uFE0F'}</span>
-              <span style={{ fontSize: 11, fontWeight: 700, color: serviceColors[i] }}>Replica {i + 1}</span>
+              <span style={{ fontSize: 11, fontWeight: 700, color: serviceColors[i] }}>
+                Replica {i + 1}
+              </span>
               {isNew && <span style={{ fontSize: 9, color: '#22C55E', fontWeight: 700 }}>NEW</span>}
             </div>
           );
@@ -534,21 +774,44 @@ const ArchScaleUpVariant: React.FC<Omit<SystemArchVizProps, 'variant'>> = ({ syn
       </div>
 
       {/* Database */}
-      <div style={{
-        position: 'absolute', top: 310, left: '50%', transform: 'translateX(-50%)',
-        width: 260, height: 60, borderRadius: 12,
-        background: `${THEME.teal}22`, border: `1.5px solid ${THEME.teal}`,
-        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
-        opacity: revealP,
-      }}>
+      <div
+        style={{
+          position: 'absolute',
+          top: 310,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          width: 260,
+          height: 60,
+          borderRadius: 12,
+          background: `${THEME.teal}22`,
+          border: `1.5px solid ${THEME.teal}`,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 10,
+          opacity: revealP,
+        }}
+      >
         <span style={{ fontSize: 28 }}>{'\uD83D\uDDC4\uFE0F'}</span>
         <span style={{ fontSize: 15, fontWeight: 700, color: THEME.teal }}>Database</span>
-        <div style={{
-          marginLeft: 'auto', marginRight: 12,
-          background: `${THEME.teal}15`, border: `1px solid ${THEME.teal}44`,
-          borderRadius: 6, padding: '2px 8px',
-        }}>
-          <span style={{ fontSize: 10, fontWeight: 700, color: THEME.teal, fontFamily: "'JetBrains Mono', monospace" }}>
+        <div
+          style={{
+            marginLeft: 'auto',
+            marginRight: 12,
+            background: `${THEME.teal}15`,
+            border: `1px solid ${THEME.teal}44`,
+            borderRadius: 6,
+            padding: '2px 8px',
+          }}
+        >
+          <span
+            style={{
+              fontSize: 10,
+              fontWeight: 700,
+              color: THEME.teal,
+              fontFamily: "'JetBrains Mono', monospace",
+            }}
+          >
             1.2K
           </span>
           <span style={{ fontSize: 8, color: 'rgba(255,255,255,0.4)', marginLeft: 2 }}>req/s</span>
@@ -557,16 +820,43 @@ const ArchScaleUpVariant: React.FC<Omit<SystemArchVizProps, 'variant'>> = ({ syn
 
       {/* Throughput metric */}
       {metricsP > 0 && (
-        <div style={{
-          position: 'absolute', bottom: 30, left: '50%', transform: 'translateX(-50%)',
-          display: 'flex', gap: 20, opacity: metricsP,
-        }}>
-          <div style={{ background: `${THEME.gold}22`, border: `1px solid ${THEME.gold}`, borderRadius: 8, padding: '8px 16px', textAlign: 'center' }}>
-            <div style={{ fontSize: 20, fontWeight: 700, color: THEME.gold }}>{serviceCount * 1000}</div>
+        <div
+          style={{
+            position: 'absolute',
+            bottom: 30,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            display: 'flex',
+            gap: 20,
+            opacity: metricsP,
+          }}
+        >
+          <div
+            style={{
+              background: `${THEME.gold}22`,
+              border: `1px solid ${THEME.gold}`,
+              borderRadius: 8,
+              padding: '8px 16px',
+              textAlign: 'center',
+            }}
+          >
+            <div style={{ fontSize: 20, fontWeight: 700, color: THEME.gold }}>
+              {serviceCount * 1000}
+            </div>
             <div style={{ fontSize: 10, color: THEME.gray }}>req/sec</div>
           </div>
-          <div style={{ background: `${THEME.teal}22`, border: `1px solid ${THEME.teal}`, borderRadius: 8, padding: '8px 16px', textAlign: 'center' }}>
-            <div style={{ fontSize: 20, fontWeight: 700, color: THEME.teal }}>{Math.round(25 / serviceCount)}ms</div>
+          <div
+            style={{
+              background: `${THEME.teal}22`,
+              border: `1px solid ${THEME.teal}`,
+              borderRadius: 8,
+              padding: '8px 16px',
+              textAlign: 'center',
+            }}
+          >
+            <div style={{ fontSize: 20, fontWeight: 700, color: THEME.teal }}>
+              {Math.round(25 / serviceCount)}ms
+            </div>
             <div style={{ fontSize: 10, color: THEME.gray }}>P99 latency</div>
           </div>
         </div>
@@ -590,33 +880,86 @@ const ArchCachingVariant: React.FC<Omit<SystemArchVizProps, 'variant'>> = ({ syn
   const showCache = cacheAddP > 0;
   const isCacheHit = cacheHitP > 0.3;
 
-  const cacheSpring = spring({ frame: frame - Math.round(0.5 * fps * 8), fps, config: { damping: 12, stiffness: 100, mass: 0.9 } });
+  const cacheSpring = spring({
+    frame: frame - Math.round(0.5 * fps * 8),
+    fps,
+    config: { damping: 12, stiffness: 100, mass: 0.9 },
+  });
 
   const latencyWithout = '200ms';
   const latencyWith = '3ms';
 
   return (
-    <div style={{ width: '100%', height: '100%', background: THEME.dark, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', fontFamily: 'Inter, system-ui, sans-serif', position: 'relative', overflow: 'hidden' }}>
-      <div style={{ position: 'absolute', top: 24, left: 0, right: 0, textAlign: 'center', color: '#EF4444', fontSize: 18, fontWeight: 700, letterSpacing: 2, opacity: normalP }}>
+    <div
+      style={{
+        width: '100%',
+        height: '100%',
+        background: THEME.dark,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontFamily: 'Inter, system-ui, sans-serif',
+        position: 'relative',
+        overflow: 'hidden',
+      }}
+    >
+      <div
+        style={{
+          position: 'absolute',
+          top: 24,
+          left: 0,
+          right: 0,
+          textAlign: 'center',
+          color: '#EF4444',
+          fontSize: 18,
+          fontWeight: 700,
+          letterSpacing: 2,
+          opacity: normalP,
+        }}
+      >
         CACHING LAYER
       </div>
 
       {/* Service */}
-      <div style={{
-        position: 'absolute', top: 70, left: '50%', transform: 'translateX(-50%)',
-        width: 260, height: 60, borderRadius: 12,
-        background: `${THEME.gold}22`, border: `1.5px solid ${THEME.gold}`,
-        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
-        opacity: normalP,
-      }}>
+      <div
+        style={{
+          position: 'absolute',
+          top: 70,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          width: 260,
+          height: 60,
+          borderRadius: 12,
+          background: `${THEME.gold}22`,
+          border: `1.5px solid ${THEME.gold}`,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 10,
+          opacity: normalP,
+        }}
+      >
         <span style={{ fontSize: 28 }}>{'\u2699\uFE0F'}</span>
         <span style={{ fontSize: 15, fontWeight: 700, color: THEME.gold }}>Service</span>
-        <div style={{
-          marginLeft: 'auto', marginRight: 12,
-          background: `${THEME.gold}15`, border: `1px solid ${THEME.gold}44`,
-          borderRadius: 6, padding: '2px 8px',
-        }}>
-          <span style={{ fontSize: 10, fontWeight: 700, color: THEME.gold, fontFamily: "'JetBrains Mono', monospace" }}>
+        <div
+          style={{
+            marginLeft: 'auto',
+            marginRight: 12,
+            background: `${THEME.gold}15`,
+            border: `1px solid ${THEME.gold}44`,
+            borderRadius: 6,
+            padding: '2px 8px',
+          }}
+        >
+          <span
+            style={{
+              fontSize: 10,
+              fontWeight: 700,
+              color: THEME.gold,
+              fontFamily: "'JetBrains Mono', monospace",
+            }}
+          >
             6.1K
           </span>
           <span style={{ fontSize: 8, color: 'rgba(255,255,255,0.4)', marginLeft: 2 }}>req/s</span>
@@ -625,30 +968,60 @@ const ArchCachingVariant: React.FC<Omit<SystemArchVizProps, 'variant'>> = ({ syn
 
       {/* Cache (Redis) */}
       {showCache && (
-        <div style={{
-          position: 'absolute', top: 170, left: '50%', transform: `translateX(-50%) scale(${cacheSpring})`,
-          width: 260, height: 60, borderRadius: 12,
-          background: 'rgba(239,68,68,0.15)', border: '1.5px solid #EF4444',
-          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
-          opacity: cacheSpring, boxShadow: isCacheHit ? '0 0 20px rgba(239,68,68,0.4)' : 'none',
-        }}>
+        <div
+          style={{
+            position: 'absolute',
+            top: 170,
+            left: '50%',
+            transform: `translateX(-50%) scale(${cacheSpring})`,
+            width: 260,
+            height: 60,
+            borderRadius: 12,
+            background: 'rgba(239,68,68,0.15)',
+            border: '1.5px solid #EF4444',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 10,
+            opacity: cacheSpring,
+            boxShadow: isCacheHit ? '0 0 20px rgba(239,68,68,0.4)' : 'none',
+          }}
+        >
           <span style={{ fontSize: 28 }}>{'\u26A1'}</span>
           <span style={{ fontSize: 15, fontWeight: 700, color: '#EF4444' }}>Redis Cache</span>
           {isCacheHit && (
-            <span style={{ fontSize: 11, fontWeight: 700, color: '#22C55E', background: 'rgba(34,197,94,0.2)', padding: '2px 8px', borderRadius: 4 }}>HIT!</span>
+            <span
+              style={{
+                fontSize: 11,
+                fontWeight: 700,
+                color: '#22C55E',
+                background: 'rgba(34,197,94,0.2)',
+                padding: '2px 8px',
+                borderRadius: 4,
+              }}
+            >
+              HIT!
+            </span>
           )}
           {/* Latency label on cache */}
-          <div style={{
-            marginLeft: 'auto', marginRight: 12,
-            background: isCacheHit ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)',
-            border: `1px solid ${isCacheHit ? '#22C55E44' : '#EF444444'}`,
-            borderRadius: 6, padding: '2px 8px',
-          }}>
-            <span style={{
-              fontSize: 10, fontWeight: 700,
-              color: isCacheHit ? '#22C55E' : '#EF4444',
-              fontFamily: "'JetBrains Mono', monospace",
-            }}>
+          <div
+            style={{
+              marginLeft: 'auto',
+              marginRight: 12,
+              background: isCacheHit ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)',
+              border: `1px solid ${isCacheHit ? '#22C55E44' : '#EF444444'}`,
+              borderRadius: 6,
+              padding: '2px 8px',
+            }}
+          >
+            <span
+              style={{
+                fontSize: 10,
+                fontWeight: 700,
+                color: isCacheHit ? '#22C55E' : '#EF4444',
+                fontFamily: "'JetBrains Mono', monospace",
+              }}
+            >
               {isCacheHit ? '~3ms' : '~5ms'}
             </span>
           </div>
@@ -656,28 +1029,47 @@ const ArchCachingVariant: React.FC<Omit<SystemArchVizProps, 'variant'>> = ({ syn
       )}
 
       {/* Database */}
-      <div style={{
-        position: 'absolute', top: showCache ? 290 : 200, left: '50%', transform: 'translateX(-50%)',
-        width: 260, height: 60, borderRadius: 12,
-        background: `${THEME.teal}22`, border: `1.5px solid ${THEME.teal}`,
-        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
-        opacity: isCacheHit ? 0.3 : normalP, transition: 'opacity 0.3s',
-      }}>
+      <div
+        style={{
+          position: 'absolute',
+          top: showCache ? 290 : 200,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          width: 260,
+          height: 60,
+          borderRadius: 12,
+          background: `${THEME.teal}22`,
+          border: `1.5px solid ${THEME.teal}`,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 10,
+          opacity: isCacheHit ? 0.3 : normalP,
+          transition: 'opacity 0.3s',
+        }}
+      >
         <span style={{ fontSize: 28 }}>{'\uD83D\uDDC4\uFE0F'}</span>
         <span style={{ fontSize: 15, fontWeight: 700, color: THEME.teal }}>Database</span>
         {isCacheHit && <span style={{ fontSize: 11, color: THEME.gray }}>(skipped)</span>}
         {/* Latency label */}
-        <div style={{
-          marginLeft: 'auto', marginRight: 12,
-          background: `${THEME.red}22`,
-          border: `1px solid ${THEME.red}44`,
-          borderRadius: 6, padding: '2px 8px',
-        }}>
-          <span style={{
-            fontSize: 10, fontWeight: 700,
-            color: THEME.red,
-            fontFamily: "'JetBrains Mono', monospace",
-          }}>
+        <div
+          style={{
+            marginLeft: 'auto',
+            marginRight: 12,
+            background: `${THEME.red}22`,
+            border: `1px solid ${THEME.red}44`,
+            borderRadius: 6,
+            padding: '2px 8px',
+          }}
+        >
+          <span
+            style={{
+              fontSize: 10,
+              fontWeight: 700,
+              color: THEME.red,
+              fontFamily: "'JetBrains Mono', monospace",
+            }}
+          >
             ~200ms
           </span>
         </div>
@@ -685,22 +1077,42 @@ const ArchCachingVariant: React.FC<Omit<SystemArchVizProps, 'variant'>> = ({ syn
 
       {/* Latency comparison */}
       {(slowP > 0 || cacheHitP > 0) && (
-        <div style={{
-          position: 'absolute', bottom: 30, left: '50%', transform: 'translateX(-50%)',
-          display: 'flex', gap: 24,
-        }}>
-          <div style={{
-            background: `${THEME.saffron}22`, border: `1px solid ${THEME.saffron}`, borderRadius: 8, padding: '8px 16px', textAlign: 'center',
-            opacity: slowP > 0 ? 1 : 0.4,
-          }}>
-            <div style={{ fontSize: 22, fontWeight: 700, color: THEME.saffron }}>{latencyWithout}</div>
+        <div
+          style={{
+            position: 'absolute',
+            bottom: 30,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            display: 'flex',
+            gap: 24,
+          }}
+        >
+          <div
+            style={{
+              background: `${THEME.saffron}22`,
+              border: `1px solid ${THEME.saffron}`,
+              borderRadius: 8,
+              padding: '8px 16px',
+              textAlign: 'center',
+              opacity: slowP > 0 ? 1 : 0.4,
+            }}
+          >
+            <div style={{ fontSize: 22, fontWeight: 700, color: THEME.saffron }}>
+              {latencyWithout}
+            </div>
             <div style={{ fontSize: 10, color: THEME.gray }}>Without Cache</div>
           </div>
           {showCache && (
-            <div style={{
-              background: 'rgba(34,197,94,0.15)', border: '1px solid #22C55E', borderRadius: 8, padding: '8px 16px', textAlign: 'center',
-              opacity: cacheHitP,
-            }}>
+            <div
+              style={{
+                background: 'rgba(34,197,94,0.15)',
+                border: '1px solid #22C55E',
+                borderRadius: 8,
+                padding: '8px 16px',
+                textAlign: 'center',
+                opacity: cacheHitP,
+              }}
+            >
               <div style={{ fontSize: 22, fontWeight: 700, color: '#22C55E' }}>{latencyWith}</div>
               <div style={{ fontSize: 10, color: THEME.gray }}>Cache HIT</div>
             </div>

@@ -84,11 +84,7 @@ export const AtomicShort: React.FC<AtomicShortProps> = ({
       <CameraDrift>
         <AbsoluteFill>
           {/* ── Title Section (top safe zone) ── */}
-          <TitleBanner
-            text={displayHeading}
-            frame={frame}
-            fps={fps}
-          />
+          <TitleBanner text={displayHeading} frame={frame} fps={fps} />
 
           {/* ── Main Content Area ── */}
           <MainContent
@@ -100,11 +96,7 @@ export const AtomicShort: React.FC<AtomicShortProps> = ({
           />
 
           {/* ── Bullet Points ── */}
-          <BulletSection
-            bullets={displayBullets}
-            frame={frame}
-            fps={fps}
-          />
+          <BulletSection bullets={displayBullets} frame={frame} fps={fps} />
         </AbsoluteFill>
       </CameraDrift>
 
@@ -124,13 +116,15 @@ export const AtomicShort: React.FC<AtomicShortProps> = ({
       ))}
 
       {/* ── Avatar Bubble (bottom right) ── */}
-      <div style={{
-        position: 'absolute',
-        bottom: 440,
-        right: 40,
-        width: 160,
-        height: 160,
-      }}>
+      <div
+        style={{
+          position: 'absolute',
+          bottom: 440,
+          right: 40,
+          width: 160,
+          height: 160,
+        }}
+      >
         <AvatarBubble />
       </div>
 
@@ -142,7 +136,14 @@ export const AtomicShort: React.FC<AtomicShortProps> = ({
         <Audio src={staticFile(`audio/${storyboard.audioFile.split('/').pop()}`)} />
       )}
       {storyboard.bgmFile && (
-        <Audio src={staticFile(storyboard.bgmFile.startsWith('audio/') ? storyboard.bgmFile : `audio/${storyboard.bgmFile.split('/').pop()}`)} volume={0.15} />
+        <Audio
+          src={staticFile(
+            storyboard.bgmFile.startsWith('audio/')
+              ? storyboard.bgmFile
+              : `audio/${storyboard.bgmFile.split('/').pop()}`
+          )}
+          volume={0.15}
+        />
       )}
     </AbsoluteFill>
   );
@@ -207,13 +208,12 @@ const MainContent: React.FC<{
   totalDuration: number;
 }> = ({ scenes, visualCue, frame, fps }) => {
   // Find the active scene based on frame
-  const activeScene = scenes.find(
-    (s) => frame >= s.startFrame && frame < s.endFrame
-  ) || scenes[0];
+  const activeScene = scenes.find((s) => frame >= s.startFrame && frame < s.endFrame) || scenes[0];
 
   if (!activeScene) return null;
 
-  const sceneProgress = (frame - activeScene.startFrame) / (activeScene.endFrame - activeScene.startFrame);
+  const sceneProgress =
+    (frame - activeScene.startFrame) / (activeScene.endFrame - activeScene.startFrame);
 
   const enterSpring = spring({
     frame: frame - (activeScene.startFrame || 0),
@@ -236,10 +236,7 @@ const MainContent: React.FC<{
         transform: `scale(${interpolate(enterSpring, [0, 1], [0.9, 1])})`,
       }}
     >
-      <ContentCard
-        scene={activeScene}
-        visualCue={visualCue}
-      />
+      <ContentCard scene={activeScene} visualCue={visualCue} />
     </div>
   );
 };
@@ -250,18 +247,23 @@ const ContentCard: React.FC<{
   scene: Scene;
   visualCue: string;
 }> = ({ scene, visualCue }) => {
-  const bgColor = visualCue === 'comparison' ? 'rgba(37, 99, 235, 0.08)'
-    : visualCue === 'interview' ? 'rgba(232, 93, 38, 0.08)'
-    : 'rgba(255, 255, 255, 0.04)';
+  const bgColor =
+    visualCue === 'comparison'
+      ? 'rgba(37, 99, 235, 0.08)'
+      : visualCue === 'interview'
+        ? 'rgba(232, 93, 38, 0.08)'
+        : 'rgba(255, 255, 255, 0.04)';
 
-  const borderColor = visualCue === 'comparison' ? 'rgba(37, 99, 235, 0.25)'
-    : visualCue === 'interview' ? 'rgba(232, 93, 38, 0.25)'
-    : 'rgba(255, 255, 255, 0.1)';
+  const borderColor =
+    visualCue === 'comparison'
+      ? 'rgba(37, 99, 235, 0.25)'
+      : visualCue === 'interview'
+        ? 'rgba(232, 93, 38, 0.25)'
+        : 'rgba(255, 255, 255, 0.1)';
 
   const narrationText = scene.narration || scene.content || '';
-  const displayText = narrationText.length > 200
-    ? narrationText.slice(0, 200) + '...'
-    : narrationText;
+  const displayText =
+    narrationText.length > 200 ? narrationText.slice(0, 200) + '...' : narrationText;
 
   return (
     <div
@@ -275,11 +277,13 @@ const ContentCard: React.FC<{
       }}
     >
       {/* Visual cue icon */}
-      <div style={{
-        fontSize: 48,
-        marginBottom: 20,
-        opacity: 0.7,
-      }}>
+      <div
+        style={{
+          fontSize: 48,
+          marginBottom: 20,
+          opacity: 0.7,
+        }}
+      >
         {visualCue === 'comparison' && '\u2194'}
         {visualCue === 'interview' && '\uD83C\uDFA4'}
         {visualCue === 'list' && '\uD83D\uDCCB'}

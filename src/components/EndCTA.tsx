@@ -30,13 +30,7 @@
  */
 
 import React from 'react';
-import {
-  AbsoluteFill,
-  interpolate,
-  spring,
-  useCurrentFrame,
-  useVideoConfig,
-} from 'remotion';
+import { AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig } from 'remotion';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -85,8 +79,8 @@ export const EndCTA: React.FC<EndCTAProps> = ({
   if (shortsMode && process.env.NODE_ENV !== 'production') {
     throw new Error(
       '[EndCTA] shortsMode={true} is explicitly forbidden. ' +
-      'Use <LoopableShort> + verbal CTA "Sign up at guru-sishya.in" instead. ' +
-      'See src/components/LoopableShort.tsx and INTEGRATION.md.',
+        'Use <LoopableShort> + verbal CTA "Sign up at guru-sishya.in" instead. ' +
+        'See src/components/LoopableShort.tsx and INTEGRATION.md.'
     );
   }
 

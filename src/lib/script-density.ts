@@ -22,15 +22,15 @@ import type { GeneratedScript, ScriptSegment } from '../pipeline/script-generato
 // ─── Types ─────────────────────────────────────────────────────────────────────
 
 export interface DensityReport {
-  overall: number;               // 0–1, the ship gate value
-  perSegment: SegmentDensity[];  // per-segment breakdown
+  overall: number; // 0–1, the ship gate value
+  perSegment: SegmentDensity[]; // per-segment breakdown
   byType: Record<string, number>;
-  teachRatio: number;            // proportion of words in TEACH segments
-  specificityScore: number;      // anchor token density
-  questionDensity: number;       // questions per 100 sentences
-  repetitionPenalty: number;     // how much overlap drags score down
-  passesShipGate: boolean;       // overall >= MIN_DENSITY
-  recommendation: string;        // human-readable next action
+  teachRatio: number; // proportion of words in TEACH segments
+  specificityScore: number; // anchor token density
+  questionDensity: number; // questions per 100 sentences
+  repetitionPenalty: number; // how much overlap drags score down
+  passesShipGate: boolean; // overall >= MIN_DENSITY
+  recommendation: string; // human-readable next action
 }
 
 export interface SegmentDensity {
@@ -45,17 +45,17 @@ export interface SegmentDensity {
 
 // ─── Constants ─────────────────────────────────────────────────────────────────
 
-export const MIN_DENSITY = 0.40;
+export const MIN_DENSITY = 0.4;
 export const TARGET_DENSITY = 0.48;
 
 /** Token patterns that contribute to "specificity" (Fireship's secret sauce) */
 const ANCHOR_PATTERNS = [
-  /₹\d+\s*LPA/gi,               // salary bands
+  /₹\d+\s*LPA/gi, // salary bands
   /amazon|flipkart|swiggy|zomato|phonepe|razorpay|meesho|cred|hotstar|google|microsoft|uber/gi,
-  /\b20\d{2}\b/g,               // years
-  /\d+%/g,                      // percentages
+  /\b20\d{2}\b/g, // years
+  /\d+%/g, // percentages
   /\d+[MBK]\s*(requests|users|transactions|events)/gi,
-  /[Qq]\d\s+20\d{2}/g,          // quarter references
+  /[Qq]\d\s+20\d{2}/g, // quarter references
   /SDE-[123]|L[456]|principal\s+engineer/gi,
   /faang|iit-[a-z]/gi,
 ] as const;
@@ -63,7 +63,10 @@ const ANCHOR_PATTERNS = [
 // ─── Token helpers ─────────────────────────────────────────────────────────────
 
 function tokenize(text: string): string[] {
-  return text.toLowerCase().split(/\s+/).filter((t) => t.length > 2);
+  return text
+    .toLowerCase()
+    .split(/\s+/)
+    .filter((t) => t.length > 2);
 }
 
 function extractAnchors(text: string): string[] {
@@ -122,8 +125,7 @@ function scoreSegment(seg: ScriptSegment, index: number): SegmentDensity {
   const base = typeWeight[seg.type] ?? 0.5;
   const density = Math.round((base + anchorDensity * 0.3) * 100) / 100;
 
-  const flag: 'LOW' | 'OK' | 'HIGH' =
-    density < 0.3 ? 'LOW' : density > 0.7 ? 'HIGH' : 'OK';
+  const flag: 'LOW' | 'OK' | 'HIGH' = density < 0.3 ? 'LOW' : density > 0.7 ? 'HIGH' : 'OK';
 
   return {
     segmentIndex: index,
@@ -163,7 +165,7 @@ export function measureDensity(script: GeneratedScript): DensityReport {
   // Specificity score
   const fullText = segments.map((s) => s.text).join(' ');
   const allAnchors = extractAnchors(fullText);
-  const specificityScore = Math.min(allAnchors.length / Math.max(totalWords / 100, 1) / 10, 0.20);
+  const specificityScore = Math.min(allAnchors.length / Math.max(totalWords / 100, 1) / 10, 0.2);
 
   // Question density
   const allSentences = fullText.split(/(?<=[.!?])\s+/).length;
@@ -188,19 +190,27 @@ export function measureDensity(script: GeneratedScript): DensityReport {
   }
 
   // Overall: weighted combination
-  const overall = Math.round(
-    Math.max(0, teachRatio * 0.5 + specificityScore * 0.3 + questionDensity * 0.1 - repetitionPenalty + 0.1) * 100,
-  ) / 100;
+  const overall =
+    Math.round(
+      Math.max(
+        0,
+        teachRatio * 0.5 + specificityScore * 0.3 + questionDensity * 0.1 - repetitionPenalty + 0.1
+      ) * 100
+    ) / 100;
 
   const passesShipGate = overall >= MIN_DENSITY;
 
   // Recommendation
   let recommendation: string;
   if (!passesShipGate) {
-    if (teachRatio < 0.5) recommendation = 'Add more TEACH segments. At least 50% of words should deliver value.';
-    else if (specificityScore < 0.05) recommendation = 'Add company names, salary bands, and years. Generic scripts fail.';
-    else if (repetitionPenalty > 0.08) recommendation = 'Too much repetition between segments. Vary your phrasing.';
-    else recommendation = `Density ${overall.toFixed(2)} below ${MIN_DENSITY}. Add concrete examples and stats.`;
+    if (teachRatio < 0.5)
+      recommendation = 'Add more TEACH segments. At least 50% of words should deliver value.';
+    else if (specificityScore < 0.05)
+      recommendation = 'Add company names, salary bands, and years. Generic scripts fail.';
+    else if (repetitionPenalty > 0.08)
+      recommendation = 'Too much repetition between segments. Vary your phrasing.';
+    else
+      recommendation = `Density ${overall.toFixed(2)} below ${MIN_DENSITY}. Add concrete examples and stats.`;
   } else if (overall < TARGET_DENSITY) {
     recommendation = `Passes gate (${overall.toFixed(2)}). Target ${TARGET_DENSITY} for Fireship-tier density — add one more stat or company example.`;
   } else {

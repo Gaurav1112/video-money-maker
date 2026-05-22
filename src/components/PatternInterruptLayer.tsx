@@ -1,7 +1,13 @@
 import React from 'react';
 import {
-  useCurrentFrame, AbsoluteFill, interpolate,
-  spring, useVideoConfig, Sequence, Audio, staticFile,
+  useCurrentFrame,
+  AbsoluteFill,
+  interpolate,
+  spring,
+  useVideoConfig,
+  Sequence,
+  Audio,
+  staticFile,
 } from 'remotion';
 import { COLORS, FONTS } from '../lib/theme';
 import { sfxDuration } from '../lib/sfx-durations';
@@ -13,8 +19,8 @@ type InterruptType = 'zoom' | 'callout' | 'colorPulse' | 'sfxHit' | 'opacityCut'
 
 interface Interrupt {
   type: InterruptType;
-  frame: number;       // absolute frame within the scene
-  keyword?: string;    // for zoom + callout
+  frame: number; // absolute frame within the scene
+  keyword?: string; // for zoom + callout
 }
 
 interface PatternInterruptLayerProps {
@@ -33,7 +39,7 @@ function computeInterrupts(
   narration: string,
   style: VideoStyle,
   fps: number,
-  sceneDuration: number,
+  sceneDuration: number
 ): Interrupt[] {
   const intervalMin = style.id === 'viral' ? 4 : 6;
   const intervalMax = style.id === 'viral' ? 6 : 8;
@@ -43,7 +49,8 @@ function computeInterrupts(
   const words = narration.split(/\s+/);
   const keywordFrames: Array<{ frame: number; word: string }> = [];
   words.forEach((word, i) => {
-    const isKeyword = isTechTerm(word) ||
+    const isKeyword =
+      isTechTerm(word) ||
       (word.replace(/[^a-zA-Z]/g, '').length >= 2 && word === word.toUpperCase()) ||
       /\d{2,}/.test(word);
     if (isKeyword && wordTimestamps[i]) {
@@ -55,11 +62,10 @@ function computeInterrupts(
   let nextTrigger = Math.round(avgInterval);
   let typeIndex = 0;
 
-  while (nextTrigger < sceneDuration - fps) { // stop 1s before scene end
+  while (nextTrigger < sceneDuration - fps) {
+    // stop 1s before scene end
     // Check if a keyword is near this trigger point (within 1s)
-    const nearbyKeyword = keywordFrames.find(
-      kf => Math.abs(kf.frame - nextTrigger) < fps
-    );
+    const nearbyKeyword = keywordFrames.find((kf) => Math.abs(kf.frame - nextTrigger) < fps);
 
     let type: InterruptType;
     if (nearbyKeyword && (typeIndex % 5 === 0 || typeIndex % 5 === 1)) {
@@ -100,12 +106,12 @@ export const PatternInterruptLayer: React.FC<PatternInterruptLayerProps> = ({
 
   const interrupts = React.useMemo(
     () => computeInterrupts(wordTimestamps, narration, style, fps, sceneDurationFrames),
-    [wordTimestamps, narration, style, fps, sceneDurationFrames],
+    [wordTimestamps, narration, style, fps, sceneDurationFrames]
   );
 
   // Find active interrupt
   const activeInterrupt = interrupts.find(
-    int => frame >= int.frame && frame < int.frame + 30 // max 1s window
+    (int) => frame >= int.frame && frame < int.frame + 30 // max 1s window
   );
 
   if (!activeInterrupt) return null;
@@ -122,38 +128,57 @@ export const PatternInterruptLayer: React.FC<PatternInterruptLayerProps> = ({
       // screen.
       if (age < 0 || age > 6) return null;
       const opacity = interpolate(age, [0, 3, 6], [0, 0.92, 0], {
-        extrapolateLeft: 'clamp', extrapolateRight: 'clamp',
+        extrapolateLeft: 'clamp',
+        extrapolateRight: 'clamp',
       });
       return (
-        <AbsoluteFill style={{
-          backgroundColor: '#FFFFFF',
-          opacity,
-          zIndex: 60,
-          pointerEvents: 'none',
-        }} />
+        <AbsoluteFill
+          style={{
+            backgroundColor: '#FFFFFF',
+            opacity,
+            zIndex: 60,
+            pointerEvents: 'none',
+          }}
+        />
       );
     }
 
     case 'callout': {
       if (age > 30 || !activeInterrupt.keyword) return null;
-      const calloutSpring = spring({ frame: age, fps, config: { damping: 12, stiffness: 200, mass: 0.5 } });
+      const calloutSpring = spring({
+        frame: age,
+        fps,
+        config: { damping: 12, stiffness: 200, mass: 0.5 },
+      });
       const calloutOpacity = interpolate(age, [0, 5, 22, 30], [0, 1, 1, 0], {
-        extrapolateLeft: 'clamp', extrapolateRight: 'clamp',
+        extrapolateLeft: 'clamp',
+        extrapolateRight: 'clamp',
       });
       return (
         <AbsoluteFill style={{ pointerEvents: 'none' }}>
-          <div style={{
-            position: 'absolute', top: 80, right: 60,
-            background: `${COLORS.saffron}EE`, borderRadius: 999,
-            padding: '8px 24px',
-            transform: `scale(${interpolate(calloutSpring, [0, 1], [0.5, 1])})`,
-            opacity: calloutOpacity,
-            boxShadow: `0 4px 20px ${COLORS.saffron}44`,
-          }}>
-            <span style={{
-              fontSize: 22, fontFamily: FONTS.heading, fontWeight: 800,
-              color: COLORS.textOnDark, textTransform: 'uppercase', letterSpacing: 1,
-            }}>
+          <div
+            style={{
+              position: 'absolute',
+              top: 80,
+              right: 60,
+              background: `${COLORS.saffron}EE`,
+              borderRadius: 999,
+              padding: '8px 24px',
+              transform: `scale(${interpolate(calloutSpring, [0, 1], [0.5, 1])})`,
+              opacity: calloutOpacity,
+              boxShadow: `0 4px 20px ${COLORS.saffron}44`,
+            }}
+          >
+            <span
+              style={{
+                fontSize: 22,
+                fontFamily: FONTS.heading,
+                fontWeight: 800,
+                color: COLORS.textOnDark,
+                textTransform: 'uppercase',
+                letterSpacing: 1,
+              }}
+            >
               {activeInterrupt.keyword}
             </span>
           </div>
@@ -164,13 +189,17 @@ export const PatternInterruptLayer: React.FC<PatternInterruptLayerProps> = ({
     case 'colorPulse': {
       if (age > 9) return null;
       const pulseOpacity = interpolate(age, [0, 3, 9], [0, 0.15, 0], {
-        extrapolateLeft: 'clamp', extrapolateRight: 'clamp',
+        extrapolateLeft: 'clamp',
+        extrapolateRight: 'clamp',
       });
       return (
-        <AbsoluteFill style={{
-          background: `radial-gradient(circle at center, ${COLORS.saffron}40, transparent 70%)`,
-          opacity: pulseOpacity, pointerEvents: 'none',
-        }} />
+        <AbsoluteFill
+          style={{
+            background: `radial-gradient(circle at center, ${COLORS.saffron}40, transparent 70%)`,
+            opacity: pulseOpacity,
+            pointerEvents: 'none',
+          }}
+        />
       );
     }
 

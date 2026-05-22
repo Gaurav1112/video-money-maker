@@ -31,7 +31,9 @@ export interface OpinionShortProps {
 
 // ─── Metadata ─────────────────────────────────────────────────────────────
 
-export const calculateOpinionShortMetadata: CalculateMetadataFunction<OpinionShortProps & Record<string, unknown>> = ({ props }) => {
+export const calculateOpinionShortMetadata: CalculateMetadataFunction<
+  OpinionShortProps & Record<string, unknown>
+> = ({ props }) => {
   const sec = props.audio?.duration || 60;
   const raw = Math.ceil(sec * FPS) + 30; // small tail
   const durationInFrames = Math.min(MAX_FRAMES, Math.max(MIN_FRAMES, raw));
@@ -47,7 +49,11 @@ export const calculateOpinionShortMetadata: CalculateMetadataFunction<OpinionSho
 
 function resolveAudio(audioFile: string): string {
   if (!audioFile) return '';
-  if (audioFile.startsWith('http://') || audioFile.startsWith('https://') || audioFile.startsWith('/')) {
+  if (
+    audioFile.startsWith('http://') ||
+    audioFile.startsWith('https://') ||
+    audioFile.startsWith('/')
+  ) {
     return audioFile;
   }
   return staticFile(audioFile.replace(/^public\//, ''));
@@ -108,7 +114,10 @@ const HookPhase: React.FC<{ text: string }> = ({ text }) => {
 
 const ThenNowPhase: React.FC<{ line: string }> = ({ line }) => {
   const frame = useCurrentFrame();
-  const op = interpolate(frame, [0, 12], [0, 1], { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' });
+  const op = interpolate(frame, [0, 12], [0, 1], {
+    extrapolateRight: 'clamp',
+    extrapolateLeft: 'clamp',
+  });
   return (
     <div
       style={{
@@ -152,7 +161,11 @@ const ThenNowPhase: React.FC<{ line: string }> = ({ line }) => {
 
 // ─── Composition ──────────────────────────────────────────────────────────
 
-export const OpinionShort: React.FC<OpinionShortProps> = ({ hookText, thenNowFirstLine, audio }) => {
+export const OpinionShort: React.FC<OpinionShortProps> = ({
+  hookText,
+  thenNowFirstLine,
+  audio,
+}) => {
   const { fps, durationInFrames } = useVideoConfig();
   // Split visuals: 60% hook, 40% then-now reveal
   const hookFrames = Math.floor(durationInFrames * 0.6);

@@ -21,14 +21,22 @@ import type { HookOpenerProps } from './types';
 
 /** Generate a controversy framing from the hookText */
 function extractClaim(hookText: string, topic: string): { claim: string; counter: string } {
-  const sentences = hookText.split(/[.!?]/).map((s) => s.trim()).filter(Boolean);
+  const sentences = hookText
+    .split(/[.!?]/)
+    .map((s) => s.trim())
+    .filter(Boolean);
   return {
     claim: sentences[0] || `Most engineers get ${topic} wrong`,
     counter: sentences[1] || `Here's what they're missing...`,
   };
 }
 
-export const ControversyTake: React.FC<HookOpenerProps> = ({ frame, fps: _fps, topic, hookText }) => {
+export const ControversyTake: React.FC<HookOpenerProps> = ({
+  frame,
+  fps: _fps,
+  topic,
+  hookText,
+}) => {
   const { claim, counter } = extractClaim(hookText, topic);
 
   // ── Phase 1: red flash ────────────────────────────────────────────────────────
@@ -95,80 +103,98 @@ export const ControversyTake: React.FC<HookOpenerProps> = ({ frame, fps: _fps, t
       }}
     >
       {/* Red flash overlay */}
-      <div style={{ position: 'absolute', inset: 0, backgroundColor: COLORS.red, opacity: flashOp * 0.85, zIndex: 10 }} />
+      <div
+        style={{
+          position: 'absolute',
+          inset: 0,
+          backgroundColor: COLORS.red,
+          opacity: flashOp * 0.85,
+          zIndex: 10,
+        }}
+      />
 
       {/* Diagonal red accent stripe */}
-      <div style={{
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        background: `linear-gradient(135deg, ${COLORS.red}18 0%, transparent 50%)`,
-      }} />
+      <div
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: `linear-gradient(135deg, ${COLORS.red}18 0%, transparent 50%)`,
+        }}
+      />
 
       {/* BREAKING badge */}
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: 16,
-        marginBottom: 28,
-        opacity: tickerOp,
-        transform: `translateX(${barX}px)`,
-      }}>
-        <div style={{
-          backgroundColor: COLORS.red,
-          paddingLeft: 18,
-          paddingRight: 18,
-          paddingTop: 6,
-          paddingBottom: 6,
-          fontFamily: FONTS.heading,
-          fontSize: 22,
-          fontWeight: 900,
-          color: '#FFFFFF',
-          letterSpacing: 3,
-          textTransform: 'uppercase',
-        }}>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 16,
+          marginBottom: 28,
+          opacity: tickerOp,
+          transform: `translateX(${barX}px)`,
+        }}
+      >
+        <div
+          style={{
+            backgroundColor: COLORS.red,
+            paddingLeft: 18,
+            paddingRight: 18,
+            paddingTop: 6,
+            paddingBottom: 6,
+            fontFamily: FONTS.heading,
+            fontSize: 22,
+            fontWeight: 900,
+            color: '#FFFFFF',
+            letterSpacing: 3,
+            textTransform: 'uppercase',
+          }}
+        >
           UNPOPULAR OPINION
         </div>
-        <div style={{
-          fontFamily: FONTS.text,
-          fontSize: 20,
-          color: COLORS.red,
-          letterSpacing: 2,
-          fontWeight: 700,
-          textTransform: 'uppercase',
-        }}>
+        <div
+          style={{
+            fontFamily: FONTS.text,
+            fontSize: 20,
+            color: COLORS.red,
+            letterSpacing: 2,
+            fontWeight: 700,
+            textTransform: 'uppercase',
+          }}
+        >
           {topic}
         </div>
       </div>
 
       {/* Claim typewriter */}
-      <div style={{
-        fontFamily: FONTS.heading,
-        fontSize: 58,
-        fontWeight: 900,
-        color: '#FFFFFF',
-        lineHeight: 1.15,
-        opacity: claimOp,
-        maxWidth: 1100,
-      }}>
+      <div
+        style={{
+          fontFamily: FONTS.heading,
+          fontSize: 58,
+          fontWeight: 900,
+          color: '#FFFFFF',
+          lineHeight: 1.15,
+          opacity: claimOp,
+          maxWidth: 1100,
+        }}
+      >
         {claim.slice(0, charsToShow)}
-        {cursorVisible && (
-          <span style={{ color: COLORS.red, marginLeft: 2 }}>|</span>
-        )}
+        {cursorVisible && <span style={{ color: COLORS.red, marginLeft: 2 }}>|</span>}
       </div>
 
       {/* Counter teaser */}
-      <div style={{
-        fontFamily: FONTS.text,
-        fontSize: 30,
-        color: COLORS.red,
-        marginTop: 24,
-        opacity: counterOp,
-        transform: `translateY(${counterY}px)`,
-        fontStyle: 'italic',
-      }}>
+      <div
+        style={{
+          fontFamily: FONTS.text,
+          fontSize: 30,
+          color: COLORS.red,
+          marginTop: 24,
+          opacity: counterOp,
+          transform: `translateY(${counterY}px)`,
+          fontStyle: 'italic',
+        }}
+      >
         {counter}
       </div>
     </AbsoluteFill>

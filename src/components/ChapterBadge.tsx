@@ -34,16 +34,12 @@ export const ChapterBadge: React.FC<ChapterBadgeProps> = ({
   // Slide out left
   const exitProgress =
     frame > SHOW_DURATION - fps * 0.4
-      ? interpolate(
-          frame - (SHOW_DURATION - fps * 0.4),
-          [0, fps * 0.4],
-          [0, 1],
-          { extrapolateRight: 'clamp' },
-        )
+      ? interpolate(frame - (SHOW_DURATION - fps * 0.4), [0, fps * 0.4], [0, 1], {
+          extrapolateRight: 'clamp',
+        })
       : 0;
 
-  const translateX =
-    interpolate(enterProgress, [0, 1], [-200, 0]) - exitProgress * 200;
+  const translateX = interpolate(enterProgress, [0, 1], [-200, 0]) - exitProgress * 200;
   const opacity = enterProgress * (1 - exitProgress);
 
   if (opacity <= 0) return null;
@@ -86,7 +82,7 @@ export const ChapterBadge: React.FC<ChapterBadgeProps> = ({
           fontWeight: 700,
           color: COLORS.saffron,
           fontFamily: 'JetBrains Mono, monospace',
-          borderRight: `1px solid ${"#FFFFFF"}10`,
+          borderRight: `1px solid ${'#FFFFFF'}10`,
         }}
       >
         {padNum(chapterNumber)}/{padNum(totalChapters)}
@@ -98,7 +94,7 @@ export const ChapterBadge: React.FC<ChapterBadgeProps> = ({
           padding: '8px 16px 8px 12px',
           fontSize: 14,
           fontWeight: 600,
-          color: "#FFFFFF",
+          color: '#FFFFFF',
           fontFamily: 'Inter, sans-serif',
           letterSpacing: 0.3,
         }}

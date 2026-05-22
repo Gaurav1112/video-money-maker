@@ -11,12 +11,13 @@ router.get('/', (_req, res) => {
   const rendered: Array<{ topic: string; session: number; path: string }> = [];
 
   if (fs.existsSync(OUTPUT_DIR)) {
-    const dirs = fs.readdirSync(OUTPUT_DIR, { withFileTypes: true })
-      .filter(d => d.isDirectory() && d.name !== 'shorts');
+    const dirs = fs
+      .readdirSync(OUTPUT_DIR, { withFileTypes: true })
+      .filter((d) => d.isDirectory() && d.name !== 'shorts');
 
     for (const dir of dirs) {
       const topicDir = path.join(OUTPUT_DIR, dir.name);
-      const mp4s = fs.readdirSync(topicDir).filter(f => f.endsWith('.mp4'));
+      const mp4s = fs.readdirSync(topicDir).filter((f) => f.endsWith('.mp4'));
       for (const mp4 of mp4s) {
         const match = mp4.match(/s(\d+)\.mp4/);
         if (match) {

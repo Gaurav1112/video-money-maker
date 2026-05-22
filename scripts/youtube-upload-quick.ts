@@ -76,7 +76,7 @@ async function uploadToYouTube() {
     console.log('\n✅ Upload successful!');
     console.log(`   Video ID: ${response.data.id}`);
     console.log(`   URL: https://youtube.com/watch?v=${response.data.id}`);
-    
+
     return response.data.id;
   } catch (error: any) {
     console.error('❌ Upload failed:', error.message);
@@ -84,7 +84,7 @@ async function uploadToYouTube() {
   }
 }
 
-uploadToYouTube().catch(err => {
+uploadToYouTube().catch((err) => {
   console.error('Error:', err);
   process.exit(1);
 });

@@ -1,7 +1,16 @@
 import React from 'react';
 import { useCurrentFrame, AbsoluteFill, interpolate, spring } from 'remotion';
 import { COLORS, FONTS, SIZES } from '../lib/theme';
-import { fadeIn, slideUp, stagger, springIn, springScale, sweepUnderline, slideFromLeft, pulseGlow } from '../lib/animations';
+import {
+  fadeIn,
+  slideUp,
+  stagger,
+  springIn,
+  springScale,
+  sweepUnderline,
+  slideFromLeft,
+  pulseGlow,
+} from '../lib/animations';
 import type { VisualBeat } from '../types';
 
 interface SummarySlideProps {
@@ -102,18 +111,24 @@ const SummarySlide: React.FC<SummarySlideProps> = ({
     >
       {/* Animated background — never plain black */}
       <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 0 }}>
-        <div style={{
-          position: 'absolute', inset: 0,
-          backgroundImage: `
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            backgroundImage: `
             linear-gradient(rgba(253,184,19,0.02) 1px, transparent 1px),
             linear-gradient(90deg, rgba(253,184,19,0.02) 1px, transparent 1px)
           `,
-          backgroundSize: '80px 80px',
-        }} />
-        <div style={{
-          position: 'absolute', inset: 0,
-          background: `radial-gradient(ellipse at 50% 30%, rgba(253,184,19,0.04) 0%, transparent 50%)`,
-        }} />
+            backgroundSize: '80px 80px',
+          }}
+        />
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            background: `radial-gradient(ellipse at 50% 30%, rgba(253,184,19,0.04) 0%, transparent 50%)`,
+          }}
+        />
       </div>
 
       {/* Background glow orb */}
@@ -212,12 +227,10 @@ const SummarySlide: React.FC<SummarySlideProps> = ({
             const textOpacity = fadeIn(frame, itemStart + 4, 12);
 
             // Checkmark SVG draws itself (stroke-dashoffset animation)
-            const checkDrawProgress = interpolate(
-              frame,
-              [itemStart + 8, itemStart + 20],
-              [0, 1],
-              { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
-            );
+            const checkDrawProgress = interpolate(frame, [itemStart + 8, itemStart + 20], [0, 1], {
+              extrapolateLeft: 'clamp',
+              extrapolateRight: 'clamp',
+            });
             const checkPathLength = 24; // approximate path length
             const checkDashOffset = checkPathLength * (1 - checkDrawProgress);
 
@@ -235,9 +248,7 @@ const SummarySlide: React.FC<SummarySlideProps> = ({
                   backgroundColor: isActive ? `${COLORS.darkAlt}` : `${COLORS.darkAlt}CC`,
                   borderRadius: 12,
                   padding: '16px 24px',
-                  border: isActive
-                    ? `1px solid ${COLORS.teal}50`
-                    : `1px solid ${COLORS.teal}18`,
+                  border: isActive ? `1px solid ${COLORS.teal}50` : `1px solid ${COLORS.teal}18`,
                   borderLeft: `4px solid ${isActive ? COLORS.teal : `${COLORS.teal}60`}`,
                   boxShadow: isActive ? `0 2px 20px ${COLORS.teal}15` : 'none',
                 }}

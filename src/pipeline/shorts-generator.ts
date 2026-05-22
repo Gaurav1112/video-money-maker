@@ -62,19 +62,71 @@ function seededPick<T>(items: T[], seed: string): T {
 // This is the canonical list — order matters for deterministic day-to-topic mapping.
 
 export const ALL_TOPICS: string[] = [
-  'caching', 'load-balancing', 'api-gateway', 'kafka', 'database',
-  'microservices', 'distributed-systems', 'message-queue', 'authentication',
-  'rate-limiting', 'monitoring', 'consistent-hashing', 'cdn', 'queue',
-  'dns', 'docker', 'kubernetes', 'sql', 'nosql', 'ci-cd',
-  'rest-api', 'graphql', 'grpc', 'websocket', 'http',
-  'sharding', 'indexing', 'replication', 'cap-theorem', 'acid',
-  'event-sourcing', 'cqrs', 'saga-pattern', 'circuit-breaker', 'bulkhead',
-  'service-mesh', 'api-versioning', 'idempotency', 'pagination', 'search',
-  'logging', 'tracing', 'alerting', 'sla-slo-sli', 'chaos-engineering',
-  'blue-green-deployment', 'canary-release', 'feature-flags', 'a-b-testing', 'load-testing',
-  'binary-search', 'sorting', 'dynamic-programming', 'trees', 'graphs',
-  'arrays', 'linked-list', 'hash-map', 'heap', 'trie',
-  'bfs-dfs', 'backtracking', 'greedy', 'sliding-window', 'two-pointers',
+  'caching',
+  'load-balancing',
+  'api-gateway',
+  'kafka',
+  'database',
+  'microservices',
+  'distributed-systems',
+  'message-queue',
+  'authentication',
+  'rate-limiting',
+  'monitoring',
+  'consistent-hashing',
+  'cdn',
+  'queue',
+  'dns',
+  'docker',
+  'kubernetes',
+  'sql',
+  'nosql',
+  'ci-cd',
+  'rest-api',
+  'graphql',
+  'grpc',
+  'websocket',
+  'http',
+  'sharding',
+  'indexing',
+  'replication',
+  'cap-theorem',
+  'acid',
+  'event-sourcing',
+  'cqrs',
+  'saga-pattern',
+  'circuit-breaker',
+  'bulkhead',
+  'service-mesh',
+  'api-versioning',
+  'idempotency',
+  'pagination',
+  'search',
+  'logging',
+  'tracing',
+  'alerting',
+  'sla-slo-sli',
+  'chaos-engineering',
+  'blue-green-deployment',
+  'canary-release',
+  'feature-flags',
+  'a-b-testing',
+  'load-testing',
+  'binary-search',
+  'sorting',
+  'dynamic-programming',
+  'trees',
+  'graphs',
+  'arrays',
+  'linked-list',
+  'hash-map',
+  'heap',
+  'trie',
+  'bfs-dfs',
+  'backtracking',
+  'greedy',
+  'sliding-window',
+  'two-pointers',
   'design-patterns',
 ];
 
@@ -84,7 +136,11 @@ interface ShortFormat {
   name: string;
   visualCue: ShortEpisode['visualCue'];
   titleTemplate: (topic: string) => string;
-  generateContent: (topicSlug: string, topicDisplay: string, example: ReturnType<typeof getTopicExample>) => {
+  generateContent: (
+    topicSlug: string,
+    topicDisplay: string,
+    example: ReturnType<typeof getTopicExample>
+  ) => {
     narration: string;
     heading: string;
     bullets: string[];
@@ -94,14 +150,26 @@ interface ShortFormat {
 function toDisplay(slug: string): string {
   return slug
     .split('-')
-    .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
     .join(' ');
 }
 
 const DSA_TOPICS = new Set([
-  'binary-search', 'sorting', 'dynamic-programming', 'trees', 'graphs',
-  'arrays', 'linked-list', 'hash-map', 'heap', 'trie',
-  'bfs-dfs', 'backtracking', 'greedy', 'sliding-window', 'two-pointers',
+  'binary-search',
+  'sorting',
+  'dynamic-programming',
+  'trees',
+  'graphs',
+  'arrays',
+  'linked-list',
+  'hash-map',
+  'heap',
+  'trie',
+  'bfs-dfs',
+  'backtracking',
+  'greedy',
+  'sliding-window',
+  'two-pointers',
   'design-patterns',
 ]);
 
@@ -145,18 +213,22 @@ const SHORT_FORMATS: ShortFormat[] = [
       const category = getTopicCategory(slug);
       const altMap: Record<string, string> = {
         'system-design': 'monolith',
-        'databases': 'flat files',
-        'caching': 'direct DB queries',
-        'networking': 'polling',
-        'api': 'direct service calls',
-        'dsa': 'brute force',
-        'general': 'the naive approach',
+        databases: 'flat files',
+        caching: 'direct DB queries',
+        networking: 'polling',
+        api: 'direct service calls',
+        dsa: 'brute force',
+        general: 'the naive approach',
       };
       const alt = altMap[category] || 'the alternative';
       return {
         narration: `On one side — ${alt}. Simple. Boring. Works. On the other — ${topic}. Powerful. Complex. Expensive. At small scale, ${alt} wins. Every single time. Faster to build, easier to debug, cheaper to run. But there is a cliff. At ${ex.scale}, ${alt} stops working. Not slowly — abruptly. ${ex.company} found that cliff. ${ex.problem} hit them overnight. No amount of tuning ${alt} fixes this. You need ${ex.solution}. That capability only exists in ${topic}. The verdict? Stay with ${alt} until the pain is real. Then switch fast. Not during the incident — before it.`,
         heading: `${topic} vs ${alt.charAt(0).toUpperCase() + alt.slice(1)}`,
-        bullets: [`Small scale: Use ${alt}`, `At ${ex.scale}: Use ${topic}`, 'Switch before the cliff'],
+        bullets: [
+          `Small scale: Use ${alt}`,
+          `At ${ex.scale}: Use ${topic}`,
+          'Switch before the cliff',
+        ],
       };
     },
   },
@@ -168,7 +240,11 @@ const SHORT_FORMATS: ShortFormat[] = [
     generateContent: (_slug, topic, ex) => ({
       narration: `I bombed this question in my interview. They asked about ${topic} at ${ex.scale}. I started listing tools — Kibana, Datadog, PagerDuty. The interviewer went quiet. Bad sign. What I should have said: "${ex.problem} is the root cause pattern here. Before touching any tool, you check three metrics." That is what the ten percent who get offers say. They name the problem first. Tools second. ${ex.company} asks this exact question. The answer they want is ${ex.solution} — framed as a debugging story, not a technology pitch. I know that now. Cost me one rejection to learn it.`,
       heading: `${topic} = Higher Salary`,
-      bullets: [`Asked at ${ex.company}-level interviews`, 'Name the problem before tools', 'Frame it as debugging'],
+      bullets: [
+        `Asked at ${ex.company}-level interviews`,
+        'Name the problem before tools',
+        'Frame it as debugging',
+      ],
     }),
   },
   // 4: Dialogue format — back-and-forth, quoted speech, interview simulation
@@ -223,7 +299,11 @@ const SHORT_FORMATS: ShortFormat[] = [
     generateContent: (_slug, topic, ex) => ({
       narration: `Junior adds ${topic} because it is cool. Senior measures first, then decides. Junior configures defaults. Senior reads page four of the docs. Junior deploys Friday afternoon. Senior asks what the rollback plan is. Junior sees ${ex.scale} and panics. Senior has already built for it. Here is the real difference. When ${ex.company} was small, they skipped ${topic} entirely. Worked fine. Then ${ex.problem} became real — not theoretical, real. That is when seniors act. Not before. Not after. At the moment the data says "now." The data said ${ex.solution}. They shipped it in one sprint.`,
       heading: `Junior vs Senior: ${topic}`,
-      bullets: ['Junior: adds it because it is cool', 'Senior: measures then decides', 'Data drives the decision'],
+      bullets: [
+        'Junior: adds it because it is cool',
+        'Senior: measures then decides',
+        'Data drives the decision',
+      ],
     }),
   },
   // 9: Rapid-fire numbered list — four numbers, no filler, save-worthy
@@ -234,7 +314,11 @@ const SHORT_FORMATS: ShortFormat[] = [
     generateContent: (_slug, topic, ex) => ({
       narration: `Four numbers. Memorize them. One — ${ex.scale}. That is your ceiling on default config. Two — under ten milliseconds. That is your latency target after ${topic} is tuned. Three — ${ex.company} adopted this at a hundred million users. Not before. Not for fun. Because ${ex.problem}. Four — default config gets you sixty percent of the way there. The other forty percent? Three settings nobody documents. ${ex.solution} is the mechanism behind all four numbers. Interviewers love this format. Four numbers, four facts, forty-five seconds. Screenshot this. You will need it.`,
       heading: `${topic} Cheat Sheet`,
-      bullets: [`What: Solves ${ex.problem}`, `Who: ${ex.company}`, 'When: System outgrows defaults'],
+      bullets: [
+        `What: Solves ${ex.problem}`,
+        `Who: ${ex.company}`,
+        'When: System outgrows defaults',
+      ],
     }),
   },
   // 10: War story — past tense, 2am vibes, narrative tension
@@ -248,11 +332,7 @@ const SHORT_FORMATS: ShortFormat[] = [
         return {
           narration: `It was 2am. The alerts fired. ${deep.realIncident} Eighteen months of clean operation — then this. The engineers pulled up dashboards. Everything looked normal. Except it wasn't. ${deep.defaultConfigProblem} The config that caused it: ${deep.configKey}. Everyone assumed ${deep.misconception}. Wrong. ${deep.misconceptionCorrection} Four minutes to deploy the fix. Six hours of downtime. ${deep.zeigarnikHook}`,
           heading: `The ${topic} Incident`,
-          bullets: [
-            deep.configKey,
-            deep.catchphrase,
-            'Real production war story',
-          ],
+          bullets: [deep.configKey, deep.catchphrase, 'Real production war story'],
         };
       }
       return {
@@ -350,7 +430,7 @@ export const TOTAL_SHORTS = ALL_TOPICS.length * SHORT_FORMATS.length; // 924
 // ─── Zeigarnik Topic-Specific Endings ───────────────────────────────────────
 
 const ZEIGARNIK_ENDINGS: Record<string, string[]> = {
-  'caching': [
+  caching: [
     'The TTL race condition that serves stale data for hours. Next.',
     'Why cache-aside fails silently under write-heavy loads. Next video.',
     'The thundering herd problem — one expired key takes down your DB.',
@@ -365,23 +445,23 @@ const ZEIGARNIK_ENDINGS: Record<string, string[]> = {
     'Why rate limiting at the gateway misses request bursts. Next video.',
     'The routing rule that sends 5% of traffic to the wrong service. Next.',
   ],
-  'kafka': [
-    'But there\'s one Kafka setting that silently changes everything. Next video.',
-    'The one consumer config nobody puts in their tutorial. It\'s next.',
+  kafka: [
+    "But there's one Kafka setting that silently changes everything. Next video.",
+    "The one consumer config nobody puts in their tutorial. It's next.",
     'What actually happens when your Kafka broker dies mid-write? Next.',
   ],
-  'database': [
+  database: [
     'The index type that slows down writes by 40%. Most teams use it wrong.',
     'What VACUUM actually does — and why skipping it kills performance.',
     'The connection pool size that causes deadlocks at exactly 100 QPS.',
   ],
-  'microservices': [
+  microservices: [
     'The circuit breaker threshold that triggers false positives. Next.',
     'Why service discovery cache staleness causes phantom routing. Next.',
     'The shared database anti-pattern that couples your deploys. Next.',
   ],
   'distributed-systems': [
-    'The vector clock conflict that split-brain can\'t resolve. Next.',
+    "The vector clock conflict that split-brain can't resolve. Next.",
     'Why exactly-once delivery is impossible — but you can fake it. Next.',
     'The Lamport timestamp edge case that reorders your events. Next.',
   ],
@@ -390,7 +470,7 @@ const ZEIGARNIK_ENDINGS: Record<string, string[]> = {
     'Why prefetch count of 1 kills your throughput but saves correctness.',
     'The poison message that blocks your entire queue consumer. Next.',
   ],
-  'authentication': [
+  authentication: [
     'The JWT expiry window that lets revoked tokens work for 15 minutes.',
     'Why bcrypt cost factor 10 is too low for modern GPUs. Next video.',
     'The OAuth redirect URI vulnerability most apps still ship with. Next.',
@@ -400,47 +480,47 @@ const ZEIGARNIK_ENDINGS: Record<string, string[]> = {
     'The sliding window log that uses 100x more memory than you expect.',
     'Fixed window rate limiting has a burst hole at the boundary. Next.',
   ],
-  'monitoring': [
+  monitoring: [
     'The percentile aggregation mistake that hides your worst latencies.',
     'Why averaging p99 across instances gives you meaningless numbers.',
     'The cardinality explosion that crashes your metrics backend. Next.',
   ],
   'consistent-hashing': [
     'Why 150 virtual nodes is the magic number for even distribution.',
-    'The hot partition problem that consistent hashing doesn\'t solve.',
+    "The hot partition problem that consistent hashing doesn't solve.",
     'What happens when you remove a node mid-rebalance. Next video.',
   ],
-  'cdn': [
+  cdn: [
     'The Cache-Control header that makes your CDN serve stale HTML forever.',
     'Why CDN purge propagation takes 30 seconds — and what breaks. Next.',
     'The origin shield misconfiguration that 10x your origin traffic.',
   ],
-  'queue': [
+  queue: [
     'The visibility timeout that causes duplicate message processing.',
-    'Why FIFO queues sacrifice throughput — and when it\'s worth it.',
+    "Why FIFO queues sacrifice throughput — and when it's worth it.",
     'The at-least-once delivery guarantee that creates duplicate orders.',
   ],
-  'dns': [
+  dns: [
     'The low TTL that causes a DNS query storm during failover. Next.',
-    'Why DNS round-robin isn\'t load balancing — and what breaks. Next.',
+    "Why DNS round-robin isn't load balancing — and what breaks. Next.",
     'The negative caching TTL that blocks recovery for 5 minutes. Next.',
   ],
-  'docker': [
+  docker: [
     'The multi-stage build mistake that leaks build secrets into prod.',
     'Why the latest tag causes different images across your fleet. Next.',
     'The PID 1 zombie reaping problem most Dockerfiles ignore. Next.',
   ],
-  'kubernetes': [
+  kubernetes: [
     'The K8s probe that stops your pod from restarting. Most teams skip it.',
     'One resource limit setting causes 60% of OOMKilled events. Next video.',
     'Why kubectl describe lies to you about the real failure. Next.',
   ],
-  'sql': [
+  sql: [
     'The SELECT N+1 query that turns 1 query into 10,000. Next video.',
     'Why covering indexes eliminate disk reads entirely. Next.',
     'The implicit type cast in WHERE that prevents index usage. Next.',
   ],
-  'nosql': [
+  nosql: [
     'The partition key choice that creates a hot shard at scale. Next.',
     'Why secondary indexes in DynamoDB cost 2x the writes. Next video.',
     'The eventual consistency read that returns data from 5 seconds ago.',
@@ -448,54 +528,54 @@ const ZEIGARNIK_ENDINGS: Record<string, string[]> = {
   'ci-cd': [
     'The pipeline cache key that causes builds to use stale dependencies.',
     'Why parallel test stages hide flaky test ordering bugs. Next.',
-    'The deploy rollback that doesn\'t roll back your database migration.',
+    "The deploy rollback that doesn't roll back your database migration.",
   ],
   'rest-api': [
     'The PUT vs PATCH confusion that causes silent data overwrites.',
     'Why 200 OK with an error body breaks every client integration.',
     'The ETag header that eliminates redundant data transfers. Next.',
   ],
-  'graphql': [
+  graphql: [
     'The nested query that lets clients fetch your entire database. Next.',
-    'Why depth limiting alone doesn\'t prevent GraphQL abuse. Next video.',
+    "Why depth limiting alone doesn't prevent GraphQL abuse. Next video.",
     'The N+1 DataLoader problem that makes GraphQL slower than REST.',
   ],
-  'grpc': [
+  grpc: [
     'The keepalive setting that causes silent connection drops. Next.',
-    'Why unary calls miss gRPC\'s biggest advantage — streaming. Next.',
+    "Why unary calls miss gRPC's biggest advantage — streaming. Next.",
     'The protobuf field number reuse that corrupts your messages. Next.',
   ],
-  'websocket': [
+  websocket: [
     'The heartbeat interval that lets zombie connections pile up. Next.',
     'Why WebSocket reconnection without backoff causes a connect storm.',
     'The missing close frame that leaks server memory per connection.',
   ],
-  'http': [
+  http: [
     'The Connection: keep-alive misuse that exhausts your socket pool.',
     'Why HTTP/2 multiplexing makes head-of-line blocking worse. Next.',
     'The Transfer-Encoding chunked edge case that breaks proxies. Next.',
   ],
-  'sharding': [
+  sharding: [
     'The shard key that puts 80% of writes on one node. Next video.',
     'Why range-based sharding creates hot spots during time-series ingestion.',
     'The cross-shard join that turns a 5ms query into 500ms. Next.',
   ],
-  'indexing': [
+  indexing: [
     'The composite index column order that makes your query ignore it.',
     'Why a covering index avoids the table lookup entirely. Next video.',
     'The partial index on status=active that shrinks your index 10x.',
   ],
-  'replication': [
+  replication: [
     'The replication lag read that shows a deleted record as still alive.',
     'Why synchronous replication halves your write throughput. Next.',
     'The split-brain scenario that creates two primary databases. Next.',
   ],
   'cap-theorem': [
-    'Why choosing CP doesn\'t mean zero availability — just degraded.',
+    "Why choosing CP doesn't mean zero availability — just degraded.",
     'The network partition that makes your AP system return stale reads.',
     'CAP only applies during partitions — the rest of the time you get all 3.',
   ],
-  'acid': [
+  acid: [
     'The isolation level that causes phantom reads in your transaction.',
     'Why READ COMMITTED still allows non-repeatable reads. Next video.',
     'The serializable isolation penalty — 10x slower but actually correct.',
@@ -505,7 +585,7 @@ const ZEIGARNIK_ENDINGS: Record<string, string[]> = {
     'Why snapshotting every 100 events prevents 30-second rebuild times.',
     'The projection rebuild that takes 4 hours because nobody paginated.',
   ],
-  'cqrs': [
+  cqrs: [
     'The read model staleness that shows an order as pending for 10 seconds.',
     'Why separate write and read databases doubles your infra cost. Next.',
     'The eventual consistency gap that makes users click submit twice.',
@@ -520,14 +600,14 @@ const ZEIGARNIK_ENDINGS: Record<string, string[]> = {
     'Why a 50% error threshold opens the circuit too late. Next video.',
     'The circuit breaker that never closes because health checks hit cache.',
   ],
-  'bulkhead': [
+  bulkhead: [
     'The thread pool size that starves your critical path. Next video.',
     'Why bulkheads without timeouts just move the bottleneck. Next.',
     'The shared connection pool that lets one slow service block all others.',
   ],
   'service-mesh': [
     'The sidecar proxy that adds 2ms latency to every internal call.',
-    'Why mTLS in the mesh doesn\'t protect against compromised pods. Next.',
+    "Why mTLS in the mesh doesn't protect against compromised pods. Next.",
     'The Envoy misconfiguration that routes traffic to the wrong cluster.',
   ],
   'api-versioning': [
@@ -535,32 +615,32 @@ const ZEIGARNIK_ENDINGS: Record<string, string[]> = {
     'Why header-based versioning breaks when CDNs strip custom headers.',
     'The breaking change in a "minor" version that took down 200 clients.',
   ],
-  'idempotency': [
+  idempotency: [
     'The idempotency key stored in memory that disappears on restart.',
-    'Why client-generated UUIDs don\'t guarantee idempotency. Next video.',
+    "Why client-generated UUIDs don't guarantee idempotency. Next video.",
     'The retry storm that creates 50 duplicate payments. Next.',
   ],
-  'pagination': [
+  pagination: [
     'The OFFSET pagination that gets slower on every page. Next video.',
     'Why cursor-based pagination breaks when rows are deleted mid-page.',
     'The keyset pagination edge case with duplicate sort values. Next.',
   ],
-  'search': [
+  search: [
     'The analyzer mismatch that makes Elasticsearch return zero results.',
     'Why fuzzy search with edit distance 2 returns garbage matches. Next.',
     'The inverted index update lag that hides new documents for 1 second.',
   ],
-  'logging': [
+  logging: [
     'The structured log field that leaks PII into your log aggregator.',
     'Why log level INFO in production generates 10 GB per hour. Next.',
     'The missing correlation ID that makes distributed tracing useless.',
   ],
-  'tracing': [
+  tracing: [
     'The trace sampling rate that misses all your slow requests. Next.',
     'Why baggage propagation across services leaks internal metadata.',
     'The span context lost at the async boundary that breaks your trace.',
   ],
-  'alerting': [
+  alerting: [
     'The alert threshold that pages you 50 times during every deploy.',
     'Why alerting on averages misses the p99 spikes that matter. Next.',
     'The missing runbook link that adds 20 minutes to incident response.',
@@ -572,7 +652,7 @@ const ZEIGARNIK_ENDINGS: Record<string, string[]> = {
   ],
   'chaos-engineering': [
     'The chaos experiment that found a retry storm nobody knew existed.',
-    'Why killing a random pod isn\'t chaos engineering — it\'s just noise.',
+    "Why killing a random pod isn't chaos engineering — it's just noise.",
     'The blast radius miscalculation that took down prod for 45 minutes.',
   ],
   'blue-green-deployment': [
@@ -605,7 +685,7 @@ const ZEIGARNIK_ENDINGS: Record<string, string[]> = {
     'Why off-by-one in the exit condition makes binary search loop forever.',
     'The rotated sorted array variant that trips up 90% of candidates.',
   ],
-  'sorting': [
+  sorting: [
     'Why quicksort degrades to O(n squared) on already-sorted input.',
     'The merge sort space overhead that matters when memory is tight.',
     'When insertion sort beats quicksort — arrays under 16 elements. Next.',
@@ -615,17 +695,17 @@ const ZEIGARNIK_ENDINGS: Record<string, string[]> = {
     'Why bottom-up DP avoids the stack overflow that top-down hits. Next.',
     'The state transition you forgot that gives wrong answers on edge cases.',
   ],
-  'trees': [
+  trees: [
     'The unbalanced BST that degrades to a linked list on sorted input.',
     'Why red-black trees beat AVL trees for write-heavy workloads. Next.',
     'The tree serialization trick that reconstructs from preorder alone.',
   ],
-  'graphs': [
+  graphs: [
     'The missing visited set that turns DFS into an infinite loop. Next.',
     'Why adjacency matrix wastes memory on sparse graphs. Next video.',
     'The negative weight cycle that makes Dijkstra give wrong answers.',
   ],
-  'arrays': [
+  arrays: [
     'The in-place reversal trick that solves rotation in O(1) space.',
     'Why the Dutch National Flag partition handles 3-way splits. Next.',
     'The prefix sum precomputation that turns range queries into O(1).',
@@ -640,27 +720,27 @@ const ZEIGARNIK_ENDINGS: Record<string, string[]> = {
     'Why chaining beats open addressing when deletion is frequent. Next.',
     'The hash collision attack that turns O(1) lookup into O(n). Next.',
   ],
-  'heap': [
+  heap: [
     'The heapify trick that builds a heap in O(n), not O(n log n). Next.',
     'Why a min-heap solves "top K largest" — not a max-heap. Next video.',
     'The index math error that breaks parent-child in 0-indexed heaps.',
   ],
-  'trie': [
+  trie: [
     'The compressed trie that uses 10x less memory on sparse datasets.',
     'Why trie beats hash map for prefix autocomplete. Next video.',
     'The trie node boolean flag that marks end-of-word incorrectly. Next.',
   ],
   'bfs-dfs': [
-    'Why BFS finds shortest path in unweighted graphs but DFS doesn\'t.',
+    "Why BFS finds shortest path in unweighted graphs but DFS doesn't.",
     'The iterative DFS stack order that reverses traversal vs recursive.',
     'The BFS level-order trick that solves "minimum steps" problems. Next.',
   ],
-  'backtracking': [
+  backtracking: [
     'The pruning condition that turns 2^n into polynomial time. Next.',
     'Why forgetting to undo your choice corrupts all remaining branches.',
     'The constraint propagation trick that eliminates 90% of branches.',
   ],
-  'greedy': [
+  greedy: [
     'The greedy choice that looks optimal locally but fails globally.',
     'Why the exchange argument proves your greedy approach is correct.',
     'The activity selection variant where greedy gives the wrong answer.',
@@ -680,7 +760,7 @@ const ZEIGARNIK_ENDINGS: Record<string, string[]> = {
     'Why the observer pattern creates memory leaks without unsubscribe.',
     'The strategy pattern that eliminates your 500-line switch statement.',
   ],
-  'default': [
+  default: [
     'The edge case at exactly 1000 QPS that nobody load-tested. Next.',
     'Why the default timeout of 30 seconds causes cascading failures.',
     'The retry policy without jitter that creates a synchronized storm.',
@@ -799,7 +879,11 @@ export function resolveShortNumber(shortNumber: number): { topicSlug: string; sh
  * Given a Date, return which Short to render that day.
  * Uses day-of-year so every day maps to a unique Short for ~22 months.
  */
-export function getShortForDate(date: Date): { topicSlug: string; shortIndex: number; shortNumber: number } {
+export function getShortForDate(date: Date): {
+  topicSlug: string;
+  shortIndex: number;
+  shortNumber: number;
+} {
   const startOfYear = new Date(date.getFullYear(), 0, 0);
   const diff = date.getTime() - startOfYear.getTime();
   const dayOfYear = Math.floor(diff / (1000 * 60 * 60 * 24));
@@ -815,7 +899,7 @@ function buildShortScenes(
   heading: string,
   narration: string,
   bullets: string[],
-  visualCue: ShortEpisode['visualCue'],
+  visualCue: ShortEpisode['visualCue']
 ): Scene[] {
   // Split narration into 3 chunks for 3 scenes (~15s each)
   const sentences = narration.split(/(?<=[.!?])\s+/).filter(Boolean);
@@ -827,9 +911,8 @@ function buildShortScenes(
     sentences.slice(third * 2).join(' '),
   ].filter(Boolean);
 
-  const sceneType: SceneType = visualCue === 'comparison' ? 'table'
-    : visualCue === 'interview' ? 'interview'
-    : 'text';
+  const sceneType: SceneType =
+    visualCue === 'comparison' ? 'table' : visualCue === 'interview' ? 'interview' : 'text';
 
   const fps = 30;
   const totalFrames = 1350; // 45 seconds
@@ -851,8 +934,18 @@ function buildShortScenes(
  * List all 924 Shorts in deterministic order.
  * Useful for debugging and preview.
  */
-export function listAllShorts(): Array<{ shortNumber: number; topicSlug: string; shortIndex: number; title: string }> {
-  const result: Array<{ shortNumber: number; topicSlug: string; shortIndex: number; title: string }> = [];
+export function listAllShorts(): Array<{
+  shortNumber: number;
+  topicSlug: string;
+  shortIndex: number;
+  title: string;
+}> {
+  const result: Array<{
+    shortNumber: number;
+    topicSlug: string;
+    shortIndex: number;
+    title: string;
+  }> = [];
   for (let i = 0; i < TOTAL_SHORTS; i++) {
     const { topicSlug, shortIndex } = resolveShortNumber(i);
     const episode = generateShort(topicSlug, shortIndex);

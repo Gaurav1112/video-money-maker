@@ -66,13 +66,13 @@ export interface RetentionBeat {
 
 export type AudioEvent =
   | 'none'
-  | 'zoom_punch'      // 1.08× scale flash + whoosh SFX
-  | 'audio_sting'     // 80ms 440Hz sine or short whoosh
-  | 'audio_rise'      // ascending filter swell (+3dB over 0.5s)
-  | 'audio_duck'      // 0.5s near-silence before key line
-  | 'audio_slam'      // instant full-volume return
-  | 'color_flash'     // 2-frame accent-color overlay
-  | 'silence_cut';    // 0.5s of full silence
+  | 'zoom_punch' // 1.08× scale flash + whoosh SFX
+  | 'audio_sting' // 80ms 440Hz sine or short whoosh
+  | 'audio_rise' // ascending filter swell (+3dB over 0.5s)
+  | 'audio_duck' // 0.5s near-silence before key line
+  | 'audio_slam' // instant full-volume return
+  | 'color_flash' // 2-frame accent-color overlay
+  | 'silence_cut'; // 0.5s of full silence
 
 export interface RetentionEngineOutput {
   /** Original segments with retention beats woven in, sorted by startSeconds */
@@ -135,7 +135,7 @@ function stakeEscalationText(topic: string): string {
 function patternInterruptText(index: number): string {
   const phrases = [
     'WAIT — before we continue:',
-    'HERE\'S WHAT CHANGES EVERYTHING:',
+    "HERE'S WHAT CHANGES EVERYTHING:",
     'STOP — this is the part most tutorials skip:',
     'PAY ATTENTION HERE:',
     'THIS IS THE CRITICAL PART:',
@@ -190,7 +190,7 @@ function beatId(type: RetentionBeatType, positionSeconds: number): string {
 function findInsertionPoint(
   segments: ScriptSegment[],
   targetSeconds: number,
-  beatDurationSeconds: number,
+  beatDurationSeconds: number
 ): number {
   // Find a gap after targetSeconds that fits the beat
   const sorted = [...segments].sort((a, b) => a.startSeconds - b.startSeconds);
@@ -216,7 +216,7 @@ function findInsertionPoint(
 function shiftSegmentsAfter(
   segments: ScriptSegment[],
   fromSeconds: number,
-  shiftBy: number,
+  shiftBy: number
 ): ScriptSegment[] {
   return segments.map((seg) => {
     if (seg.startSeconds >= fromSeconds) {
@@ -264,17 +264,13 @@ function beatToSegment(beat: RetentionBeat): ScriptSegment {
  */
 export function insertRetentionBeats(
   segments: ScriptSegment[],
-  topic: string,
+  topic: string
 ): RetentionEngineOutput {
   // Sort by start time
-  let workingSegments = [...segments].sort(
-    (a, b) => a.startSeconds - b.startSeconds,
-  );
+  let workingSegments = [...segments].sort((a, b) => a.startSeconds - b.startSeconds);
 
   const totalDuration =
-    workingSegments.length > 0
-      ? workingSegments[workingSegments.length - 1].endSeconds
-      : 0;
+    workingSegments.length > 0 ? workingSegments[workingSegments.length - 1].endSeconds : 0;
 
   const format: 'long_form' | 'short_form' =
     totalDuration <= SHORT_FORM_THRESHOLD_SECONDS ? 'short_form' : 'long_form';
@@ -294,11 +290,7 @@ export function insertRetentionBeats(
       audioEvent: 'audio_duck',
     };
     beatsInserted.push(beat);
-    workingSegments = shiftSegmentsAfter(
-      workingSegments,
-      insertAt,
-      beat.durationSeconds,
-    );
+    workingSegments = shiftSegmentsAfter(workingSegments, insertAt, beat.durationSeconds);
     workingSegments.push(beatToSegment(beat));
   }
 
@@ -314,11 +306,7 @@ export function insertRetentionBeats(
       audioEvent: 'audio_rise',
     };
     beatsInserted.push(beat);
-    workingSegments = shiftSegmentsAfter(
-      workingSegments,
-      insertAt,
-      beat.durationSeconds,
-    );
+    workingSegments = shiftSegmentsAfter(workingSegments, insertAt, beat.durationSeconds);
     workingSegments.push(beatToSegment(beat));
     openLoopOpened++;
 
@@ -333,11 +321,7 @@ export function insertRetentionBeats(
       audioEvent: 'silence_cut',
     };
     beatsInserted.push(cgBeat);
-    workingSegments = shiftSegmentsAfter(
-      workingSegments,
-      cgInsertAt,
-      cgBeat.durationSeconds,
-    );
+    workingSegments = shiftSegmentsAfter(workingSegments, cgInsertAt, cgBeat.durationSeconds);
     workingSegments.push(beatToSegment(cgBeat));
     openLoopOpened++;
   } else {
@@ -352,11 +336,7 @@ export function insertRetentionBeats(
       audioEvent: 'silence_cut',
     };
     beatsInserted.push(beat);
-    workingSegments = shiftSegmentsAfter(
-      workingSegments,
-      insertAt,
-      beat.durationSeconds,
-    );
+    workingSegments = shiftSegmentsAfter(workingSegments, insertAt, beat.durationSeconds);
     workingSegments.push(beatToSegment(beat));
     openLoopOpened++;
   }
@@ -372,11 +352,7 @@ export function insertRetentionBeats(
       audioEvent: 'audio_duck',
     };
     beatsInserted.push(beat);
-    workingSegments = shiftSegmentsAfter(
-      workingSegments,
-      insertAt,
-      beat.durationSeconds,
-    );
+    workingSegments = shiftSegmentsAfter(workingSegments, insertAt, beat.durationSeconds);
     workingSegments.push(beatToSegment(beat));
   }
 
@@ -391,11 +367,7 @@ export function insertRetentionBeats(
       audioEvent: 'audio_sting',
     };
     beatsInserted.push(beat);
-    workingSegments = shiftSegmentsAfter(
-      workingSegments,
-      insertAt,
-      beat.durationSeconds,
-    );
+    workingSegments = shiftSegmentsAfter(workingSegments, insertAt, beat.durationSeconds);
     workingSegments.push(beatToSegment(beat));
   }
 
@@ -411,19 +383,14 @@ export function insertRetentionBeats(
       audioEvent: 'none',
     };
     beatsInserted.push(beat);
-    workingSegments = shiftSegmentsAfter(
-      workingSegments,
-      insertAt,
-      beat.durationSeconds,
-    );
+    workingSegments = shiftSegmentsAfter(workingSegments, insertAt, beat.durationSeconds);
     workingSegments.push(beatToSegment(beat));
   }
 
   // ── 6. Pattern interrupts every 30s ────────────────────────────────────────
   // Re-sort to get correct current positions after all insertions so far
   workingSegments.sort((a, b) => a.startSeconds - b.startSeconds);
-  const currentDuration =
-    workingSegments[workingSegments.length - 1]?.endSeconds ?? totalDuration;
+  const currentDuration = workingSegments[workingSegments.length - 1]?.endSeconds ?? totalDuration;
 
   let interruptIndex = 0;
   for (
@@ -433,9 +400,7 @@ export function insertRetentionBeats(
   ) {
     // Don't insert if there's already a retention beat within 8s
     const alreadyHasBeat = workingSegments.some(
-      (s) =>
-        s.type === 'retention_beat' &&
-        Math.abs(s.startSeconds - t) < 8,
+      (s) => s.type === 'retention_beat' && Math.abs(s.startSeconds - t) < 8
     );
     if (alreadyHasBeat) continue;
 
@@ -447,11 +412,7 @@ export function insertRetentionBeats(
       audioEvent: interruptIndex % 2 === 0 ? 'zoom_punch' : 'audio_sting',
     };
     beatsInserted.push(beat);
-    workingSegments = shiftSegmentsAfter(
-      workingSegments,
-      t,
-      beat.durationSeconds,
-    );
+    workingSegments = shiftSegmentsAfter(workingSegments, t, beat.durationSeconds);
     workingSegments.push(beatToSegment(beat));
     interruptIndex++;
     // Re-sort after each insertion
@@ -464,7 +425,7 @@ export function insertRetentionBeats(
     const insertAt = findInsertionPoint(
       workingSegments,
       targetPos,
-      BEAT_DURATIONS.surprise_subversion,
+      BEAT_DURATIONS.surprise_subversion
     );
     const beat: RetentionBeat = {
       beatType: 'surprise_subversion',
@@ -474,11 +435,7 @@ export function insertRetentionBeats(
       audioEvent: 'silence_cut',
     };
     beatsInserted.push(beat);
-    workingSegments = shiftSegmentsAfter(
-      workingSegments,
-      insertAt,
-      beat.durationSeconds,
-    );
+    workingSegments = shiftSegmentsAfter(workingSegments, insertAt, beat.durationSeconds);
     workingSegments.push(beatToSegment(beat));
   }
 
@@ -497,11 +454,7 @@ export function insertRetentionBeats(
       audioEvent: 'audio_duck',
     };
     beatsInserted.push(restateBeat);
-    workingSegments = shiftSegmentsAfter(
-      workingSegments,
-      restateAt,
-      restateBeat.durationSeconds,
-    );
+    workingSegments = shiftSegmentsAfter(workingSegments, restateAt, restateBeat.durationSeconds);
     workingSegments.push(beatToSegment(restateBeat));
     workingSegments.sort((a, b) => a.startSeconds - b.startSeconds);
 
@@ -515,43 +468,31 @@ export function insertRetentionBeats(
       audioEvent: 'audio_slam',
     };
     beatsInserted.push(buybackBeat);
-    workingSegments = shiftSegmentsAfter(
-      workingSegments,
-      buybackAt,
-      buybackBeat.durationSeconds,
-    );
+    workingSegments = shiftSegmentsAfter(workingSegments, buybackAt, buybackBeat.durationSeconds);
     workingSegments.push(beatToSegment(buybackBeat));
     workingSegments.sort((a, b) => a.startSeconds - b.startSeconds);
   }
 
   // ── 9. Recall bait at midpoint ────────────────────────────────────────────
   workingSegments.sort((a, b) => a.startSeconds - b.startSeconds);
-  const finalDuration =
-    workingSegments[workingSegments.length - 1]?.endSeconds ?? totalDuration;
+  const finalDuration = workingSegments[workingSegments.length - 1]?.endSeconds ?? totalDuration;
 
   const openLoopBeat = beatsInserted.find(
-    (b) => b.beatType === 'open_loop' || b.beatType === 'curiosity_gap',
+    (b) => b.beatType === 'open_loop' || b.beatType === 'curiosity_gap'
   );
   const recallAt = finalDuration * RECALL_BAIT_FRACTION;
   const recallBeat: RetentionBeat = {
     beatType: 'recall_bait',
     insertAtSeconds: recallAt,
     durationSeconds: BEAT_DURATIONS.recall_bait,
-    text: recallBaitText(
-      topic,
-      openLoopBeat?.insertAtSeconds ?? OPEN_LOOP_TARGET_SECONDS,
-    ),
+    text: recallBaitText(topic, openLoopBeat?.insertAtSeconds ?? OPEN_LOOP_TARGET_SECONDS),
     audioEvent: 'audio_sting',
     referencesId: openLoopBeat
       ? beatId(openLoopBeat.beatType, openLoopBeat.insertAtSeconds)
       : undefined,
   };
   beatsInserted.push(recallBeat);
-  workingSegments = shiftSegmentsAfter(
-    workingSegments,
-    recallAt,
-    recallBeat.durationSeconds,
-  );
+  workingSegments = shiftSegmentsAfter(workingSegments, recallAt, recallBeat.durationSeconds);
   workingSegments.push(beatToSegment(recallBeat));
 
   // ── Final sort ─────────────────────────────────────────────────────────────
@@ -559,7 +500,7 @@ export function insertRetentionBeats(
 
   // Count loop balance (recall_bait + surprise_subversion close loops)
   openLoopClosed = beatsInserted.filter(
-    (b) => b.beatType === 'recall_bait' || b.beatType === 'surprise_subversion',
+    (b) => b.beatType === 'recall_bait' || b.beatType === 'surprise_subversion'
   ).length;
 
   return {
@@ -581,16 +522,14 @@ export function formatBeatSchedule(output: RetentionEngineOutput): string {
     `Retention Beat Schedule (${output.format}, ${formatTime(output.totalDurationSeconds)})`,
     '═'.repeat(60),
   ];
-  for (const beat of output.beatsInserted.sort(
-    (a, b) => a.insertAtSeconds - b.insertAtSeconds,
-  )) {
+  for (const beat of output.beatsInserted.sort((a, b) => a.insertAtSeconds - b.insertAtSeconds)) {
     lines.push(
-      `  ${formatTime(beat.insertAtSeconds).padEnd(6)} [${beat.beatType.padEnd(20)}] ${beat.audioEvent.padEnd(15)} "${beat.text.slice(0, 60)}..."`,
+      `  ${formatTime(beat.insertAtSeconds).padEnd(6)} [${beat.beatType.padEnd(20)}] ${beat.audioEvent.padEnd(15)} "${beat.text.slice(0, 60)}..."`
     );
   }
   lines.push('─'.repeat(60));
   lines.push(
-    `  Open loops: ${output.openLoopBalance.opened} opened, ${output.openLoopBalance.closed} closed`,
+    `  Open loops: ${output.openLoopBalance.opened} opened, ${output.openLoopBalance.closed} closed`
   );
   return lines.join('\n');
 }

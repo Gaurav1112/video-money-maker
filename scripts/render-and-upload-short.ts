@@ -67,7 +67,7 @@ function runWithRetry(
   cmd: string,
   description: string,
   maxRetries: number = 3,
-  retryDelayMs: number = 30000,
+  retryDelayMs: number = 30000
 ): boolean {
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     console.log(`[${description}] Attempt ${attempt}/${maxRetries}...`);
@@ -89,10 +89,10 @@ function runWithRetry(
 function extractBestFrame(videoPath: string, outputPath: string): boolean {
   // Extract frame at 5 seconds (best hook moment)
   try {
-    execSync(
-      `ffmpeg -y -ss 5 -i "${videoPath}" -vframes 1 -q:v 2 "${outputPath}"`,
-      { stdio: 'pipe', cwd: PROJECT_ROOT },
-    );
+    execSync(`ffmpeg -y -ss 5 -i "${videoPath}" -vframes 1 -q:v 2 "${outputPath}"`, {
+      stdio: 'pipe',
+      cwd: PROJECT_ROOT,
+    });
     return fs.existsSync(outputPath);
   } catch {
     return false;
@@ -129,9 +129,10 @@ async function main() {
 
   // ── Step 2: Render ──
   console.log('[STEP 1/5] Rendering Short...');
-  const renderArgs = explicitShort !== null
-    ? `--short ${explicitShort}`
-    : `--date ${date.toISOString().slice(0, 10)}`;
+  const renderArgs =
+    explicitShort !== null
+      ? `--short ${explicitShort}`
+      : `--date ${date.toISOString().slice(0, 10)}`;
 
   const renderCmd = `npx tsx scripts/render-daily-short.ts ${renderArgs}`;
   const renderSuccess = runWithRetry(renderCmd, 'Render', 2, 10000);

@@ -89,7 +89,7 @@ const MAX_TAGS_TOTAL_CHARS = 500;
  */
 export function buildHinglishUploadPayload(
   metadata: MetadataFile,
-  originalVideoId: string,
+  originalVideoId: string
 ): HinglishUploadPayload {
   const originalTitle = metadata.youtube.title;
 
@@ -97,8 +97,7 @@ export function buildHinglishUploadPayload(
   const suffix = ' (Hinglish)';
   let title = `${originalTitle}${suffix}`;
   if (title.length > MAX_TITLE_LENGTH) {
-    title =
-      originalTitle.slice(0, MAX_TITLE_LENGTH - suffix.length).trimEnd() + suffix;
+    title = originalTitle.slice(0, MAX_TITLE_LENGTH - suffix.length).trimEnd() + suffix;
   }
 
   // Description: Hinglish banner prepended to original
@@ -144,18 +143,29 @@ export function buildHinglishUploadPayload(
 function composeHinglishVideo(videoPath: string, audioPath: string): string {
   const outputPath = path.join(path.dirname(audioPath), 'video-with-hinglish.mp4');
 
-  execFileSync('ffmpeg', [
-    '-y',
-    '-i', videoPath,
-    '-i', audioPath,
-    '-map', '0:v:0',
-    '-map', '1:a:0',
-    '-c:v', 'copy',
-    '-c:a', 'aac',
-    '-b:a', '128k',
-    '-shortest',
-    outputPath,
-  ], { stdio: 'pipe' });
+  execFileSync(
+    'ffmpeg',
+    [
+      '-y',
+      '-i',
+      videoPath,
+      '-i',
+      audioPath,
+      '-map',
+      '0:v:0',
+      '-map',
+      '1:a:0',
+      '-c:v',
+      'copy',
+      '-c:a',
+      'aac',
+      '-b:a',
+      '128k',
+      '-shortest',
+      outputPath,
+    ],
+    { stdio: 'pipe' }
+  );
 
   return outputPath;
 }
@@ -165,7 +175,7 @@ function composeHinglishVideo(videoPath: string, audioPath: string): string {
 async function addVideoToPlaylist(
   youtube: youtube_v3.Youtube,
   playlistId: string,
-  videoId: string,
+  videoId: string
 ): Promise<void> {
   await youtube.playlistItems.insert({
     part: ['snippet'],
@@ -203,7 +213,7 @@ function parseArgs(): {
   if (!topic || !sessionStr || !audioPath) {
     console.error(
       'Usage: upload-hinglish-youtube.ts --topic <slug> --session <N> ' +
-        '--audio <mp3> [--playlist <playlist-id>]',
+        '--audio <mp3> [--playlist <playlist-id>]'
     );
     process.exit(1);
   }
@@ -241,7 +251,7 @@ async function main(): Promise<void> {
 
   if (missingSecrets.length > 0) {
     console.error(
-      `[upload-hinglish-youtube] ⚠️  missing secrets: ${missingSecrets.join(', ')} — skipping upload`,
+      `[upload-hinglish-youtube] ⚠️  missing secrets: ${missingSecrets.join(', ')} — skipping upload`
     );
     process.exit(0); // non-fatal, matches pattern in cross-post-x.ts / publish-to-instagram.ts
   }
@@ -253,9 +263,7 @@ async function main(): Promise<void> {
   }
   const queue: PublishQueue = JSON.parse(fs.readFileSync(QUEUE_PATH, 'utf-8'));
 
-  const entry = queue.entries.find(
-    (e) => e.topic === topic && Number(e.session) === session,
-  );
+  const entry = queue.entries.find((e) => e.topic === topic && Number(e.session) === session);
   if (!entry) {
     console.error(`[upload-hinglish-youtube] entry not found: topic=${topic} session=${session}`);
     process.exit(1);
@@ -347,7 +355,10 @@ async function main(): Promise<void> {
 
 // Only run when executed as the entry-point script (not when imported by tests)
 const _argv1 = process.argv[1] ?? '';
-if (_argv1.endsWith('upload-hinglish-youtube.ts') || _argv1.endsWith('upload-hinglish-youtube.js')) {
+if (
+  _argv1.endsWith('upload-hinglish-youtube.ts') ||
+  _argv1.endsWith('upload-hinglish-youtube.js')
+) {
   main().catch((err) => {
     console.error(`[upload-hinglish-youtube] fatal: ${(err as Error).message}`);
     process.exit(1);

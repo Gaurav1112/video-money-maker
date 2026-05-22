@@ -3,7 +3,14 @@
  * Cross-language cartoon dialogue management for 7 Indian languages.
  */
 
-export type DialogueLanguage = 'hindi' | 'english' | 'telugu' | 'tamil' | 'kannada' | 'marathi' | 'bengali';
+export type DialogueLanguage =
+  | 'hindi'
+  | 'english'
+  | 'telugu'
+  | 'tamil'
+  | 'kannada'
+  | 'marathi'
+  | 'bengali';
 
 export type DialogueEmotion =
   | 'greeting'

@@ -66,32 +66,28 @@ export function buildLinkedInPostBody(args: {
   if (!linkedinObj || typeof linkedinObj !== 'object') {
     throw new Error(
       '[post-linkedin] metadata.linkedin missing — was this metadata.json ' +
-      'produced by render-stock-short.ts? The linkedin.{title,body} fields ' +
-      'are required.',
+        'produced by render-stock-short.ts? The linkedin.{title,body} fields ' +
+        'are required.'
     );
   }
   const baseBodyRaw = (linkedinObj.body || '').trim();
   if (!baseBodyRaw) {
     throw new Error(
       '[post-linkedin] metadata.linkedin.body is empty — refusing to post ' +
-      'an empty LinkedIn body. Check the renderer\'s linkedin.body builder.',
+        "an empty LinkedIn body. Check the renderer's linkedin.body builder."
     );
   }
-  const title = (linkedinObj.title || args.metadata?.youtube?.title || args.metadata?.topic || 'New Tech Short')
-    .trim();
+  const title = (
+    linkedinObj.title ||
+    args.metadata?.youtube?.title ||
+    args.metadata?.topic ||
+    'New Tech Short'
+  ).trim();
   const baseBody = baseBodyRaw;
   // LinkedIn truncates at the "see more" fold around 200-300 chars on
   // mobile; lead with the title + watch link so the most important
   // signal sits above that fold.
-  const text = [
-    title,
-    '',
-    `▶ Watch (60 sec): ${url}`,
-    '',
-    baseBody,
-  ]
-    .join('\n')
-    .slice(0, 3000);
+  const text = [title, '', `▶ Watch (60 sec): ${url}`, '', baseBody].join('\n').slice(0, 3000);
 
   return {
     author: args.authorUrn,
@@ -124,7 +120,7 @@ async function main(): Promise<void> {
   const authorUrn = process.env['LINKEDIN_AUTHOR_URN'];
   if (!token || !authorUrn) {
     console.log(
-      '[post-linkedin] LINKEDIN_ACCESS_TOKEN / LINKEDIN_AUTHOR_URN missing — skipping (non-blocking)',
+      '[post-linkedin] LINKEDIN_ACCESS_TOKEN / LINKEDIN_AUTHOR_URN missing — skipping (non-blocking)'
     );
     process.exit(0);
   }
@@ -153,9 +149,7 @@ async function main(): Promise<void> {
 
   const respText = await resp.text();
   if (!resp.ok) {
-    console.error(
-      `[post-linkedin] ❌ HTTP ${resp.status} — ${respText.slice(0, 500)}`,
-    );
+    console.error(`[post-linkedin] ❌ HTTP ${resp.status} — ${respText.slice(0, 500)}`);
     process.exit(1);
   }
   console.log(`[post-linkedin] ✓ posted (status ${resp.status}): ${respText.slice(0, 200)}`);

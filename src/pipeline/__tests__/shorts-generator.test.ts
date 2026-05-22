@@ -66,7 +66,11 @@ describe('generateShort()', () => {
 
     it('has a valid visualCue', () => {
       const validCues: ShortEpisode['visualCue'][] = [
-        'concept', 'comparison', 'list', 'interview', 'cheatsheet',
+        'concept',
+        'comparison',
+        'list',
+        'interview',
+        'cheatsheet',
       ];
       expect(validCues).toContain(episode.visualCue);
     });
@@ -147,7 +151,7 @@ describe('generateShort()', () => {
       ({ i, name }) => {
         const ep = generateShort(TOPIC, i);
         expect(ep.formatName).toBe(name);
-      },
+      }
     );
   });
 
@@ -166,7 +170,7 @@ describe('generateShort()', () => {
 
     it('different shortIndex values produce different format names', () => {
       const formats = new Set(
-        Array.from({ length: 10 }, (_, i) => generateShort(TOPIC, i).formatName),
+        Array.from({ length: 10 }, (_, i) => generateShort(TOPIC, i).formatName)
       );
       expect(formats.size).toBe(10);
     });

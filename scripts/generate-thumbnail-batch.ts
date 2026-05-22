@@ -32,19 +32,60 @@ import { hookTextFor, variantFor, djb2 } from '../src/lib/thumbnail-text';
 
 function inferCategory(storyboard: Storyboard): string {
   const topic = storyboard.topic.toLowerCase();
-  if (['system design', 'load balanc', 'caching', 'cdn', 'microservice', 'database', 'rate limit', 'message queue'].some(k => topic.includes(k))) return 'System Design';
-  if (['array', 'tree', 'graph', 'linked list', 'stack', 'queue', 'sort', 'search', 'dynamic', 'dp', 'recursion', 'heap', 'trie', 'bfs', 'dfs'].some(k => topic.includes(k))) return 'DSA';
-  if (['react', 'css', 'html', 'javascript', 'typescript', 'frontend', 'next'].some(k => topic.includes(k))) return 'Frontend';
-  if (['java', 'python', 'go', 'rust', 'c++', 'spring'].some(k => topic.includes(k))) return 'Backend';
-  if (['docker', 'kubernetes', 'ci/cd', 'deploy', 'aws', 'cloud'].some(k => topic.includes(k))) return 'DevOps';
+  if (
+    [
+      'system design',
+      'load balanc',
+      'caching',
+      'cdn',
+      'microservice',
+      'database',
+      'rate limit',
+      'message queue',
+    ].some((k) => topic.includes(k))
+  )
+    return 'System Design';
+  if (
+    [
+      'array',
+      'tree',
+      'graph',
+      'linked list',
+      'stack',
+      'queue',
+      'sort',
+      'search',
+      'dynamic',
+      'dp',
+      'recursion',
+      'heap',
+      'trie',
+      'bfs',
+      'dfs',
+    ].some((k) => topic.includes(k))
+  )
+    return 'DSA';
+  if (
+    ['react', 'css', 'html', 'javascript', 'typescript', 'frontend', 'next'].some((k) =>
+      topic.includes(k)
+    )
+  )
+    return 'Frontend';
+  if (['java', 'python', 'go', 'rust', 'c++', 'spring'].some((k) => topic.includes(k)))
+    return 'Backend';
+  if (['docker', 'kubernetes', 'ci/cd', 'deploy', 'aws', 'cloud'].some((k) => topic.includes(k)))
+    return 'DevOps';
   return 'Interview Prep';
 }
 
 function wrongLabelFor(topic: string): string {
   const lower = topic.toLowerCase();
-  if (lower.includes('kafka') || lower.includes('queue') || lower.includes('stream')) return 'MOST ENGINEERS DO THIS';
-  if (lower.includes('database') || lower.includes('sql') || lower.includes('redis')) return 'MOST DEVS QUERY WRONG';
-  if (['algo', 'sort', 'tree', 'graph', 'array', 'dp', 'recursion'].some(k => lower.includes(k))) return '90% BRUTE FORCE THIS';
+  if (lower.includes('kafka') || lower.includes('queue') || lower.includes('stream'))
+    return 'MOST ENGINEERS DO THIS';
+  if (lower.includes('database') || lower.includes('sql') || lower.includes('redis'))
+    return 'MOST DEVS QUERY WRONG';
+  if (['algo', 'sort', 'tree', 'graph', 'array', 'dp', 'recursion'].some((k) => lower.includes(k)))
+    return '90% BRUTE FORCE THIS';
   if (lower.includes('system design')) return 'JUNIORS DESIGN THIS WAY';
   return 'MOST DEVS DO THIS';
 }
@@ -53,7 +94,8 @@ function correctLabelFor(topic: string): string {
   const lower = topic.toLowerCase();
   if (lower.includes('kafka') || lower.includes('queue')) return 'FAANG ARCHITECTS DO THIS';
   if (lower.includes('database') || lower.includes('sql')) return 'FAANG QUERY PATTERN';
-  if (['algo', 'sort', 'tree', 'graph', 'array', 'dp', 'recursion'].some(k => lower.includes(k))) return 'OPTIMAL APPROACH HERE';
+  if (['algo', 'sort', 'tree', 'graph', 'array', 'dp', 'recursion'].some((k) => lower.includes(k)))
+    return 'OPTIMAL APPROACH HERE';
   if (lower.includes('system design')) return 'SENIOR ENGINEERS DO THIS';
   return 'FAANG DOES THIS';
 }
@@ -88,11 +130,10 @@ async function main() {
     __dirname,
     '../tools/sadtalker-env/output',
     topic.toLowerCase().replace(/\s+/g, '-'),
-    'peak-emotion.png',
+    'peak-emotion.png'
   );
   const faceImageSrc =
-    process.env.FACE_IMAGE_PATH ??
-    (fs.existsSync(autoFacePath) ? autoFacePath : undefined);
+    process.env.FACE_IMAGE_PATH ?? (fs.existsSync(autoFacePath) ? autoFacePath : undefined);
 
   console.log(`\n🎨 Thumbnail Batch Generator`);
   console.log(`   Topic:        ${topic}`);

@@ -1,5 +1,12 @@
 import React from 'react';
-import { Audio, Sequence, interpolate, useCurrentFrame, useVideoConfig, staticFile } from 'remotion';
+import {
+  Audio,
+  Sequence,
+  interpolate,
+  useCurrentFrame,
+  useVideoConfig,
+  staticFile,
+} from 'remotion';
 import { SyncTimeline } from '../lib/sync-engine';
 
 /**
@@ -45,7 +52,7 @@ export const BgmLayer: React.FC<BgmLayerProps> = (props) => {
     bgmFile,
     mood,
     duckVolume = 0.07, // was 0.04 — audible on phone speakers during narration
-    baseVolume = 0.10,
+    baseVolume = 0.1,
   } = props;
   const frame = useCurrentFrame();
   const { durationInFrames, fps } = useVideoConfig();
@@ -123,19 +130,17 @@ export const BgmLayer: React.FC<BgmLayerProps> = (props) => {
       });
 
       // Fade out over last 4 seconds
-      const fadeOut = interpolate(
-        f,
-        [durationInFrames - fadeOutFrames, durationInFrames],
-        [1, 0],
-        { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
-      );
+      const fadeOut = interpolate(f, [durationInFrames - fadeOutFrames, durationInFrames], [1, 0], {
+        extrapolateLeft: 'clamp',
+        extrapolateRight: 'clamp',
+      });
 
       // Smoothly ducked volume from pre-computed array
       const ducked = f < duckingVolumes.length ? duckingVolumes[f] : duckVolume;
 
       return fadeIn * fadeOut * ducked;
     },
-    [durationInFrames, fadeInFrames, fadeOutFrames, duckingVolumes, duckVolume],
+    [durationInFrames, fadeInFrames, fadeOutFrames, duckingVolumes, duckVolume]
   );
 
   // Multi-track crossfade rendering
@@ -144,7 +149,11 @@ export const BgmLayer: React.FC<BgmLayerProps> = (props) => {
     return (
       <>
         {segments.map((seg, i) => (
-          <Sequence key={`bgm-${i}`} from={seg.startFrame} durationInFrames={seg.endFrame - seg.startFrame}>
+          <Sequence
+            key={`bgm-${i}`}
+            from={seg.startFrame}
+            durationInFrames={seg.endFrame - seg.startFrame}
+          >
             <Audio
               src={staticFile(seg.trackFile)}
               volume={(f) => {
@@ -152,15 +161,23 @@ export const BgmLayer: React.FC<BgmLayerProps> = (props) => {
                 const segDuration = seg.endFrame - seg.startFrame;
                 // Fade in over crossfade period
                 const fadeIn = interpolate(localFrame, [0, crossfadeFrames], [0, 1], {
-                  extrapolateLeft: 'clamp', extrapolateRight: 'clamp',
+                  extrapolateLeft: 'clamp',
+                  extrapolateRight: 'clamp',
                 });
                 // Fade out over crossfade period at end
-                const fadeOut = interpolate(localFrame, [segDuration - crossfadeFrames, segDuration], [1, 0], {
-                  extrapolateLeft: 'clamp', extrapolateRight: 'clamp',
-                });
+                const fadeOut = interpolate(
+                  localFrame,
+                  [segDuration - crossfadeFrames, segDuration],
+                  [1, 0],
+                  {
+                    extrapolateLeft: 'clamp',
+                    extrapolateRight: 'clamp',
+                  }
+                );
                 // Ducking from pre-computed array
                 const absFrame = seg.startFrame + localFrame;
-                const ducked = absFrame < duckingVolumes.length ? duckingVolumes[absFrame] : duckVolume;
+                const ducked =
+                  absFrame < duckingVolumes.length ? duckingVolumes[absFrame] : duckVolume;
                 return fadeIn * fadeOut * ducked;
               }}
             />
@@ -171,11 +188,5 @@ export const BgmLayer: React.FC<BgmLayerProps> = (props) => {
   }
 
   // Single-track fallback (loop)
-  return (
-    <Audio
-      src={staticFile(resolvedFile)}
-      volume={volume}
-      loop
-    />
-  );
+  return <Audio src={staticFile(resolvedFile)} volume={volume} loop />;
 };

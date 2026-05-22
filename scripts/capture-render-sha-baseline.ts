@@ -14,11 +14,14 @@ import { join } from 'node:path';
 interface ShaBaseline {
   capturedAt: string;
   renderCount: number;
-  videos: Record<string, {
-    filename: string;
-    sha256: string;
-    sizeBytes: number;
-  }>;
+  videos: Record<
+    string,
+    {
+      filename: string;
+      sha256: string;
+      sizeBytes: number;
+    }
+  >;
 }
 
 const outputDir = join(process.cwd(), 'output');

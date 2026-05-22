@@ -17,10 +17,7 @@ function fmtTime(t: number): string {
   return `${hh}:${mm}:${ss},${mmm}`;
 }
 
-export function wordTimestampsToSrt(
-  words: WordTimestamp[],
-  opts: SrtOptions = {},
-): string {
+export function wordTimestampsToSrt(words: WordTimestamp[], opts: SrtOptions = {}): string {
   if (words.length === 0) return '';
   const wordsPerCue = opts.wordsPerCue ?? 6;
   const cues: string[] = [];
@@ -28,7 +25,7 @@ export function wordTimestampsToSrt(
     const group = words.slice(i, i + wordsPerCue);
     const start = group[0].start;
     const end = group[group.length - 1].end;
-    const text = group.map(w => w.word).join(' ');
+    const text = group.map((w) => w.word).join(' ');
     const idx = cues.length + 1;
     cues.push(`${idx}\n${fmtTime(start)} --> ${fmtTime(end)}\n${text}\n`);
   }

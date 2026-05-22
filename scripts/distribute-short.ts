@@ -37,25 +37,43 @@ interface ShortMetadata {
 
 type Platform = 'youtube' | 'instagram' | 'tiktok' | 'linkedin' | 'twitter' | 'reddit';
 
-const ALL_PLATFORMS: Platform[] = ['youtube', 'instagram', 'tiktok', 'linkedin', 'twitter', 'reddit'];
+const ALL_PLATFORMS: Platform[] = [
+  'youtube',
+  'instagram',
+  'tiktok',
+  'linkedin',
+  'twitter',
+  'reddit',
+];
 
 // ─── Hashtag Banks ──────────────────────────────────────────────────────────
 
 const INSTAGRAM_HASHTAGS_BASE = [
-  '#programming', '#coding', '#developer', '#softwareengineering', '#tech',
-  '#coder', '#webdev', '#devlife', '#computerscience', '#learntocode',
-  '#programmingmemes', '#techcommunity', '#softwaredeveloper', '#codinglife',
-  '#programminghumor', '#100daysofcode', '#techtips', '#codingtips',
-  '#systemdesign', '#interviewprep',
+  '#programming',
+  '#coding',
+  '#developer',
+  '#softwareengineering',
+  '#tech',
+  '#coder',
+  '#webdev',
+  '#devlife',
+  '#computerscience',
+  '#learntocode',
+  '#programmingmemes',
+  '#techcommunity',
+  '#softwaredeveloper',
+  '#codinglife',
+  '#programminghumor',
+  '#100daysofcode',
+  '#techtips',
+  '#codingtips',
+  '#systemdesign',
+  '#interviewprep',
 ];
 
-const TIKTOK_HASHTAGS_BASE = [
-  '#techtok', '#codingtok', '#learnontiktok', '#programming', '#tech',
-];
+const TIKTOK_HASHTAGS_BASE = ['#techtok', '#codingtok', '#learnontiktok', '#programming', '#tech'];
 
-const LINKEDIN_HASHTAGS_BASE = [
-  '#SoftwareEngineering', '#TechCareers', '#SystemDesign',
-];
+const LINKEDIN_HASHTAGS_BASE = ['#SoftwareEngineering', '#TechCareers', '#SystemDesign'];
 
 // ─── Topic → Niche Hashtags ────────────────────────────────────────────────
 
@@ -146,8 +164,13 @@ function generateInstagramCaption(meta: ShortMetadata, topic: string): string {
   const allHashtags = [
     ...topicTags.ig,
     ...INSTAGRAM_HASHTAGS_BASE,
-    '#reels', '#reelsinstagram', '#explorepage', '#viral',
-    '#techreels', '#codingchallenge', '#engineeringlife',
+    '#reels',
+    '#reelsinstagram',
+    '#explorepage',
+    '#viral',
+    '#techreels',
+    '#codingchallenge',
+    '#engineeringlife',
   ];
 
   // Deduplicate and limit to 30
@@ -197,7 +220,7 @@ function generateLinkedInPost(meta: ShortMetadata, topic: string): string {
   const title = meta.youtube.title;
   const desc = meta.youtube.description;
   const topicTags = getTopicHashtags(topic);
-  const topicName = topic.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+  const topicName = topic.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 
   const lines = [
     `${title}`,
@@ -205,7 +228,7 @@ function generateLinkedInPost(meta: ShortMetadata, topic: string): string {
     `Understanding ${topicName} is one of the skills that separates senior engineers from the rest.`,
     '',
     `In this 45-second breakdown, I cover:`,
-    ...meta.youtube.tags.slice(0, 4).map(t => `→ ${t.charAt(0).toUpperCase() + t.slice(1)}`),
+    ...meta.youtube.tags.slice(0, 4).map((t) => `→ ${t.charAt(0).toUpperCase() + t.slice(1)}`),
     '',
     `Whether you're preparing for system design interviews or building production systems, these fundamentals matter.`,
     '',
@@ -242,7 +265,10 @@ function generateTweet(meta: ShortMetadata, topic: string): string {
   return tweet;
 }
 
-function generateRedditTitles(meta: ShortMetadata, topic: string): Record<string, { title: string; subreddit: string; flair?: string }> {
+function generateRedditTitles(
+  meta: ShortMetadata,
+  topic: string
+): Record<string, { title: string; subreddit: string; flair?: string }> {
   const topicName = topic.replace(/-/g, ' ');
   const title = meta.youtube.title.replace(/—.*$/, '').trim();
 
@@ -292,7 +318,7 @@ Example:
 
   for (let i = 1; i < args.length; i++) {
     if (args[i] === '--platforms' && args[i + 1]) {
-      platforms = args[i + 1].split(',').map(p => p.trim() as Platform);
+      platforms = args[i + 1].split(',').map((p) => p.trim() as Platform);
       i++;
     } else if (args[i] === '--out' && args[i + 1]) {
       outDir = path.resolve(args[i + 1]);
@@ -411,16 +437,13 @@ function main() {
     videoPath,
     metadataPath,
     generatedAt: new Date().toISOString(),
-    platforms: platforms.map(p => ({
+    platforms: platforms.map((p) => ({
       platform: p,
       directory: path.join(baseOutDir, p),
     })),
   };
 
-  fs.writeFileSync(
-    path.join(baseOutDir, 'manifest.json'),
-    JSON.stringify(manifest, null, 2)
-  );
+  fs.writeFileSync(path.join(baseOutDir, 'manifest.json'), JSON.stringify(manifest, null, 2));
 
   console.log(`\n✅ Distribution package ready at: ${baseOutDir}/`);
   console.log(`   Manifest: ${baseOutDir}/manifest.json\n`);
@@ -431,13 +454,19 @@ function main() {
     console.log(`   YouTube:   npx tsx scripts/render-and-upload-short.ts (already uploaded)`);
   }
   if (platforms.includes('reddit')) {
-    console.log(`   Reddit:    bash scripts/post-to-platforms.sh reddit ${baseOutDir}/reddit/post-titles.json ${videoPath}`);
+    console.log(
+      `   Reddit:    bash scripts/post-to-platforms.sh reddit ${baseOutDir}/reddit/post-titles.json ${videoPath}`
+    );
   }
   if (platforms.includes('twitter')) {
-    console.log(`   Twitter:   bash scripts/post-to-platforms.sh twitter ${baseOutDir}/twitter/tweet.txt`);
+    console.log(
+      `   Twitter:   bash scripts/post-to-platforms.sh twitter ${baseOutDir}/twitter/tweet.txt`
+    );
   }
   if (platforms.includes('linkedin')) {
-    console.log(`   LinkedIn:  bash scripts/post-to-platforms.sh linkedin ${baseOutDir}/linkedin/post.txt ${videoPath}`);
+    console.log(
+      `   LinkedIn:  bash scripts/post-to-platforms.sh linkedin ${baseOutDir}/linkedin/post.txt ${videoPath}`
+    );
   }
   console.log('');
 }

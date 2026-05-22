@@ -12,7 +12,14 @@
  *   <StatBomb seed={7} value="340ms" label="p95 latency before fix" color="#EF4444" />
  */
 import React from 'react';
-import { useCurrentFrame, useVideoConfig, interpolate, spring, Easing, AbsoluteFill } from 'remotion';
+import {
+  useCurrentFrame,
+  useVideoConfig,
+  interpolate,
+  spring,
+  Easing,
+  AbsoluteFill,
+} from 'remotion';
 import { createNoise } from './seeded-noise';
 
 const COLORS = {
@@ -70,21 +77,24 @@ export const StatBomb: React.FC<StatBombProps> = ({
   const scale = interpolate(scaleSpring, [0, 1], [0.3, 1]);
 
   // Shake on slam — uses seeded noise for deterministic shake
-  const shakeX = frame < inFrames + 6
-    ? n.smoothAt(frame * 3.7, -8, 8) * Math.max(0, 1 - frame / (inFrames + 6))
-    : 0;
-  const shakeY = frame < inFrames + 6
-    ? n.smoothAt(frame * 2.3 + 100, -5, 5) * Math.max(0, 1 - frame / (inFrames + 6))
-    : 0;
+  const shakeX =
+    frame < inFrames + 6
+      ? n.smoothAt(frame * 3.7, -8, 8) * Math.max(0, 1 - frame / (inFrames + 6))
+      : 0;
+  const shakeY =
+    frame < inFrames + 6
+      ? n.smoothAt(frame * 2.3 + 100, -5, 5) * Math.max(0, 1 - frame / (inFrames + 6))
+      : 0;
 
   // Fade out
-  const opacity = frame < totalHold
-    ? 1
-    : interpolate(frame, [totalHold, totalOut], [1, 0], {
-        extrapolateLeft: 'clamp',
-        extrapolateRight: 'clamp',
-        easing: Easing.out(Easing.quad),
-      });
+  const opacity =
+    frame < totalHold
+      ? 1
+      : interpolate(frame, [totalHold, totalOut], [1, 0], {
+          extrapolateLeft: 'clamp',
+          extrapolateRight: 'clamp',
+          easing: Easing.out(Easing.quad),
+        });
 
   // Label slides up from below
   const labelY = interpolate(frame, [inFrames, inFrames + 20], [30, 0], {

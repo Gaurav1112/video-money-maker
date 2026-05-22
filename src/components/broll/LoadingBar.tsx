@@ -66,9 +66,7 @@ export const LoadingBar: React.FC<LoadingBarProps> = ({
 
   // Glow pulse on fill end
   const fillComplete = elapsed > fillDuration;
-  const glowIntensity = fillComplete
-    ? interpolate(Math.sin(frame * 0.15), [-1, 1], [0.3, 0.8])
-    : 0;
+  const glowIntensity = fillComplete ? interpolate(Math.sin(frame * 0.15), [-1, 1], [0.3, 0.8]) : 0;
 
   const percent = Math.round(fillProgress * 100);
 

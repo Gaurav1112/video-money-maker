@@ -65,10 +65,15 @@ const CountdownBeat: React.FC<{
     extrapolateRight: 'clamp',
     easing: (t) => 1 - Math.pow(1 - t, 3),
   });
-  const reasonOp = interpolate(frame, [startFrame + 8, startFrame + 16, endFrame - 6, endFrame], [0, 1, 1, 0], {
-    extrapolateLeft: 'clamp',
-    extrapolateRight: 'clamp',
-  });
+  const reasonOp = interpolate(
+    frame,
+    [startFrame + 8, startFrame + 16, endFrame - 6, endFrame],
+    [0, 1, 1, 0],
+    {
+      extrapolateLeft: 'clamp',
+      extrapolateRight: 'clamp',
+    }
+  );
 
   // Progress bar for this beat
   const barWidth = interpolate(frame, [startFrame, endFrame], [100, 0], {
@@ -79,55 +84,70 @@ const CountdownBeat: React.FC<{
   if (frame < startFrame || frame > endFrame) return null;
 
   return (
-    <AbsoluteFill style={{ justifyContent: 'center', alignItems: 'center', flexDirection: 'column', opacity: op }}>
+    <AbsoluteFill
+      style={{
+        justifyContent: 'center',
+        alignItems: 'center',
+        flexDirection: 'column',
+        opacity: op,
+      }}
+    >
       {/* Big countdown number */}
-      <div style={{
-        fontFamily: FONTS.heading,
-        fontSize: 200,
-        fontWeight: 900,
-        color: accentColor,
-        lineHeight: 1,
-        transform: `scale(${numScale})`,
-        opacity: 0.2,
-        position: 'absolute',
-        userSelect: 'none',
-      }}>
+      <div
+        style={{
+          fontFamily: FONTS.heading,
+          fontSize: 200,
+          fontWeight: 900,
+          color: accentColor,
+          lineHeight: 1,
+          transform: `scale(${numScale})`,
+          opacity: 0.2,
+          position: 'absolute',
+          userSelect: 'none',
+        }}
+      >
         {number}
       </div>
 
       {/* Reason text */}
-      <div style={{
-        fontFamily: FONTS.heading,
-        fontSize: 52,
-        fontWeight: 800,
-        color: '#FFFFFF',
-        textAlign: 'center',
-        paddingLeft: 80,
-        paddingRight: 80,
-        opacity: reasonOp,
-        transform: `translateY(${reasonY}px)`,
-        zIndex: 1,
-        maxWidth: 1100,
-        lineHeight: 1.2,
-      }}>
+      <div
+        style={{
+          fontFamily: FONTS.heading,
+          fontSize: 52,
+          fontWeight: 800,
+          color: '#FFFFFF',
+          textAlign: 'center',
+          paddingLeft: 80,
+          paddingRight: 80,
+          opacity: reasonOp,
+          transform: `translateY(${reasonY}px)`,
+          zIndex: 1,
+          maxWidth: 1100,
+          lineHeight: 1.2,
+        }}
+      >
         {reason}
       </div>
 
       {/* Progress bar */}
-      <div style={{
-        position: 'absolute',
-        bottom: 60,
-        left: '10%',
-        right: '10%',
-        height: 4,
-        backgroundColor: 'rgba(255,255,255,0.1)',
-      }}>
-        <div style={{
-          height: '100%',
-          width: `${barWidth}%`,
-          backgroundColor: accentColor,
-          transition: 'none',
-        }} />
+      <div
+        style={{
+          position: 'absolute',
+          bottom: 60,
+          left: '10%',
+          right: '10%',
+          height: 4,
+          backgroundColor: 'rgba(255,255,255,0.1)',
+        }}
+      >
+        <div
+          style={{
+            height: '100%',
+            width: `${barWidth}%`,
+            backgroundColor: accentColor,
+            transition: 'none',
+          }}
+        />
       </div>
     </AbsoluteFill>
   );
@@ -147,42 +167,56 @@ export const UrgencyCountdown: React.FC<HookOpenerProps> = ({ frame, fps, topic,
     <AbsoluteFill style={{ backgroundColor: '#0C0A15', opacity: exitOp, overflow: 'hidden' }}>
       {/* Beat 3 */}
       <CountdownBeat
-        frame={frame} fps={fps}
-        startFrame={0} endFrame={28}
-        number={3} reason={r1}
+        frame={frame}
+        fps={fps}
+        startFrame={0}
+        endFrame={28}
+        number={3}
+        reason={r1}
         accentColor={colors[0]}
       />
       {/* Beat 2 */}
       <CountdownBeat
-        frame={frame} fps={fps}
-        startFrame={29} endFrame={58}
-        number={2} reason={r2}
+        frame={frame}
+        fps={fps}
+        startFrame={29}
+        endFrame={58}
+        number={2}
+        reason={r2}
         accentColor={colors[1]}
       />
       {/* Beat 1 */}
       <CountdownBeat
-        frame={frame} fps={fps}
-        startFrame={59} endFrame={80}
-        number={1} reason={r3}
+        frame={frame}
+        fps={fps}
+        startFrame={59}
+        endFrame={80}
+        number={1}
+        reason={r3}
         accentColor={colors[2]}
       />
 
       {/* Topic slam at end */}
       {frame >= 59 && (
-        <div style={{
-          position: 'absolute',
-          bottom: 100,
-          left: 0,
-          right: 0,
-          textAlign: 'center',
-          fontFamily: FONTS.heading,
-          fontSize: 28,
-          fontWeight: 700,
-          color: COLORS.textOnDark,
-          letterSpacing: 4,
-          textTransform: 'uppercase',
-          opacity: interpolate(frame, [59, 68], [0, 0.7], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }),
-        }}>
+        <div
+          style={{
+            position: 'absolute',
+            bottom: 100,
+            left: 0,
+            right: 0,
+            textAlign: 'center',
+            fontFamily: FONTS.heading,
+            fontSize: 28,
+            fontWeight: 700,
+            color: COLORS.textOnDark,
+            letterSpacing: 4,
+            textTransform: 'uppercase',
+            opacity: interpolate(frame, [59, 68], [0, 0.7], {
+              extrapolateLeft: 'clamp',
+              extrapolateRight: 'clamp',
+            }),
+          }}
+        >
           {topic}
         </div>
       )}

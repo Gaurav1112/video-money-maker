@@ -32,8 +32,14 @@
 import type { TopicBankEntry } from './topic-bank-loader.js';
 
 const COMPANIES = [
-  'Amazon', 'Google', 'Microsoft', 'Netflix', 'Atlassian',
-  'Razorpay', 'Flipkart', 'Swiggy',
+  'Amazon',
+  'Google',
+  'Microsoft',
+  'Netflix',
+  'Atlassian',
+  'Razorpay',
+  'Flipkart',
+  'Swiggy',
 ];
 
 /** FNV-1a 32-bit hash. Pure, deterministic, no deps. */
@@ -48,9 +54,7 @@ function fnv1a(s: string): number {
 
 /** Strip trailing plural/singular noise so templates can re-add it cleanly. */
 function trimTrailingNoise(name: string): string {
-  return name
-    .replace(/\s+(tricks?|tips?|patterns?|techniques?|hacks?)\s*$/i, '')
-    .trim();
+  return name.replace(/\s+(tricks?|tips?|patterns?|techniques?|hacks?)\s*$/i, '').trim();
 }
 
 /** Returns true if appending " WRONG" produces a grammatically broken phrase. */
@@ -137,11 +141,12 @@ const DB_INTERNALS_TITLE: ((n: string, c: string) => string)[] = [
 
 function poolForCategory(
   category: string | undefined,
-  kind: 'hinglish' | 'title',
+  kind: 'hinglish' | 'title'
 ): { pool: ((n: string, c: string) => string)[]; isSystemDesignTitle: boolean } {
   const cat = (category ?? '').toLowerCase();
   if (kind === 'hinglish') {
-    if (cat === 'system-design') return { pool: SYSTEM_DESIGN_HINGLISH, isSystemDesignTitle: false };
+    if (cat === 'system-design')
+      return { pool: SYSTEM_DESIGN_HINGLISH, isSystemDesignTitle: false };
     if (cat === 'dsa') return { pool: DSA_HINGLISH, isSystemDesignTitle: false };
     if (cat === 'behavioral') return { pool: BEHAVIORAL_HINGLISH, isSystemDesignTitle: false };
     if (cat === 'db-internals') return { pool: DB_INTERNALS_HINGLISH, isSystemDesignTitle: false };

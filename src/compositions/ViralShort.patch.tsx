@@ -30,27 +30,38 @@ import { orchestrateBroll, autoSegmentScript } from '../lib/broll-orchestrator';
 import { DEFAULT_COMPONENT_PROPS } from '../lib/broll-templates';
 import type { BrollComponentId } from '../lib/broll-templates';
 
-import { StatBomb }        from '../components/broll/StatBomb';
-import { CodeTyper }       from '../components/broll/CodeTyper';
-import { TerminalStream }  from '../components/broll/TerminalStream';
-import { CompareSplit }    from '../components/broll/CompareSplit';
-import { ConceptBox }      from '../components/broll/ConceptBox';
-import { ArrowFlow }       from '../components/broll/ArrowFlow';
-import { LoadingBar }      from '../components/broll/LoadingBar';
-import { EmojiSlam }       from '../components/broll/EmojiSlam';
-import { MetricCard }      from '../components/broll/MetricCard';
-import { BeforeAfter }     from '../components/broll/BeforeAfter';
-import { CharacterCam }    from '../components/broll/CharacterCam';
-import { WhiteboardDraw }  from '../components/broll/WhiteboardDraw';
-import { LiveLog }         from '../components/broll/LiveLog';
-import { Diagram }         from '../components/broll/Diagram';
-import { KenBurns }        from '../components/broll/KenBurns';
+import { StatBomb } from '../components/broll/StatBomb';
+import { CodeTyper } from '../components/broll/CodeTyper';
+import { TerminalStream } from '../components/broll/TerminalStream';
+import { CompareSplit } from '../components/broll/CompareSplit';
+import { ConceptBox } from '../components/broll/ConceptBox';
+import { ArrowFlow } from '../components/broll/ArrowFlow';
+import { LoadingBar } from '../components/broll/LoadingBar';
+import { EmojiSlam } from '../components/broll/EmojiSlam';
+import { MetricCard } from '../components/broll/MetricCard';
+import { BeforeAfter } from '../components/broll/BeforeAfter';
+import { CharacterCam } from '../components/broll/CharacterCam';
+import { WhiteboardDraw } from '../components/broll/WhiteboardDraw';
+import { LiveLog } from '../components/broll/LiveLog';
+import { Diagram } from '../components/broll/Diagram';
+import { KenBurns } from '../components/broll/KenBurns';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const BROLL_REGISTRY: Record<BrollComponentId, React.FC<any>> = {
-  KenBurns, StatBomb, CodeTyper, TerminalStream, CompareSplit,
-  ConceptBox, ArrowFlow, LoadingBar, EmojiSlam, MetricCard,
-  BeforeAfter, WhiteboardDraw, LiveLog, Diagram,
+  KenBurns,
+  StatBomb,
+  CodeTyper,
+  TerminalStream,
+  CompareSplit,
+  ConceptBox,
+  ArrowFlow,
+  LoadingBar,
+  EmojiSlam,
+  MetricCard,
+  BeforeAfter,
+  WhiteboardDraw,
+  LiveLog,
+  Diagram,
 };
 
 // ---------------------------------------------------------------------------
@@ -81,7 +92,8 @@ export const DiyaLightSweep: React.FC = () => {
           top: 0,
           width: 200,
           height: '100%',
-          background: 'linear-gradient(90deg, transparent, #F9731688, #F97316, #F9731688, transparent)',
+          background:
+            'linear-gradient(90deg, transparent, #F9731688, #F97316, #F9731688, transparent)',
           opacity,
           filter: 'blur(8px)',
         }}

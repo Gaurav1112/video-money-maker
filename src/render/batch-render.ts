@@ -20,7 +20,8 @@ export async function renderVideo(
 ): Promise<string> {
   const { concurrency = 2, crf = 18, codec = 'h264' } = options;
 
-  const compositionId = format === 'short' ? 'ShortVideo' : format === 'thumb' ? 'Thumbnail' : 'LongVideo';
+  const compositionId =
+    format === 'short' ? 'ShortVideo' : format === 'thumb' ? 'Thumbnail' : 'LongVideo';
   const dimensions = getDimensions(format);
   const safeTopic = storyboard.topic.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase();
   const outputDir = path.join(OUTPUT_DIR, safeTopic);
@@ -39,7 +40,8 @@ export async function renderVideo(
   try {
     if (format === 'thumb') {
       const args = [
-        'remotion', 'still',
+        'remotion',
+        'still',
         'src/compositions/index.tsx',
         compositionId,
         outputPath,
@@ -52,7 +54,8 @@ export async function renderVideo(
       await execFileAsync('npx', args, { cwd: process.cwd(), timeout: 120000 });
     } else {
       const args = [
-        'remotion', 'render',
+        'remotion',
+        'render',
         'src/compositions/index.tsx',
         compositionId,
         outputPath,
@@ -82,8 +85,12 @@ export async function renderAllFormats(
   storyboard: Storyboard,
   options: RenderOptions = {}
 ): Promise<{ long: string; short: string; thumb: string }> {
-  console.log(`\nRendering all formats for: ${storyboard.topic} Session ${storyboard.sessionNumber}`);
-  console.log(`Total frames: ${storyboard.durationInFrames} (${(storyboard.durationInFrames / storyboard.fps).toFixed(1)}s)`);
+  console.log(
+    `\nRendering all formats for: ${storyboard.topic} Session ${storyboard.sessionNumber}`
+  );
+  console.log(
+    `Total frames: ${storyboard.durationInFrames} (${(storyboard.durationInFrames / storyboard.fps).toFixed(1)}s)`
+  );
 
   // Render sequentially to avoid overloading the machine
   const long = await renderVideo(storyboard, 'long', options);
@@ -100,10 +107,14 @@ export async function renderAllFormats(
 
 function getDimensions(format: VideoFormat): { width: number; height: number } {
   switch (format) {
-    case 'long': return { width: 1920, height: 1080 };
-    case 'short': return { width: 1080, height: 1920 };
-    case 'thumb': return { width: 1280, height: 720 };
-    default: return { width: 1920, height: 1080 };
+    case 'long':
+      return { width: 1920, height: 1080 };
+    case 'short':
+      return { width: 1080, height: 1920 };
+    case 'thumb':
+      return { width: 1280, height: 720 };
+    default:
+      return { width: 1920, height: 1080 };
   }
 }
 

@@ -113,7 +113,9 @@ function getAuthClient(): InstanceType<typeof google.auth.OAuth2> {
       oauth2Client.setCredentials(tokens);
       return oauth2Client;
     }
-    console.error('Error: YOUTUBE_REFRESH_TOKEN env var required (or .youtube-token.json for local).');
+    console.error(
+      'Error: YOUTUBE_REFRESH_TOKEN env var required (or .youtube-token.json for local).'
+    );
     process.exit(1);
   }
 
@@ -140,7 +142,7 @@ FREE practice: https://guru-sishya.in/${metadata.topicSlug}
 }
 
 function generateShortTitle(metadata: SessionMetadata, partNumber: number): string {
-  const clip = metadata.clips?.find(c => c.index === partNumber);
+  const clip = metadata.clips?.find((c) => c.index === partNumber);
   if (clip?.youtube?.title) {
     let title = clip.youtube.title;
     if (!title.includes('#Shorts')) title += ' #Shorts';
@@ -150,7 +152,7 @@ function generateShortTitle(metadata: SessionMetadata, partNumber: number): stri
 }
 
 function generateShortDescription(metadata: SessionMetadata, partNumber: number): string {
-  const clip = metadata.clips?.find(c => c.index === partNumber);
+  const clip = metadata.clips?.find((c) => c.index === partNumber);
   if (clip?.youtube?.description) return clip.youtube.description;
   return `${metadata.topic} explained in 60 seconds.
 
@@ -163,8 +165,14 @@ function generateTags(metadata: SessionMetadata): string[] {
   if (metadata.youtube?.tags) return metadata.youtube.tags;
   const t = metadata.topic.toLowerCase();
   return [
-    t, `${t} explained`, `${t} interview`, 'system design',
-    'coding interview', 'guru sishya', 'FAANG', 'tech interview',
+    t,
+    `${t} explained`,
+    `${t} interview`,
+    'system design',
+    'coding interview',
+    'guru sishya',
+    'FAANG',
+    'tech interview',
   ];
 }
 
@@ -195,7 +203,7 @@ function truncateTags(tags: string[]): string[] {
 
 async function findOrCreatePlaylist(
   youtube: youtube_v3.Youtube,
-  topicName: string,
+  topicName: string
 ): Promise<string> {
   const playlistTitle = `${PLAYLIST_PREFIX}${topicName}`;
 
@@ -207,9 +215,7 @@ async function findOrCreatePlaylist(
       maxResults: 50,
     });
 
-    const existing = listResponse.data.items?.find(
-      p => p.snippet?.title === playlistTitle,
-    );
+    const existing = listResponse.data.items?.find((p) => p.snippet?.title === playlistTitle);
 
     if (existing?.id) {
       console.log(`Found existing playlist: ${playlistTitle} (${existing.id})`);
@@ -249,7 +255,7 @@ async function findOrCreatePlaylist(
 async function addToPlaylist(
   youtube: youtube_v3.Youtube,
   playlistId: string,
-  videoId: string,
+  videoId: string
 ): Promise<void> {
   if (!playlistId) return;
 
@@ -275,7 +281,7 @@ async function addToPlaylist(
 // ─── Upload with Retry ─────────────────────────────────────────────────────
 
 async function sleep(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 async function uploadWithRetry(
@@ -283,7 +289,7 @@ async function uploadWithRetry(
   requestBody: youtube_v3.Schema$Video,
   videoPath: string,
   thumbnailPath: string | undefined,
-  retries: number = MAX_UPLOAD_RETRIES,
+  retries: number = MAX_UPLOAD_RETRIES
 ): Promise<string> {
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
@@ -317,7 +323,10 @@ async function uploadWithRetry(
 
       return videoId;
     } catch (err: unknown) {
-      const error = err as Error & { code?: number; errors?: Array<{ message: string; reason: string }> };
+      const error = err as Error & {
+        code?: number;
+        errors?: Array<{ message: string; reason: string }>;
+      };
 
       // Don't retry on auth errors or quota exceeded
       if (error.code === 401 || error.code === 403) {
@@ -334,7 +343,9 @@ async function uploadWithRetry(
       if (attempt === retries) throw error;
 
       const delay = RETRY_DELAY_MS * attempt;
-      console.warn(`Upload failed (attempt ${attempt}): ${error.message}. Retrying in ${delay / 1000}s...`);
+      console.warn(
+        `Upload failed (attempt ${attempt}): ${error.message}. Retrying in ${delay / 1000}s...`
+      );
       await sleep(delay);
     }
   }
@@ -346,7 +357,7 @@ async function uploadWithRetry(
 
 async function verifyUpload(
   youtube: youtube_v3.Youtube,
-  videoId: string,
+  videoId: string
 ): Promise<{ status: string; processingStatus: string }> {
   console.log(`Waiting ${VERIFICATION_DELAY_MS / 1000}s before verification...`);
   await sleep(VERIFICATION_DELAY_MS);
@@ -395,9 +406,7 @@ async function publishVideo(options: {
   const youtube = google.youtube({ version: 'v3', auth });
 
   // Load metadata
-  const metadata: SessionMetadata = JSON.parse(
-    fs.readFileSync(options.metadataPath, 'utf-8'),
-  );
+  const metadata: SessionMetadata = JSON.parse(fs.readFileSync(options.metadataPath, 'utf-8'));
 
   const results: UploadResult[] = [];
 
@@ -488,7 +497,7 @@ async function publishVideo(options: {
       youtube,
       requestBody,
       video.path,
-      !video.isShort ? options.thumbnailPath : undefined,
+      !video.isShort ? options.thumbnailPath : undefined
     );
 
     console.log(`Uploaded: https://youtu.be/${videoId}`);
@@ -524,7 +533,11 @@ async function main(): Promise<void> {
   const args = process.argv.slice(2);
 
   function getArg(name: string): string | undefined {
-    const eqForm = args.find(a => a.startsWith(`--${name}=`))?.split('=').slice(1).join('=');
+    const eqForm = args
+      .find((a) => a.startsWith(`--${name}=`))
+      ?.split('=')
+      .slice(1)
+      .join('=');
     if (eqForm) return eqForm;
     const idx = args.indexOf(`--${name}`);
     if (idx >= 0 && args[idx + 1] && !args[idx + 1].startsWith('--')) {
@@ -544,7 +557,9 @@ async function main(): Promise<void> {
   const additionalVideos = additionalRaw ? additionalRaw.split(',') : undefined;
 
   if (!videoPath || !metadataPath) {
-    console.error('Usage: publish-to-youtube.ts --video <file> --metadata <file> --type <long|short>');
+    console.error(
+      'Usage: publish-to-youtube.ts --video <file> --metadata <file> --type <long|short>'
+    );
     console.error('  --topic <slug> --session <N> [--part <N>] [--thumbnail <file>]');
     console.error('  [--additional <file1,file2>]');
     process.exit(1);
@@ -571,7 +586,7 @@ async function main(): Promise<void> {
       session,
       part,
       thumbnailPath: thumbnailPath ? path.resolve(thumbnailPath) : undefined,
-      additionalVideos: additionalVideos?.map(v => path.resolve(v)),
+      additionalVideos: additionalVideos?.map((v) => path.resolve(v)),
     });
 
     // Output for CI consumption
@@ -586,7 +601,12 @@ async function main(): Promise<void> {
           `youtube_title=${primary.title}`,
         ];
         if (results.length > 1) {
-          lines.push(`youtube_additional_ids=${results.slice(1).map(r => r.videoId).join(',')}`);
+          lines.push(
+            `youtube_additional_ids=${results
+              .slice(1)
+              .map((r) => r.videoId)
+              .join(',')}`
+          );
         }
         fs.appendFileSync(outputFile, lines.join('\n') + '\n');
       }
@@ -605,7 +625,9 @@ async function main(): Promise<void> {
     console.error('\nUpload failed!');
 
     if (error.code === 403) {
-      console.error('Access denied. Check YouTube Data API v3 is enabled and OAuth scopes include youtube.upload.');
+      console.error(
+        'Access denied. Check YouTube Data API v3 is enabled and OAuth scopes include youtube.upload.'
+      );
     } else if (error.code === 401) {
       console.error('Authentication expired. Refresh the YOUTUBE_REFRESH_TOKEN.');
     } else {

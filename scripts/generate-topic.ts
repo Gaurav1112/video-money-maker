@@ -129,16 +129,19 @@ async function generateTopic(): Promise<void> {
 
   // Parse --topic="Name" or --topic "Name"
   const topicArg =
-    args.find(a => a.startsWith('--topic='))?.split('=').slice(1).join('=') ??
-    (args.indexOf('--topic') >= 0 ? args[args.indexOf('--topic') + 1] : null);
+    args
+      .find((a) => a.startsWith('--topic='))
+      ?.split('=')
+      .slice(1)
+      .join('=') ?? (args.indexOf('--topic') >= 0 ? args[args.indexOf('--topic') + 1] : null);
 
   // Parse --language=python or --language python
   const langArg =
-    args.find(a => a.startsWith('--language='))?.split('=')[1] ??
+    args.find((a) => a.startsWith('--language='))?.split('=')[1] ??
     (args.indexOf('--language') >= 0 ? args[args.indexOf('--language') + 1] : null);
 
   // --demo or --demo=<topic-key>
-  const demoArg = args.find(a => a === '--demo' || a.startsWith('--demo='));
+  const demoArg = args.find((a) => a === '--demo' || a.startsWith('--demo='));
   const useDemo = !!demoArg;
   const demoTopicKey = demoArg?.includes('=') ? demoArg.split('=')[1] : undefined;
 
@@ -158,9 +161,10 @@ async function generateTopic(): Promise<void> {
     const availableFiles = listAvailableTopics();
 
     // Case-insensitive substring match against file names
-    const matchedFile = availableFiles.find(f =>
-      f.toLowerCase().includes(topicArg.toLowerCase()) ||
-      topicArg.toLowerCase().includes(f.toLowerCase()),
+    const matchedFile = availableFiles.find(
+      (f) =>
+        f.toLowerCase().includes(topicArg.toLowerCase()) ||
+        topicArg.toLowerCase().includes(f.toLowerCase())
     );
 
     if (matchedFile) {
@@ -202,7 +206,9 @@ async function generateTopic(): Promise<void> {
   console.log(`Sessions:       ${sessions.length}`);
   console.log(`Languages:      ${languages.join(', ')}`);
   console.log(`Long-form:      ${longFormCount}`);
-  console.log(`Shorts:         ${shortsCount}  (${CLIP_TYPES.length} clip types × ${sessions.length * languages.length} videos)`);
+  console.log(
+    `Shorts:         ${shortsCount}  (${CLIP_TYPES.length} clip types × ${sessions.length * languages.length} videos)`
+  );
   console.log(`Total videos:   ${totalCount}\n`);
 
   // ── Generate ───────────────────────────────────────────────────────────────
@@ -229,11 +235,11 @@ async function generateTopic(): Promise<void> {
         // 2. Generate TTS audio for all scenes
         console.log('  Generating TTS audio...');
         const audioResults = await generateSceneAudios(
-          script.map(s => ({ narration: s.narration, type: s.type })),
+          script.map((s) => ({ narration: s.narration, type: s.type }))
         );
         const totalAudioSecs = audioResults.reduce((sum, a) => sum + a.duration, 0);
         console.log(
-          `     ${totalAudioSecs.toFixed(1)}s audio (${(totalAudioSecs / 60).toFixed(1)} min)`,
+          `     ${totalAudioSecs.toFixed(1)}s audio (${(totalAudioSecs / 60).toFixed(1)} min)`
         );
 
         // 3. Generate storyboard
@@ -253,7 +259,7 @@ async function generateTopic(): Promise<void> {
 
         console.log(
           `  [${statusIcon}] Long-form: ${duration.minutes} (${storyboard.scenes.length} scenes)` +
-            (validation.valid ? '' : `  Issues: ${validation.issues.join('; ')}`),
+            (validation.valid ? '' : `  Issues: ${validation.issues.join('; ')}`)
         );
 
         results.push({
@@ -303,8 +309,10 @@ async function generateTopic(): Promise<void> {
   console.log('='.repeat(60));
   console.log(`Topic:               ${topicName}`);
   console.log(`Total videos:        ${totalVideos}`);
-  console.log(`  Long-form:         ${results.filter(r => r.format === 'Long (16:9)').length}`);
-  console.log(`  Shorts:            ${results.filter(r => r.format.startsWith('Short:')).length}`);
+  console.log(`  Long-form:         ${results.filter((r) => r.format === 'Long (16:9)').length}`);
+  console.log(
+    `  Shorts:            ${results.filter((r) => r.format.startsWith('Short:')).length}`
+  );
 
   // Print result table
   console.log('\nSession | Language | Format                | Duration | Scenes | Status');

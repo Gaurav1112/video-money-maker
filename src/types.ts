@@ -1,4 +1,12 @@
-export type SceneType = 'title' | 'text' | 'code' | 'diagram' | 'table' | 'interview' | 'review' | 'summary';
+export type SceneType =
+  | 'title'
+  | 'text'
+  | 'code'
+  | 'diagram'
+  | 'table'
+  | 'interview'
+  | 'review'
+  | 'summary';
 export type VideoFormat = 'long' | 'short' | 'thumb' | 'vertical';
 
 export interface Scene {
@@ -64,7 +72,13 @@ export interface Storyboard {
   /** Micro-shock opener data for first 3 seconds */
   shockWrongClaim?: string;
   shockRightClaim?: string;
-  shockPattern?: 'side-by-side' | 'flip-wipe' | 'truth-bomb' | 'myth-buster' | 'plot-twist' | 'reveal';
+  shockPattern?:
+    | 'side-by-side'
+    | 'flip-wipe'
+    | 'truth-bomb'
+    | 'myth-buster'
+    | 'plot-twist'
+    | 'reveal';
 }
 
 export interface SessionInput {
@@ -84,8 +98,8 @@ export interface TTSResult {
 
 export interface WordTimestamp {
   word: string;
-  start: number;  // seconds relative to scene audio start
-  end: number;    // seconds relative to scene audio start
+  start: number; // seconds relative to scene audio start
+  end: number; // seconds relative to scene audio start
 }
 
 export interface AnimationCue {
@@ -133,8 +147,18 @@ export interface VisualBeat {
 // Used by short-arc-builder.ts to generate TER-structured viral Shorts
 
 export type EmotionalBeat = 'tension' | 'escalation' | 'resolution' | 'zeigarnik_loop';
-export type HookType = 'lossAversion' | 'statusThreat' | 'cognitiveDissonance' | 'curiosityGap' | 'misconception';
-export type MicroRewardType = 'revelation' | 'confirmation' | 'setup' | 'cliffhanger' | 'pattern_break';
+export type HookType =
+  | 'lossAversion'
+  | 'statusThreat'
+  | 'cognitiveDissonance'
+  | 'curiosityGap'
+  | 'misconception';
+export type MicroRewardType =
+  | 'revelation'
+  | 'confirmation'
+  | 'setup'
+  | 'cliffhanger'
+  | 'pattern_break';
 export type BTConnector = 'but' | 'therefore';
 
 export interface MicroReward {
@@ -148,7 +172,7 @@ export interface WorldClassScene extends Scene {
   hookType?: HookType;
   microRewardType: MicroRewardType;
   btConnector?: BTConnector;
-  tensionScore: number;                   // 0.0–1.0
+  tensionScore: number; // 0.0–1.0
   misconceptionText?: string;
   correctionText?: string;
   openLoopQuestion?: string;
@@ -193,7 +217,7 @@ export interface TERValidationResult {
 }
 
 export interface ShortGenerationOptions {
-  targetDurationSec?: number;     // default 55
+  targetDurationSec?: number; // default 55
   hookFormula?: HookType;
   forceOpenLoop?: boolean;
   misconceptionOverride?: string;

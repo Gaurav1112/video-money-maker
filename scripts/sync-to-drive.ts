@@ -303,7 +303,9 @@ function archiveSession(topic: string, session: number): void {
     const topicDir = path.join(STAGING_BASE, topic);
     const remaining = fs.readdirSync(topicDir);
     if (remaining.length === 0) fs.rmdirSync(topicDir);
-  } catch { /* dir not empty, fine */ }
+  } catch {
+    /* dir not empty, fine */
+  }
 
   // Update manifest
   entry.status = 'uploaded';
@@ -320,7 +322,7 @@ function showStatus(): void {
   let staged = 0;
   let uploaded = 0;
   let failed = 0;
-  let totalSize = 0;
+  const totalSize = 0;
 
   const stagedEntries: Array<{ key: string; status: string; completedAt: string | null }> = [];
 
@@ -357,10 +359,11 @@ function showStatus(): void {
   if (isRcloneInstalled() && isRcloneConfigured()) {
     console.log(`  Google Drive:  ${RCLONE_REMOTE}:${DRIVE_FOLDER}`);
     try {
-      const output = execSync(
-        `rclone size "${RCLONE_REMOTE}:${DRIVE_FOLDER}" 2>/dev/null`,
-        { encoding: 'utf-8', stdio: 'pipe', timeout: 15000 },
-      );
+      const output = execSync(`rclone size "${RCLONE_REMOTE}:${DRIVE_FOLDER}" 2>/dev/null`, {
+        encoding: 'utf-8',
+        stdio: 'pipe',
+        timeout: 15000,
+      });
       console.log(`  Drive size:    ${output.trim()}`);
     } catch {
       console.log('  Drive size:    (could not query)');
@@ -415,7 +418,7 @@ async function main() {
   showStatus();
 }
 
-main().catch(err => {
+main().catch((err) => {
   console.error('Fatal error:', err);
   process.exit(1);
 });

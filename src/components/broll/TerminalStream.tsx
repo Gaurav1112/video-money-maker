@@ -73,16 +73,14 @@ export const TerminalStream: React.FC<TerminalStreamProps> = ({
   const commandDone = framesPerLine; // command appears first
   const linesVisible = Math.min(
     Math.floor(Math.max(0, elapsed - commandDone) / framesPerLine),
-    lines.length,
+    lines.length
   );
 
   // Cursor blink
   const cursorOn = Math.floor(frame / 15) % 2 === 0;
 
   // Command character reveal
-  const cmdChars = command
-    ? Math.min(command.length, Math.floor(elapsed * charsPerFrame))
-    : 0;
+  const cmdChars = command ? Math.min(command.length, Math.floor(elapsed * charsPerFrame)) : 0;
   const cmdText = command ? command.slice(0, cmdChars) : '';
 
   return (
@@ -120,13 +118,9 @@ export const TerminalStream: React.FC<TerminalStreamProps> = ({
         {/* Command line */}
         {command && (
           <div style={{ color: '#22C55E', display: 'flex', gap: 8 }}>
-            {showPrompt && (
-              <span style={{ color: '#38BDF8', userSelect: 'none' }}>❯</span>
-            )}
+            {showPrompt && <span style={{ color: '#38BDF8', userSelect: 'none' }}>❯</span>}
             <span>{cmdText}</span>
-            {elapsed < commandDone && cursorOn && (
-              <span style={{ color: '#F97316' }}>▌</span>
-            )}
+            {elapsed < commandDone && cursorOn && <span style={{ color: '#F97316' }}>▌</span>}
           </div>
         )}
 
@@ -163,9 +157,7 @@ export const TerminalStream: React.FC<TerminalStreamProps> = ({
               {line.typewriter &&
                 lineElapsed > 0 &&
                 displayText.length < line.text.length &&
-                cursorOn && (
-                  <span style={{ color: '#F97316' }}>▌</span>
-                )}
+                cursorOn && <span style={{ color: '#F97316' }}>▌</span>}
             </div>
           );
         })}
@@ -173,9 +165,7 @@ export const TerminalStream: React.FC<TerminalStreamProps> = ({
         {/* Blinking cursor after last line */}
         {linesVisible >= lines.length && cursorOn && (
           <div style={{ color: '#22C55E', display: 'flex', gap: 8 }}>
-            {showPrompt && (
-              <span style={{ color: '#38BDF8', userSelect: 'none' }}>❯</span>
-            )}
+            {showPrompt && <span style={{ color: '#38BDF8', userSelect: 'none' }}>❯</span>}
             <span style={{ color: '#F97316' }}>▌</span>
           </div>
         )}

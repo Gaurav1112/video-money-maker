@@ -217,14 +217,12 @@ function saveQueue(queue: TopicQueue): void {
 function pickNextVideo(
   queue: TopicQueue,
   history: PublishHistory,
-  config: PublishConfig,
+  config: PublishConfig
 ): { topic: TopicEntry; session: number } | null {
   const { categoryOrder, maxConsecutiveSameTopic, priorityWeight } = config.rotation;
 
   // Find last published topic slug to avoid repeating
-  const recentSlugs = history.entries
-    .slice(-maxConsecutiveSameTopic)
-    .map((e) => e.topic);
+  const recentSlugs = history.entries.slice(-maxConsecutiveSameTopic).map((e) => e.topic);
 
   // Start from the next category after the last one we published from
   const startIdx = (history.lastCategoryIndex + 1) % categoryOrder.length;
@@ -412,14 +410,12 @@ function getYouTubeAuth(): InstanceType<typeof google.auth.OAuth2> {
   if (!clientId || !clientSecret) {
     throw new Error(
       'YOUTUBE_CLIENT_ID and YOUTUBE_CLIENT_SECRET env vars required. ' +
-        'Get them from https://console.cloud.google.com/apis/credentials',
+        'Get them from https://console.cloud.google.com/apis/credentials'
     );
   }
 
   if (!fs.existsSync(YOUTUBE_TOKEN_PATH)) {
-    throw new Error(
-      '.youtube-token.json not found. Run: npx tsx scripts/auth-youtube.ts',
-    );
+    throw new Error('.youtube-token.json not found. Run: npx tsx scripts/auth-youtube.ts');
   }
 
   const tokens = JSON.parse(fs.readFileSync(YOUTUBE_TOKEN_PATH, 'utf-8'));
@@ -450,7 +446,7 @@ async function uploadToYouTube(
     thumbnailPath?: string;
     playlistId?: string;
     captionsPath?: string;
-  },
+  }
 ): Promise<{ videoId: string; url: string }> {
   const auth = getYouTubeAuth();
   const youtube = google.youtube({ version: 'v3', auth });
@@ -602,7 +598,7 @@ async function uploadToYouTube(
 
 async function findOrCreatePlaylist(
   topicName: string,
-  config: PublishConfig,
+  config: PublishConfig
 ): Promise<string | undefined> {
   try {
     const auth = getYouTubeAuth();
@@ -616,9 +612,7 @@ async function findOrCreatePlaylist(
       maxResults: 50,
     });
 
-    const found = existing.data.items?.find(
-      (p) => p.snippet?.title === playlistTitle,
-    );
+    const found = existing.data.items?.find((p) => p.snippet?.title === playlistTitle);
 
     if (found?.id) {
       return found.id;
@@ -651,7 +645,7 @@ async function findOrCreatePlaylist(
 function graphApiRequest<T>(
   urlPath: string,
   method: 'GET' | 'POST',
-  params?: Record<string, string>,
+  params?: Record<string, string>
 ): Promise<T> {
   return new Promise((resolve, reject) => {
     const fullUrl = new URL(`https://graph.facebook.com/v21.0${urlPath}`);
@@ -676,7 +670,9 @@ function graphApiRequest<T>(
           try {
             const parsed = JSON.parse(data);
             if (parsed.error) {
-              reject(new Error(`Instagram API: ${parsed.error.message || JSON.stringify(parsed.error)}`));
+              reject(
+                new Error(`Instagram API: ${parsed.error.message || JSON.stringify(parsed.error)}`)
+              );
             } else {
               resolve(parsed as T);
             }
@@ -684,7 +680,7 @@ function graphApiRequest<T>(
             reject(new Error(`Failed to parse Instagram response: ${data.slice(0, 200)}`));
           }
         });
-      },
+      }
     );
     req.on('error', reject);
     req.end();
@@ -720,7 +716,7 @@ function sleep(ms: number): Promise<void> {
 async function uploadToInstagram(
   videoPath: string,
   caption: string,
-  config: PublishConfig,
+  config: PublishConfig
 ): Promise<string> {
   const accessToken = process.env.INSTAGRAM_ACCESS_TOKEN;
   const businessId = process.env.INSTAGRAM_BUSINESS_ID;
@@ -728,13 +724,12 @@ async function uploadToInstagram(
   if (!accessToken || !businessId) {
     throw new Error(
       'INSTAGRAM_ACCESS_TOKEN and INSTAGRAM_BUSINESS_ID env vars required. ' +
-        'See: https://developers.facebook.com/tools/explorer/',
+        'See: https://developers.facebook.com/tools/explorer/'
     );
   }
 
   // Truncate caption to 2200 chars
-  const trimmedCaption =
-    caption.length > 2200 ? caption.slice(0, 2197) + '...' : caption;
+  const trimmedCaption = caption.length > 2200 ? caption.slice(0, 2197) + '...' : caption;
 
   // Determine video URL
   let videoUrl: string;
@@ -749,7 +744,7 @@ async function uploadToInstagram(
   } else {
     throw new Error(
       'UPLOAD_HOST_URL env var required for Instagram. ' +
-        'Start a tunnel: ngrok http 9876, then set UPLOAD_HOST_URL=https://xxxx.ngrok.io',
+        'Start a tunnel: ngrok http 9876, then set UPLOAD_HOST_URL=https://xxxx.ngrok.io'
     );
   }
 
@@ -757,28 +752,23 @@ async function uploadToInstagram(
     log('INFO', `Instagram Reel upload: ${path.basename(videoPath)}`);
 
     // Step 1: Create container
-    const container = await graphApiRequest<{ id: string }>(
-      `/${businessId}/media`,
-      'POST',
-      {
-        media_type: 'REELS',
-        video_url: videoUrl,
-        caption: trimmedCaption,
-        share_to_feed: 'true',
-        access_token: accessToken,
-      },
-    );
+    const container = await graphApiRequest<{ id: string }>(`/${businessId}/media`, 'POST', {
+      media_type: 'REELS',
+      video_url: videoUrl,
+      caption: trimmedCaption,
+      share_to_feed: 'true',
+      access_token: accessToken,
+    });
     log('INFO', `Instagram container created: ${container.id}`);
 
     // Step 2: Poll for processing
     const maxPollAttempts = 60;
     let attempts = 0;
     while (attempts < maxPollAttempts) {
-      const status = await graphApiRequest<{ status_code: string }>(
-        `/${container.id}`,
-        'GET',
-        { fields: 'status_code', access_token: accessToken },
-      );
+      const status = await graphApiRequest<{ status_code: string }>(`/${container.id}`, 'GET', {
+        fields: 'status_code',
+        access_token: accessToken,
+      });
 
       if (status.status_code === 'FINISHED') break;
       if (status.status_code === 'ERROR') {
@@ -800,7 +790,7 @@ async function uploadToInstagram(
     const published = await graphApiRequest<{ id: string }>(
       `/${businessId}/media_publish`,
       'POST',
-      { creation_id: container.id, access_token: accessToken },
+      { creation_id: container.id, access_token: accessToken }
     );
 
     log('SUCCESS', `Instagram Reel published: ${published.id}`);
@@ -821,7 +811,7 @@ async function sendSlackNotification(
     status: 'success' | 'failure' | 'warning';
     details: string;
     links?: { label: string; url: string }[];
-  },
+  }
 ): Promise<void> {
   if (!webhookUrl) return;
 
@@ -832,8 +822,7 @@ async function sendSlackNotification(
         ? ':x:'
         : ':warning:';
 
-  const linkText =
-    message.links?.map((l) => `<${l.url}|${l.label}>`).join(' | ') || '';
+  const linkText = message.links?.map((l) => `<${l.url}|${l.label}>`).join(' | ') || '';
 
   const payload = {
     text: `${emoji} *${message.title}*\n${message.details}${linkText ? '\n' + linkText : ''}`,
@@ -856,7 +845,7 @@ async function sendSlackNotification(
       (res) => {
         res.on('data', () => {});
         res.on('end', () => resolve());
-      },
+      }
     );
     req.on('error', (err) => {
       log('WARN', `Slack notification failed: ${err.message}`);
@@ -918,7 +907,7 @@ async function refreshInstagramToken(): Promise<boolean> {
 async function withRetry<T>(
   fn: () => Promise<T>,
   label: string,
-  config: PublishConfig,
+  config: PublishConfig
 ): Promise<T> {
   const { maxAttempts, backoffMinutes } = config.retry;
 
@@ -934,7 +923,8 @@ async function withRetry<T>(
         error.message.includes('socket hang up');
 
       if (attempt < maxAttempts && isRetryable) {
-        const waitMinutes = backoffMinutes[attempt - 1] || backoffMinutes[backoffMinutes.length - 1];
+        const waitMinutes =
+          backoffMinutes[attempt - 1] || backoffMinutes[backoffMinutes.length - 1];
         log('WARN', `${label} failed (attempt ${attempt}/${maxAttempts}): ${error.message}`);
         log('INFO', `Retrying in ${waitMinutes} minutes...`);
         await sleep(waitMinutes * 60 * 1000);
@@ -950,11 +940,7 @@ async function withRetry<T>(
 
 // ─── Build Metadata from .md if .json is Missing ────────────────────────────
 
-function buildMetadataFromMd(
-  mdPath: string,
-  topicName: string,
-  sessionNum: number,
-): MetadataFile {
+function buildMetadataFromMd(mdPath: string, topicName: string, sessionNum: number): MetadataFile {
   const content = fs.readFileSync(mdPath, 'utf-8');
 
   // Extract title from the first "### Title" section under YOUTUBE LONG VIDEO
@@ -962,9 +948,7 @@ function buildMetadataFromMd(
   const title = titleMatch?.[1]?.trim() || `${topicName} — Session ${sessionNum}`;
 
   // Extract description
-  const descMatch = content.match(
-    /### Description[^\n]*\n([\s\S]*?)(?=\n###|\n---)/,
-  );
+  const descMatch = content.match(/### Description[^\n]*\n([\s\S]*?)(?=\n###|\n---)/);
   const description = descMatch?.[1]?.trim() || '';
 
   // Extract tags
@@ -972,9 +956,7 @@ function buildMetadataFromMd(
   const tags = tagsMatch?.[1]?.split(',').map((t) => t.trim()) || [];
 
   // Extract Instagram caption
-  const instaMatch = content.match(
-    /### Caption\n([\s\S]*?)(?=\n###|\n---)/,
-  );
+  const instaMatch = content.match(/### Caption\n([\s\S]*?)(?=\n###|\n---)/);
   const instagramCaption = instaMatch?.[1]?.trim() || '';
 
   return {
@@ -1101,10 +1083,12 @@ function showStatus(): void {
     console.log('\nRecent publishes:');
     for (const entry of recent) {
       const ytStatus = entry.youtube?.longFormUrl ? 'YT OK' : 'YT skip';
-      const igStatus = entry.instagram?.reelIds?.length ? `IG x${entry.instagram.reelIds.length}` : 'IG skip';
+      const igStatus = entry.instagram?.reelIds?.length
+        ? `IG x${entry.instagram.reelIds.length}`
+        : 'IG skip';
       const dur = (entry.durationMs / 1000).toFixed(0);
       console.log(
-        `  ${entry.timestamp.slice(0, 16)} | ${entry.status.padEnd(7)} | ${entry.topicName} S${entry.session} | ${ytStatus} | ${igStatus} | ${dur}s`,
+        `  ${entry.timestamp.slice(0, 16)} | ${entry.status.padEnd(7)} | ${entry.topicName} S${entry.session} | ${ytStatus} | ${igStatus} | ${dur}s`
       );
     }
   }
@@ -1319,10 +1303,14 @@ async function publish(options: {
       try {
         execSync(
           `npx tsx scripts/generate-upload-metadata.ts ${targetTopic.slug} ${targetSession} --props ${propsPath}`,
-          { cwd: PROJECT_ROOT, stdio: 'inherit' },
+          { cwd: PROJECT_ROOT, stdio: 'inherit' }
         );
         // Re-discover files after generation
-        const sessionDir = path.join(GURU_SISHYA_BASE, targetTopic.slug, `session-${targetSession}`);
+        const sessionDir = path.join(
+          GURU_SISHYA_BASE,
+          targetTopic.slug,
+          `session-${targetSession}`
+        );
         const generatedMeta = path.join(sessionDir, 'metadata.json');
         if (fs.existsSync(generatedMeta)) {
           files.metadataJson = generatedMeta;
@@ -1379,7 +1367,9 @@ async function publish(options: {
     }
     if (!skipInstagram) {
       const maxReels = config.instagram.maxReelsPerSession;
-      files.verticalParts.slice(0, maxReels).forEach((_, i) => console.log(`  Instagram: Reel #${i + 1}`));
+      files.verticalParts
+        .slice(0, maxReels)
+        .forEach((_, i) => console.log(`  Instagram: Reel #${i + 1}`));
     }
     console.log('\nNo uploads performed (dry run).\n');
     return;
@@ -1424,7 +1414,7 @@ async function publish(options: {
               captionsPath: files.longFormSrt || undefined,
             }),
           'YouTube long-form',
-          config,
+          config
         );
 
         entry.youtube = {
@@ -1437,7 +1427,10 @@ async function publish(options: {
         // Verify it's live
         await sleep(3000);
         const isLive = await verifyYouTubeVideoLive(result.videoId);
-        log(isLive ? 'SUCCESS' : 'WARN', `YouTube long-form verification: ${isLive ? 'live' : 'processing'}`);
+        log(
+          isLive ? 'SUCCESS' : 'WARN',
+          `YouTube long-form verification: ${isLive ? 'live' : 'processing'}`
+        );
       } catch (err) {
         errors.push(`YouTube long-form: ${(err as Error).message}`);
         log('ERROR', `YouTube long-form upload failed: ${(err as Error).message}`);
@@ -1482,7 +1475,7 @@ async function publish(options: {
                 privacy: config.youtube.defaultPrivacy,
               }),
             `YouTube Short #${partNum}`,
-            config,
+            config
           );
 
           shortIds.push(result.videoId);
@@ -1518,7 +1511,9 @@ async function publish(options: {
         const partMetaPath = files.partMetadataJsons[i];
         if (partMetaPath && fs.existsSync(partMetaPath)) {
           const partMeta: MetadataFile = JSON.parse(fs.readFileSync(partMetaPath, 'utf-8'));
-          caption = partMeta.instagramCaption || `${metadata.instagramCaption || ''}\n\nPart ${partNum}/${reelsToUpload.length}`;
+          caption =
+            partMeta.instagramCaption ||
+            `${metadata.instagramCaption || ''}\n\nPart ${partNum}/${reelsToUpload.length}`;
         } else {
           caption = `${metadata.instagramCaption || ''}\n\nPart ${partNum}/${reelsToUpload.length}`;
         }
@@ -1527,7 +1522,7 @@ async function publish(options: {
           const mediaId = await withRetry(
             () => uploadToInstagram(partPath, caption, config),
             `Instagram Reel #${partNum}`,
-            config,
+            config
           );
 
           reelIds.push(mediaId);
@@ -1584,7 +1579,8 @@ async function publish(options: {
 
     await sendSlackNotification(slackUrl, {
       title: `${targetTopic.name} S${targetSession} — ${entry.status.toUpperCase()}`,
-      status: entry.status === 'success' ? 'success' : entry.status === 'partial' ? 'warning' : 'failure',
+      status:
+        entry.status === 'success' ? 'success' : entry.status === 'partial' ? 'warning' : 'failure',
       details: [
         `Topic: ${targetTopic.name} (${targetTopic.category})`,
         `Session: ${targetSession}`,

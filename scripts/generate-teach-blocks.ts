@@ -36,7 +36,7 @@ interface Topic {
 }
 
 const topics = JSON.parse(
-  readFileSync(join(process.cwd(), 'TOPIC_BANK_100.json'), 'utf8'),
+  readFileSync(join(process.cwd(), 'TOPIC_BANK_100.json'), 'utf8')
 ) as Topic[];
 
 const outputDir = join(process.cwd(), 'data/teach-blocks');
@@ -82,11 +82,7 @@ for (const topic of topics) {
       };
   if (authored) authoredCount++;
   else placeholderCount++;
-  writeFileSync(
-    join(outputDir, `${topic.id}.json`),
-    JSON.stringify(block, null, 2) + '\n',
-    'utf8',
-  );
+  writeFileSync(join(outputDir, `${topic.id}.json`), JSON.stringify(block, null, 2) + '\n', 'utf8');
 }
 
 let coreCount = 0;
@@ -104,11 +100,11 @@ for (const s of AUTHORED_CORE_SESSIONS) {
   writeFileSync(
     join(outputDir, `${s.slug}-s${s.sessionN}.json`),
     JSON.stringify(block, null, 2) + '\n',
-    'utf8',
+    'utf8'
   );
   coreCount++;
 }
 
 console.log(
-  `Generated teach-blocks: ${authoredCount} authored + ${placeholderCount} placeholder TOPIC_BANK ids; ${coreCount} CORE-session blocks.`,
+  `Generated teach-blocks: ${authoredCount} authored + ${placeholderCount} placeholder TOPIC_BANK ids; ${coreCount} CORE-session blocks.`
 );

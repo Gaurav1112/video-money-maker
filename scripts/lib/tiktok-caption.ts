@@ -24,8 +24,7 @@ interface MetadataInput {
 }
 
 export function buildTikTokCaption(meta: MetadataInput): string {
-  const rawTitle =
-    meta.youtube?.title || meta.title || 'New tech short — watch till the end.';
+  const rawTitle = meta.youtube?.title || meta.title || 'New tech short — watch till the end.';
   const title = rawTitle.length > TITLE_BUDGET ? rawTitle.slice(0, TITLE_BUDGET) : rawTitle;
   return `${title}${HASHTAG_SUFFIX}`;
 }

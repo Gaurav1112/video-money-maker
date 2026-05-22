@@ -155,15 +155,15 @@ function getTopicDiagram(topic: string): DiagramConfig {
   };
 
   // Default fallback: simple client-server diagram (also shifted by 130)
-  return configs[topic] || {
-    nodes: [
-      { label: 'Client', x: 300, y: 460, width: 170, height: 70, color: 'blue' },
-      { label: 'Server', x: 780, y: 460, width: 170, height: 70, color: 'green' },
-    ],
-    arrows: [
-      { from: { x: 385, y: 460 }, to: { x: 695, y: 460 }, label: 'request' },
-    ],
-  };
+  return (
+    configs[topic] || {
+      nodes: [
+        { label: 'Client', x: 300, y: 460, width: 170, height: 70, color: 'blue' },
+        { label: 'Server', x: 780, y: 460, width: 170, height: 70, color: 'green' },
+      ],
+      arrows: [{ from: { x: 385, y: 460 }, to: { x: 695, y: 460 }, label: 'request' }],
+    }
+  );
 }
 
 // ── Extract key phrases from explanation (max 3 for tighter pacing) ──
@@ -171,7 +171,9 @@ function extractKeyPhrases(explanation: string): string[] {
   const phrases: string[] = [];
 
   // Extract numbers/stats (e.g., "7 trillion messages per day", "$10M")
-  const numberPatterns = explanation.match(/\d[\d,.]*\s*(?:trillion|billion|million|thousand|Gbps|%|ms|seconds?|minutes?|hours?)?(?:\s+\w+){0,4}/gi);
+  const numberPatterns = explanation.match(
+    /\d[\d,.]*\s*(?:trillion|billion|million|thousand|Gbps|%|ms|seconds?|minutes?|hours?)?(?:\s+\w+){0,4}/gi
+  );
   if (numberPatterns) {
     for (const match of numberPatterns.slice(0, 1)) {
       phrases.push(match.trim());
@@ -184,7 +186,7 @@ function extractKeyPhrases(explanation: string): string[] {
     if (phrases.length >= 3) break;
     if (/NOT|NEVER|WRONG|LOST|EVERY|ALWAYS|CRITICAL|MOST|ONLY/i.test(s) && s.length < 80) {
       const cleaned = s.replace(/^(The\s+)?/i, '').trim();
-      if (cleaned && !phrases.some(p => p.includes(cleaned.slice(0, 20)))) {
+      if (cleaned && !phrases.some((p) => p.includes(cleaned.slice(0, 20)))) {
         phrases.push(cleaned);
       }
     }
@@ -201,7 +203,9 @@ function extractKeyPhrases(explanation: string): string[] {
 
 // ── Extract the big stat number from explanation ────────────────────
 function extractBigStat(explanation: string): { number: string; context: string } | null {
-  const match = explanation.match(/(\d[\d,.]*\s*(?:trillion|billion|million|thousand|Gbps|%)?)\s+([\w\s]+?)(?:\.|,|and)/i);
+  const match = explanation.match(
+    /(\d[\d,.]*\s*(?:trillion|billion|million|thousand|Gbps|%)?)\s+([\w\s]+?)(?:\.|,|and)/i
+  );
   if (match) {
     return { number: match[1].trim(), context: match[2].trim() };
   }
@@ -224,19 +228,25 @@ const PulsingVignette: React.FC = () => {
   const frame = useCurrentFrame();
   const pulse = interpolate(Math.sin(frame * 0.15), [-1, 1], [0.3, 0.7]);
   return (
-    <div style={{
-      position: 'absolute', inset: 0,
-      boxShadow: `inset 0 0 120px rgba(255, 40, 40, ${pulse})`,
-      pointerEvents: 'none',
-      zIndex: 5,
-    }} />
+    <div
+      style={{
+        position: 'absolute',
+        inset: 0,
+        boxShadow: `inset 0 0 120px rgba(255, 40, 40, ${pulse})`,
+        pointerEvents: 'none',
+        zIndex: 5,
+      }}
+    />
   );
 };
 
 // ── Option Card (enhanced) ──────────────────────────────────────────
 const OptionCard: React.FC<{
-  label: string; text: string; index: number;
-  revealed: boolean; isCorrect: boolean;
+  label: string;
+  text: string;
+  index: number;
+  revealed: boolean;
+  isCorrect: boolean;
   compact?: boolean;
   hookEnd: number;
   flashEnd: number;
@@ -257,73 +267,91 @@ const OptionCard: React.FC<{
     : 0;
 
   const bgColor = revealed
-    ? (isCorrect
+    ? isCorrect
       ? `rgba(16, 185, 129, ${interpolate(revealProgress, [0, 1], [0.1, 0.25])})`
-      : WRONG_DIM)
+      : WRONG_DIM
     : OPTION_BG;
 
-  const borderColor = revealed
-    ? (isCorrect ? CORRECT : 'rgba(255, 68, 68, 0.3)')
-    : OPTION_BORDER;
+  const borderColor = revealed ? (isCorrect ? CORRECT : 'rgba(255, 68, 68, 0.3)') : OPTION_BORDER;
 
-  const textOpacity = revealed && !isCorrect
-    ? interpolate(revealProgress, [0, 1], [1, 0.35])
-    : 1;
+  const textOpacity = revealed && !isCorrect ? interpolate(revealProgress, [0, 1], [1, 0.35]) : 1;
 
-  const badgeBg = revealed && isCorrect
-    ? CORRECT
-    : revealed && !isCorrect
-      ? 'rgba(255, 68, 68, 0.4)'
-      : 'rgba(255,255,255,0.08)';
+  const badgeBg =
+    revealed && isCorrect
+      ? CORRECT
+      : revealed && !isCorrect
+        ? 'rgba(255, 68, 68, 0.4)'
+        : 'rgba(255,255,255,0.08)';
 
   const py = compact ? 14 : 18;
   // Auto-fit: shrink long options (>28 chars) to 26/24 instead of 32/28.
   const longText = text.length > 28;
-  const fontSize = longText
-    ? (compact ? 22 : 26)
-    : (compact ? 28 : 32);
+  const fontSize = longText ? (compact ? 22 : 26) : compact ? 28 : 32;
 
   return (
-    <div style={{
-      opacity: interpolate(s, [0, 1], [0, 1]),
-      transform: `translateX(${interpolate(s, [0, 1], [80, 0])}px) scale(${interpolate(s, [0, 1], [0.9, 1])})`,
-      backgroundColor: bgColor,
-      border: `2px solid ${borderColor}`,
-      borderRadius: 16,
-      padding: `${py}px 20px`,
-      marginBottom: compact ? 10 : 14,
-      display: 'flex', alignItems: 'center', gap: 14,
-      boxShadow: revealed && isCorrect
-        ? `0 0 30px rgba(16, 185, 129, 0.3), 0 4px 20px rgba(0,0,0,0.3)`
-        : '0 4px 20px rgba(0,0,0,0.2)',
-      transition: 'background-color 0.3s',
-    }}>
+    <div
+      style={{
+        opacity: interpolate(s, [0, 1], [0, 1]),
+        transform: `translateX(${interpolate(s, [0, 1], [80, 0])}px) scale(${interpolate(s, [0, 1], [0.9, 1])})`,
+        backgroundColor: bgColor,
+        border: `2px solid ${borderColor}`,
+        borderRadius: 16,
+        padding: `${py}px 20px`,
+        marginBottom: compact ? 10 : 14,
+        display: 'flex',
+        alignItems: 'center',
+        gap: 14,
+        boxShadow:
+          revealed && isCorrect
+            ? `0 0 30px rgba(16, 185, 129, 0.3), 0 4px 20px rgba(0,0,0,0.3)`
+            : '0 4px 20px rgba(0,0,0,0.2)',
+        transition: 'background-color 0.3s',
+      }}
+    >
       {/* Letter badge */}
-      <div style={{
-        width: 44, height: 44, borderRadius: 12,
-        backgroundColor: badgeBg,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontSize: 22, fontFamily: FONTS.heading, fontWeight: 800,
-        color: TEXT,
-        flexShrink: 0,
-      }}>
+      <div
+        style={{
+          width: 44,
+          height: 44,
+          borderRadius: 12,
+          backgroundColor: badgeBg,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontSize: 22,
+          fontFamily: FONTS.heading,
+          fontWeight: 800,
+          color: TEXT,
+          flexShrink: 0,
+        }}
+      >
         {label}
       </div>
-      <span style={{
-        fontSize, fontFamily: FONTS.text, fontWeight: 600,
-        color: TEXT, flex: 1, opacity: textOpacity,
-        lineHeight: 1.2,
-        // Long options wrap to 2 lines instead of overflowing the card width.
-        whiteSpace: 'normal', wordBreak: 'break-word',
-      }}>
+      <span
+        style={{
+          fontSize,
+          fontFamily: FONTS.text,
+          fontWeight: 600,
+          color: TEXT,
+          flex: 1,
+          opacity: textOpacity,
+          lineHeight: 1.2,
+          // Long options wrap to 2 lines instead of overflowing the card width.
+          whiteSpace: 'normal',
+          wordBreak: 'break-word',
+        }}
+      >
         {text}
       </span>
       {/* Checkmark or X */}
       {revealed && (
-        <span style={{
-          fontSize: 28, opacity: revealProgress,
-          color: isCorrect ? CORRECT : ACCENT,
-        }}>
+        <span
+          style={{
+            fontSize: 28,
+            opacity: revealProgress,
+            color: isCorrect ? CORRECT : ACCENT,
+          }}
+        >
           {isCorrect ? '\u2713' : '\u2717'}
         </span>
       )}
@@ -346,83 +374,107 @@ const KeyPhraseReveal: React.FC<{
   const phraseDuration = beatAlignFrames ?? 90;
 
   return (
-    <div style={{
-      position: 'absolute', top: 950, left: 50, right: 50,
-      display: 'flex', flexDirection: 'column', gap: 16,
-    }}>
+    <div
+      style={{
+        position: 'absolute',
+        top: 950,
+        left: 50,
+        right: 50,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 16,
+      }}
+    >
       {/* Big stat number — 2 seconds, centered, HUGE, animated tick-up */}
-      {bigStat && (() => {
-        const statEntry = startFrame + 10;
-        const age = frame - statEntry;
-        if (age < 0) return null;
-        const s = spring({ frame: age, fps, config: { stiffness: 160, damping: 12, mass: 0.6 } });
-        const fadeOut = interpolate(age, [bigStatDuration - 15, bigStatDuration], [1, 0], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
-
-        // Parse the number: prefix + numeric + suffix
-        const parseMatch = bigStat.number.match(/^([^\d]*)([\d,.]+)(.*)$/);
-        let displayValue: string;
-        let countCompletePulse = 1;
-        if (parseMatch) {
-          const prefix = parseMatch[1];
-          const digitGroup = parseMatch[2].replace(/,/g, '');
-          const suffix = parseMatch[3];
-          const targetValue = parseFloat(digitGroup);
-          const isInteger = !digitGroup.includes('.');
-
-          const tickProgress = interpolate(age, [0, 45], [0, targetValue], {
+      {bigStat &&
+        (() => {
+          const statEntry = startFrame + 10;
+          const age = frame - statEntry;
+          if (age < 0) return null;
+          const s = spring({ frame: age, fps, config: { stiffness: 160, damping: 12, mass: 0.6 } });
+          const fadeOut = interpolate(age, [bigStatDuration - 15, bigStatDuration], [1, 0], {
             extrapolateLeft: 'clamp',
             extrapolateRight: 'clamp',
           });
 
-          let formatted: string;
-          if (isInteger) {
-            formatted = String(Math.round(tickProgress));
+          // Parse the number: prefix + numeric + suffix
+          const parseMatch = bigStat.number.match(/^([^\d]*)([\d,.]+)(.*)$/);
+          let displayValue: string;
+          let countCompletePulse = 1;
+          if (parseMatch) {
+            const prefix = parseMatch[1];
+            const digitGroup = parseMatch[2].replace(/,/g, '');
+            const suffix = parseMatch[3];
+            const targetValue = parseFloat(digitGroup);
+            const isInteger = !digitGroup.includes('.');
+
+            const tickProgress = interpolate(age, [0, 45], [0, targetValue], {
+              extrapolateLeft: 'clamp',
+              extrapolateRight: 'clamp',
+            });
+
+            let formatted: string;
+            if (isInteger) {
+              formatted = String(Math.round(tickProgress));
+            } else {
+              formatted = tickProgress.toFixed(1);
+            }
+
+            // If original had thousands separators, re-add them when integer
+            if (isInteger && parseMatch[2].includes(',')) {
+              formatted = Number(formatted).toLocaleString('en-US');
+            }
+
+            displayValue = `${prefix}${formatted}${suffix}`;
+
+            // Scale pulse when count completes: frames 45 → 52 → 60 → scale 1 → 1.08 → 1
+            if (age >= 45 && age <= 60) {
+              countCompletePulse =
+                age <= 52
+                  ? interpolate(age, [45, 52], [1, 1.08], { extrapolateRight: 'clamp' })
+                  : interpolate(age, [52, 60], [1.08, 1], { extrapolateRight: 'clamp' });
+            }
           } else {
-            formatted = tickProgress.toFixed(1);
+            displayValue = bigStat.number;
           }
 
-          // If original had thousands separators, re-add them when integer
-          if (isInteger && parseMatch[2].includes(',')) {
-            formatted = Number(formatted).toLocaleString('en-US');
-          }
-
-          displayValue = `${prefix}${formatted}${suffix}`;
-
-          // Scale pulse when count completes: frames 45 → 52 → 60 → scale 1 → 1.08 → 1
-          if (age >= 45 && age <= 60) {
-            countCompletePulse = age <= 52
-              ? interpolate(age, [45, 52], [1, 1.08], { extrapolateRight: 'clamp' })
-              : interpolate(age, [52, 60], [1.08, 1], { extrapolateRight: 'clamp' });
-          }
-        } else {
-          displayValue = bigStat.number;
-        }
-
-        return (
-          <div style={{
-            opacity: interpolate(s, [0, 1], [0, 1]) * fadeOut,
-            transform: `scale(${interpolate(s, [0, 1], [0.5, 1]) * countCompletePulse})`,
-            textAlign: 'center',
-            marginBottom: 8,
-          }}>
-            <span style={{
-              fontSize: 90, fontFamily: FONTS.heading, fontWeight: 900,
-              color: YELLOW,
-              textShadow: `0 0 40px rgba(251, 191, 36, 0.4)`,
-              letterSpacing: -2,
-            }}>
-              {displayValue}
-            </span>
-            <br />
-            <span style={{
-              fontSize: 28, fontFamily: FONTS.text, fontWeight: 600,
-              color: MUTED, textTransform: 'uppercase', letterSpacing: 2,
-            }}>
-              {bigStat.context}
-            </span>
-          </div>
-        );
-      })()}
+          return (
+            <div
+              style={{
+                opacity: interpolate(s, [0, 1], [0, 1]) * fadeOut,
+                transform: `scale(${interpolate(s, [0, 1], [0.5, 1]) * countCompletePulse})`,
+                textAlign: 'center',
+                marginBottom: 8,
+              }}
+            >
+              <span
+                style={{
+                  fontSize: 90,
+                  fontFamily: FONTS.heading,
+                  fontWeight: 900,
+                  color: YELLOW,
+                  textShadow: `0 0 40px rgba(251, 191, 36, 0.4)`,
+                  letterSpacing: -2,
+                }}
+              >
+                {displayValue}
+              </span>
+              <br />
+              <span
+                style={{
+                  fontSize: 28,
+                  fontFamily: FONTS.text,
+                  fontWeight: 600,
+                  color: MUTED,
+                  textTransform: 'uppercase',
+                  letterSpacing: 2,
+                }}
+              >
+                {bigStat.context}
+              </span>
+            </div>
+          );
+        })()}
 
       {/* Key phrases — staggered entry, max 3, 3s each */}
       {phrases.map((phrase, i) => {
@@ -439,21 +491,30 @@ const KeyPhraseReveal: React.FC<{
         const parts = highlighted.split(/\u00AB|\u00BB/);
 
         return (
-          <div key={i} style={{
-            opacity: interpolate(s, [0, 1], [0, 1]),
-            transform: `translateY(${interpolate(s, [0, 1], [30, 0])}px)`,
-            fontSize: 30, fontFamily: FONTS.text, fontWeight: 600,
-            color: TEXT, lineHeight: 1.35,
-            padding: '10px 16px',
-            borderLeft: `3px solid ${CYAN}`,
-            backgroundColor: 'rgba(34, 211, 238, 0.06)',
-            borderRadius: '0 8px 8px 0',
-          }}>
+          <div
+            key={i}
+            style={{
+              opacity: interpolate(s, [0, 1], [0, 1]),
+              transform: `translateY(${interpolate(s, [0, 1], [30, 0])}px)`,
+              fontSize: 30,
+              fontFamily: FONTS.text,
+              fontWeight: 600,
+              color: TEXT,
+              lineHeight: 1.35,
+              padding: '10px 16px',
+              borderLeft: `3px solid ${CYAN}`,
+              backgroundColor: 'rgba(34, 211, 238, 0.06)',
+              borderRadius: '0 8px 8px 0',
+            }}
+          >
             {parts.map((part, j) => (
-              <span key={j} style={{
-                color: j % 2 === 1 ? YELLOW : TEXT,
-                fontWeight: j % 2 === 1 ? 900 : 600,
-              }}>
+              <span
+                key={j}
+                style={{
+                  color: j % 2 === 1 ? YELLOW : TEXT,
+                  fontWeight: j % 2 === 1 ? 900 : 600,
+                }}
+              >
                 {part}
               </span>
             ))}
@@ -473,17 +534,29 @@ const BeatBackground: React.FC<{
   const frame = useCurrentFrame();
   const age = frame - beatStartFrame;
   if (age < 0 || age > beatDurationFrames) return null;
-  const colors = ['rgba(34, 211, 238, 0.12)', 'rgba(251, 191, 36, 0.12)', 'rgba(255, 68, 68, 0.12)'];
+  const colors = [
+    'rgba(34, 211, 238, 0.12)',
+    'rgba(251, 191, 36, 0.12)',
+    'rgba(255, 68, 68, 0.12)',
+  ];
   const color = colors[beatIndex % colors.length];
-  const opacity = interpolate(age, [0, 8, beatDurationFrames - 10, beatDurationFrames], [0, 1, 1, 0], { extrapolateRight: 'clamp' });
+  const opacity = interpolate(
+    age,
+    [0, 8, beatDurationFrames - 10, beatDurationFrames],
+    [0, 1, 1, 0],
+    { extrapolateRight: 'clamp' }
+  );
   return (
-    <div style={{
-      position: 'absolute', inset: 0,
-      background: `radial-gradient(ellipse at 50% 70%, ${color} 0%, transparent 60%)`,
-      opacity,
-      pointerEvents: 'none',
-      zIndex: 6,
-    }} />
+    <div
+      style={{
+        position: 'absolute',
+        inset: 0,
+        background: `radial-gradient(ellipse at 50% 70%, ${color} 0%, transparent 60%)`,
+        opacity,
+        pointerEvents: 'none',
+        zIndex: 6,
+      }}
+    />
   );
 };
 
@@ -492,16 +565,20 @@ const GridBackground: React.FC = () => {
   const frame = useCurrentFrame();
   const gridOffset = (frame * 0.3) % 40;
   return (
-    <div style={{
-      position: 'absolute', inset: 0, opacity: 0.04,
-      backgroundImage: `
+    <div
+      style={{
+        position: 'absolute',
+        inset: 0,
+        opacity: 0.04,
+        backgroundImage: `
         linear-gradient(rgba(255,255,255,0.3) 1px, transparent 1px),
         linear-gradient(90deg, rgba(255,255,255,0.3) 1px, transparent 1px)
       `,
-      backgroundSize: '40px 40px',
-      backgroundPosition: `${gridOffset}px ${gridOffset}px`,
-      pointerEvents: 'none',
-    }} />
+        backgroundSize: '40px 40px',
+        backgroundPosition: `${gridOffset}px ${gridOffset}px`,
+        pointerEvents: 'none',
+      }}
+    />
   );
 };
 
@@ -510,11 +587,18 @@ const ScanLine: React.FC = () => {
   const frame = useCurrentFrame();
   const y = (frame * 4) % 1920;
   return (
-    <div style={{
-      position: 'absolute', left: 0, right: 0, top: y, height: 2,
-      background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.03), transparent)',
-      pointerEvents: 'none', zIndex: 50,
-    }} />
+    <div
+      style={{
+        position: 'absolute',
+        left: 0,
+        right: 0,
+        top: y,
+        height: 2,
+        background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.03), transparent)',
+        pointerEvents: 'none',
+        zIndex: 50,
+      }}
+    />
   );
 };
 
@@ -529,12 +613,15 @@ const TopicDiagram: React.FC<{
   const diagram = useMemo(() => getTopicDiagram(topic), [topic]);
 
   return (
-    <div style={{
-      position: 'absolute', inset: 0,
-      opacity,
-      transform: `scale(${scale}) translateY(${yOffset}px)`,
-      pointerEvents: 'none',
-    }}>
+    <div
+      style={{
+        position: 'absolute',
+        inset: 0,
+        opacity,
+        transform: `scale(${scale}) translateY(${yOffset}px)`,
+        pointerEvents: 'none',
+      }}
+    >
       {/* Nodes */}
       {diagram.nodes.map((node, i) => (
         <AnimatedBox
@@ -565,7 +652,10 @@ const TopicDiagram: React.FC<{
 
 // ── SFX helper ───────────────────────────────────────────────────────
 const Sfx: React.FC<{ name: string; from: number; durationFrames?: number; volume?: number }> = ({
-  name, from, durationFrames = 30, volume = 1,
+  name,
+  from,
+  durationFrames = 30,
+  volume = 1,
 }) => (
   <Sequence from={from} durationInFrames={durationFrames}>
     <Audio src={staticFile(`audio/sfx/${name}.wav`)} volume={volume} />
@@ -583,9 +673,11 @@ const LottieOverlay: React.FC<{
 
   React.useEffect(() => {
     fetch(staticFile(file))
-      .then(r => r.json())
-      .then(data => setAnimationData(data))
-      .catch(() => {/* silently fail — visual nice-to-have */});
+      .then((r) => r.json())
+      .then((data) => setAnimationData(data))
+      .catch(() => {
+        /* silently fail — visual nice-to-have */
+      });
   }, [file]);
 
   if (!animationData) return null;
@@ -605,20 +697,24 @@ const LottieOverlay: React.FC<{
 
 // ── Dramatic Flash ──────────────────────────────────────────────────
 const DramaticFlash: React.FC<{ triggerFrame: number; color?: string }> = ({
-  triggerFrame, color = ACCENT,
+  triggerFrame,
+  color = ACCENT,
 }) => {
   const frame = useCurrentFrame();
   const age = frame - triggerFrame;
   if (age < 0 || age > 15) return null;
   const opacity = interpolate(age, [0, 3, 15], [0.6, 0.4, 0]);
   return (
-    <div style={{
-      position: 'absolute', inset: 0,
-      backgroundColor: color,
-      opacity,
-      pointerEvents: 'none',
-      zIndex: 40,
-    }} />
+    <div
+      style={{
+        position: 'absolute',
+        inset: 0,
+        backgroundColor: color,
+        opacity,
+        pointerEvents: 'none',
+        zIndex: 40,
+      }}
+    />
   );
 };
 
@@ -632,69 +728,85 @@ const FlashCut: React.FC<{ startFrame: number }> = ({ startFrame }) => {
   if (age < 5) {
     // Frames 1-5: BLACK
     return (
-      <div style={{
-        position: 'absolute', inset: 0,
-        backgroundColor: '#000000',
-        zIndex: 60,
-      }} />
+      <div
+        style={{
+          position: 'absolute',
+          inset: 0,
+          backgroundColor: '#000000',
+          zIndex: 60,
+        }}
+      />
     );
   } else if (age < 10) {
     // Frames 6-10: WHITE flash
     const whiteOpacity = interpolate(age, [5, 7, 10], [1, 0.9, 0.3]);
     return (
-      <div style={{
-        position: 'absolute', inset: 0,
-        backgroundColor: '#FFFFFF',
-        opacity: whiteOpacity,
-        zIndex: 60,
-      }} />
+      <div
+        style={{
+          position: 'absolute',
+          inset: 0,
+          backgroundColor: '#FFFFFF',
+          opacity: whiteOpacity,
+          zIndex: 60,
+        }}
+      />
     );
   }
   // Frames 11-15: fade to transparent (reveal)
   const fadeOut = interpolate(age, [10, 15], [0.3, 0]);
   return (
-    <div style={{
-      position: 'absolute', inset: 0,
-      backgroundColor: '#FFFFFF',
-      opacity: fadeOut,
-      zIndex: 60,
-    }} />
+    <div
+      style={{
+        position: 'absolute',
+        inset: 0,
+        backgroundColor: '#FFFFFF',
+        opacity: fadeOut,
+        zIndex: 60,
+      }}
+    />
   );
 };
 
 // ── Feature B: Sticky Question Strip ─────────────────────────────────
 const StickyQuestionStrip: React.FC<{ question: string; startFrame: number }> = ({
-  question, startFrame,
+  question,
+  startFrame,
 }) => {
   const frame = useCurrentFrame();
   const age = frame - startFrame;
   if (age < 0) return null;
   const slide = interpolate(age, [0, 15], [-100, 0], { extrapolateRight: 'clamp' });
   return (
-    <div style={{
-      position: 'absolute',
-      top: 0, left: 0, right: 0,
-      height: 70,
-      backgroundColor: 'rgba(10, 10, 18, 0.88)',
-      backdropFilter: 'blur(20px)',
-      borderBottom: '2px solid rgba(251, 191, 36, 0.3)',
-      zIndex: 80,
-      transform: `translateY(${slide}%)`,
-      display: 'flex',
-      alignItems: 'center',
-      padding: '14px 70px',
-    }}>
-      <span style={{
-        fontSize: 22,
-        fontFamily: FONTS.heading,
-        fontWeight: 700,
-        color: '#fff',
-        lineHeight: 1.2,
-        whiteSpace: 'nowrap',
-        overflow: 'hidden',
-        textOverflow: 'ellipsis',
-        width: '100%',
-      }}>
+    <div
+      style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        height: 70,
+        backgroundColor: 'rgba(10, 10, 18, 0.88)',
+        backdropFilter: 'blur(20px)',
+        borderBottom: '2px solid rgba(251, 191, 36, 0.3)',
+        zIndex: 80,
+        transform: `translateY(${slide}%)`,
+        display: 'flex',
+        alignItems: 'center',
+        padding: '14px 70px',
+      }}
+    >
+      <span
+        style={{
+          fontSize: 22,
+          fontFamily: FONTS.heading,
+          fontWeight: 700,
+          color: '#fff',
+          lineHeight: 1.2,
+          whiteSpace: 'nowrap',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          width: '100%',
+        }}
+      >
         {`❓ ${question}`}
       </span>
     </div>
@@ -703,7 +815,8 @@ const StickyQuestionStrip: React.FC<{ question: string; startFrame: number }> = 
 
 // ── Feature C: Countdown Timer ───────────────────────────────────────
 const CountdownTimer: React.FC<{ startFrame: number; durationFrames: number }> = ({
-  startFrame, durationFrames,
+  startFrame,
+  durationFrames,
 }) => {
   const frame = useCurrentFrame();
   const age = frame - startFrame;
@@ -738,14 +851,16 @@ const CountdownTimer: React.FC<{ startFrame: number; durationFrames: number }> =
   });
 
   return (
-    <div style={{
-      position: 'absolute',
-      top: 110,
-      right: 30,
-      width: size,
-      height: size,
-      zIndex: 82,
-    }}>
+    <div
+      style={{
+        position: 'absolute',
+        top: 110,
+        right: 30,
+        width: size,
+        height: size,
+        zIndex: 82,
+      }}
+    >
       <svg width={size} height={size} style={{ position: 'absolute', inset: 0 }}>
         {/* Background track */}
         <circle
@@ -771,16 +886,21 @@ const CountdownTimer: React.FC<{ startFrame: number; durationFrames: number }> =
           style={{ filter: `drop-shadow(0 0 8px ${strokeColor})` }}
         />
       </svg>
-      <div style={{
-        position: 'absolute', inset: 0,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontSize: 42,
-        fontFamily: FONTS.heading,
-        fontWeight: 900,
-        color: strokeColor,
-        transform: `scale(${pulseScale})`,
-        textShadow: `0 0 12px ${strokeColor}`,
-      }}>
+      <div
+        style={{
+          position: 'absolute',
+          inset: 0,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontSize: 42,
+          fontFamily: FONTS.heading,
+          fontWeight: 900,
+          color: strokeColor,
+          transform: `scale(${pulseScale})`,
+          textShadow: `0 0 12px ${strokeColor}`,
+        }}
+      >
         {remainingSeconds}
       </div>
     </div>
@@ -791,12 +911,12 @@ const CountdownTimer: React.FC<{ startFrame: number; durationFrames: number }> =
 // Float a large emoji over the explain phase at the moment specific power
 // words are spoken. Deterministic positions cycle to avoid overlap.
 const EMOJI_POSITIONS: Array<{ top: string; left: string }> = [
-  { top: '18%', left: '12%' },   // top-left
-  { top: '18%', left: '70%' },   // top-right
-  { top: '38%', left: '8%' },    // middle-left
-  { top: '38%', left: '74%' },   // middle-right
-  { top: '58%', left: '14%' },   // lower-left
-  { top: '58%', left: '68%' },   // lower-right
+  { top: '18%', left: '12%' }, // top-left
+  { top: '18%', left: '70%' }, // top-right
+  { top: '38%', left: '8%' }, // middle-left
+  { top: '38%', left: '74%' }, // middle-right
+  { top: '58%', left: '14%' }, // lower-left
+  { top: '58%', left: '68%' }, // lower-right
 ];
 
 // Order matters: longer/more specific patterns first so $10M wins over generic numbers.
@@ -859,7 +979,8 @@ const EmojiBurstLayer: React.FC<{
           scale = interpolate(age, [12, 18], [1, 0]);
         }
         const opacity = interpolate(age, [0, 3, 14, 18], [0, 1, 1, 0], {
-          extrapolateLeft: 'clamp', extrapolateRight: 'clamp',
+          extrapolateLeft: 'clamp',
+          extrapolateRight: 'clamp',
         });
         return (
           <div
@@ -896,28 +1017,33 @@ const AnswerSplashCard: React.FC<{ startFrame: number }> = ({ startFrame }) => {
 
   const s = spring({ frame: age, fps, config: { stiffness: 200, damping: 12, mass: 0.5 } });
   // Scale from 0.5 → 1.1 → 1.0 over 15 frames
-  const scale = age < 8
-    ? interpolate(s, [0, 1], [0.5, 1.1])
-    : interpolate(age, [8, 15], [1.1, 1.0], { extrapolateRight: 'clamp' });
+  const scale =
+    age < 8
+      ? interpolate(s, [0, 1], [0.5, 1.1])
+      : interpolate(age, [8, 15], [1.1, 1.0], { extrapolateRight: 'clamp' });
 
   return (
-    <AbsoluteFill style={{
-      backgroundColor: 'rgba(16, 185, 129, 0.92)',
-      zIndex: 65,
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-    }}>
-      <span style={{
-        fontSize: 140,
-        fontFamily: FONTS.heading,
-        fontWeight: 900,
-        color: '#fff',
-        textTransform: 'uppercase',
-        letterSpacing: -3,
-        textShadow: '0 8px 30px rgba(0,0,0,0.5), 0 0 60px rgba(0,0,0,0.3)',
-        transform: `scale(${scale})`,
-      }}>
+    <AbsoluteFill
+      style={{
+        backgroundColor: 'rgba(16, 185, 129, 0.92)',
+        zIndex: 65,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
+      <span
+        style={{
+          fontSize: 140,
+          fontFamily: FONTS.heading,
+          fontWeight: 900,
+          color: '#fff',
+          textTransform: 'uppercase',
+          letterSpacing: -3,
+          textShadow: '0 8px 30px rgba(0,0,0,0.5), 0 0 60px rgba(0,0,0,0.3)',
+          transform: `scale(${scale})`,
+        }}
+      >
         {'▼ ANSWER'}
       </span>
     </AbsoluteFill>
@@ -925,7 +1051,10 @@ const AnswerSplashCard: React.FC<{ startFrame: number }> = ({ startFrame }) => {
 };
 
 // ── Loop Trigger (Zeigarnik effect — incomplete thought) ────────────
-const LoopTrigger: React.FC<{ startFrame: number; twistText: string }> = ({ startFrame, twistText }) => {
+const LoopTrigger: React.FC<{ startFrame: number; twistText: string }> = ({
+  startFrame,
+  twistText,
+}) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const age = frame - startFrame;
@@ -934,7 +1063,7 @@ const LoopTrigger: React.FC<{ startFrame: number; twistText: string }> = ({ star
   // 0-1s: "But wait..."
   // 1-2.5s: per-quiz twist line (was hardcoded — now uses quiz.twist)
 
-  const phase1End = 1 * fps;       // 30 frames ("But wait...")
+  const phase1End = 1 * fps; // 30 frames ("But wait...")
   // v3: removed phase2End upper bound — the twist line now holds for the full
   // remaining loop phase (typically 6s) instead of disappearing after 1.5s.
 
@@ -942,7 +1071,9 @@ const LoopTrigger: React.FC<{ startFrame: number; twistText: string }> = ({ star
   // power-word found (WRONG / NEVER / NOT / EVERY / ONLY etc).
   const sentence = (twistText.split(/[.!?]/)[0] ?? twistText).trim();
   const truncated = sentence.length > 90 ? sentence.slice(0, 87) + '...' : sentence;
-  const powerWordMatch = truncated.match(/\b(NOT|NEVER|WRONG|LOST|EVERY|ALWAYS|ALL|ONLY|MOST|CRITICAL|ZERO|NONE)\b/);
+  const powerWordMatch = truncated.match(
+    /\b(NOT|NEVER|WRONG|LOST|EVERY|ALWAYS|ALL|ONLY|MOST|CRITICAL|ZERO|NONE)\b/
+  );
   const before = powerWordMatch ? truncated.slice(0, powerWordMatch.index) : truncated;
   const power = powerWordMatch ? powerWordMatch[0] : '';
   const after = powerWordMatch ? truncated.slice((powerWordMatch.index ?? 0) + power.length) : '';
@@ -952,18 +1083,27 @@ const LoopTrigger: React.FC<{ startFrame: number; twistText: string }> = ({ star
     const s = spring({ frame: age, fps, config: { stiffness: 250, damping: 12, mass: 0.4 } });
     return (
       <AbsoluteFill style={{ zIndex: 55 }}>
-        <div style={{
-          position: 'absolute', inset: 0,
-          backgroundColor: 'rgba(10, 10, 18, 0.85)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-        }}>
-          <span style={{
-            fontSize: 72, fontFamily: FONTS.heading, fontWeight: 900,
-            color: YELLOW,
-            opacity: interpolate(s, [0, 1], [0, 1]),
-            transform: `scale(${interpolate(s, [0, 1], [0.5, 1.05])})`,
-            textShadow: `0 0 40px rgba(251, 191, 36, 0.5)`,
-          }}>
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            backgroundColor: 'rgba(10, 10, 18, 0.85)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <span
+            style={{
+              fontSize: 72,
+              fontFamily: FONTS.heading,
+              fontWeight: 900,
+              color: YELLOW,
+              opacity: interpolate(s, [0, 1], [0, 1]),
+              transform: `scale(${interpolate(s, [0, 1], [0.5, 1.05])})`,
+              textShadow: `0 0 40px rgba(251, 191, 36, 0.5)`,
+            }}
+          >
             But wait...
           </span>
         </div>
@@ -977,25 +1117,35 @@ const LoopTrigger: React.FC<{ startFrame: number; twistText: string }> = ({ star
   const s = spring({ frame: textAge, fps, config: { stiffness: 200, damping: 14, mass: 0.5 } });
   return (
     <AbsoluteFill style={{ zIndex: 55 }}>
-      <div style={{
-        position: 'absolute', inset: 0,
-        backgroundColor: 'rgba(10, 10, 18, 0.92)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        padding: '0 60px',
-      }}>
-        <div style={{
-          opacity: interpolate(s, [0, 1], [0, 1]),
-          transform: `translateY(${interpolate(s, [0, 1], [20, 0])}px)`,
-          textAlign: 'center',
-        }}>
-          <span style={{
-            fontSize: 44, fontFamily: FONTS.heading, fontWeight: 800,
-            color: TEXT, lineHeight: 1.3,
-          }}>
+      <div
+        style={{
+          position: 'absolute',
+          inset: 0,
+          backgroundColor: 'rgba(10, 10, 18, 0.92)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '0 60px',
+        }}
+      >
+        <div
+          style={{
+            opacity: interpolate(s, [0, 1], [0, 1]),
+            transform: `translateY(${interpolate(s, [0, 1], [20, 0])}px)`,
+            textAlign: 'center',
+          }}
+        >
+          <span
+            style={{
+              fontSize: 44,
+              fontFamily: FONTS.heading,
+              fontWeight: 800,
+              color: TEXT,
+              lineHeight: 1.3,
+            }}
+          >
             {before}
-            {power && (
-              <span style={{ color: ACCENT, textDecoration: 'underline' }}>{power}</span>
-            )}
+            {power && <span style={{ color: ACCENT, textDecoration: 'underline' }}>{power}</span>}
             {after}
           </span>
         </div>
@@ -1007,7 +1157,12 @@ const LoopTrigger: React.FC<{ startFrame: number; twistText: string }> = ({ star
 // ══════════════════════════════════════════════════════════════════════
 // ── Main Composition ────────────────────────────────────────────────
 // ══════════════════════════════════════════════════════════════════════
-export const QuizShort: React.FC<QuizShortProps> = ({ quiz, audioFile, wordTimestamps, hookFormula }) => {
+export const QuizShort: React.FC<QuizShortProps> = ({
+  quiz,
+  audioFile,
+  wordTimestamps,
+  hookFormula,
+}) => {
   const frame = useCurrentFrame();
   const { fps, durationInFrames: TOTAL_FRAMES } = useVideoConfig();
 
@@ -1063,15 +1218,16 @@ export const QuizShort: React.FC<QuizShortProps> = ({ quiz, audioFile, wordTimes
       hookFormula
         ? applyHook(quiz, hookFormula).hookText
         : pickHook(quiz, hashStr(quiz.title + quiz.topic)),
-    [quiz, hookFormula],
+    [quiz, hookFormula]
   );
 
   const avatarSrc = staticFile('images/guru-avatar-crop.png');
 
   // Diagram fades to background during explain/loop
-  const diagramOpacity = isExplainPhase || isLoopPhase
-    ? interpolate(frame, [FLASH_END, FLASH_END + 30], [1, 0.2], { extrapolateRight: 'clamp' })
-    : 1;
+  const diagramOpacity =
+    isExplainPhase || isLoopPhase
+      ? interpolate(frame, [FLASH_END, FLASH_END + 30], [1, 0.2], { extrapolateRight: 'clamp' })
+      : 1;
 
   return (
     <AbsoluteFill style={{ background: BG_GRADIENT, width: 1080, height: 1920 }}>
@@ -1099,8 +1255,10 @@ export const QuizShort: React.FC<QuizShortProps> = ({ quiz, audioFile, wordTimes
           <LottieOverlay
             file="lottie/fire.json"
             style={{
-              width: 500, height: 500,
-              top: '50%', left: '50%',
+              width: 500,
+              height: 500,
+              top: '50%',
+              left: '50%',
               transform: 'translate(-50%, -60%)',
               opacity: 0.35,
             }}
@@ -1108,10 +1266,18 @@ export const QuizShort: React.FC<QuizShortProps> = ({ quiz, audioFile, wordTimes
           />
 
           {/* Hook text — uses specific hook */}
-          <div style={{
-            position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>
+          <div
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
             {(() => {
               const s = spring({ frame, fps, config: { stiffness: 180, damping: 12, mass: 0.7 } });
               // Frame 0 must be fully opaque so in-feed previews show readable text
@@ -1121,23 +1287,28 @@ export const QuizShort: React.FC<QuizShortProps> = ({ quiz, audioFile, wordTimes
               // Auto-fit font size by line count (88/70/58 for 1-2, 3, 4+ lines)
               const autoFontSize = lines.length <= 2 ? 88 : lines.length === 3 ? 70 : 58;
               return (
-                <div style={{
-                  transform: `scale(${scale})`,
-                  opacity,
-                  textAlign: 'center',
-                  padding: '0 50px',
-                }}>
+                <div
+                  style={{
+                    transform: `scale(${scale})`,
+                    opacity,
+                    textAlign: 'center',
+                    padding: '0 50px',
+                  }}
+                >
                   {lines.map((line, i) => (
-                    <div key={i} style={{
-                      fontSize: autoFontSize,
-                      fontFamily: FONTS.heading,
-                      fontWeight: 900,
-                      color: i === 0 ? TEXT : ACCENT,
-                      lineHeight: 1.05,
-                      textTransform: 'uppercase',
-                      textShadow: '0 4px 30px rgba(0,0,0,0.8), 0 0 60px rgba(255,68,68,0.3)',
-                      letterSpacing: -2,
-                    }}>
+                    <div
+                      key={i}
+                      style={{
+                        fontSize: autoFontSize,
+                        fontFamily: FONTS.heading,
+                        fontWeight: 900,
+                        color: i === 0 ? TEXT : ACCENT,
+                        lineHeight: 1.05,
+                        textTransform: 'uppercase',
+                        textShadow: '0 4px 30px rgba(0,0,0,0.8), 0 0 60px rgba(255,68,68,0.3)',
+                        letterSpacing: -2,
+                      }}
+                    >
                       {line}
                     </div>
                   ))}
@@ -1147,22 +1318,34 @@ export const QuizShort: React.FC<QuizShortProps> = ({ quiz, audioFile, wordTimes
           </div>
 
           {/* Avatar in hook — bottom center for thumbnail */}
-          <div style={{
-            position: 'absolute', bottom: 350, left: '50%',
-            transform: 'translateX(-50%)',
-            width: 110, height: 110, borderRadius: '50%',
-            overflow: 'hidden',
-            border: `3px solid ${ACCENT}`,
-            boxShadow: `0 0 20px rgba(255, 68, 68, 0.4)`,
-          }}>
+          <div
+            style={{
+              position: 'absolute',
+              bottom: 350,
+              left: '50%',
+              transform: 'translateX(-50%)',
+              width: 110,
+              height: 110,
+              borderRadius: '50%',
+              overflow: 'hidden',
+              border: `3px solid ${ACCENT}`,
+              boxShadow: `0 0 20px rgba(255, 68, 68, 0.4)`,
+            }}
+          >
             <Img src={avatarSrc} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           </div>
 
           {/* Red accent bar — top only (declutter) */}
-          <div style={{
-            position: 'absolute', top: 0, left: 0, right: 0, height: 6,
-            background: `linear-gradient(90deg, transparent, ${ACCENT}, transparent)`,
-          }} />
+          <div
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              height: 6,
+              background: `linear-gradient(90deg, transparent, ${ACCENT}, transparent)`,
+            }}
+          />
         </AbsoluteFill>
       )}
 
@@ -1171,7 +1354,6 @@ export const QuizShort: React.FC<QuizShortProps> = ({ quiz, audioFile, wordTimes
           ═══════════════════════════════════════════════════════════════ */}
       {showDiagram && (
         <AbsoluteFill style={{ zIndex: 10 }}>
-
           {/* ── Topic Diagram (visible throughout) ── */}
           <TopicDiagram
             topic={quiz.topic}
@@ -1183,33 +1365,55 @@ export const QuizShort: React.FC<QuizShortProps> = ({ quiz, audioFile, wordTimes
           {/* ── Question text with frosted glass card ── */}
           {(() => {
             const qAge = frame - HOOK_END;
-            const qSpring = spring({ frame: qAge, fps, config: { stiffness: 200, damping: 16, mass: 0.5 } });
+            const qSpring = spring({
+              frame: qAge,
+              fps,
+              config: { stiffness: 200, damping: 16, mass: 0.5 },
+            });
             return (
-              <div style={{
-                position: 'absolute', top: 80, left: 40, right: 40,
-                opacity: interpolate(qSpring, [0, 1], [0, 1]),
-                transform: `translateY(${interpolate(qSpring, [0, 1], [-30, 0])}px)`,
-              }}>
-                <div style={{
-                  background: 'rgba(20, 20, 40, 0.85)',
-                  backdropFilter: 'blur(20px)',
-                  borderRadius: 20,
-                  border: '1px solid rgba(255,255,255,0.08)',
-                  padding: '24px 28px',
-                  boxShadow: '0 8px 40px rgba(0,0,0,0.4)',
-                }}>
+              <div
+                style={{
+                  position: 'absolute',
+                  top: 80,
+                  left: 40,
+                  right: 40,
+                  opacity: interpolate(qSpring, [0, 1], [0, 1]),
+                  transform: `translateY(${interpolate(qSpring, [0, 1], [-30, 0])}px)`,
+                }}
+              >
+                <div
+                  style={{
+                    background: 'rgba(20, 20, 40, 0.85)',
+                    backdropFilter: 'blur(20px)',
+                    borderRadius: 20,
+                    border: '1px solid rgba(255,255,255,0.08)',
+                    padding: '24px 28px',
+                    boxShadow: '0 8px 40px rgba(0,0,0,0.4)',
+                  }}
+                >
                   {/* Topic badge */}
-                  <div style={{
-                    fontSize: 14, fontFamily: FONTS.heading, fontWeight: 700,
-                    color: CYAN, textTransform: 'uppercase', letterSpacing: 3,
-                    marginBottom: 10,
-                  }}>
+                  <div
+                    style={{
+                      fontSize: 14,
+                      fontFamily: FONTS.heading,
+                      fontWeight: 700,
+                      color: CYAN,
+                      textTransform: 'uppercase',
+                      letterSpacing: 3,
+                      marginBottom: 10,
+                    }}
+                  >
                     {quiz.topic.replace(/-/g, ' ')}
                   </div>
-                  <div style={{
-                    fontSize: 34, fontFamily: FONTS.heading, fontWeight: 700,
-                    color: TEXT, lineHeight: 1.25,
-                  }}>
+                  <div
+                    style={{
+                      fontSize: 34,
+                      fontFamily: FONTS.heading,
+                      fontWeight: 700,
+                      color: TEXT,
+                      lineHeight: 1.25,
+                    }}
+                  >
                     {quiz.question}
                   </div>
                 </div>
@@ -1218,11 +1422,14 @@ export const QuizShort: React.FC<QuizShortProps> = ({ quiz, audioFile, wordTimes
           })()}
 
           {/* ── Options (below diagram area) ── */}
-          <div style={{
-            position: 'absolute',
-            top: isExplainPhase || isLoopPhase ? 520 : 560,
-            left: 40, right: 40,
-          }}>
+          <div
+            style={{
+              position: 'absolute',
+              top: isExplainPhase || isLoopPhase ? 520 : 560,
+              left: 40,
+              right: 40,
+            }}
+          >
             {quiz.options.map((opt, i) => (
               <OptionCard
                 key={i}
@@ -1258,10 +1465,16 @@ export const QuizShort: React.FC<QuizShortProps> = ({ quiz, audioFile, wordTimes
                 <LottieOverlay
                   file="lottie/confetti.json"
                   style={{
-                    width: 600, height: 600,
-                    top: 400, left: '50%',
+                    width: 600,
+                    height: 600,
+                    top: 400,
+                    left: '50%',
                     transform: 'translateX(-50%)',
-                    opacity: interpolate(frame - ANSWER_SPLASH_END, [0, 10, 50, 60], [0, 0.8, 0.6, 0]),
+                    opacity: interpolate(
+                      frame - ANSWER_SPLASH_END,
+                      [0, 10, 50, 60],
+                      [0, 0.8, 0.6, 0]
+                    ),
                   }}
                   loop={false}
                 />
@@ -1282,7 +1495,7 @@ export const QuizShort: React.FC<QuizShortProps> = ({ quiz, audioFile, wordTimes
               />
 
               {/* Per-beat background pulses — recycle 3 beats across the span */}
-              {[0, 1, 2].map(i => {
+              {[0, 1, 2].map((i) => {
                 const beatDur = Math.floor((EXPLAIN_END - CODE_END) / 3);
                 return (
                   <BeatBackground
@@ -1307,44 +1520,62 @@ export const QuizShort: React.FC<QuizShortProps> = ({ quiz, audioFile, wordTimes
                   `text` is only the explanation, so we slice the timestamps to
                   the explanation window and rebase to zero, AND set startFrame
                   to the audio position where the explanation actually begins. */}
-              {wordTimestamps && wordTimestamps.length > 0 && (() => {
-                const prefixWords = `${quiz.spokenHook} ${quiz.question}`.split(/\s+/).filter(Boolean).length;
-                const explanationWords = quiz.explanation.split(/\s+/).filter(Boolean).length;
-                const slice = wordTimestamps.slice(prefixWords, prefixWords + explanationWords);
-                if (slice.length === 0) return null;
-                const offsetSec = slice[0].start;
-                const rebased = slice.map(wt => ({
-                  word: wt.word, start: wt.start - offsetSec, end: wt.end - offsetSec,
-                }));
-                const captionStartFrame = Math.round(offsetSec * fps);
-                return (
-                  <div style={{
-                    // v3: moved from bottom:380 (collided with options at top:560-855)
-                    // to bottom:170 (safe zone below options, above progress bar).
-                    position: 'absolute', bottom: 170, left: 0, right: 0, zIndex: 30,
-                  }}>
-                    <CaptionOverlay
-                      text={quiz.explanation}
-                      startFrame={captionStartFrame}
-                      durationInFrames={EXPLAIN_END - captionStartFrame}
-                      wordTimestamps={rebased}
-                      captionMode="hormozi"
-                    />
-                  </div>
-                );
-              })()}
+              {wordTimestamps &&
+                wordTimestamps.length > 0 &&
+                (() => {
+                  const prefixWords = `${quiz.spokenHook} ${quiz.question}`
+                    .split(/\s+/)
+                    .filter(Boolean).length;
+                  const explanationWords = quiz.explanation.split(/\s+/).filter(Boolean).length;
+                  const slice = wordTimestamps.slice(prefixWords, prefixWords + explanationWords);
+                  if (slice.length === 0) return null;
+                  const offsetSec = slice[0].start;
+                  const rebased = slice.map((wt) => ({
+                    word: wt.word,
+                    start: wt.start - offsetSec,
+                    end: wt.end - offsetSec,
+                  }));
+                  const captionStartFrame = Math.round(offsetSec * fps);
+                  return (
+                    <div
+                      style={{
+                        // v3: moved from bottom:380 (collided with options at top:560-855)
+                        // to bottom:170 (safe zone below options, above progress bar).
+                        position: 'absolute',
+                        bottom: 170,
+                        left: 0,
+                        right: 0,
+                        zIndex: 30,
+                      }}
+                    >
+                      <CaptionOverlay
+                        text={quiz.explanation}
+                        startFrame={captionStartFrame}
+                        durationInFrames={EXPLAIN_END - captionStartFrame}
+                        wordTimestamps={rebased}
+                        captionMode="hormozi"
+                      />
+                    </div>
+                  );
+                })()}
             </>
           )}
 
           {/* Avatar — bottom right during question/explain phases */}
           {!isLoopPhase && (
-            <div style={{
-              position: 'absolute', bottom: 200, right: 30,
-              width: 100, height: 100, borderRadius: '50%',
-              overflow: 'hidden',
-              border: `3px solid rgba(255,255,255,0.1)`,
-              boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
-            }}>
+            <div
+              style={{
+                position: 'absolute',
+                bottom: 200,
+                right: 30,
+                width: 100,
+                height: 100,
+                borderRadius: '50%',
+                overflow: 'hidden',
+                border: `3px solid rgba(255,255,255,0.1)`,
+                boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
+              }}
+            >
               <Img src={avatarSrc} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             </div>
           )}
@@ -1368,19 +1599,24 @@ export const QuizShort: React.FC<QuizShortProps> = ({ quiz, audioFile, wordTimes
           Uses quiz.workedExample if provided; otherwise derives heuristically
           from the explanation, with the twist as a final fallback.
           ═══════════════════════════════════════════════════════════════ */}
-      {isExamplePhase && (() => {
-        const derived = quiz.workedExample ?? deriveWorkedExample(
-          quiz.explanation, quiz.options as unknown as string[], quiz.correctIndex,
-        );
-        return (
-          <WorkedExample
-            data={derived}
-            twistFallback={quiz.twist}
-            startFrame={EXPLAIN_END}
-            durationFrames={Math.max(1, EXAMPLE_END - EXPLAIN_END)}
-          />
-        );
-      })()}
+      {isExamplePhase &&
+        (() => {
+          const derived =
+            quiz.workedExample ??
+            deriveWorkedExample(
+              quiz.explanation,
+              quiz.options as unknown as string[],
+              quiz.correctIndex
+            );
+          return (
+            <WorkedExample
+              data={derived}
+              twistFallback={quiz.twist}
+              startFrame={EXPLAIN_END}
+              durationFrames={Math.max(1, EXAMPLE_END - EXPLAIN_END)}
+            />
+          );
+        })()}
 
       {/* ═══════════════════════════════════════════════════════════════
           Phase 8: LOOP TRIGGER (last 6s before CTA) + END CTA (last 4s)
@@ -1400,7 +1636,8 @@ export const QuizShort: React.FC<QuizShortProps> = ({ quiz, audioFile, wordTimes
           volume={(f) => {
             const fadeIn = interpolate(f, [0, 6], [0, 1], { extrapolateRight: 'clamp' });
             const fadeOut = interpolate(f, [TOTAL_FRAMES - 15, TOTAL_FRAMES], [1, 0], {
-              extrapolateLeft: 'clamp', extrapolateRight: 'clamp',
+              extrapolateLeft: 'clamp',
+              extrapolateRight: 'clamp',
             });
             return fadeIn * fadeOut;
           }}
@@ -1416,42 +1653,72 @@ export const QuizShort: React.FC<QuizShortProps> = ({ quiz, audioFile, wordTimes
         volume={(f) => {
           if (!wordTimestamps || wordTimestamps.length === 0) return 0.06;
           const sec = f / fps;
-          const speaking = wordTimestamps.some(wt => sec >= wt.start - 0.05 && sec <= wt.end + 0.15);
+          const speaking = wordTimestamps.some(
+            (wt) => sec >= wt.start - 0.05 && sec <= wt.end + 0.15
+          );
           return speaking ? 0.025 : 0.09;
         }}
       />
 
       {/* ── SFX cues ── */}
       <Sfx name="whoosh-in" from={0} volume={0.8} />
-      <Sfx name="tension-build" from={HOOK_END} durationFrames={QUESTION_END - HOOK_END} volume={0.4} />
+      <Sfx
+        name="tension-build"
+        from={HOOK_END}
+        durationFrames={QUESTION_END - HOOK_END}
+        volume={0.4}
+      />
       <Sfx name="impact" from={FLASH_END - 5} durationFrames={20} volume={1.0} />
       <Sfx name="success-chime" from={FLASH_END} volume={0.7} />
       <Sfx name="riser" from={Math.max(0, FLASH_END + 5)} durationFrames={45} volume={0.5} />
-      <Sfx name="swoosh" from={Math.max(0, LOOP_START_FRAME - 10)} durationFrames={20} volume={0.8} />
+      <Sfx
+        name="swoosh"
+        from={Math.max(0, LOOP_START_FRAME - 10)}
+        durationFrames={20}
+        volume={0.8}
+      />
 
       {/* ── Channel logo bug (top-right, always visible) ── */}
       {/* v3.1: show the full domain so the brand is searchable, not just a name. */}
-      <div style={{
-        position: 'absolute', top: 28, right: 28,
-        zIndex: 95,
-        padding: '6px 12px',
-        borderRadius: 8,
-        backgroundColor: 'rgba(10, 10, 18, 0.55)',
-        border: '1px solid rgba(251, 191, 36, 0.4)',
-        backdropFilter: 'blur(8px)',
-        display: 'flex', alignItems: 'center', gap: 6,
-      }}>
-        <span style={{
-          fontSize: 13, fontFamily: FONTS.heading, fontWeight: 900,
-          color: '#FBBF24', letterSpacing: 1.2, opacity: 0.85,
-          textTransform: 'lowercase',
-        }}>
+      <div
+        style={{
+          position: 'absolute',
+          top: 28,
+          right: 28,
+          zIndex: 95,
+          padding: '6px 12px',
+          borderRadius: 8,
+          backgroundColor: 'rgba(10, 10, 18, 0.55)',
+          border: '1px solid rgba(251, 191, 36, 0.4)',
+          backdropFilter: 'blur(8px)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 6,
+        }}
+      >
+        <span
+          style={{
+            fontSize: 13,
+            fontFamily: FONTS.heading,
+            fontWeight: 900,
+            color: '#FBBF24',
+            letterSpacing: 1.2,
+            opacity: 0.85,
+            textTransform: 'lowercase',
+          }}
+        >
           ●
         </span>
-        <span style={{
-          fontSize: 17, fontFamily: FONTS.heading, fontWeight: 900,
-          color: YELLOW, letterSpacing: 1.5, textTransform: 'lowercase',
-        }}>
+        <span
+          style={{
+            fontSize: 17,
+            fontFamily: FONTS.heading,
+            fontWeight: 900,
+            color: YELLOW,
+            letterSpacing: 1.5,
+            textTransform: 'lowercase',
+          }}
+        >
           guru-sishya.in
         </span>
       </div>
@@ -1459,27 +1726,43 @@ export const QuizShort: React.FC<QuizShortProps> = ({ quiz, audioFile, wordTimes
       {/* ── Persistent URL watermark (bottom-left, always visible) ── */}
       {/* v3.1: a second discrete touchpoint so the URL is on screen during every */}
       {/* phase. Color matches the brand yellow but at 70% to stay non-intrusive. */}
-      <div style={{
-        position: 'absolute', bottom: 14, left: 30,
-        zIndex: 92,
-        fontSize: 13, fontFamily: FONTS.heading, fontWeight: 600,
-        color: 'rgba(251, 191, 36, 0.7)',
-        letterSpacing: 1.2,
-      }}>
+      <div
+        style={{
+          position: 'absolute',
+          bottom: 14,
+          left: 30,
+          zIndex: 92,
+          fontSize: 13,
+          fontFamily: FONTS.heading,
+          fontWeight: 600,
+          color: 'rgba(251, 191, 36, 0.7)',
+          letterSpacing: 1.2,
+        }}
+      >
         🌐 www.guru-sishya.in
       </div>
 
       {/* ── Progress bar ── */}
-      <div style={{
-        position: 'absolute', bottom: 0, left: 0, right: 0, height: 4,
-        backgroundColor: 'rgba(255,255,255,0.06)', zIndex: 90,
-      }}>
-        <div style={{
-          width: `${(frame / TOTAL_FRAMES) * 100}%`, height: '100%',
-          background: `linear-gradient(90deg, ${ACCENT}, ${YELLOW})`,
-          borderRadius: '0 2px 2px 0',
-          boxShadow: `0 0 10px ${ACCENT}66`,
-        }} />
+      <div
+        style={{
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          height: 4,
+          backgroundColor: 'rgba(255,255,255,0.06)',
+          zIndex: 90,
+        }}
+      >
+        <div
+          style={{
+            width: `${(frame / TOTAL_FRAMES) * 100}%`,
+            height: '100%',
+            background: `linear-gradient(90deg, ${ACCENT}, ${YELLOW})`,
+            borderRadius: '0 2px 2px 0',
+            boxShadow: `0 0 10px ${ACCENT}66`,
+          }}
+        />
       </div>
     </AbsoluteFill>
   );
@@ -1489,7 +1772,9 @@ export const QuizShort: React.FC<QuizShortProps> = ({ quiz, audioFile, wordTimes
 // v3: enforces a 120s baseline. Audio shorter than 120s -> composition is
 // still 120s (fadeOut handles the silent tail). Audio longer -> composition
 // grows to fit (audio + 1s tail).
-export const calculateQuizShortMetadata: CalculateMetadataFunction<Record<string, unknown>> = ({ props }) => {
+export const calculateQuizShortMetadata: CalculateMetadataFunction<Record<string, unknown>> = ({
+  props,
+}) => {
   const seconds = (props.audioDurationSec as number | undefined) ?? 0;
   const baselineFrames = DEFAULT_DURATION_S * FPS;
   const audioFrames = Math.ceil(seconds * FPS) + FPS; // audio + 1s tail

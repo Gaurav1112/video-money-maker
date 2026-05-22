@@ -1,5 +1,13 @@
 import React from 'react';
-import { useCurrentFrame, AbsoluteFill, interpolate, Audio, staticFile, spring, useVideoConfig } from 'remotion';
+import {
+  useCurrentFrame,
+  AbsoluteFill,
+  interpolate,
+  Audio,
+  staticFile,
+  spring,
+  useVideoConfig,
+} from 'remotion';
 import { COLORS, LOADED_FONTS, SIZES } from '../lib/theme';
 
 interface SceneTransitionFlashProps {
@@ -20,14 +28,14 @@ interface SceneMeta {
 }
 
 const SCENE_META: Record<string, SceneMeta> = {
-  title:     { color: COLORS.saffron,  icon: '🎬', label: 'INTRO'        },
-  text:      { color: COLORS.indigo,   icon: '📝', label: 'CONCEPT'      },
-  code:      { color: COLORS.teal,     icon: '</>', label: 'CODE'         },
-  diagram:   { color: COLORS.indigo,   icon: '📐', label: 'DIAGRAM'      },
-  table:     { color: COLORS.gold,     icon: '📊', label: 'COMPARISON'   },
-  interview: { color: COLORS.saffron,  icon: '💼', label: 'INTERVIEW TIP'},
-  review:    { color: COLORS.teal,     icon: '🎯', label: 'CHALLENGE'    },
-  summary:   { color: COLORS.gold,     icon: '🏆', label: 'SUMMARY'      },
+  title: { color: COLORS.saffron, icon: '🎬', label: 'INTRO' },
+  text: { color: COLORS.indigo, icon: '📝', label: 'CONCEPT' },
+  code: { color: COLORS.teal, icon: '</>', label: 'CODE' },
+  diagram: { color: COLORS.indigo, icon: '📐', label: 'DIAGRAM' },
+  table: { color: COLORS.gold, icon: '📊', label: 'COMPARISON' },
+  interview: { color: COLORS.saffron, icon: '💼', label: 'INTERVIEW TIP' },
+  review: { color: COLORS.teal, icon: '🎯', label: 'CHALLENGE' },
+  summary: { color: COLORS.gold, icon: '🏆', label: 'SUMMARY' },
 };
 
 const DEFAULT_META: SceneMeta = { color: COLORS.saffron, icon: '▶', label: 'NEXT' };
@@ -53,52 +61,40 @@ const SceneTransitionFlash: React.FC<SceneTransitionFlashProps> = ({
 
   // --- Flash overlay --------------------------------------------------------
   // Peaks hard at frame 3, fades by frame 15
-  const flashOpacity = interpolate(
-    frame,
-    [0, 3, 7, 15],
-    [0, 0.55, 0.25, 0],
-    { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
-  );
+  const flashOpacity = interpolate(frame, [0, 3, 7, 15], [0, 0.55, 0.25, 0], {
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
+  });
 
   // --- Zoom pulse -----------------------------------------------------------
   // 1.0 → 1.03 → 1.0 — subtle but visible zoom on the overlay itself
-  const scale = interpolate(
-    frame,
-    [0, 5, 15],
-    [1.0, 1.03, 1.0],
-    { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
-  );
+  const scale = interpolate(frame, [0, 5, 15], [1.0, 1.03, 1.0], {
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
+  });
 
   // --- Horizontal wipe line -------------------------------------------------
-  const wipeX = interpolate(
-    frame,
-    [0, 12],
-    [-5, 108],
-    { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
-  );
+  const wipeX = interpolate(frame, [0, 12], [-5, 108], {
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
+  });
 
-  const wipeOpacity = interpolate(
-    frame,
-    [0, 3, 10, 15],
-    [0, 0.9, 0.5, 0],
-    { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
-  );
+  const wipeOpacity = interpolate(frame, [0, 3, 10, 15], [0, 0.9, 0.5, 0], {
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
+  });
 
   // --- Label badge ----------------------------------------------------------
   // Slides in from right, peaks mid-transition, then fades
-  const labelX = interpolate(
-    frame,
-    [0, 5, 10, 15],
-    [80, 0, 0, -80],
-    { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
-  );
+  const labelX = interpolate(frame, [0, 5, 10, 15], [80, 0, 0, -80], {
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
+  });
 
-  const labelOpacity = interpolate(
-    frame,
-    [0, 4, 10, 15],
-    [0, 1, 1, 0],
-    { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
-  );
+  const labelOpacity = interpolate(frame, [0, 4, 10, 15], [0, 1, 1, 0], {
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
+  });
 
   // --- Spring scale for the badge -------------------------------------------
   const badgeScale = spring({
@@ -114,25 +110,28 @@ const SceneTransitionFlash: React.FC<SceneTransitionFlashProps> = ({
 
   // ── Icon spin: 360 degrees during transition ──────────────────────────────
   const iconRotation = interpolate(frame, [0, 12], [0, 360], {
-    extrapolateLeft: 'clamp', extrapolateRight: 'clamp',
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
   });
 
   // ── Scene number display (e.g. "03/12") ───────────────────────────────────
-  const sceneNumStr = sceneNumber !== undefined && totalScenes !== undefined
-    ? `${String(sceneNumber).padStart(2, '0')}/${String(totalScenes).padStart(2, '0')}`
-    : null;
+  const sceneNumStr =
+    sceneNumber !== undefined && totalScenes !== undefined
+      ? `${String(sceneNumber).padStart(2, '0')}/${String(totalScenes).padStart(2, '0')}`
+      : null;
 
   const sceneNumOpacity = interpolate(frame, [2, 5, 10, 15], [0, 0.9, 0.9, 0], {
-    extrapolateLeft: 'clamp', extrapolateRight: 'clamp',
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
   });
 
   // ── Progress bar at bottom ────────────────────────────────────────────────
-  const progressPercent = sceneNumber !== undefined && totalScenes !== undefined
-    ? (sceneNumber / totalScenes) * 100
-    : 0;
+  const progressPercent =
+    sceneNumber !== undefined && totalScenes !== undefined ? (sceneNumber / totalScenes) * 100 : 0;
 
   const progressOpacity = interpolate(frame, [1, 4, 12, 15], [0, 0.8, 0.8, 0], {
-    extrapolateLeft: 'clamp', extrapolateRight: 'clamp',
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
   });
 
   // Is it the code scene? The "</>" icon is text, not emoji — needs a mono font
@@ -231,9 +230,7 @@ const SceneTransitionFlash: React.FC<SceneTransitionFlashProps> = ({
           style={{
             fontSize: 36,
             lineHeight: 1,
-            fontFamily: isCodeScene
-              ? 'JetBrains Mono, monospace'
-              : LOADED_FONTS.text,
+            fontFamily: isCodeScene ? 'JetBrains Mono, monospace' : LOADED_FONTS.text,
             color: color,
             fontWeight: isCodeScene ? 700 : undefined,
             letterSpacing: isCodeScene ? -1 : undefined,

@@ -191,7 +191,7 @@ export function playlistFor(topic: string): string | null {
 
   if (bank?.topics?.length) {
     const direct = bank.topics.find(
-      (t) => normalize(t.slug) === slug || normalize(t.name) === norm,
+      (t) => normalize(t.slug) === slug || normalize(t.name) === norm
     );
     if (direct?.category && CATEGORY_TO_PLAYLIST[direct.category]) {
       return CATEGORY_TO_PLAYLIST[direct.category];

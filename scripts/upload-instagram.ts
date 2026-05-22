@@ -64,7 +64,7 @@ const MAX_POLL_ATTEMPTS = 60; // 5 minutes max wait
 function graphApiRequest<T>(
   urlPath: string,
   method: 'GET' | 'POST',
-  params?: Record<string, string>,
+  params?: Record<string, string>
 ): Promise<T> {
   return new Promise((resolve, reject) => {
     const fullUrl = new URL(`${GRAPH_API_BASE}${urlPath}`);
@@ -82,7 +82,9 @@ function graphApiRequest<T>(
 
     const req = https.request(options, (res) => {
       let data = '';
-      res.on('data', (chunk) => { data += chunk; });
+      res.on('data', (chunk) => {
+        data += chunk;
+      });
       res.on('end', () => {
         try {
           const parsed = JSON.parse(data);
@@ -137,12 +139,13 @@ async function uploadReel(
   videoUrl: string,
   caption: string,
   accessToken: string,
-  businessId: string,
+  businessId: string
 ): Promise<string> {
   // Truncate caption if needed
-  const trimmedCaption = caption.length > MAX_CAPTION_LENGTH
-    ? caption.slice(0, MAX_CAPTION_LENGTH - 3) + '...'
-    : caption;
+  const trimmedCaption =
+    caption.length > MAX_CAPTION_LENGTH
+      ? caption.slice(0, MAX_CAPTION_LENGTH - 3) + '...'
+      : caption;
 
   console.log('');
   console.log('=== Instagram Reels Upload ===');
@@ -153,17 +156,13 @@ async function uploadReel(
 
   // Step 1: Create media container
   console.log('Step 1/3: Creating media container...');
-  const container = await graphApiRequest<ContainerResponse>(
-    `/${businessId}/media`,
-    'POST',
-    {
-      media_type: 'REELS',
-      video_url: videoUrl,
-      caption: trimmedCaption,
-      share_to_feed: 'true',
-      access_token: accessToken,
-    },
-  );
+  const container = await graphApiRequest<ContainerResponse>(`/${businessId}/media`, 'POST', {
+    media_type: 'REELS',
+    video_url: videoUrl,
+    caption: trimmedCaption,
+    share_to_feed: 'true',
+    access_token: accessToken,
+  });
 
   const containerId = container.id;
   console.log(`Container created: ${containerId}`);
@@ -173,14 +172,10 @@ async function uploadReel(
   let attempts = 0;
 
   while (attempts < MAX_POLL_ATTEMPTS) {
-    const status = await graphApiRequest<StatusResponse>(
-      `/${containerId}`,
-      'GET',
-      {
-        fields: 'status_code',
-        access_token: accessToken,
-      },
-    );
+    const status = await graphApiRequest<StatusResponse>(`/${containerId}`, 'GET', {
+      fields: 'status_code',
+      access_token: accessToken,
+    });
 
     console.log(`  Status: ${status.status_code} (attempt ${attempts + 1}/${MAX_POLL_ATTEMPTS})`);
 
@@ -202,14 +197,10 @@ async function uploadReel(
 
   // Step 3: Publish the container
   console.log('Step 3/3: Publishing reel...');
-  const published = await graphApiRequest<PublishResponse>(
-    `/${businessId}/media_publish`,
-    'POST',
-    {
-      creation_id: containerId,
-      access_token: accessToken,
-    },
-  );
+  const published = await graphApiRequest<PublishResponse>(`/${businessId}/media_publish`, 'POST', {
+    creation_id: containerId,
+    access_token: accessToken,
+  });
 
   console.log('');
   console.log('Reel published successfully!');
@@ -226,7 +217,9 @@ async function main(): Promise<void> {
   const positional = args.filter((a) => !a.startsWith('--'));
 
   if (positional.length < 2) {
-    console.error('Usage: npx tsx scripts/upload-instagram.ts <video.mp4> <metadata.json> [--url <public_url>]');
+    console.error(
+      'Usage: npx tsx scripts/upload-instagram.ts <video.mp4> <metadata.json> [--url <public_url>]'
+    );
     console.error('');
     console.error('Arguments:');
     console.error('  video.mp4       Path to the video file (9:16 format, 3-90 seconds)');
@@ -253,7 +246,9 @@ async function main(): Promise<void> {
 
   if (!businessId) {
     console.error('Error: INSTAGRAM_BUSINESS_ID env var is required.');
-    console.error('Find yours via: GET /me/accounts → page_id → GET /{page_id}?fields=instagram_business_account');
+    console.error(
+      'Find yours via: GET /me/accounts → page_id → GET /{page_id}?fields=instagram_business_account'
+    );
     process.exit(1);
   }
 
@@ -281,7 +276,8 @@ async function main(): Promise<void> {
     process.exit(1);
   }
 
-  const caption = metadata.instagramCaption || metadata.youtube?.description || 'Check out this video!';
+  const caption =
+    metadata.instagramCaption || metadata.youtube?.description || 'Check out this video!';
 
   // Determine video URL
   const urlFlagIdx = flags.indexOf('--url');

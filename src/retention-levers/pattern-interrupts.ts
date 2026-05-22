@@ -6,7 +6,7 @@
 export type InterruptType = 'SFX' | 'graphic' | 'cut' | 'color-flash' | 'text-overlay' | 'zoom';
 
 export interface PatternInterrupt {
-  time: number;  // milliseconds
+  time: number; // milliseconds
   type: InterruptType;
   duration: number;
   effect: string;
@@ -16,7 +16,14 @@ export function generatePatternInterrupts(videoDurationMs: number): PatternInter
   const interrupts: PatternInterrupt[] = [];
   const interruptInterval = 5000; // Every 5 seconds
 
-  const sfxSequence: InterruptType[] = ['SFX', 'graphic', 'cut', 'color-flash', 'text-overlay', 'zoom'];
+  const sfxSequence: InterruptType[] = [
+    'SFX',
+    'graphic',
+    'cut',
+    'color-flash',
+    'text-overlay',
+    'zoom',
+  ];
   let typeIndex = 0;
 
   for (let time = 0; time < videoDurationMs; time += interruptInterval) {
@@ -24,7 +31,7 @@ export function generatePatternInterrupts(videoDurationMs: number): PatternInter
       time,
       type: sfxSequence[typeIndex % sfxSequence.length],
       duration: 300, // 300ms interrupt
-      effect: `pattern-interrupt-${typeIndex}`
+      effect: `pattern-interrupt-${typeIndex}`,
     });
     typeIndex++;
   }

@@ -36,13 +36,7 @@
 
 import React from 'react';
 
-export type FaceEmotion =
-  | 'shocked'
-  | 'confused'
-  | 'smug'
-  | 'scared'
-  | 'excited'
-  | 'smirk';
+export type FaceEmotion = 'shocked' | 'confused' | 'smug' | 'scared' | 'excited' | 'smirk';
 
 export interface CartoonFaceProps {
   emotion: FaceEmotion;
@@ -161,40 +155,100 @@ function renderBrows(e: FaceEmotion): React.ReactElement {
     case 'shocked':
       return (
         <g>
-          <path d="M 130 290 Q 165 260 200 285" stroke={HAIR_DARK} strokeWidth="8" fill="none" strokeLinecap="round" />
-          <path d="M 290 285 Q 325 260 360 290" stroke={HAIR_DARK} strokeWidth="8" fill="none" strokeLinecap="round" />
+          <path
+            d="M 130 290 Q 165 260 200 285"
+            stroke={HAIR_DARK}
+            strokeWidth="8"
+            fill="none"
+            strokeLinecap="round"
+          />
+          <path
+            d="M 290 285 Q 325 260 360 290"
+            stroke={HAIR_DARK}
+            strokeWidth="8"
+            fill="none"
+            strokeLinecap="round"
+          />
         </g>
       );
     case 'confused':
       return (
         <g>
           {/* asymmetric brows — left tilted up, right tilted down */}
-          <path d="M 130 295 Q 165 270 200 290" stroke={HAIR_DARK} strokeWidth="8" fill="none" strokeLinecap="round" />
-          <path d="M 290 290 L 360 305" stroke={HAIR_DARK} strokeWidth="8" fill="none" strokeLinecap="round" />
+          <path
+            d="M 130 295 Q 165 270 200 290"
+            stroke={HAIR_DARK}
+            strokeWidth="8"
+            fill="none"
+            strokeLinecap="round"
+          />
+          <path
+            d="M 290 290 L 360 305"
+            stroke={HAIR_DARK}
+            strokeWidth="8"
+            fill="none"
+            strokeLinecap="round"
+          />
         </g>
       );
     case 'smug':
       return (
         <g>
           {/* both brows raised slightly */}
-          <path d="M 130 290 L 200 285" stroke={HAIR_DARK} strokeWidth="8" fill="none" strokeLinecap="round" />
-          <path d="M 290 285 L 360 290" stroke={HAIR_DARK} strokeWidth="8" fill="none" strokeLinecap="round" />
+          <path
+            d="M 130 290 L 200 285"
+            stroke={HAIR_DARK}
+            strokeWidth="8"
+            fill="none"
+            strokeLinecap="round"
+          />
+          <path
+            d="M 290 285 L 360 290"
+            stroke={HAIR_DARK}
+            strokeWidth="8"
+            fill="none"
+            strokeLinecap="round"
+          />
         </g>
       );
     case 'scared':
       return (
         <g>
           {/* furrowed centre */}
-          <path d="M 130 305 Q 165 290 200 305" stroke={HAIR_DARK} strokeWidth="8" fill="none" strokeLinecap="round" />
-          <path d="M 290 305 Q 325 290 360 305" stroke={HAIR_DARK} strokeWidth="8" fill="none" strokeLinecap="round" />
+          <path
+            d="M 130 305 Q 165 290 200 305"
+            stroke={HAIR_DARK}
+            strokeWidth="8"
+            fill="none"
+            strokeLinecap="round"
+          />
+          <path
+            d="M 290 305 Q 325 290 360 305"
+            stroke={HAIR_DARK}
+            strokeWidth="8"
+            fill="none"
+            strokeLinecap="round"
+          />
         </g>
       );
     case 'excited':
       return (
         <g>
           {/* high arched */}
-          <path d="M 130 280 Q 165 250 200 280" stroke={HAIR_DARK} strokeWidth="8" fill="none" strokeLinecap="round" />
-          <path d="M 290 280 Q 325 250 360 280" stroke={HAIR_DARK} strokeWidth="8" fill="none" strokeLinecap="round" />
+          <path
+            d="M 130 280 Q 165 250 200 280"
+            stroke={HAIR_DARK}
+            strokeWidth="8"
+            fill="none"
+            strokeLinecap="round"
+          />
+          <path
+            d="M 290 280 Q 325 250 360 280"
+            stroke={HAIR_DARK}
+            strokeWidth="8"
+            fill="none"
+            strokeLinecap="round"
+          />
         </g>
       );
     case 'smirk':
@@ -202,8 +256,20 @@ function renderBrows(e: FaceEmotion): React.ReactElement {
       return (
         <g>
           {/* one brow raised (right) */}
-          <path d="M 130 295 L 200 295" stroke={HAIR_DARK} strokeWidth="8" fill="none" strokeLinecap="round" />
-          <path d="M 290 285 Q 325 270 360 285" stroke={HAIR_DARK} strokeWidth="8" fill="none" strokeLinecap="round" />
+          <path
+            d="M 130 295 L 200 295"
+            stroke={HAIR_DARK}
+            strokeWidth="8"
+            fill="none"
+            strokeLinecap="round"
+          />
+          <path
+            d="M 290 285 Q 325 270 360 285"
+            stroke={HAIR_DARK}
+            strokeWidth="8"
+            fill="none"
+            strokeLinecap="round"
+          />
         </g>
       );
   }
@@ -240,7 +306,15 @@ function renderEyes(e: FaceEmotion): React.ReactElement {
     <g>
       {[168, 318].map((cx) => (
         <g key={cx}>
-          <ellipse cx={cx} cy={350} rx={rx} ry={ry} fill={EYE_WHITE} stroke={HAIR_DARK} strokeWidth="2" />
+          <ellipse
+            cx={cx}
+            cy={350}
+            rx={rx}
+            ry={ry}
+            fill={EYE_WHITE}
+            stroke={HAIR_DARK}
+            strokeWidth="2"
+          />
           {/* Pupil — slightly off-centre for shocked (looking up) */}
           <circle cx={cx} cy={wide ? 345 : 352} r={pupilR + 4} fill={PUPIL} />
           <circle cx={cx + 2} cy={(wide ? 345 : 352) - 2} r={2} fill={EYE_WHITE} />

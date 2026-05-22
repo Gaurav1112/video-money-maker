@@ -33,7 +33,7 @@ export const VerticalCaptionOverlay: React.FC<VerticalCaptionOverlayProps> = ({
 
   if (frame < effectiveStart || frame > startFrame + durationInFrames) return null;
 
-  const words = text.split(/\s+/).filter(w => w.length > 0);
+  const words = text.split(/\s+/).filter((w) => w.length > 0);
   if (words.length === 0) return null;
 
   const relativeTime = (frame - startFrame) / fps;
@@ -63,58 +63,116 @@ export const VerticalCaptionOverlay: React.FC<VerticalCaptionOverlayProps> = ({
 
   const HIGH_ENERGY = new Set([
     // urgency
-    'important', 'critical', 'never', 'always', 'key', 'secret', 'wrong', 'mistake', 'problem', 'solution',
+    'important',
+    'critical',
+    'never',
+    'always',
+    'key',
+    'secret',
+    'wrong',
+    'mistake',
+    'problem',
+    'solution',
     // emotional triggers
-    'but', 'actually', 'wait', 'stop', 'look', 'remember', 'exactly', 'literally', 'seriously',
+    'but',
+    'actually',
+    'wait',
+    'stop',
+    'look',
+    'remember',
+    'exactly',
+    'literally',
+    'seriously',
     // tech emphasis
-    'crash', 'bug', 'hack', 'dangerous', 'deprecated', 'breaking', 'fastest', 'slowest', 'best', 'worst',
-    'free', 'dead', 'powerful', 'simple', 'complex', 'broken', 'secure', 'unsafe',
+    'crash',
+    'bug',
+    'hack',
+    'dangerous',
+    'deprecated',
+    'breaking',
+    'fastest',
+    'slowest',
+    'best',
+    'worst',
+    'free',
+    'dead',
+    'powerful',
+    'simple',
+    'complex',
+    'broken',
+    'secure',
+    'unsafe',
     // scale words
-    'zero', 'million', 'billion', 'hundred', 'thousand', 'every', 'none', 'all',
+    'zero',
+    'million',
+    'billion',
+    'hundred',
+    'thousand',
+    'every',
+    'none',
+    'all',
     // interview power words
-    'interview', 'hired', 'rejected', 'cracked', 'production', 'failed',
+    'interview',
+    'hired',
+    'rejected',
+    'cracked',
+    'production',
+    'failed',
   ]);
 
   const containerOpacity = interpolate(
     frame,
-    [effectiveStart, effectiveStart + 8, startFrame + durationInFrames - 8, startFrame + durationInFrames],
+    [
+      effectiveStart,
+      effectiveStart + 8,
+      startFrame + durationInFrames - 8,
+      startFrame + durationInFrames,
+    ],
     [0, 1, 1, 0],
-    { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
+    { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }
   );
 
   if (captionMode === 'hormozi') {
     return (
-      <div style={{
-        position: 'absolute',
-        left: SAFE_ZONE.left,
-        right: SAFE_ZONE.right,
-        top: REGIONS.captionZone.y,
-        height: REGIONS.captionZone.height,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        opacity: containerOpacity,
-        zIndex: 100,
-      }}>
-        <div style={{
+      <div
+        style={{
+          position: 'absolute',
+          left: SAFE_ZONE.left,
+          right: SAFE_ZONE.right,
+          top: REGIONS.captionZone.y,
+          height: REGIONS.captionZone.height,
           display: 'flex',
-          flexWrap: 'wrap',
+          alignItems: 'center',
           justifyContent: 'center',
-          gap: '8px 16px',
-          padding: '0 20px',
-        }}>
+          opacity: containerOpacity,
+          zIndex: 100,
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            justifyContent: 'center',
+            gap: '8px 16px',
+            padding: '0 20px',
+          }}
+        >
           {visibleWords.map((word, i) => {
             const isActive = i === activeInGroup;
             const isKeyword = HIGH_ENERGY.has(word.toLowerCase().replace(/[^a-z]/g, ''));
             // Per-word pop — triggered from when THIS word became active (not a fixed timer)
             const wordGlobalIdx = groupStart + i;
-            const wordStartFrame = wordTimestamps.length > 0 && wordGlobalIdx < wordTimestamps.length
-              ? startFrame + Math.round(wordTimestamps[wordGlobalIdx].start * fps)
-              : effectiveStart + Math.round(wordGlobalIdx / 2.5 * fps);
+            const wordStartFrame =
+              wordTimestamps.length > 0 && wordGlobalIdx < wordTimestamps.length
+                ? startFrame + Math.round(wordTimestamps[wordGlobalIdx].start * fps)
+                : effectiveStart + Math.round((wordGlobalIdx / 2.5) * fps);
             const wordAge = Math.max(0, frame - wordStartFrame);
             const scale = isActive
-              ? spring({ frame: wordAge, fps, config: { stiffness: 400, damping: 15 } }) * 0.12 + 1.0
-              : isKeyword ? 1.0 : 0.92;
+              ? spring({ frame: wordAge, fps, config: { stiffness: 400, damping: 15 } }) * 0.12 +
+                1.0
+              : isKeyword
+                ? 1.0
+                : 0.92;
 
             return (
               <span
@@ -125,7 +183,7 @@ export const VerticalCaptionOverlay: React.FC<VerticalCaptionOverlayProps> = ({
                   fontWeight: 900,
                   textTransform: 'uppercase' as const,
                   // 2-color system: pop yellow for active/keyword, white for rest
-                  color: (isActive || isKeyword) ? '#FFDD00' : '#FFFFFF',
+                  color: isActive || isKeyword ? '#FFDD00' : '#FFFFFF',
                   textShadow: '0 3px 12px rgba(0,0,0,0.9), 0 0 30px rgba(0,0,0,0.6)',
                   WebkitTextStroke: '3px #000000',
                   paintOrder: 'stroke fill' as const,
@@ -144,27 +202,31 @@ export const VerticalCaptionOverlay: React.FC<VerticalCaptionOverlayProps> = ({
   }
 
   return (
-    <div style={{
-      position: 'absolute',
-      left: SAFE_ZONE.left,
-      right: SAFE_ZONE.right,
-      top: REGIONS.captionZone.y,
-      height: REGIONS.captionZone.height,
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      opacity: containerOpacity,
-      zIndex: 100,
-    }}>
-      <div style={{
-        backgroundColor: 'rgba(0, 0, 0, 0.7)',
-        borderRadius: 12,
-        padding: '16px 28px',
+    <div
+      style={{
+        position: 'absolute',
+        left: SAFE_ZONE.left,
+        right: SAFE_ZONE.right,
+        top: REGIONS.captionZone.y,
+        height: REGIONS.captionZone.height,
         display: 'flex',
-        flexWrap: 'wrap',
+        alignItems: 'center',
         justifyContent: 'center',
-        gap: '4px 10px',
-      }}>
+        opacity: containerOpacity,
+        zIndex: 100,
+      }}
+    >
+      <div
+        style={{
+          backgroundColor: 'rgba(0, 0, 0, 0.7)',
+          borderRadius: 12,
+          padding: '16px 28px',
+          display: 'flex',
+          flexWrap: 'wrap',
+          justifyContent: 'center',
+          gap: '4px 10px',
+        }}
+      >
         {visibleWords.map((word, i) => {
           const isActive = i === activeInGroup;
           const isKeyword = HIGH_ENERGY.has(word.toLowerCase().replace(/[^a-z]/g, ''));

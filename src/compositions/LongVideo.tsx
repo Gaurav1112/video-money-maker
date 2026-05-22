@@ -1,5 +1,13 @@
 import React from 'react';
-import { useCurrentFrame, useVideoConfig, AbsoluteFill, Sequence, Audio, staticFile, interpolate } from 'remotion';
+import {
+  useCurrentFrame,
+  useVideoConfig,
+  AbsoluteFill,
+  Sequence,
+  Audio,
+  staticFile,
+  interpolate,
+} from 'remotion';
 import { TransitionSeries, linearTiming, TransitionPresentation } from '@remotion/transitions';
 import { fade } from '@remotion/transitions/fade';
 import { slide } from '@remotion/transitions/slide';
@@ -80,7 +88,10 @@ const TRANSITION_POOL: TransitionFactory[] = [
   () => flip() as TransitionPresentation<Record<string, unknown>>,
 ];
 
-function getTransitionForScene(_sceneType: string, sceneIndex: number): TransitionPresentation<Record<string, unknown>> {
+function getTransitionForScene(
+  _sceneType: string,
+  sceneIndex: number
+): TransitionPresentation<Record<string, unknown>> {
   return TRANSITION_POOL[sceneIndex % TRANSITION_POOL.length]();
 }
 
@@ -97,7 +108,9 @@ function getSceneProps(scene: Scene, storyboard: Storyboard): Record<string, any
       return {
         code: scene.content,
         language: scene.language || 'typescript',
-        filename: scene.heading || `main.${(scene.language || 'ts').replace('typescript', 'ts').replace('javascript', 'js').replace('python', 'py')}`,
+        filename:
+          scene.heading ||
+          `main.${(scene.language || 'ts').replace('typescript', 'ts').replace('javascript', 'js').replace('python', 'py')}`,
         highlightLines: scene.highlightLines,
         startFrame: 0,
         sceneDurationFrames: scene.endFrame - scene.startFrame,
@@ -124,11 +137,16 @@ function getSceneProps(scene: Scene, storyboard: Storyboard): Record<string, any
         startFrame: 0,
       };
     case 'table': {
-      const lines = scene.content.split('\n').filter(l => l.includes('|'));
+      const lines = scene.content.split('\n').filter((l) => l.includes('|'));
       const parsed = lines
-        .map(l => l.split('|').map(c => c.trim()).filter(Boolean))
+        .map((l) =>
+          l
+            .split('|')
+            .map((c) => c.trim())
+            .filter(Boolean)
+        )
         // Filter out markdown separator rows (e.g. |---|---|---|)
-        .filter(cells => !cells.every(c => /^[-:]+$/.test(c)));
+        .filter((cells) => !cells.every((c) => /^[-:]+$/.test(c)));
       const headers = parsed[0] || [];
       const rows = parsed.slice(1) || [];
       return {
@@ -239,7 +257,7 @@ function extractAnswerFromNarration(narration: string, question: string): string
 function getActiveSceneByAudioTime(
   scenes: Scene[],
   audioTimeSeconds: number,
-  sceneOffsets: number[],
+  sceneOffsets: number[]
 ): Scene | null {
   if (audioTimeSeconds < 0) return null;
 
@@ -281,7 +299,7 @@ export const LongVideo: React.FC<LongVideoProps> = ({ storyboard, noOverlays = f
   const contentScenes = storyboard.scenes.slice(1, storyboard.scenes.length - 1);
   const syncTimeline = React.useMemo(() => {
     const offsets = storyboard.sceneOffsets || [];
-    const timestamps = contentScenes.map(s => s.wordTimestamps || []);
+    const timestamps = contentScenes.map((s) => s.wordTimestamps || []);
     return new SyncTimeline(offsets, timestamps, fps, INTRO_DURATION);
   }, [storyboard, fps]);
 
@@ -297,7 +315,7 @@ export const LongVideo: React.FC<LongVideoProps> = ({ storyboard, noOverlays = f
   const activeScene = getActiveSceneByAudioTime(
     contentScenes,
     audioTimeSeconds,
-    storyboard.sceneOffsets || [],
+    storyboard.sceneOffsets || []
   );
   const hasNarration = activeScene && activeScene.narration && activeScene.narration.trim() !== '';
   const currentSceneType = activeScene?.type || 'text';
@@ -378,52 +396,64 @@ export const LongVideo: React.FC<LongVideoProps> = ({ storyboard, noOverlays = f
                 <Component {...props} {...syncProps} />
               </AbsoluteFill>
             ) : isSplitScene ? (
-              <div style={{
-                display: 'flex',
-                position: 'absolute',
-                inset: 0,
-                width: '100%',
-                height: '100%',
-                zIndex: 2,
-              }}>
-                {/* LEFT PANEL — 42% — heading + bullets */}
-                <div style={{
-                  flex: '0 0 42%',
-                  position: 'relative',
-                  overflow: 'hidden',
+              <div
+                style={{
                   display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'center',
-                  padding: '40px 32px 40px 40px',
-                  background: 'rgba(12, 10, 21, 0.85)',
-                  borderRight: '2px solid rgba(232, 93, 38, 0.25)',
-                }}>
+                  position: 'absolute',
+                  inset: 0,
+                  width: '100%',
+                  height: '100%',
+                  zIndex: 2,
+                }}
+              >
+                {/* LEFT PANEL — 42% — heading + bullets */}
+                <div
+                  style={{
+                    flex: '0 0 42%',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                    padding: '40px 32px 40px 40px',
+                    background: 'rgba(12, 10, 21, 0.85)',
+                    borderRight: '2px solid rgba(232, 93, 38, 0.25)',
+                  }}
+                >
                   {/* Heading badge */}
-                  <div style={{
-                    borderLeft: '5px solid #E85D26',
-                    paddingLeft: 20,
-                    marginBottom: 24,
-                  }}>
-                    <div style={{
-                      fontSize: 34,
-                      fontWeight: 800,
-                      color: '#E85D26',
-                      fontFamily: "'Inter', system-ui, sans-serif",
-                      letterSpacing: '-0.02em',
-                      lineHeight: 1.2,
-                    }}>
+                  <div
+                    style={{
+                      borderLeft: '5px solid #E85D26',
+                      paddingLeft: 20,
+                      marginBottom: 24,
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: 34,
+                        fontWeight: 800,
+                        color: '#E85D26',
+                        fontFamily: "'Inter', system-ui, sans-serif",
+                        letterSpacing: '-0.02em',
+                        lineHeight: 1.2,
+                      }}
+                    >
                       {scene.heading || ''}
                     </div>
                   </div>
                   {/* Bullets / narration */}
-                  <div style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: 12,
-                  }}>
-                    {(scene.bullets && scene.bullets.length > 0)
-                      ? scene.bullets.slice(0, 4).map((b, i) => (
-                          <div key={i} style={{
+                  <div
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: 12,
+                    }}
+                  >
+                    {scene.bullets && scene.bullets.length > 0 ? (
+                      scene.bullets.slice(0, 4).map((b, i) => (
+                        <div
+                          key={i}
+                          style={{
                             fontSize: 22,
                             color: i === 0 ? '#fff' : i === 1 ? '#ddd' : '#aaa',
                             fontFamily: "'Inter', system-ui, sans-serif",
@@ -431,29 +461,35 @@ export const LongVideo: React.FC<LongVideoProps> = ({ storyboard, noOverlays = f
                             lineHeight: 1.45,
                             paddingLeft: 16,
                             borderLeft: i === 0 ? '3px solid #FDB813' : '3px solid transparent',
-                          }}>
-                            {b}
-                          </div>
-                        ))
-                      : <div style={{
+                          }}
+                        >
+                          {b}
+                        </div>
+                      ))
+                    ) : (
+                      <div
+                        style={{
                           fontSize: 24,
                           color: '#fff',
                           fontFamily: "'Inter', system-ui, sans-serif",
                           fontWeight: 500,
                           lineHeight: 1.5,
-                        }}>
-                          {scene.narration?.split(/[.!?]/)[0] || ''}
-                        </div>
-                    }
+                        }}
+                      >
+                        {scene.narration?.split(/[.!?]/)[0] || ''}
+                      </div>
+                    )}
                   </div>
                 </div>
                 {/* RIGHT PANEL — 58% — FULL ConceptViz visualization */}
-                <div style={{
-                  flex: '0 0 58%',
-                  position: 'relative',
-                  overflow: 'hidden',
-                  height: '100%',
-                }}>
+                <div
+                  style={{
+                    flex: '0 0 58%',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    height: '100%',
+                  }}
+                >
                   <ConceptViz
                     topic={storyboard.topic}
                     sceneIndex={idx}
@@ -479,18 +515,16 @@ export const LongVideo: React.FC<LongVideoProps> = ({ storyboard, noOverlays = f
                         getTransitionDuration(
                           idx > 0 ? contentScenes[idx - 1].type : 'title',
                           scene.type,
-                          style,
+                          style
                         ),
-                        Math.max(1, duration - 1),
+                        Math.max(1, duration - 1)
                       ),
                     })}
                   />
                 )}
                 <TransitionSeries.Sequence durationInFrames={Math.max(duration, 16)}>
                   <AbsoluteFill>
-                    <CameraDrift>
-                      {renderedScene}
-                    </CameraDrift>
+                    <CameraDrift>{renderedScene}</CameraDrift>
                     <PatternInterruptLayer
                       wordTimestamps={scene.wordTimestamps || []}
                       sceneType={scene.type}
@@ -501,7 +535,11 @@ export const LongVideo: React.FC<LongVideoProps> = ({ storyboard, noOverlays = f
                     />
                     {/* Scene transition flash effect */}
                     {!isFirst && (
-                      <SceneTransitionFlash sceneType={scene.type} sceneNumber={idx + 1} totalScenes={contentScenes.length} />
+                      <SceneTransitionFlash
+                        sceneType={scene.type}
+                        sceneNumber={idx + 1}
+                        totalScenes={contentScenes.length}
+                      />
                     )}
                   </AbsoluteFill>
                 </TransitionSeries.Sequence>
@@ -558,10 +596,7 @@ export const LongVideo: React.FC<LongVideoProps> = ({ storyboard, noOverlays = f
 
       {/* Narrator indicator (skipped for noOverlays) */}
       {!noOverlays && !isIntro && !isOutro && (
-        <NarratorIndicator
-          isActive={hasNarration || false}
-          label="Guru Sishya"
-        />
+        <NarratorIndicator isActive={hasNarration || false} label="Guru Sishya" />
       )}
 
       {/* Hook period audio — the CinematicOpener (frames 0..INTRO_DURATION) used to
@@ -584,13 +619,12 @@ export const LongVideo: React.FC<LongVideoProps> = ({ storyboard, noOverlays = f
               // Gentle fade-in over 0.3s (9 frames) — shorter so narration hits fast
               const fadeIn = interpolate(f, [0, 9], [0, 1], { extrapolateRight: 'clamp' });
               // Gentle fade-out over the last 0.3s
-              const totalAudioFrames = storyboard.durationInFrames - INTRO_DURATION - OUTRO_DURATION;
-              const fadeOut = interpolate(
-                f,
-                [totalAudioFrames - 9, totalAudioFrames],
-                [1, 0],
-                { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
-              );
+              const totalAudioFrames =
+                storyboard.durationInFrames - INTRO_DURATION - OUTRO_DURATION;
+              const fadeOut = interpolate(f, [totalAudioFrames - 9, totalAudioFrames], [1, 0], {
+                extrapolateLeft: 'clamp',
+                extrapolateRight: 'clamp',
+              });
               return baseVolume * fadeIn * fadeOut;
             }}
           />
@@ -599,7 +633,12 @@ export const LongVideo: React.FC<LongVideoProps> = ({ storyboard, noOverlays = f
 
       {/* Background music with sidechain ducking during narration */}
       {storyboard.bgmFile && syncTimeline && (
-        <BgmLayer syncTimeline={syncTimeline} bgmFile={storyboard.bgmFile} baseVolume={style.bgmVolume} trackChangeInterval={style.bgmChangeInterval} />
+        <BgmLayer
+          syncTimeline={syncTimeline}
+          bgmFile={storyboard.bgmFile}
+          baseVolume={style.bgmVolume}
+          trackChangeInterval={style.bgmChangeInterval}
+        />
       )}
 
       {/* 1.5x speed reminder overlay (skipped for noOverlays) */}

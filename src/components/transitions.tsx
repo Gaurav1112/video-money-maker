@@ -1,6 +1,9 @@
 import React from 'react';
 import { AbsoluteFill } from 'remotion';
-import type { TransitionPresentation, TransitionPresentationComponentProps } from '@remotion/transitions';
+import type {
+  TransitionPresentation,
+  TransitionPresentationComponentProps,
+} from '@remotion/transitions';
 
 type SlideProps = TransitionPresentationComponentProps<Record<string, unknown>>;
 

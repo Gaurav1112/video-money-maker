@@ -32,22 +32,22 @@ function selectScenes(scenes: Scene[], clipType: ClipType): Scene[] {
   switch (clipType) {
     case 'hook':
       // First 2-3 scenes (hook + problem setup)
-      return scenes.filter(s => s.type === 'title' || s.type === 'text').slice(0, 3);
+      return scenes.filter((s) => s.type === 'title' || s.type === 'text').slice(0, 3);
     case 'code-highlight': {
       // First code scene + its surrounding context
-      const codeIdx = scenes.findIndex(s => s.type === 'code');
+      const codeIdx = scenes.findIndex((s) => s.type === 'code');
       if (codeIdx === -1) return scenes.slice(0, 2);
       return scenes.slice(Math.max(0, codeIdx - 1), codeIdx + 2);
     }
     case 'aha-moment':
       // Interview insight scenes
-      return scenes.filter(s => s.type === 'interview').slice(0, 2);
+      return scenes.filter((s) => s.type === 'interview').slice(0, 2);
     case 'comparison':
       // Table/diagram scenes
-      return scenes.filter(s => s.type === 'table' || s.type === 'diagram').slice(0, 2);
+      return scenes.filter((s) => s.type === 'table' || s.type === 'diagram').slice(0, 2);
     case 'review-challenge':
       // Review question + summary
-      return scenes.filter(s => s.type === 'review' || s.type === 'summary').slice(0, 2);
+      return scenes.filter((s) => s.type === 'review' || s.type === 'summary').slice(0, 2);
     default:
       return scenes.slice(0, 3);
   }
@@ -65,7 +65,7 @@ const SCENE_MAP: Record<string, React.FC<any>> = {
 };
 
 const MINI_INTRO_DURATION = 30; // 1 second at 30fps
-const CTA_DURATION = 60;        // 2 seconds at 30fps
+const CTA_DURATION = 60; // 2 seconds at 30fps
 
 export const MultiShort: React.FC<MultiShortProps> = ({ storyboard, clipType }) => {
   const { fps } = useVideoConfig();
@@ -75,7 +75,7 @@ export const MultiShort: React.FC<MultiShortProps> = ({ storyboard, clipType }) 
   // Use 8s per scene as an estimate for offsets when startFrame data is absent.
   const syncTimeline = React.useMemo(() => {
     const offsets = selectedScenes.map((_, i) => i * 8);
-    const timestamps = selectedScenes.map(s => s.wordTimestamps || []);
+    const timestamps = selectedScenes.map((s) => s.wordTimestamps || []);
     return new SyncTimeline(offsets, timestamps, fps, MINI_INTRO_DURATION);
   }, [selectedScenes, fps]);
 
@@ -84,10 +84,10 @@ export const MultiShort: React.FC<MultiShortProps> = ({ storyboard, clipType }) 
   }, [syncTimeline]);
 
   const ctaText: Record<ClipType, string> = {
-    'hook': '🔥 Full lesson on guru-sishya.in',
+    hook: '🔥 Full lesson on guru-sishya.in',
     'code-highlight': '💻 Complete code walkthrough → Link in bio',
     'aha-moment': '🧠 More interview secrets on guru-sishya.in',
-    'comparison': '📊 Deep dive → guru-sishya.in',
+    comparison: '📊 Deep dive → guru-sishya.in',
     'review-challenge': '🎯 Test yourself → guru-sishya.in',
   };
 

@@ -9,8 +9,8 @@ import type { VisualBeat } from '../../types';
 export interface ArchNode {
   id: string;
   label: string;
-  x: number;        // percentage 0-100
-  y: number;        // percentage 0-100
+  x: number; // percentage 0-100
+  y: number; // percentage 0-100
   iconSlug?: string | null; // Simple Icons slug
   color?: string;
   width?: number;
@@ -19,8 +19,8 @@ export interface ArchNode {
 }
 
 export interface ArchEdge {
-  from: string;      // node id
-  to: string;        // node id
+  from: string; // node id
+  to: string; // node id
   label?: string;
   color?: string;
   curved?: boolean;
@@ -29,7 +29,7 @@ export interface ArchEdge {
 }
 
 export interface ArchFlow {
-  path: string[];    // node ids defining the flow path
+  path: string[]; // node ids defining the flow path
   color: string;
   beatIndex: number; // when particles start flowing
 }
@@ -122,7 +122,7 @@ export const ArchitectureRenderer: React.FC<ArchitectureRendererProps> = ({
               particleCount={3}
               speed={2}
               active={true}
-            />,
+            />
           );
         }
         return <React.Fragment key={`flow-${i}`}>{segments}</React.Fragment>;

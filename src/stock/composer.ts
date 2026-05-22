@@ -32,7 +32,10 @@ const execFileP = promisify(execFile);
 const PACKAGE_ROOT = pathResolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const VENDORED_BGM_PATH = pathResolve(PACKAGE_ROOT, 'assets/audio/bgm/tense-suspense.mp3');
 const VENDORED_HOOK_STING_PATH = pathResolve(PACKAGE_ROOT, 'assets/audio/sfx/hook-sting.mp3');
-const VENDORED_END_CARD_SFX_PATH = pathResolve(PACKAGE_ROOT, 'assets/audio/sfx/end-card-uplift.mp3');
+const VENDORED_END_CARD_SFX_PATH = pathResolve(
+  PACKAGE_ROOT,
+  'assets/audio/sfx/end-card-uplift.mp3'
+);
 const VENDORED_RIMSHOT_PATH = pathResolve(PACKAGE_ROOT, 'assets/audio/sfx/rimshot.mp3');
 const VENDORED_VINYL_SCRATCH_PATH = pathResolve(PACKAGE_ROOT, 'assets/audio/sfx/vinyl-scratch.mp3');
 
@@ -65,7 +68,6 @@ function discoverVendoredAudio(): VendoredAudioPaths {
   };
   return vendoredAudioCache;
 }
-
 
 // Memoised filter-availability probes. Some ffmpeg builds (e.g. macOS
 // homebrew default) ship without libass; we skip captions gracefully
@@ -125,17 +127,17 @@ async function discoverFontFile(): Promise<string | null> {
   const fs = await import('node:fs');
   const candidates = [
     // Prefer fonts with Latin+Devanagari coverage so Hindi text doesn't tofu.
-    '/usr/share/fonts/truetype/noto/NotoSans-Bold.ttf',           // Ubuntu noto
+    '/usr/share/fonts/truetype/noto/NotoSans-Bold.ttf', // Ubuntu noto
     '/usr/share/fonts/truetype/noto/NotoSans-Regular.ttf',
-    '/Library/Fonts/NotoSans-Bold.ttf',                           // macOS user-installed
-    '/System/Library/Fonts/Supplemental/Devanagari MT Bold.ttf',  // macOS Devanagari MT
-    '/System/Library/Fonts/Supplemental/Arial Bold.ttf',          // macOS fallback
+    '/Library/Fonts/NotoSans-Bold.ttf', // macOS user-installed
+    '/System/Library/Fonts/Supplemental/Devanagari MT Bold.ttf', // macOS Devanagari MT
+    '/System/Library/Fonts/Supplemental/Arial Bold.ttf', // macOS fallback
     '/System/Library/Fonts/Supplemental/Arial.ttf',
     '/System/Library/Fonts/HelveticaNeue.ttc',
     '/System/Library/Fonts/Helvetica.ttc',
-    '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf',       // Ubuntu/Debian
+    '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf', // Ubuntu/Debian
     '/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf',
-    '/usr/share/fonts/dejavu/DejaVuSans-Bold.ttf',                // Fedora
+    '/usr/share/fonts/dejavu/DejaVuSans-Bold.ttf', // Fedora
     '/usr/share/fonts/dejavu-sans-fonts/DejaVuSans-Bold.ttf',
   ];
   for (const c of candidates) {
@@ -144,7 +146,9 @@ async function discoverFontFile(): Promise<string | null> {
         fontFileCache = c;
         return c;
       }
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
   }
   fontFileCache = null;
   return null;
@@ -173,7 +177,9 @@ async function discoverDevanagariFont(): Promise<string | null> {
         devanagariFontCache = c;
         return c;
       }
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
   }
   devanagariFontCache = null;
   return null;
@@ -384,8 +390,7 @@ export async function compose(input: ComposeInput): Promise<void> {
     // and the gate would block legitimate determinism tests. Production
     // path always has voice; SKIP_LUFS_VERIFY=1 escapes for explicit
     // override.
-    const skipLufs =
-      !input.voicePath || process.env['SKIP_LUFS_VERIFY'] === '1';
+    const skipLufs = !input.voicePath || process.env['SKIP_LUFS_VERIFY'] === '1';
     if (!skipLufs) {
       // Batch-32 Katz P0: sidechain ratio 4:1 + bandpass SC + plosive
       // compressor raise the measured LRA from ~3.5 to ~4.5+ LU. Gate
@@ -434,7 +439,7 @@ async function processScene(
     const center = `:x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)'`;
     if (scene.sceneIndex % 2 === 0) {
       // Zoom in: 1.00 → 1.20 over the scene
-      const zoomInVel = (0.20 / durFrames).toFixed(6);
+      const zoomInVel = (0.2 / durFrames).toFixed(6);
       zoompanFilter = `zoompan=z='1+${zoomInVel}*on'${center}:d=${durFrames}:s=1080x1920:fps=${FPS}`;
     } else {
       // Panel-8 Ret P1 (McKinnon): previous hardcoded 0.00133 never
@@ -442,7 +447,7 @@ async function processScene(
       // the math left zoom at 1.06×, breaking the in/out symmetry.
       // Compute the velocity from durFrames so the ramp ALWAYS ends
       // exactly at 1.00× regardless of cap changes.
-      const zoomOutVel = (0.20 / durFrames).toFixed(6);
+      const zoomOutVel = (0.2 / durFrames).toFixed(6);
       zoompanFilter = `zoompan=z='max(1,1.20-${zoomOutVel}*on)'${center}:d=${durFrames}:s=1080x1920:fps=${FPS}`;
     }
   }
@@ -474,7 +479,14 @@ async function processScene(
     filters.push(`eq=brightness=0.30:enable='lt(t,0.167)'`);
   }
 
-  const hasOverlay = !!(scene.bigText || scene.captionText || scene.endCardText || scene.tombstoneText || scene.conceptDiagram || scene.brandSubline);
+  const hasOverlay = !!(
+    scene.bigText ||
+    scene.captionText ||
+    scene.endCardText ||
+    scene.tombstoneText ||
+    scene.conceptDiagram ||
+    scene.brandSubline
+  );
   const drawtextAvailable = hasOverlay ? await isDrawtextAvailable() : false;
 
   if (hasOverlay && drawtextAvailable) {
@@ -515,8 +527,8 @@ async function processScene(
         : `:enable='0'`;
       filters.push(
         `drawtext=text='${escapeDrawtext(scene.brandSubline)}'${fontArgFor(scene.brandSubline)}:` +
-        `fontcolor=white:fontsize=${brandFs}:borderw=3:bordercolor=black@0.95:` +
-        `x=(w-text_w)/2:y=${brandY}${brandEnable}`,
+          `fontcolor=white:fontsize=${brandFs}:borderw=3:bordercolor=black@0.95:` +
+          `x=(w-text_w)/2:y=${brandY}${brandEnable}`
       );
     }
 
@@ -538,8 +550,8 @@ async function processScene(
         const escaped = escapeDrawtext(line);
         filters.push(
           `drawtext=text='${escaped}'${fontArgFor(line)}:fontcolor=white:fontsize=${FS}:` +
-          `borderw=6:bordercolor=black@0.95:` +
-          `x=(w-text_w)/2:y=${Math.round(startY + idx * LH)}`
+            `borderw=6:bordercolor=black@0.95:` +
+            `x=(w-text_w)/2:y=${Math.round(startY + idx * LH)}`
         );
       });
     }
@@ -558,8 +570,8 @@ async function processScene(
         const escaped = escapeDrawtext(line);
         filters.push(
           `drawtext=text='${escaped}'${fontArgFor(line)}:fontcolor=#FFEB3B:fontsize=${FS}:` +
-          `borderw=4:bordercolor=black@0.95:` +
-          `x=(w-text_w)/2:y=${Math.round(startY + idx * LH)}`
+            `borderw=4:bordercolor=black@0.95:` +
+            `x=(w-text_w)/2:y=${Math.round(startY + idx * LH)}`
         );
       });
     }
@@ -592,15 +604,13 @@ async function processScene(
       // tombstone band that only fires while the tombstone is visible
       // — mirrors the pattern already used for bigText (y=240) and the
       // end-card (y=680). On synthetic navy this is harmless overlap.
-      filters.push(
-        `drawbox=x=0:y=860:w=1080:h=200:color=black@0.60:t=fill:${tombEnable}`,
-      );
+      filters.push(`drawbox=x=0:y=860:w=1080:h=200:color=black@0.60:t=fill:${tombEnable}`);
       tombLines.forEach((line, idx) => {
         const escaped = escapeDrawtext(line);
         filters.push(
           `drawtext=text='${escaped}'${fontArgFor(line)}:fontcolor=#FFEB3B:fontsize=${FS}:` +
-          `borderw=4:bordercolor=black@0.92:${tombFade}:` +
-          `x=(w-text_w)/2:y=${Math.round(startY + idx * LH)}:${tombEnable}`
+            `borderw=4:bordercolor=black@0.92:${tombFade}:` +
+            `x=(w-text_w)/2:y=${Math.round(startY + idx * LH)}:${tombEnable}`
         );
       });
     }
@@ -621,18 +631,14 @@ async function processScene(
       const PFS = 50;
       const PLH = 70;
       const promStartY = 500;
-      filters.push(
-        `drawbox=x=0:y=480:w=1080:h=200:color=black@0.62:t=fill:${promiseEnable}`,
-      );
-      filters.push(
-        `drawbox=x=24:y=480:w=10:h=200:color=#FFEB3B@0.95:t=fill:${promiseEnable}`,
-      );
+      filters.push(`drawbox=x=0:y=480:w=1080:h=200:color=black@0.62:t=fill:${promiseEnable}`);
+      filters.push(`drawbox=x=24:y=480:w=10:h=200:color=#FFEB3B@0.95:t=fill:${promiseEnable}`);
       promLines.forEach((line, idx) => {
         const escaped = escapeDrawtext(line);
         filters.push(
           `drawtext=text='${escaped}'${fontArgFor(line)}:fontcolor=white:fontsize=${PFS}:` +
-          `borderw=3:bordercolor=black@0.85:${promiseFade}:` +
-          `x=70:y=${Math.round(promStartY + idx * PLH)}:${promiseEnable}`,
+            `borderw=3:bordercolor=black@0.85:${promiseFade}:` +
+            `x=70:y=${Math.round(promStartY + idx * PLH)}:${promiseEnable}`
         );
       });
     }
@@ -674,9 +680,7 @@ async function processScene(
       // at 1160, overlapping the ASS caption band 1080-1540 by 80 px on
       // the last scene. Lifted to y=680 + h=400 ⇒ ends at 1080 — sits
       // exactly above the caption band with zero overlap.
-      filters.push(
-        `drawbox=x=0:y=680:w=1080:h=400:color=black@0.78:t=fill:${endCardEnable}`
-      );
+      filters.push(`drawbox=x=0:y=680:w=1080:h=400:color=black@0.78:t=fill:${endCardEnable}`);
       const ecLines = scene.endCardText.split('\n').slice(0, 3);
       const FS = 64;
       const LH = 96;
@@ -692,8 +696,8 @@ async function processScene(
         const escaped = escapeDrawtext(line);
         filters.push(
           `drawtext=text='${escaped}'${fontArgFor(line)}:fontcolor=#FFEB3B:fontsize=${FS}:` +
-          `borderw=5:bordercolor=black@0.95:${fadeAlpha}:` +
-          `x=(w-text_w)/2:y=${Math.round(startY + idx * LH)}:${endCardEnable}`
+            `borderw=5:bordercolor=black@0.95:${fadeAlpha}:` +
+            `x=(w-text_w)/2:y=${Math.round(startY + idx * LH)}:${endCardEnable}`
         );
       });
     }
@@ -716,33 +720,55 @@ async function processScene(
 
   if (isSynthetic) {
     await runFfmpeg([
-      '-f', 'lavfi',
-      '-i', `color=c=#0d2538:s=1080x1920:r=${FPS}`,
-      '-t', String(scene.durationSec),
-      '-vf', filterChain,
-      '-r', String(FPS),
-      '-c:v', 'libx264',
-      '-preset', 'ultrafast',
-      '-pix_fmt', 'yuv420p',
-      '-g', String(FPS),
-      '-keyint_min', String(FPS),
-      '-sc_threshold', '0',
+      '-f',
+      'lavfi',
+      '-i',
+      `color=c=#0d2538:s=1080x1920:r=${FPS}`,
+      '-t',
+      String(scene.durationSec),
+      '-vf',
+      filterChain,
+      '-r',
+      String(FPS),
+      '-c:v',
+      'libx264',
+      '-preset',
+      'ultrafast',
+      '-pix_fmt',
+      'yuv420p',
+      '-g',
+      String(FPS),
+      '-keyint_min',
+      String(FPS),
+      '-sc_threshold',
+      '0',
       '-an',
       outputPath,
     ]);
   } else {
     await runFfmpeg([
-      '-stream_loop', '-1',
-      '-i', scene.clipPath,
-      '-t', String(scene.durationSec),
-      '-vf', filterChain,
-      '-r', String(FPS),
-      '-c:v', 'libx264',
-      '-preset', 'ultrafast',
-      '-pix_fmt', 'yuv420p',
-      '-g', String(FPS),
-      '-keyint_min', String(FPS),
-      '-sc_threshold', '0',
+      '-stream_loop',
+      '-1',
+      '-i',
+      scene.clipPath,
+      '-t',
+      String(scene.durationSec),
+      '-vf',
+      filterChain,
+      '-r',
+      String(FPS),
+      '-c:v',
+      'libx264',
+      '-preset',
+      'ultrafast',
+      '-pix_fmt',
+      'yuv420p',
+      '-g',
+      String(FPS),
+      '-keyint_min',
+      String(FPS),
+      '-sc_threshold',
+      '0',
       '-an',
       outputPath,
     ]);
@@ -763,25 +789,13 @@ async function concatScenes(
   const concatTxt = join(workDir, 'concat.txt');
   // Use absolute paths so ffmpeg resolves them correctly regardless of cwd
   const { resolve: resolvePath } = await import('node:path');
-  const lines = scenePaths
-    .map((p) => `file '${resolvePath(p).replace(/'/g, "'\\''")}'`)
-    .join('\n');
+  const lines = scenePaths.map((p) => `file '${resolvePath(p).replace(/'/g, "'\\''")}'`).join('\n');
   writeFileSync(concatTxt, lines + '\n', 'utf8');
 
-  await runFfmpeg([
-    '-f', 'concat',
-    '-safe', '0',
-    '-i', concatTxt,
-    '-c', 'copy',
-    outputPath,
-  ]);
+  await runFfmpeg(['-f', 'concat', '-safe', '0', '-i', concatTxt, '-c', 'copy', outputPath]);
 }
 
-async function muxFinal(
-  bodyPath: string,
-  input: ComposeInput,
-  workDir: string
-): Promise<void> {
+async function muxFinal(bodyPath: string, input: ComposeInput, workDir: string): Promise<void> {
   const hasVoice = !!(input.voicePath && existsSync(input.voicePath));
   const hasWatermark = !!(input.watermarkPath && existsSync(input.watermarkPath));
   const captionsRequested = !!(input.captionsPath && existsSync(input.captionsPath));
@@ -804,11 +818,16 @@ async function muxFinal(
   } else {
     audioPath = join(workDir, 'silence.m4a');
     await runFfmpeg([
-      '-f', 'lavfi',
-      '-i', `anullsrc=channel_layout=stereo:sample_rate=44100`,
-      '-t', `${totalDur}`,
-      '-c:a', 'aac',
-      '-b:a', '128k',
+      '-f',
+      'lavfi',
+      '-i',
+      `anullsrc=channel_layout=stereo:sample_rate=44100`,
+      '-t',
+      `${totalDur}`,
+      '-c:a',
+      'aac',
+      '-b:a',
+      '128k',
       audioPath,
     ]);
   }
@@ -842,7 +861,7 @@ async function muxFinal(
       // better than NaN injection into aevalsrc, but not "no whoosh".
       if (!Number.isFinite(dur) || dur <= 0) continue;
       cum += dur;
-      if (i < input.scenes.length - 1 && cum > 0.05 && cum < totalDur - 0.20) {
+      if (i < input.scenes.length - 1 && cum > 0.05 && cum < totalDur - 0.2) {
         boundaries.push(cum);
       }
     }
@@ -861,7 +880,7 @@ async function muxFinal(
       vendored.hookSting,
       vendored.endCardSfx,
       vendored.rimshot,
-      vendored.vinylScratch,
+      vendored.vinylScratch
     );
   }
 
@@ -875,9 +894,18 @@ async function muxFinal(
     const padded = join(workDir, 'audio-padded.m4a');
     const padSec = (totalDur - audioDur).toFixed(3);
     await runFfmpeg([
-      '-i', audioPath,
-      '-af', `apad=pad_dur=${padSec}`,
-      '-c:a', 'aac', '-b:a', '192k', '-ar', '48000', '-ac', '2',
+      '-i',
+      audioPath,
+      '-af',
+      `apad=pad_dur=${padSec}`,
+      '-c:a',
+      'aac',
+      '-b:a',
+      '192k',
+      '-ar',
+      '48000',
+      '-ac',
+      '2',
       padded,
     ]);
     audioPath = padded;
@@ -916,11 +944,7 @@ async function muxFinal(
     // calculation if either changes.
     const endCardStart = Math.max(0, totalDur - 3.0).toFixed(3);
     const overlayFilter = `${vf ? `[0:v]${vf}[captioned];[captioned]` : '[0:v]'}[2:v]overlay=W-w-30:H-h-380:enable='lt(t,${endCardStart})'[outv]`;
-    args.push(
-      '-filter_complex', overlayFilter,
-      '-map', '[outv]',
-      '-map', '1:a',
-    );
+    args.push('-filter_complex', overlayFilter, '-map', '[outv]', '-map', '1:a');
   } else if (vf) {
     args.push('-i', bodyPath, '-i', audioPath);
     args.push('-vf', vf, '-map', '0:v', '-map', '1:a');
@@ -930,26 +954,41 @@ async function muxFinal(
   }
 
   args.push(
-    '-c:v', 'libx264',
-    '-preset', 'medium',
-    '-crf', '20',
-    '-pix_fmt', 'yuv420p',
+    '-c:v',
+    'libx264',
+    '-preset',
+    'medium',
+    '-crf',
+    '20',
+    '-pix_fmt',
+    'yuv420p',
     // Closed GOP: required by YouTube ingest for frame-accurate seek; the
     // per-scene encodes already set these but the final mux re-encodes the
     // concatenated body so we must re-assert.
-    '-g', '30',
-    '-keyint_min', '30',
-    '-sc_threshold', '0',
-    '-color_primaries', 'bt709',
-    '-color_trc', 'bt709',
-    '-colorspace', 'bt709',
-    '-color_range', 'tv',
-    '-c:a', 'aac',
-    '-b:a', '192k',
-    '-ar', '48000',
+    '-g',
+    '30',
+    '-keyint_min',
+    '30',
+    '-sc_threshold',
+    '0',
+    '-color_primaries',
+    'bt709',
+    '-color_trc',
+    'bt709',
+    '-colorspace',
+    'bt709',
+    '-color_range',
+    'tv',
+    '-c:a',
+    'aac',
+    '-b:a',
+    '192k',
+    '-ar',
+    '48000',
     // Stereo upmix from mono — mono AAC plays narrow on earphones; YT does
     // not auto-upmix, so we explicitly duplicate mono → L/R channels.
-    '-ac', '2',
+    '-ac',
+    '2'
   );
   // loudnorm crashes ffmpeg's aac encoder on near-silent input (NaN/Inf
   // averages). Only apply when we have a real voice track. LRA=11 is the
@@ -965,11 +1004,7 @@ async function muxFinal(
   if (hasVoice && !bgmActive) {
     args.push('-af', 'loudnorm=I=-14:LRA=11:tp=-1.0');
   }
-  args.push(
-    '-shortest',
-    '-movflags', '+faststart',
-    input.outputPath,
-  );
+  args.push('-shortest', '-movflags', '+faststart', input.outputPath);
 
   await runFfmpeg(args);
 }
@@ -1009,7 +1044,7 @@ async function muxFinal(
  */
 export const WHOOSH_F0_HZ = 1200;
 export const WHOOSH_F1_HZ = 7200;
-export const WHOOSH_DUR_S = 0.180;
+export const WHOOSH_DUR_S = 0.18;
 export const WHOOSH_K = (WHOOSH_F1_HZ - WHOOSH_F0_HZ) / (2 * WHOOSH_DUR_S);
 
 export function buildWhooshExpr(boundariesSec: number[], totalDur: number): string {
@@ -1037,7 +1072,7 @@ async function mixBgmBed(
   hookStingPath?: string,
   endCardSfxPath?: string,
   rimshotPath?: string,
-  vinylScratchPath?: string,
+  vinylScratchPath?: string
 ): Promise<string> {
   const out = join(workDir, 'voice-plus-bgm.m4a');
   const totalDurStr = totalDur.toFixed(3);
@@ -1091,7 +1126,7 @@ async function mixBgmBed(
   filters.push(
     '[0:a]aresample=44100,highpass=f=80:poles=2,' +
       'equalizer=f=7500:width_type=o:width=0.8:g=-4.0,' +
-      'asplit=2[voice_deess][voice_plo_sc]',
+      'asplit=2[voice_deess][voice_plo_sc]'
   );
   // Plosive detector: narrow the sidechain to 50-200 Hz burst energy.
   filters.push('[voice_plo_sc]highpass=f=50,lowpass=f=200[voice_plo_sc_bp]');
@@ -1101,7 +1136,7 @@ async function mixBgmBed(
   // bursts, leaving the rest of the voice dynamics untouched.
   filters.push(
     '[voice_deess][voice_plo_sc_bp]sidechaincompress=threshold=0.056:ratio=8:' +
-      'attack=1:release=50[voice_plo]',
+      'attack=1:release=50[voice_plo]'
   );
   // Fan out: amix dominant (full-band) + two sidechain control copies
   // (bandpassed 500-3500 Hz each) for BGM duck and hook-sting duck.
@@ -1142,7 +1177,7 @@ async function mixBgmBed(
         `lowpass=f=1000,` +
         `stereotools=mlev=1.0:slev=1.6,` +
         `atrim=duration=${totalDurStr},asetpts=PTS-STARTPTS,` +
-        `afade=t=in:st=0:d=1.5,afade=t=out:st=${bgmFadeOutStart}:d=1.0[bgm]`,
+        `afade=t=in:st=0:d=1.5,afade=t=out:st=${bgmFadeOutStart}:d=1.0[bgm]`
     );
   } else {
     // Procedural pad — three detuned sines (G3 / C4 / E4 = G major triad)
@@ -1153,7 +1188,7 @@ async function mixBgmBed(
     inputs.push('-f', 'lavfi', '-i', padExpr);
     filters.push(
       `[${bgmIdx}:a]aformat=channel_layouts=stereo,lowpass=f=700,` +
-        `tremolo=f=0.25:d=0.25,volume=-26dB,extrastereo=m=0.0[bgm]`,
+        `tremolo=f=0.25:d=0.25,volume=-26dB,extrastereo=m=0.0[bgm]`
     );
   }
 
@@ -1167,7 +1202,7 @@ async function mixBgmBed(
     filters.push(
       `[${hookIdx}:a]aformat=channel_layouts=stereo,` +
         `atrim=duration=2.5,asetpts=PTS-STARTPTS,` +
-        `apad=whole_dur=${totalDurStr}[hooksfx]`,
+        `apad=whole_dur=${totalDurStr}[hooksfx]`
     );
   } else {
     // Procedural fallback (Panel-9 Ret P1 Huang: -4 decay → ~173ms
@@ -1176,9 +1211,7 @@ async function mixBgmBed(
       "aevalsrc='if(lt(t\\,0.35)\\,0.45*exp(-4*t)*sin(2*PI*(180+800*t)*t)\\,0)'" +
       `:s=44100:d=${totalDurStr}`;
     inputs.push('-f', 'lavfi', '-i', sfxExpr);
-    filters.push(
-      `[${hookIdx}:a]aformat=channel_layouts=stereo[hooksfx]`,
-    );
+    filters.push(`[${hookIdx}:a]aformat=channel_layouts=stereo[hooksfx]`);
   }
 
   // Source 3: End-card uplift SFX (optional — file only, no procedural
@@ -1192,7 +1225,7 @@ async function mixBgmBed(
     filters.push(
       `[${endIdx}:a]aformat=channel_layouts=stereo,` +
         `atrim=duration=${END_CARD_OFFSET_S},asetpts=PTS-STARTPTS,volume=-9dB,` +
-        `adelay=${delayMs}|${delayMs},apad=whole_dur=${totalDurStr}[endsfx]`,
+        `adelay=${delayMs}|${delayMs},apad=whole_dur=${totalDurStr}[endsfx]`
     );
     endCardLabel = '[endsfx]';
   }
@@ -1218,11 +1251,7 @@ async function mixBgmBed(
   // Boundaries are deterministic (frame-quantised in compose()), so
   // the adelay values are byte-stable across runs.
   let vinylLabel = '';
-  if (
-    vinylScratchPath &&
-    existsSync(vinylScratchPath) &&
-    sceneBoundariesSec.length >= 1
-  ) {
+  if (vinylScratchPath && existsSync(vinylScratchPath) && sceneBoundariesSec.length >= 1) {
     const vIdx = nextIdx++;
     inputs.push('-i', vinylScratchPath);
     const delayMs = Math.max(0, Math.round(sceneBoundariesSec[0]! * 1000));
@@ -1231,17 +1260,13 @@ async function mixBgmBed(
         `atrim=duration=0.6,asetpts=PTS-STARTPTS,` +
         `afade=t=in:st=0:d=0.005,afade=t=out:st=0.52:d=0.08,` +
         `volume=-10dB,` +
-        `adelay=${delayMs}|${delayMs},apad=whole_dur=${totalDurStr}[vinyl]`,
+        `adelay=${delayMs}|${delayMs},apad=whole_dur=${totalDurStr}[vinyl]`
     );
     vinylLabel = '[vinyl]';
   }
 
   let rimshotLabel = '';
-  if (
-    rimshotPath &&
-    existsSync(rimshotPath) &&
-    sceneBoundariesSec.length >= 2
-  ) {
+  if (rimshotPath && existsSync(rimshotPath) && sceneBoundariesSec.length >= 2) {
     const rIdx = nextIdx++;
     inputs.push('-i', rimshotPath);
     const delayMs = Math.max(0, Math.round(sceneBoundariesSec[1]! * 1000));
@@ -1250,7 +1275,7 @@ async function mixBgmBed(
         `atrim=duration=0.5,asetpts=PTS-STARTPTS,` +
         `afade=t=in:st=0:d=0.005,afade=t=out:st=0.42:d=0.08,` +
         `volume=-8dB,` +
-        `adelay=${delayMs}|${delayMs},apad=whole_dur=${totalDurStr}[rimshot]`,
+        `adelay=${delayMs}|${delayMs},apad=whole_dur=${totalDurStr}[rimshot]`
     );
     rimshotLabel = '[rimshot]';
   }
@@ -1262,8 +1287,7 @@ async function mixBgmBed(
   // 250ms keeps the 250ms recovery tail within one BS.1770 short-term
   // block boundary (Panel-17 Audio P1 Beato).
   filters.push(
-    '[bgm][voice44k_sc]sidechaincompress=threshold=0.08:ratio=4:' +
-      'attack=5:release=250[ducked]',
+    '[bgm][voice44k_sc]sidechaincompress=threshold=0.08:ratio=4:' + 'attack=5:release=250[ducked]'
   );
 
   // Panel-19 Audio P1 (Pensado): hook sting was firing at amix
@@ -1277,7 +1301,7 @@ async function mixBgmBed(
   // we want it heard, just not on top of the first syllable.
   filters.push(
     '[hooksfx][voice44k_hsc]sidechaincompress=threshold=0.04:ratio=3:' +
-      'attack=30:release=500[hookducked]',
+      'attack=30:release=500[hookducked]'
   );
 
   // Build amix dynamically. Order: voice, ducked-BGM, hook-sting,
@@ -1356,30 +1380,45 @@ async function mixBgmBed(
 
   await runFfmpeg([
     ...inputs,
-    '-filter_complex', filters.join(';'),
-    '-map', '[aout_pre]',
+    '-filter_complex',
+    filters.join(';'),
+    '-map',
+    '[aout_pre]',
     // Panel-18 Audio P1 (Katz): 24-bit intermediate. With BGM tail
     // running at -40 dBr after sidechain, 16-bit gives only ~38 dB
     // headroom above the noise floor for that stem — quantization
     // noise biases the loudnorm pass-1 measurement by 0.1-0.2 LU.
     // pcm_s24le eliminates this for free.
-    '-c:a', 'pcm_s24le', '-ar', '48000', '-ac', '2',
+    '-c:a',
+    'pcm_s24le',
+    '-ar',
+    '48000',
+    '-ac',
+    '2',
     intermediateWav,
   ]);
 
   const loudnormMeasured = await measureLoudnorm(intermediateWav);
 
   await runFfmpeg([
-    '-i', intermediateWav,
+    '-i',
+    intermediateWav,
     '-af',
-      `loudnorm=I=-14:LRA=11:tp=-1.0:` +
+    `loudnorm=I=-14:LRA=11:tp=-1.0:` +
       `measured_I=${loudnormMeasured.input_i}:` +
       `measured_LRA=${loudnormMeasured.input_lra}:` +
       `measured_TP=${loudnormMeasured.input_tp}:` +
       `measured_thresh=${loudnormMeasured.input_thresh}:` +
       `offset=${loudnormMeasured.target_offset}:` +
       `linear=true:print_format=summary`,
-    '-c:a', 'aac', '-b:a', '192k', '-ar', '48000', '-ac', '2',
+    '-c:a',
+    'aac',
+    '-b:a',
+    '192k',
+    '-ar',
+    '48000',
+    '-ac',
+    '2',
     out,
   ]);
   return out;
@@ -1402,10 +1441,15 @@ async function measureLoudnorm(wavPath: string): Promise<LoudnormMeasure> {
     execFile(
       FFMPEG_BIN,
       [
-        '-hide_banner', '-nostats',
-        '-i', wavPath,
-        '-af', 'loudnorm=I=-14:LRA=11:tp=-1.0:print_format=json',
-        '-f', 'null', '-',
+        '-hide_banner',
+        '-nostats',
+        '-i',
+        wavPath,
+        '-af',
+        'loudnorm=I=-14:LRA=11:tp=-1.0:print_format=json',
+        '-f',
+        'null',
+        '-',
       ],
       { maxBuffer: 8 * 1024 * 1024 },
       (err, _stdout, stderr) => {
@@ -1447,8 +1491,8 @@ async function measureLoudnorm(wavPath: string): Promise<LoudnormMeasure> {
               reject(
                 new Error(
                   `loudnorm pass-1 returned non-finite "${raw}" for ${key} ` +
-                    `(near-silent input?). Full JSON: ${JSON.stringify(parsed)}`,
-                ),
+                    `(near-silent input?). Full JSON: ${JSON.stringify(parsed)}`
+                )
               );
               return;
             }
@@ -1464,8 +1508,8 @@ async function measureLoudnorm(wavPath: string): Promise<LoudnormMeasure> {
                 new Error(
                   `loudnorm pass-1 target_offset=${num} dB exceeds ffmpeg's ±12 dB clamp window — ` +
                     `pass-2 will silently fall back to single-pass and break determinism. ` +
-                    `Full JSON: ${JSON.stringify(parsed)}`,
-                ),
+                    `Full JSON: ${JSON.stringify(parsed)}`
+                )
               );
               return;
             }
@@ -1475,22 +1519,22 @@ async function measureLoudnorm(wavPath: string): Promise<LoudnormMeasure> {
           // exact byte representation it expects.
           resolve(measuredFields);
         } catch (e) {
-          reject(new Error(`loudnorm pass-1 JSON parse failed: ${(e as Error).message}\nchunk: ${jsonChunk}`));
+          reject(
+            new Error(
+              `loudnorm pass-1 JSON parse failed: ${(e as Error).message}\nchunk: ${jsonChunk}`
+            )
+          );
         }
-      },
+      }
     );
   });
 }
 
 async function probeDuration(videoPath: string): Promise<number> {
   return new Promise((resolve, reject) => {
-    execFile(FFPROBE_BIN,
-      [
-        '-v', 'error',
-        '-show_entries', 'format=duration',
-        '-of', 'csv=p=0',
-        videoPath,
-      ],
+    execFile(
+      FFPROBE_BIN,
+      ['-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', videoPath],
       (err, stdout) => {
         if (err) {
           reject(err);
@@ -1505,11 +1549,13 @@ async function probeDuration(videoPath: string): Promise<number> {
         // zero-frame mp4 that still passes the meanVariance gate as garbage.
         // Throw loud rather than silently corrupt the render.
         if (!Number.isFinite(dur) || dur <= 0) {
-          reject(new Error(
-            `probeDuration(${videoPath}): ffprobe returned non-finite or non-positive ` +
-            `duration (raw stdout: ${JSON.stringify(stdout)}). Refusing to render with ` +
-            `corrupted timing — the upstream concat/encode step likely failed silently.`,
-          ));
+          reject(
+            new Error(
+              `probeDuration(${videoPath}): ffprobe returned non-finite or non-positive ` +
+                `duration (raw stdout: ${JSON.stringify(stdout)}). Refusing to render with ` +
+                `corrupted timing — the upstream concat/encode step likely failed silently.`
+            )
+          );
           return;
         }
         resolve(dur);
@@ -1520,12 +1566,17 @@ async function probeDuration(videoPath: string): Promise<number> {
 
 function runFfmpeg(args: string[]): Promise<void> {
   return new Promise((resolve, reject) => {
-    execFile(FFMPEG_BIN, ['-y', ...args], { maxBuffer: 10 * 1024 * 1024 }, (err, _stdout, stderr) => {
-      if (err) {
-        reject(new Error(`ffmpeg failed:\n${stderr}`));
-      } else {
-        resolve();
+    execFile(
+      FFMPEG_BIN,
+      ['-y', ...args],
+      { maxBuffer: 10 * 1024 * 1024 },
+      (err, _stdout, stderr) => {
+        if (err) {
+          reject(new Error(`ffmpeg failed:\n${stderr}`));
+        } else {
+          resolve();
+        }
       }
-    });
+    );
   });
 }

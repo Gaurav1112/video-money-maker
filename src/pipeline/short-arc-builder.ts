@@ -28,17 +28,17 @@ import type {
 // Makes hooks personally relevant by referencing pain points the viewer has felt
 
 const VIEWER_IDENTITY_ANCHORS: Record<string, string> = {
-  'kafka': 'If you\'ve seen a consumer lag spike you couldn\'t explain — ',
-  'kubernetes': 'If your pods restart at 3am for no reason — ',
-  'redis': 'If you\'ve had Redis evict a key you needed — ',
-  'database': 'If you\'ve run EXPLAIN and still not understood the slow query — ',
+  kafka: "If you've seen a consumer lag spike you couldn't explain — ",
+  kubernetes: 'If your pods restart at 3am for no reason — ',
+  redis: "If you've had Redis evict a key you needed — ",
+  database: "If you've run EXPLAIN and still not understood the slow query — ",
   'load-balancing': 'If requests pile up even after scaling horizontally — ',
-  'caching': 'If your cache hit rate drops for no reason — ',
-  'microservices': 'If a single service failure brought down your whole system — ',
-  'docker': 'If a container works locally but breaks in production — ',
+  caching: 'If your cache hit rate drops for no reason — ',
+  microservices: 'If a single service failure brought down your whole system — ',
+  docker: 'If a container works locally but breaks in production — ',
   'distributed-systems': 'If your system behaves differently under load — ',
   'message-queue': 'If messages disappear without any error — ',
-  'default': 'If you\'ve shipped something that broke in production but not locally — ',
+  default: "If you've shipped something that broke in production but not locally — ",
 };
 
 export function getViewerIdentityAnchor(topicSlug: string): string {
@@ -48,7 +48,10 @@ export function getViewerIdentityAnchor(topicSlug: string): string {
 // ─── Hook Transformation Patterns ────────────────────────────────────────────
 // Each formula targets a specific psychological trigger
 
-const HOOK_PATTERNS: Record<HookType, (topic: string, subtopic: string, misconception?: string) => HookScript> = {
+const HOOK_PATTERNS: Record<
+  HookType,
+  (topic: string, subtopic: string, misconception?: string) => HookScript
+> = {
   lossAversion: (topic, subtopic) => ({
     spokenLine: `Your ${subtopic} is silently losing data right now.`,
     displayText: `YOUR ${subtopic.toUpperCase()}\nIS BROKEN`,
@@ -116,21 +119,44 @@ function withViewerAnchor(hookResult: HookScript, topic: string): HookScript {
 export function generateStatusThreatHook(
   topic: string,
   subtopic: string,
-  misconception?: string,
+  misconception?: string
 ): HookScript {
   const lower = subtopic.toLowerCase();
 
   // Select formula based on subtopic keywords
-  if (lower.includes('drop') || lower.includes('los') || lower.includes('miss') || lower.includes('fail')) {
+  if (
+    lower.includes('drop') ||
+    lower.includes('los') ||
+    lower.includes('miss') ||
+    lower.includes('fail')
+  ) {
     return withViewerAnchor(HOOK_PATTERNS.lossAversion(topic, subtopic, misconception), topic);
   }
-  if (lower.includes('config') || lower.includes('senior') || lower.includes('expert') || lower.includes('best')) {
+  if (
+    lower.includes('config') ||
+    lower.includes('senior') ||
+    lower.includes('expert') ||
+    lower.includes('best')
+  ) {
     return withViewerAnchor(HOOK_PATTERNS.statusThreat(topic, subtopic, misconception), topic);
   }
-  if (lower.includes('safe') || lower.includes('default') || lower.includes('auto') || lower.includes('think')) {
-    return withViewerAnchor(HOOK_PATTERNS.cognitiveDissonance(topic, subtopic, misconception), topic);
+  if (
+    lower.includes('safe') ||
+    lower.includes('default') ||
+    lower.includes('auto') ||
+    lower.includes('think')
+  ) {
+    return withViewerAnchor(
+      HOOK_PATTERNS.cognitiveDissonance(topic, subtopic, misconception),
+      topic
+    );
   }
-  if (lower.includes('secret') || lower.includes('hidden') || lower.includes('nobody') || lower.includes('danger')) {
+  if (
+    lower.includes('secret') ||
+    lower.includes('hidden') ||
+    lower.includes('nobody') ||
+    lower.includes('danger')
+  ) {
     return withViewerAnchor(HOOK_PATTERNS.curiosityGap(topic, subtopic, misconception), topic);
   }
   if (misconception) {
@@ -139,9 +165,10 @@ export function generateStatusThreatHook(
 
   // Default: alternate between statusThreat and lossAversion based on topic hash
   const hash = topic.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
-  const selectedFormula = hash % 2 === 0
-    ? HOOK_PATTERNS.statusThreat(topic, subtopic, misconception)
-    : HOOK_PATTERNS.lossAversion(topic, subtopic, misconception);
+  const selectedFormula =
+    hash % 2 === 0
+      ? HOOK_PATTERNS.statusThreat(topic, subtopic, misconception)
+      : HOOK_PATTERNS.lossAversion(topic, subtopic, misconception);
   return {
     ...selectedFormula,
     spokenLine: `${getViewerIdentityAnchor(topic)}${selectedFormula.spokenLine}`,
@@ -169,7 +196,12 @@ export function validateTERarc(scenes: WorldClassScene[]): TERValidationResult {
   }));
 
   if (scenes.length === 0) {
-    return { valid: false, errors: [{ rule: 'minLength', message: 'Must have at least 3 scenes' }], warnings: [], arcScores };
+    return {
+      valid: false,
+      errors: [{ rule: 'minLength', message: 'Must have at least 3 scenes' }],
+      warnings: [],
+      arcScores,
+    };
   }
 
   // Rule 1: Hook must be high tension
@@ -195,7 +227,7 @@ export function validateTERarc(scenes: WorldClassScene[]): TERValidationResult {
   }
 
   // Rule 3: Escalation zone monotonically non-decreasing
-  const escalationScenes = scenes.filter(s => s.emotionalBeat === 'escalation');
+  const escalationScenes = scenes.filter((s) => s.emotionalBeat === 'escalation');
   for (let i = 1; i < escalationScenes.length; i++) {
     if (escalationScenes[i].tensionScore < escalationScenes[i - 1].tensionScore - 0.1) {
       warnings.push({
@@ -206,8 +238,8 @@ export function validateTERarc(scenes: WorldClassScene[]): TERValidationResult {
   }
 
   // Rule 4: Resolution must lower tension below peak
-  const resolutionScenes = scenes.filter(s => s.emotionalBeat === 'resolution');
-  const peakTension = Math.max(...scenes.map(s => s.tensionScore));
+  const resolutionScenes = scenes.filter((s) => s.emotionalBeat === 'resolution');
+  const peakTension = Math.max(...scenes.map((s) => s.tensionScore));
   for (const rs of resolutionScenes) {
     if (rs.tensionScore >= peakTension) {
       errors.push({
@@ -279,12 +311,12 @@ const REWARD_TYPE_MATRIX: Record<EmotionalBeat, MicroRewardType> = {
  */
 export function injectMicroRewards(
   scenes: WorldClassScene[],
-  intervalSec: number = 6,
+  intervalSec: number = 6
 ): WorldClassScene[] {
   let cumulativeSec = 0;
   let nextRewardSec = intervalSec;
 
-  return scenes.map(scene => {
+  return scenes.map((scene) => {
     const sceneDuration = scene.duration || 8;
     const sceneEndSec = cumulativeSec + sceneDuration;
     const rewards: MicroReward[] = [];
@@ -316,7 +348,7 @@ export function injectMicroRewards(
  */
 export function wrapSceneWithArc(
   scene: Scene,
-  overrides: Partial<WorldClassScene>,
+  overrides: Partial<WorldClassScene>
 ): WorldClassScene {
   return {
     ...scene,
@@ -336,7 +368,7 @@ export function buildTERarcFromScenes(
   scenes: Scene[],
   topic: string,
   subtopic: string,
-  options: ShortGenerationOptions = {},
+  options: ShortGenerationOptions = {}
 ): WorldClassScene[] {
   const n = scenes.length;
   const hookScript = generateStatusThreatHook(topic, subtopic, options.misconceptionOverride);
@@ -360,7 +392,7 @@ export function buildTERarcFromScenes(
       const angle = r * Math.PI;
       const base = 0.7 + 0.25 * Math.sin(angle);
       // Add valley dip at 60-70% (the "relief beat" before final revelation)
-      const valleyDip = (r > 0.55 && r < 0.72) ? -0.35 * Math.sin((r - 0.55) / 0.17 * Math.PI) : 0;
+      const valleyDip = r > 0.55 && r < 0.72 ? -0.35 * Math.sin(((r - 0.55) / 0.17) * Math.PI) : 0;
       return Math.max(0.2, Math.min(0.98, base + valleyDip));
     }
 
@@ -402,9 +434,10 @@ export function buildTERarcFromScenes(
     // Hook scene gets special display text
     const displayText = i === 0 ? hookScript.displayText : scene.heading;
     const spokenHookLine = i === 0 ? hookScript.spokenLine : undefined;
-    const openLoopQuestion = i === n - 1 && (options.forceOpenLoop ?? true)
-      ? `But there's one more thing you need to know about ${subtopic}...`
-      : undefined;
+    const openLoopQuestion =
+      i === n - 1 && (options.forceOpenLoop ?? true)
+        ? `But there's one more thing you need to know about ${subtopic}...`
+        : undefined;
     const loopId = i === 0 ? `${topic}-main` : undefined;
     const closesLoopId = i === n - 1 && !options.forceOpenLoop ? `${topic}-main` : undefined;
 
@@ -421,7 +454,7 @@ export function buildTERarcFromScenes(
       openLoopQuestion,
       loopId,
       closesLoopId,
-      misconceptionText: i === 0 ? hookScript.misconceptionSeeded ?? undefined : undefined,
+      misconceptionText: i === 0 ? (hookScript.misconceptionSeeded ?? undefined) : undefined,
     };
   });
 

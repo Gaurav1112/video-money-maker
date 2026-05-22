@@ -44,15 +44,9 @@ async function uploadNow() {
   try {
     // STEP 1: Run health checks
     console.log('🏥 Running pre-flight health checks...');
-    const health = await runHealthChecks(
-      VIDEO_FILE,
-      clientId,
-      clientSecret,
-      refreshToken,
-      100
-    );
+    const health = await runHealthChecks(VIDEO_FILE, clientId, clientSecret, refreshToken, 100);
     reportHealthCheckStatus(health);
-    
+
     if (!health.healthy) {
       console.error('\n❌ Upload blocked by health check failures');
       logUpload('error', 'Health check failed', health.checks.errors);
@@ -81,12 +75,12 @@ async function uploadNow() {
     // STEP 4: Perform upload with retry logic
     console.log('\n📤 Starting upload with automatic retry logic...');
     logUpload('info', 'Upload started', { title: TITLE, fileSize: `${fileSize.toFixed(1)}MB` });
-    
+
     // Wrapper to convert logUpload signature to retryable format
     const retryLogger = (msg: string) => {
       logUpload('info', msg);
     };
-    
+
     const uploadResult = await retryableUpload(async () => {
       const oauth2Client = new google.auth.OAuth2(clientId, clientSecret, 'http://localhost');
       oauth2Client.setCredentials({ access_token: accessToken });
@@ -122,7 +116,7 @@ async function uploadNow() {
           },
         }
       );
-      
+
       return response;
     }, retryLogger);
 
@@ -144,13 +138,13 @@ async function uploadNow() {
     console.log(`   Video ID: ${response.data.id}`);
     console.log(`   URL: https://www.youtube.com/watch?v=${response.data.id}`);
     console.log(`   Studio: https://studio.youtube.com/video/${response.data.id}`);
-    
+
     logUpload('info', 'Upload successful', {
       videoId: response.data.id,
       url: `https://www.youtube.com/watch?v=${response.data.id}`,
       attempts: uploadResult.attempts,
     });
-    
+
     // Save video ID for tracking
     const logEntry = {
       timestamp: new Date().toISOString(),
@@ -158,17 +152,16 @@ async function uploadNow() {
       title: TITLE,
       url: `https://www.youtube.com/watch?v=${response.data.id}`,
     };
-    
+
     const tmpDir = path.join(process.cwd(), 'tmp');
     if (!fs.existsSync(tmpDir)) {
       fs.mkdirSync(tmpDir, { recursive: true });
     }
-    
+
     fs.appendFileSync(path.join(tmpDir, 'uploaded-videos.json'), JSON.stringify(logEntry) + '\n');
     console.log('\n📝 Logged to: tmp/uploaded-videos.json');
-    
+
     flushLogs();
-    
   } catch (error: any) {
     console.error('\n❌ Upload failed!');
     console.error('Error:', error.message);

@@ -16,19 +16,19 @@
  *   style={{ bottom: CAPTION_SAFE_BOTTOM }}
  */
 
-export const FRAME_WIDTH  = 1080;
+export const FRAME_WIDTH = 1080;
 export const FRAME_HEIGHT = 1920;
 
-export type Platform  = 'youtube_shorts' | 'instagram_reels' | 'tiktok' | 'universal';
+export type Platform = 'youtube_shorts' | 'instagram_reels' | 'tiktok' | 'universal';
 export type Dimension = 'top' | 'bottom' | 'left' | 'right';
 
 /** Pixel counts reserved by platform UI chrome on a 1080×1920 frame. */
 export const SAFE_ZONES: Record<Platform, Record<Dimension, number>> = {
   youtube_shorts: { top: 220, bottom: 420, left: 60, right: 140 },
   instagram_reels: { top: 240, bottom: 380, left: 60, right: 130 },
-  tiktok:          { top: 200, bottom: 480, left: 50, right: 120 },
+  tiktok: { top: 200, bottom: 480, left: 50, right: 120 },
   /** Worst-case union — safe on ALL three platforms simultaneously. */
-  universal:       { top: 240, bottom: 480, left: 60, right: 140 },
+  universal: { top: 240, bottom: 480, left: 60, right: 140 },
 } as const;
 
 /**
@@ -59,13 +59,13 @@ export function getSafeZone(platform: Platform, dimension: Dimension): number {
  */
 export function isInSafeZone(
   bbox: { top: number; bottom: number; left?: number; right?: number },
-  platform: Platform = 'universal',
+  platform: Platform = 'universal'
 ): boolean {
   const zone = SAFE_ZONES[platform];
-  if (bbox.top    <  zone.top)                  return false;
-  if (bbox.bottom >  FRAME_HEIGHT - zone.bottom) return false;
-  if (bbox.left  !== undefined && bbox.left  < zone.left)                  return false;
-  if (bbox.right !== undefined && bbox.right > FRAME_WIDTH - zone.right)   return false;
+  if (bbox.top < zone.top) return false;
+  if (bbox.bottom > FRAME_HEIGHT - zone.bottom) return false;
+  if (bbox.left !== undefined && bbox.left < zone.left) return false;
+  if (bbox.right !== undefined && bbox.right > FRAME_WIDTH - zone.right) return false;
   return true;
 }
 
@@ -87,9 +87,7 @@ export const CAPTION_SAFE_BOTTOM: number = getSafeZone('youtube_shorts', 'bottom
 export const CAPTION_SAFE_TOP: number = getSafeZone('universal', 'top'); // 240
 
 /** Content area height available for captions (between top and bottom chrome). */
-export const CAPTION_SAFE_HEIGHT: number =
-  FRAME_HEIGHT - CAPTION_SAFE_TOP - CAPTION_SAFE_BOTTOM; // 1920 − 240 − 420 = 1260
+export const CAPTION_SAFE_HEIGHT: number = FRAME_HEIGHT - CAPTION_SAFE_TOP - CAPTION_SAFE_BOTTOM; // 1920 − 240 − 420 = 1260
 
 /** Center y-coordinate of the safe caption zone. */
-export const CAPTION_SAFE_CENTER_Y: number =
-  CAPTION_SAFE_TOP + Math.round(CAPTION_SAFE_HEIGHT / 2); // 240 + 630 = 870
+export const CAPTION_SAFE_CENTER_Y: number = CAPTION_SAFE_TOP + Math.round(CAPTION_SAFE_HEIGHT / 2); // 240 + 630 = 870

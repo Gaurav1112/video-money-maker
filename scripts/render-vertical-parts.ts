@@ -37,7 +37,7 @@ const outputDir = process.env.CI
   ? path.resolve(__dirname, '..', 'output', 'videos')
   : path.resolve(
       process.env.HOME || '~',
-      `Documents/guru-sishya/${topic}/session-${session}/vertical-parts`,
+      `Documents/guru-sishya/${topic}/session-${session}/vertical-parts`
     );
 mkdirSync(outputDir, { recursive: true });
 
@@ -51,7 +51,7 @@ for (const part of parts) {
 
   const outputFile = path.join(
     outputDir,
-    `${topic}-s${session}-part${part.partNumber}of${part.totalParts}.mp4`,
+    `${topic}-s${session}-part${part.partNumber}of${part.totalParts}.mp4`
   );
 
   const mins = Math.floor(part.durationSeconds / 60);
@@ -78,7 +78,11 @@ for (const part of parts) {
   }
 
   // Clean up temp props
-  try { unlinkSync(partPropsFile); } catch { /* ignore */ }
+  try {
+    unlinkSync(partPropsFile);
+  } catch {
+    /* ignore */
+  }
 }
 
 console.log(`\n=== Done! ${parts.length} parts rendered for ${topic} S${session} ===`);

@@ -18,9 +18,12 @@ export interface QualityGateResult {
 async function getVideoDuration(videoPath: string): Promise<number> {
   try {
     const { stdout } = await execFileAsync(FFPROBE_BIN, [
-      '-v', 'error',
-      '-show_entries', 'format=duration',
-      '-of', 'csv=p=0',
+      '-v',
+      'error',
+      '-show_entries',
+      'format=duration',
+      '-of',
+      'csv=p=0',
       videoPath,
     ]);
     return parseFloat(stdout.trim()) || 0;
@@ -43,24 +46,34 @@ async function getVideoDuration(videoPath: string): Promise<number> {
 async function getFrameVariance(videoPath: string, timeOffset: number): Promise<number> {
   try {
     // Sample 12 consecutive frames so YDIF (needs 2 frames) has values.
-    const { stderr } = await execFileAsync(FFMPEG_BIN, [
-      '-y',
-      '-ss', String(timeOffset),
-      '-i', videoPath,
-      '-vframes', '12',
-      '-vf', 'signalstats,metadata=mode=print',
-      '-f', 'null',
-      '-',
-    ], { maxBuffer: 10 * 1024 * 1024 });
+    const { stderr } = await execFileAsync(
+      FFMPEG_BIN,
+      [
+        '-y',
+        '-ss',
+        String(timeOffset),
+        '-i',
+        videoPath,
+        '-vframes',
+        '12',
+        '-vf',
+        'signalstats,metadata=mode=print',
+        '-f',
+        'null',
+        '-',
+      ],
+      { maxBuffer: 10 * 1024 * 1024 }
+    );
 
     const yavgMatches = [...stderr.matchAll(/lavfi\.signalstats\.YAVG=(\d+(?:\.\d+)?)/g)];
     const ydifMatches = [...stderr.matchAll(/lavfi\.signalstats\.YDIF=(\d+(?:\.\d+)?)/g)];
     if (yavgMatches.length === 0) return 0;
 
     const yavgMean = yavgMatches.reduce((a, m) => a + parseFloat(m[1]), 0) / yavgMatches.length;
-    const ydifMean = ydifMatches.length > 0
-      ? ydifMatches.reduce((a, m) => a + parseFloat(m[1]), 0) / ydifMatches.length
-      : 0;
+    const ydifMean =
+      ydifMatches.length > 0
+        ? ydifMatches.reduce((a, m) => a + parseFloat(m[1]), 0) / ydifMatches.length
+        : 0;
 
     // Composite score: YAVG (0–255 luma) + 10×YDIF (motion). Solid black ≈ 0.
     return yavgMean + 10 * ydifMean;
@@ -90,6 +103,8 @@ export async function runQualityGate(videoPath: string): Promise<QualityGateResu
   return {
     passed,
     meanVariance,
-    reason: passed ? undefined : `Mean frame variance ${meanVariance.toFixed(1)} < threshold ${THRESHOLD}`,
+    reason: passed
+      ? undefined
+      : `Mean frame variance ${meanVariance.toFixed(1)} < threshold ${THRESHOLD}`,
   };
 }

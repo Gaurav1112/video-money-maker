@@ -63,16 +63,19 @@ function parseArgs() {
   };
   const require = (flag: string): string => {
     const v = get(flag);
-    if (!v) { console.error(`Missing required arg: ${flag}`); process.exit(1); }
+    if (!v) {
+      console.error(`Missing required arg: ${flag}`);
+      process.exit(1);
+    }
     return v!;
   };
 
   return {
-    platform:  require('--platform') as Platform,
-    runId:     require('--run-id'),
-    queueId:   get('--queue-id'),
-    slotType:  get('--slot-type'),
-    force:     argv.includes('--force'),
+    platform: require('--platform') as Platform,
+    runId: require('--run-id'),
+    queueId: get('--queue-id'),
+    slotType: get('--slot-type'),
+    force: argv.includes('--force'),
   };
 }
 
@@ -94,10 +97,7 @@ function noClaim(): void {
 // ─── Idempotency key ─────────────────────────────────────────────────────────
 
 function makeIdemKey(queueItemId: string, attempt: number, runId: string): string {
-  return crypto
-    .createHash('sha256')
-    .update(`${queueItemId}:${attempt}:${runId}`)
-    .digest('hex');
+  return crypto.createHash('sha256').update(`${queueItemId}:${attempt}:${runId}`).digest('hex');
 }
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
@@ -108,7 +108,9 @@ function main(): void {
   const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
 
   // ── Step 1: Check if this run already holds a claim (step-retry idempotency) ──
-  const existingClaim = db.prepare(`
+  const existingClaim = db
+    .prepare(
+      `
     SELECT pp.id, pp.queue_item_id, pp.platform, pp.attempts, pp.idempotency_key,
            pp.status,
            qi.video_path, qi.additional_videos, qi.metadata_path, qi.thumbnail_path,
@@ -118,10 +120,14 @@ function main(): void {
     WHERE  pp.claimed_by = ?
       AND  pp.platform   = ?
       AND  pp.status     = 'claimed'
-  `).get(args.runId, args.platform) as PlatformPublishRow | undefined;
+  `
+    )
+    .get(args.runId, args.platform) as PlatformPublishRow | undefined;
 
   if (existingClaim) {
-    console.log(`♻️  Reusing existing claim for run ${args.runId}: item ${existingClaim.queue_item_id}`);
+    console.log(
+      `♻️  Reusing existing claim for run ${args.runId}: item ${existingClaim.queue_item_id}`
+    );
     emitClaim(existingClaim, existingClaim.idempotency_key!);
     return;
   }
@@ -133,12 +139,12 @@ function main(): void {
     const slotFilter = args.slotType
       ? `qi.slot_type = '${args.slotType.replace(/'/g, "''")}'`
       : '1=1';
-    const idFilter = args.queueId
-      ? `qi.id = '${args.queueId.replace(/'/g, "''")}'`
-      : '1=1';
+    const idFilter = args.queueId ? `qi.id = '${args.queueId.replace(/'/g, "''")}'` : '1=1';
 
     // Find next claimable row — prioritise retries (failed) over fresh (pending)
-    const candidate = db.prepare(`
+    const candidate = db
+      .prepare(
+        `
       SELECT pp.id, pp.queue_item_id, pp.platform, pp.attempts, pp.max_attempts,
              pp.status,
              qi.video_path, qi.additional_videos, qi.metadata_path, qi.thumbnail_path,
@@ -155,14 +161,18 @@ function main(): void {
         CASE pp.status WHEN 'failed' THEN 0 ELSE 1 END ASC,  -- retries first
         qi.scheduled_date ASC
       LIMIT 1
-    `).get(args.platform) as PlatformPublishRow | undefined;
+    `
+      )
+      .get(args.platform) as PlatformPublishRow | undefined;
 
     if (!candidate) return null;
 
     const idemKey = makeIdemKey(candidate.queue_item_id, candidate.attempts, args.runId);
 
     // Atomic claim — WHERE status IN ('pending','failed') prevents double-claim
-    const result = (db.prepare(`
+    const result = db
+      .prepare(
+        `
       UPDATE platform_publishes
       SET    status          = 'claimed',
              claimed_by      = ?,
@@ -172,7 +182,9 @@ function main(): void {
              updated_at      = strftime('%Y-%m-%dT%H:%M:%fZ','now')
       WHERE  id     = ?
         AND  status IN ('pending', 'failed')
-    `).run(args.runId, idemKey, candidate.id) as Database.RunResult);
+    `
+      )
+      .run(args.runId, idemKey, candidate.id) as Database.RunResult;
 
     if (result.changes === 0) {
       // Lost race (another concurrent run grabbed it) — no more items this slot
@@ -193,18 +205,18 @@ function main(): void {
 }
 
 function emitClaim(row: PlatformPublishRow, idemKey: string): void {
-  setOutput('claimed',             'true');
+  setOutput('claimed', 'true');
   setOutput('platform_publish_id', String(row.id));
-  setOutput('queue_item_id',       row.queue_item_id);
-  setOutput('idempotency_key',     idemKey);
-  setOutput('video_path',          row.video_path);
-  setOutput('metadata_path',       row.metadata_path);
-  setOutput('thumbnail_path',      row.thumbnail_path ?? '');
-  setOutput('additional_videos',   row.additional_videos ?? '');
-  setOutput('topic',               row.topic);
-  setOutput('session',             String(row.session));
-  setOutput('slot_type',           row.slot_type);
-  setOutput('attempt',             String(row.attempts));
+  setOutput('queue_item_id', row.queue_item_id);
+  setOutput('idempotency_key', idemKey);
+  setOutput('video_path', row.video_path);
+  setOutput('metadata_path', row.metadata_path);
+  setOutput('thumbnail_path', row.thumbnail_path ?? '');
+  setOutput('additional_videos', row.additional_videos ?? '');
+  setOutput('topic', row.topic);
+  setOutput('session', String(row.session));
+  setOutput('slot_type', row.slot_type);
+  setOutput('attempt', String(row.attempts));
 }
 
 main();

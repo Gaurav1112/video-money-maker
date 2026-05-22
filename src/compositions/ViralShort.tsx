@@ -67,7 +67,9 @@ const AvatarBubble: React.FC = () => {
       >
         <img
           src={avatarImgSrc}
-          onError={(e) => { (e.target as HTMLImageElement).src = fallbackSrc; }}
+          onError={(e) => {
+            (e.target as HTMLImageElement).src = fallbackSrc;
+          }}
           style={{ width: '100%', height: '100%', objectFit: 'cover' }}
         />
       </div>
@@ -81,7 +83,9 @@ const AvatarBubble: React.FC = () => {
           opacity: interpolate(entrySpring, [0, 1], [0, 1]),
         }}
       >
-        <span style={{ fontSize: 24, fontFamily: FONTS.heading, fontWeight: 600, color: SHORTS_TEXT }}>
+        <span
+          style={{ fontSize: 24, fontFamily: FONTS.heading, fontWeight: 600, color: SHORTS_TEXT }}
+        >
           Kumar Gaurav
         </span>
       </div>
@@ -114,15 +118,12 @@ interface ViralShortProps {
 function selectBestScene(scenes: Scene[]): { scene: Scene; index: number } {
   const contentScenes = scenes.filter(
     (s) =>
-      s.type !== 'title' &&
-      s.type !== 'summary' &&
-      s.narration &&
-      s.narration.trim().length > 0,
+      s.type !== 'title' && s.type !== 'summary' && s.narration && s.narration.trim().length > 0
   );
 
   // Prefer text, interview, review types — pick longest narration
   const preferred = contentScenes.filter(
-    (s) => s.type === 'text' || s.type === 'interview' || s.type === 'review',
+    (s) => s.type === 'text' || s.type === 'interview' || s.type === 'review'
   );
   const pool = preferred.length > 0 ? preferred : contentScenes;
 
@@ -138,10 +139,7 @@ function selectBestScene(scenes: Scene[]): { scene: Scene; index: number } {
 }
 
 // ── Trim word timestamps to fit maxSeconds ─────────────────────────────────────
-function trimTimestamps(
-  timestamps: WordTimestamp[],
-  maxSeconds: number,
-): WordTimestamp[] {
+function trimTimestamps(timestamps: WordTimestamp[], maxSeconds: number): WordTimestamp[] {
   return timestamps.filter((w) => w.start < maxSeconds);
 }
 
@@ -187,20 +185,45 @@ const HookScreen: React.FC<{ text: string; subtext?: string }> = ({ text, subtex
 
   // Frame 0 must be fully visible — YouTube uses it as the Shorts thumbnail
   // Loom motion starts from frame 1: text slides up from below
-  const loomProgress = frame === 0 ? 0 : interpolate(frame, [1, 20], [1, 0], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
+  const loomProgress =
+    frame === 0
+      ? 0
+      : interpolate(frame, [1, 20], [1, 0], {
+          extrapolateLeft: 'clamp',
+          extrapolateRight: 'clamp',
+        });
   const loomY = loomProgress * 100; // reduced travel for faster readability
-  const loomOpacity = frame === 0 ? 1 : interpolate(frame, [1, 12], [0.5, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
+  const loomOpacity =
+    frame === 0
+      ? 1
+      : interpolate(frame, [1, 12], [0.5, 1], {
+          extrapolateLeft: 'clamp',
+          extrapolateRight: 'clamp',
+        });
 
   // Blur-to-sharp: frame 0 is sharp (thumbnail), then slight blur for motion feel
-  const blurAmount = frame === 0 ? 0 : interpolate(frame, [1, 8], [4, 0], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
+  const blurAmount =
+    frame === 0
+      ? 0
+      : interpolate(frame, [1, 8], [4, 0], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
 
   // Accent bar height spring (0→64)
-  const accentBarSpring = spring({ frame, fps, config: { damping: 12, stiffness: 160, mass: 0.6 } });
+  const accentBarSpring = spring({
+    frame,
+    fps,
+    config: { damping: 12, stiffness: 160, mass: 0.6 },
+  });
   const accentBarHeight = interpolate(accentBarSpring, [0, 1], [0, 64]);
 
   // Light scan sweep (frames 8-20)
-  const scanProgress = interpolate(frame, [8, 20], [-20, 120], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
-  const scanOpacity = interpolate(frame, [8, 12, 18, 20], [0, 0.35, 0.35, 0], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
+  const scanProgress = interpolate(frame, [8, 20], [-20, 120], {
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
+  });
+  const scanOpacity = interpolate(frame, [8, 12, 18, 20], [0, 0.35, 0.35, 0], {
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
+  });
 
   const lines = text.split('\n');
 
@@ -220,12 +243,24 @@ const HookScreen: React.FC<{ text: string; subtext?: string }> = ({ text, subtex
   return (
     <AbsoluteFill style={{ backgroundColor: SHORTS_BG }}>
       {/* Gradient accent bar top */}
-      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 48, background: `linear-gradient(90deg, ${SHORTS_ACCENT}, transparent)` }} />
+      <div
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          height: 48,
+          background: `linear-gradient(90deg, ${SHORTS_ACCENT}, transparent)`,
+        }}
+      />
 
       <div
         style={{
           position: 'absolute',
-          top: 0, bottom: 0, left: 60, right: 60,
+          top: 0,
+          bottom: 0,
+          left: 60,
+          right: 60,
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'flex-start',
@@ -236,11 +271,23 @@ const HookScreen: React.FC<{ text: string; subtext?: string }> = ({ text, subtex
         }}
       >
         {/* Animated accent bar */}
-        <div style={{ width: 6, height: accentBarHeight, background: `linear-gradient(180deg, ${SHORTS_ACCENT}, transparent)`, borderRadius: 3, marginBottom: 24 }} />
+        <div
+          style={{
+            width: 6,
+            height: accentBarHeight,
+            background: `linear-gradient(180deg, ${SHORTS_ACCENT}, transparent)`,
+            borderRadius: 3,
+            marginBottom: 24,
+          }}
+        />
 
         {/* Hook text — staggered scale spring per line */}
         {lines.map((line, i) => {
-          const lineSpring = spring({ frame: Math.max(0, frame - i * 4), fps, config: { damping: 14, stiffness: 180, mass: 0.7 } });
+          const lineSpring = spring({
+            frame: Math.max(0, frame - i * 4),
+            fps,
+            config: { damping: 14, stiffness: 180, mass: 0.7 },
+          });
           const lineScale = interpolate(lineSpring, [0, 1], [0.7, 1.0]);
           return (
             <div
@@ -263,17 +310,42 @@ const HookScreen: React.FC<{ text: string; subtext?: string }> = ({ text, subtex
 
         {/* Subtext */}
         {subtext && (
-          <div style={{ fontSize: 48, fontFamily: 'Inter, sans-serif', fontWeight: 500, color: SHORTS_MUTED, marginTop: 24, lineHeight: 1.3 }}>
+          <div
+            style={{
+              fontSize: 48,
+              fontFamily: 'Inter, sans-serif',
+              fontWeight: 500,
+              color: SHORTS_MUTED,
+              marginTop: 24,
+              lineHeight: 1.3,
+            }}
+          >
             {subtext}
           </div>
         )}
       </div>
 
       {/* Light scan sweep overlay */}
-      <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(90deg, transparent ${scanProgress - 15}%, rgba(255,255,255,${scanOpacity}) ${scanProgress}%, transparent ${scanProgress + 15}%)`, pointerEvents: 'none' }} />
+      <div
+        style={{
+          position: 'absolute',
+          inset: 0,
+          background: `linear-gradient(90deg, transparent ${scanProgress - 15}%, rgba(255,255,255,${scanOpacity}) ${scanProgress}%, transparent ${scanProgress + 15}%)`,
+          pointerEvents: 'none',
+        }}
+      />
 
       {/* Gradient accent bar bottom */}
-      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 48, background: `linear-gradient(270deg, ${SHORTS_ACCENT}, transparent)` }} />
+      <div
+        style={{
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          height: 48,
+          background: `linear-gradient(270deg, ${SHORTS_ACCENT}, transparent)`,
+        }}
+      />
     </AbsoluteFill>
   );
 };
@@ -312,8 +384,8 @@ const CenterCaptions: React.FC<{
   const wordScale = interpolate(wordSpring, [0, 1], [0.7, 1]);
   const bounceY = interpolate(wordSpring, [0, 1], [20, 0]);
 
-  const nextWord = currentWordIdx < wordTimestamps.length - 1
-    ? wordTimestamps[currentWordIdx + 1].word : null;
+  const nextWord =
+    currentWordIdx < wordTimestamps.length - 1 ? wordTimestamps[currentWordIdx + 1].word : null;
 
   return (
     <div
@@ -373,15 +445,40 @@ const EngagementPrompt: React.FC = () => {
 
   // Each prompt has unique position, entry direction, accent color, and type
   const prompts = [
-    { triggerFrame: Math.round(8 * fps), type: 'save' as const, top: 480, left: 40, right: undefined as number | undefined, entryDir: 'left' as const, accent: '#10B981' },
-    { triggerFrame: Math.round(20 * fps), type: 'comment' as const, top: undefined as number | undefined, left: undefined as number | undefined, right: 40, bottom: 550, entryDir: 'right' as const, accent: SHORTS_ACCENT },
-    { triggerFrame: Math.round(35 * fps), type: 'share' as const, top: 520, left: 40, right: undefined as number | undefined, entryDir: 'bottom' as const, accent: '#FCD34D' },
+    {
+      triggerFrame: Math.round(8 * fps),
+      type: 'save' as const,
+      top: 480,
+      left: 40,
+      right: undefined as number | undefined,
+      entryDir: 'left' as const,
+      accent: '#10B981',
+    },
+    {
+      triggerFrame: Math.round(20 * fps),
+      type: 'comment' as const,
+      top: undefined as number | undefined,
+      left: undefined as number | undefined,
+      right: 40,
+      bottom: 550,
+      entryDir: 'right' as const,
+      accent: SHORTS_ACCENT,
+    },
+    {
+      triggerFrame: Math.round(35 * fps),
+      type: 'share' as const,
+      top: 520,
+      left: 40,
+      right: undefined as number | undefined,
+      entryDir: 'bottom' as const,
+      accent: '#FCD34D',
+    },
   ];
 
-  const SHOW_DURATION = Math.round(2 * fps);  // 2 seconds (was 1.5)
+  const SHOW_DURATION = Math.round(2 * fps); // 2 seconds (was 1.5)
   const FADE_FRAMES = Math.round(0.3 * fps);
 
-  let activePrompt: typeof prompts[0] | null = null;
+  let activePrompt: (typeof prompts)[0] | null = null;
   let localFrame = 0;
   for (let i = 0; i < prompts.length; i++) {
     const p = prompts[i];
@@ -394,22 +491,31 @@ const EngagementPrompt: React.FC = () => {
 
   if (!activePrompt) return null;
 
-  const fadeIn = interpolate(localFrame, [0, FADE_FRAMES], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
-  const fadeOut = interpolate(localFrame, [SHOW_DURATION - FADE_FRAMES, SHOW_DURATION], [1, 0], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
+  const fadeIn = interpolate(localFrame, [0, FADE_FRAMES], [0, 1], {
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
+  });
+  const fadeOut = interpolate(localFrame, [SHOW_DURATION - FADE_FRAMES, SHOW_DURATION], [1, 0], {
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
+  });
 
   const s = spring({ frame: localFrame, fps, config: { stiffness: 200, damping: 18, mass: 0.5 } });
 
   // Different entry animation per prompt
-  const slideX = activePrompt.entryDir === 'left' ? interpolate(s, [0, 1], [-80, 0])
-    : activePrompt.entryDir === 'right' ? interpolate(s, [0, 1], [80, 0]) : 0;
+  const slideX =
+    activePrompt.entryDir === 'left'
+      ? interpolate(s, [0, 1], [-80, 0])
+      : activePrompt.entryDir === 'right'
+        ? interpolate(s, [0, 1], [80, 0])
+        : 0;
   const slideY = activePrompt.entryDir === 'bottom' ? interpolate(s, [0, 1], [40, 0]) : 0;
   const entryScale = activePrompt.entryDir === 'bottom' ? interpolate(s, [0, 1], [0.85, 1]) : 1;
 
   // Pulsing border animation for save prompt (scale 1.0 -> 1.05 -> 1.0 cycle)
   const pulseCycle = (localFrame % (fps * 0.6)) / (fps * 0.6);
-  const pulseScale = activePrompt.type === 'save'
-    ? 1 + 0.05 * Math.sin(pulseCycle * Math.PI * 2)
-    : 1;
+  const pulseScale =
+    activePrompt.type === 'save' ? 1 + 0.05 * Math.sin(pulseCycle * Math.PI * 2) : 1;
 
   // Render prompt content based on type
   const renderPromptContent = () => {
@@ -429,12 +535,14 @@ const EngagementPrompt: React.FC = () => {
           }}
         >
           <span style={{ fontSize: 40 }}>🔖</span>
-          <span style={{
-            fontSize: 36,
-            fontFamily: FONTS.text,
-            fontWeight: 700,
-            color: SHORTS_TEXT,
-          }}>
+          <span
+            style={{
+              fontSize: 36,
+              fontFamily: FONTS.text,
+              fontWeight: 700,
+              color: SHORTS_TEXT,
+            }}
+          >
             Save this
           </span>
         </div>
@@ -455,24 +563,28 @@ const EngagementPrompt: React.FC = () => {
             gap: 14,
           }}
         >
-          <div style={{
-            width: 44,
-            height: 44,
-            borderRadius: '50%',
-            backgroundColor: `${activePrompt!.accent}33`,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            flexShrink: 0,
-          }}>
+          <div
+            style={{
+              width: 44,
+              height: 44,
+              borderRadius: '50%',
+              backgroundColor: `${activePrompt!.accent}33`,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0,
+            }}
+          >
             <span style={{ fontSize: 28, fontWeight: 900, color: activePrompt!.accent }}>?</span>
           </div>
-          <span style={{
-            fontSize: 34,
-            fontFamily: FONTS.text,
-            fontWeight: 700,
-            color: SHORTS_TEXT,
-          }}>
+          <span
+            style={{
+              fontSize: 34,
+              fontFamily: FONTS.text,
+              fontWeight: 700,
+              color: SHORTS_TEXT,
+            }}
+          >
             Can you name the 3rd config?
           </span>
         </div>
@@ -494,28 +606,34 @@ const EngagementPrompt: React.FC = () => {
         }}
       >
         <span style={{ fontSize: 36 }}>↗</span>
-        <span style={{
-          fontSize: 36,
-          fontFamily: FONTS.text,
-          fontWeight: 700,
-          color: SHORTS_TEXT,
-        }}>
+        <span
+          style={{
+            fontSize: 36,
+            fontFamily: FONTS.text,
+            fontWeight: 700,
+            color: SHORTS_TEXT,
+          }}
+        >
           Share with your team
         </span>
-        <div style={{
-          marginLeft: 8,
-          backgroundColor: `${activePrompt!.accent}33`,
-          borderRadius: 14,
-          padding: '4px 12px',
-          display: 'flex',
-          alignItems: 'center',
-        }}>
-          <span style={{
-            fontSize: 22,
-            fontFamily: FONTS.text,
-            fontWeight: 600,
-            color: activePrompt!.accent,
-          }}>
+        <div
+          style={{
+            marginLeft: 8,
+            backgroundColor: `${activePrompt!.accent}33`,
+            borderRadius: 14,
+            padding: '4px 12px',
+            display: 'flex',
+            alignItems: 'center',
+          }}
+        >
+          <span
+            style={{
+              fontSize: 22,
+              fontFamily: FONTS.text,
+              fontWeight: 600,
+              color: activePrompt!.accent,
+            }}
+          >
             2.3K shares
           </span>
         </div>
@@ -603,8 +721,14 @@ const SponsorOverlay: React.FC<{
 
   if (frame < showStart || frame > showEnd) return null;
 
-  const fadeIn = interpolate(localFrame, [0, 10], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
-  const fadeOut = interpolate(localFrame, [showEnd - showStart - 10, showEnd - showStart], [1, 0], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
+  const fadeIn = interpolate(localFrame, [0, 10], [0, 1], {
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
+  });
+  const fadeOut = interpolate(localFrame, [showEnd - showStart - 10, showEnd - showStart], [1, 0], {
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
+  });
 
   return (
     <div
@@ -630,13 +754,19 @@ const SponsorOverlay: React.FC<{
           gap: 16,
         }}
       >
-        <span style={{ fontSize: 28, fontFamily: FONTS.text, fontWeight: 400, color: SHORTS_MUTED }}>
+        <span
+          style={{ fontSize: 28, fontFamily: FONTS.text, fontWeight: 400, color: SHORTS_MUTED }}
+        >
           Powered by
         </span>
-        <span style={{ fontSize: 36, fontFamily: FONTS.heading, fontWeight: 700, color: SHORTS_TEXT }}>
+        <span
+          style={{ fontSize: 36, fontFamily: FONTS.heading, fontWeight: 700, color: SHORTS_TEXT }}
+        >
           {sponsor.name}
         </span>
-        <span style={{ fontSize: 24, fontFamily: FONTS.text, fontWeight: 400, color: SHORTS_MUTED }}>
+        <span
+          style={{ fontSize: 24, fontFamily: FONTS.text, fontWeight: 400, color: SHORTS_MUTED }}
+        >
           {sponsor.tagline}
         </span>
       </div>
@@ -660,33 +790,25 @@ const MultiPhaseContent: React.FC<{
   const phase2End = phaseLength * 2;
 
   // Phase opacities with crossfade overlap
-  const phase1Opacity = interpolate(
-    frame,
-    [phase1End - CROSSFADE_FRAMES, phase1End],
-    [1, 0],
-    { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
-  );
+  const phase1Opacity = interpolate(frame, [phase1End - CROSSFADE_FRAMES, phase1End], [1, 0], {
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
+  });
   const phase2Opacity = (() => {
-    const fadeIn = interpolate(
-      frame,
-      [phase1End - CROSSFADE_FRAMES, phase1End],
-      [0, 1],
-      { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
-    );
-    const fadeOut = interpolate(
-      frame,
-      [phase2End - CROSSFADE_FRAMES, phase2End],
-      [1, 0],
-      { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
-    );
+    const fadeIn = interpolate(frame, [phase1End - CROSSFADE_FRAMES, phase1End], [0, 1], {
+      extrapolateLeft: 'clamp',
+      extrapolateRight: 'clamp',
+    });
+    const fadeOut = interpolate(frame, [phase2End - CROSSFADE_FRAMES, phase2End], [1, 0], {
+      extrapolateLeft: 'clamp',
+      extrapolateRight: 'clamp',
+    });
     return fadeIn * fadeOut;
   })();
-  const phase3Opacity = interpolate(
-    frame,
-    [phase2End - CROSSFADE_FRAMES, phase2End],
-    [0, 1],
-    { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
-  );
+  const phase3Opacity = interpolate(frame, [phase2End - CROSSFADE_FRAMES, phase2End], [0, 1], {
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
+  });
 
   // Compute visual beats for template diagrams
   const beats = React.useMemo(() => {
@@ -698,14 +820,20 @@ const MultiPhaseContent: React.FC<{
 
   // Tension-state color overlay (shared across phases)
   const wcScene = scene as WorldClassScene;
-  const tensionOpacity = wcScene.emotionalBeat === 'tension' ? 0.18 :
-                         wcScene.emotionalBeat === 'escalation' ? 0.22 :
-                         wcScene.emotionalBeat === 'resolution' ? 0.15 : 0;
-  const tensionColor = (wcScene.emotionalBeat === 'tension' || wcScene.emotionalBeat === 'escalation')
-    ? '255, 68, 68' : '16, 185, 129';
-  const tensionOverlayColor = tensionOpacity > 0
-    ? `rgba(${tensionColor}, ${tensionOpacity})`
-    : 'transparent';
+  const tensionOpacity =
+    wcScene.emotionalBeat === 'tension'
+      ? 0.18
+      : wcScene.emotionalBeat === 'escalation'
+        ? 0.22
+        : wcScene.emotionalBeat === 'resolution'
+          ? 0.15
+          : 0;
+  const tensionColor =
+    wcScene.emotionalBeat === 'tension' || wcScene.emotionalBeat === 'escalation'
+      ? '255, 68, 68'
+      : '16, 185, 129';
+  const tensionOverlayColor =
+    tensionOpacity > 0 ? `rgba(${tensionColor}, ${tensionOpacity})` : 'transparent';
 
   // Extract key takeaway from narration (last sentence or heading)
   const keyTakeaway = React.useMemo(() => {
@@ -736,14 +864,21 @@ const MultiPhaseContent: React.FC<{
     }
     return -1;
   })();
-  const zoomScale = pulseLocalFrame >= 0
-    ? interpolate(pulseLocalFrame, [0, 10, 24], [1.0, 1.06, 1.0])
-    : 1.0;
+  const zoomScale =
+    pulseLocalFrame >= 0 ? interpolate(pulseLocalFrame, [0, 10, 24], [1.0, 1.06, 1.0]) : 1.0;
 
   return (
     <AbsoluteFill style={{ backgroundColor: SHORTS_BG }}>
       {/* Tension color tint */}
-      <div style={{ position: 'absolute', inset: 0, backgroundColor: tensionOverlayColor, pointerEvents: 'none', zIndex: 1 }} />
+      <div
+        style={{
+          position: 'absolute',
+          inset: 0,
+          backgroundColor: tensionOverlayColor,
+          pointerEvents: 'none',
+          zIndex: 1,
+        }}
+      />
 
       {/* ── Phase 1: Heading + Template (slide-in, top-aligned) ── */}
       {frame < phase1End && (
@@ -764,7 +899,9 @@ const MultiPhaseContent: React.FC<{
                 opacity: interpolate(headingSpring, [0, 1], [0, 1]),
               }}
             >
-              <div style={{ width: 4, height: 32, backgroundColor: SHORTS_ACCENT, borderRadius: 2 }} />
+              <div
+                style={{ width: 4, height: 32, backgroundColor: SHORTS_ACCENT, borderRadius: 2 }}
+              />
               <span
                 style={{
                   fontSize: 48,
@@ -792,7 +929,14 @@ const MultiPhaseContent: React.FC<{
               overflow: 'hidden',
             }}
           >
-            <div style={{ width: '100%', height: '100%', transform: 'scale(1.4)', transformOrigin: 'center center' }}>
+            <div
+              style={{
+                width: '100%',
+                height: '100%',
+                transform: 'scale(1.4)',
+                transformOrigin: 'center center',
+              }}
+            >
               <TemplateFactory
                 templateId={scene.templateId || 'ConceptDiagram'}
                 variant={scene.templateVariant || 'auto'}
@@ -813,7 +957,14 @@ const MultiPhaseContent: React.FC<{
         <AbsoluteFill style={{ opacity: phase2Opacity }}>
           <SubtleBg />
           {/* Blue tint overlay */}
-          <div style={{ position: 'absolute', inset: 0, backgroundColor: `${SHORTS_ACCENT}08`, pointerEvents: 'none' }} />
+          <div
+            style={{
+              position: 'absolute',
+              inset: 0,
+              backgroundColor: `${SHORTS_ACCENT}08`,
+              pointerEvents: 'none',
+            }}
+          />
 
           {scene.heading && (
             <div
@@ -827,7 +978,9 @@ const MultiPhaseContent: React.FC<{
                 gap: 12,
               }}
             >
-              <div style={{ width: 4, height: 32, backgroundColor: SHORTS_ACCENT, borderRadius: 2 }} />
+              <div
+                style={{ width: 4, height: 32, backgroundColor: SHORTS_ACCENT, borderRadius: 2 }}
+              />
               <span
                 style={{
                   fontSize: 52,
@@ -855,7 +1008,8 @@ const MultiPhaseContent: React.FC<{
             >
               {bullets.map((bullet, idx) => {
                 const localPhaseFrame = frame - phase1End;
-                const staggerDelay = idx * Math.round(phaseLength / Math.max(bullets.length + 1, 2));
+                const staggerDelay =
+                  idx * Math.round(phaseLength / Math.max(bullets.length + 1, 2));
                 const bulletSpring = spring({
                   frame: Math.max(0, localPhaseFrame - staggerDelay),
                   fps,
@@ -898,7 +1052,14 @@ const MultiPhaseContent: React.FC<{
                 overflow: 'hidden',
               }}
             >
-              <div style={{ width: '100%', height: 800, transform: 'scale(1.4)', transformOrigin: 'center center' }}>
+              <div
+                style={{
+                  width: '100%',
+                  height: 800,
+                  transform: 'scale(1.4)',
+                  transformOrigin: 'center center',
+                }}
+              >
                 <TemplateFactory
                   templateId={scene.templateId || 'ConceptDiagram'}
                   variant={scene.templateVariant || 'auto'}
@@ -920,7 +1081,14 @@ const MultiPhaseContent: React.FC<{
         <AbsoluteFill style={{ opacity: phase3Opacity }}>
           <SubtleBg />
           {/* Warm amber tint overlay */}
-          <div style={{ position: 'absolute', inset: 0, backgroundColor: '#FCD34D08', pointerEvents: 'none' }} />
+          <div
+            style={{
+              position: 'absolute',
+              inset: 0,
+              backgroundColor: '#FCD34D08',
+              pointerEvents: 'none',
+            }}
+          />
 
           <div
             style={{
@@ -945,12 +1113,10 @@ const MultiPhaseContent: React.FC<{
                 textTransform: 'uppercase',
                 letterSpacing: 4,
                 marginBottom: 24,
-                opacity: interpolate(
-                  frame - phase2End,
-                  [0, 20],
-                  [0, 1],
-                  { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
-                ),
+                opacity: interpolate(frame - phase2End, [0, 20], [0, 1], {
+                  extrapolateLeft: 'clamp',
+                  extrapolateRight: 'clamp',
+                }),
               }}
             >
               Key Takeaway
@@ -991,12 +1157,10 @@ const MultiPhaseContent: React.FC<{
                   color: '#FCD34D',
                   marginTop: 32,
                   textAlign: 'center',
-                  opacity: interpolate(
-                    frame - phase2End,
-                    [10, 30],
-                    [0, 0.8],
-                    { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
-                  ),
+                  opacity: interpolate(frame - phase2End, [10, 30], [0, 0.8], {
+                    extrapolateLeft: 'clamp',
+                    extrapolateRight: 'clamp',
+                  }),
                 }}
               >
                 {scene.heading}
@@ -1030,7 +1194,7 @@ const TextContent: React.FC<{
   const PULSE_OFFSETS = [150, 402, 588, 888, 1110, 1278]; // frames between pulses (cumulative)
   const PULSE_PERIOD = 1428; // total cycle length
   const cyclicFrame = frame % PULSE_PERIOD;
-  const isInPulse = PULSE_OFFSETS.some(offset => {
+  const isInPulse = PULSE_OFFSETS.some((offset) => {
     const local = cyclicFrame - offset;
     return local >= 0 && local < 24;
   });
@@ -1041,25 +1205,40 @@ const TextContent: React.FC<{
     }
     return -1;
   })();
-  const zoomScale = isInPulse && pulseLocalFrame >= 0
-    ? interpolate(pulseLocalFrame, [0, 10, 24], [1.0, 1.06, 1.0])
-    : 1.0;
+  const zoomScale =
+    isInPulse && pulseLocalFrame >= 0
+      ? interpolate(pulseLocalFrame, [0, 10, 24], [1.0, 1.06, 1.0])
+      : 1.0;
 
   // Tension-state color overlay — red tint during tension, green tint during resolution
   const wcScene = scene as WorldClassScene;
-  const tensionOpacity = wcScene.emotionalBeat === 'tension' ? 0.18 :
-                         wcScene.emotionalBeat === 'escalation' ? 0.22 :
-                         wcScene.emotionalBeat === 'resolution' ? 0.15 : 0;
-  const tensionColor = (wcScene.emotionalBeat === 'tension' || wcScene.emotionalBeat === 'escalation')
-    ? `255, 68, 68` : `16, 185, 129`;
-  const tensionOverlayColor = tensionOpacity > 0
-    ? `rgba(${tensionColor}, ${tensionOpacity})`
-    : 'transparent';
+  const tensionOpacity =
+    wcScene.emotionalBeat === 'tension'
+      ? 0.18
+      : wcScene.emotionalBeat === 'escalation'
+        ? 0.22
+        : wcScene.emotionalBeat === 'resolution'
+          ? 0.15
+          : 0;
+  const tensionColor =
+    wcScene.emotionalBeat === 'tension' || wcScene.emotionalBeat === 'escalation'
+      ? `255, 68, 68`
+      : `16, 185, 129`;
+  const tensionOverlayColor =
+    tensionOpacity > 0 ? `rgba(${tensionColor}, ${tensionOpacity})` : 'transparent';
 
   return (
     <AbsoluteFill style={{ backgroundColor: SHORTS_BG }}>
       {/* Tension color tint */}
-      <div style={{ position: 'absolute', inset: 0, backgroundColor: tensionOverlayColor, pointerEvents: 'none', zIndex: 1 }} />
+      <div
+        style={{
+          position: 'absolute',
+          inset: 0,
+          backgroundColor: tensionOverlayColor,
+          pointerEvents: 'none',
+          zIndex: 1,
+        }}
+      />
       <SubtleBg />
 
       {/* Scene heading */}
@@ -1111,7 +1290,14 @@ const TextContent: React.FC<{
           overflow: 'hidden',
         }}
       >
-        <div style={{ width: '100%', height: '100%', transform: 'scale(1.4)', transformOrigin: 'center center' }}>
+        <div
+          style={{
+            width: '100%',
+            height: '100%',
+            transform: 'scale(1.4)',
+            transformOrigin: 'center center',
+          }}
+        >
           <TemplateFactory
             templateId={scene.templateId || 'ConceptDiagram'}
             variant={scene.templateVariant || 'auto'}
@@ -1134,17 +1320,14 @@ const CodeContent: React.FC<{
 }> = ({ scene }) => {
   const frame = useCurrentFrame();
   const codeLines = (scene.content || '').split('\n').slice(0, 9);
-  const activeLineIdx = Math.min(
-    codeLines.length - 1,
-    Math.floor(frame / 16),
-  );
+  const activeLineIdx = Math.min(codeLines.length - 1, Math.floor(frame / 16));
 
   // Variable-interval zoom pulse — prevents habituation (Sokolov 1963)
   // Seeded intervals: 2.5s, 4.2s, 3.1s, 5.0s, 3.7s, 2.8s cycle (doubled for 60fps)
   const PULSE_OFFSETS_CODE = [150, 402, 588, 888, 1110, 1278]; // frames between pulses (cumulative)
   const PULSE_PERIOD_CODE = 1428; // total cycle length
   const cyclicFrameCode = frame % PULSE_PERIOD_CODE;
-  const isInPulseCode = PULSE_OFFSETS_CODE.some(offset => {
+  const isInPulseCode = PULSE_OFFSETS_CODE.some((offset) => {
     const local = cyclicFrameCode - offset;
     return local >= 0 && local < 24;
   });
@@ -1155,9 +1338,10 @@ const CodeContent: React.FC<{
     }
     return -1;
   })();
-  const zoomScale = isInPulseCode && pulseLocalFrameCode >= 0
-    ? interpolate(pulseLocalFrameCode, [0, 10, 24], [1.0, 1.06, 1.0])
-    : 1.0;
+  const zoomScale =
+    isInPulseCode && pulseLocalFrameCode >= 0
+      ? interpolate(pulseLocalFrameCode, [0, 10, 24], [1.0, 1.06, 1.0])
+      : 1.0;
 
   return (
     <AbsoluteFill style={{ backgroundColor: SHORTS_BG }}>
@@ -1178,12 +1362,10 @@ const CodeContent: React.FC<{
         }}
       >
         {codeLines.map((line, i) => {
-          const lineOpacity = interpolate(
-            frame - i * 12,
-            [0, 20],
-            [0, 1],
-            { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
-          );
+          const lineOpacity = interpolate(frame - i * 12, [0, 20], [0, 1], {
+            extrapolateLeft: 'clamp',
+            extrapolateRight: 'clamp',
+          });
           const isActive = i === activeLineIdx;
 
           return (
@@ -1196,9 +1378,7 @@ const CodeContent: React.FC<{
                 lineHeight: 1.6,
                 whiteSpace: 'pre',
                 opacity: lineOpacity,
-                borderLeft: isActive
-                  ? `3px solid ${SHORTS_ACCENT}`
-                  : '3px solid transparent',
+                borderLeft: isActive ? `3px solid ${SHORTS_ACCENT}` : '3px solid transparent',
                 paddingLeft: 10,
                 backgroundColor: isActive ? `${SHORTS_ACCENT}10` : 'transparent',
               }}
@@ -1219,14 +1399,15 @@ const InterviewContent: React.FC<{
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
-  const bullets = scene.bullets || scene.narration?.split(/[.!?]/).filter(Boolean).slice(0, 4) || [];
+  const bullets =
+    scene.bullets || scene.narration?.split(/[.!?]/).filter(Boolean).slice(0, 4) || [];
 
   // Variable-interval zoom pulse — prevents habituation (Sokolov 1963)
   // Seeded intervals: 2.5s, 4.2s, 3.1s, 5.0s, 3.7s, 2.8s cycle (doubled for 60fps)
   const PULSE_OFFSETS_IV = [150, 402, 588, 888, 1110, 1278]; // frames between pulses (cumulative)
   const PULSE_PERIOD_IV = 1428; // total cycle length
   const cyclicFrameIV = frame % PULSE_PERIOD_IV;
-  const isInPulseIV = PULSE_OFFSETS_IV.some(offset => {
+  const isInPulseIV = PULSE_OFFSETS_IV.some((offset) => {
     const local = cyclicFrameIV - offset;
     return local >= 0 && local < 24;
   });
@@ -1237,9 +1418,10 @@ const InterviewContent: React.FC<{
     }
     return -1;
   })();
-  const zoomScale = isInPulseIV && pulseLocalFrameIV >= 0
-    ? interpolate(pulseLocalFrameIV, [0, 10, 24], [1.0, 1.06, 1.0])
-    : 1.0;
+  const zoomScale =
+    isInPulseIV && pulseLocalFrameIV >= 0
+      ? interpolate(pulseLocalFrameIV, [0, 10, 24], [1.0, 1.06, 1.0])
+      : 1.0;
 
   return (
     <AbsoluteFill style={{ backgroundColor: SHORTS_BG }}>
@@ -1379,8 +1561,16 @@ const OpenLoopEnding: React.FC<{ topic: string; hookText?: string }> = ({ topic,
   // Phase 2 (0.5-1.2s): Long-form upsell
   // Phase 3 (1.2-2.5s): Lead magnet pill
   const phase1 = spring({ frame, fps, config: { stiffness: 180, damping: 22, mass: 0.6 } });
-  const phase2 = spring({ frame: Math.max(0, frame - 30), fps, config: { stiffness: 160, damping: 18, mass: 0.5 } });
-  const phase3 = spring({ frame: Math.max(0, frame - 72), fps, config: { stiffness: 140, damping: 16, mass: 0.5 } });
+  const phase2 = spring({
+    frame: Math.max(0, frame - 30),
+    fps,
+    config: { stiffness: 160, damping: 18, mass: 0.5 },
+  });
+  const phase3 = spring({
+    frame: Math.max(0, frame - 72),
+    fps,
+    config: { stiffness: 140, damping: 16, mass: 0.5 },
+  });
 
   const displayText = hookText || `The ${topic} mistake that costs teams weeks...`;
 
@@ -1389,11 +1579,23 @@ const OpenLoopEnding: React.FC<{ topic: string; hookText?: string }> = ({ topic,
 
   return (
     <AbsoluteFill style={{ backgroundColor: SHORTS_BG }}>
-      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 4, background: `linear-gradient(90deg, ${SHORTS_ACCENT}, transparent)` }} />
       <div
         style={{
           position: 'absolute',
-          top: 0, bottom: 0, left: 60, right: 60,
+          top: 0,
+          left: 0,
+          right: 0,
+          height: 4,
+          background: `linear-gradient(90deg, ${SHORTS_ACCENT}, transparent)`,
+        }}
+      />
+      <div
+        style={{
+          position: 'absolute',
+          top: 0,
+          bottom: 0,
+          left: 60,
+          right: 60,
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
@@ -1401,43 +1603,93 @@ const OpenLoopEnding: React.FC<{ topic: string; hookText?: string }> = ({ topic,
         }}
       >
         {/* Phase 1: Avatar + Zeigarnik open loop */}
-        <div style={{
-          opacity: interpolate(phase1, [0, 1], [0, 1]),
-          transform: `translateY(${interpolate(phase1, [0, 1], [30, 0])}px)`,
-          display: 'flex', flexDirection: 'column', alignItems: 'center',
-        }}>
-          <div style={{ width: 140, height: 140, borderRadius: '50%', overflow: 'hidden', border: `3px solid ${SHORTS_ACCENT}`, marginBottom: 20 }}>
-            <img src={avatarSrc} onError={(e) => { (e.target as HTMLImageElement).src = fallbackSrc; }} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+        <div
+          style={{
+            opacity: interpolate(phase1, [0, 1], [0, 1]),
+            transform: `translateY(${interpolate(phase1, [0, 1], [30, 0])}px)`,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+          }}
+        >
+          <div
+            style={{
+              width: 140,
+              height: 140,
+              borderRadius: '50%',
+              overflow: 'hidden',
+              border: `3px solid ${SHORTS_ACCENT}`,
+              marginBottom: 20,
+            }}
+          >
+            <img
+              src={avatarSrc}
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = fallbackSrc;
+              }}
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            />
           </div>
-          <div style={{ fontSize: 40, fontFamily: 'Inter, sans-serif', fontWeight: 500, color: SHORTS_MUTED, textAlign: 'center', lineHeight: 1.3 }}>
+          <div
+            style={{
+              fontSize: 40,
+              fontFamily: 'Inter, sans-serif',
+              fontWeight: 500,
+              color: SHORTS_MUTED,
+              textAlign: 'center',
+              lineHeight: 1.3,
+            }}
+          >
             {displayText}
           </div>
         </div>
 
         {/* Phase 2: Long-form upsell */}
-        <div style={{
-          marginTop: 24,
-          opacity: interpolate(phase2, [0, 1], [0, 1]),
-          transform: `scale(${interpolate(phase2, [0, 1], [0.8, 1])})`,
-        }}>
-          <div style={{ fontSize: 52, fontFamily: 'Space Grotesk, sans-serif', fontWeight: 900, color: SHORTS_TEXT, lineHeight: 1.2, textAlign: 'center' }}>
+        <div
+          style={{
+            marginTop: 24,
+            opacity: interpolate(phase2, [0, 1], [0, 1]),
+            transform: `scale(${interpolate(phase2, [0, 1], [0.8, 1])})`,
+          }}
+        >
+          <div
+            style={{
+              fontSize: 52,
+              fontFamily: 'Space Grotesk, sans-serif',
+              fontWeight: 900,
+              color: SHORTS_TEXT,
+              lineHeight: 1.2,
+              textAlign: 'center',
+            }}
+          >
             Full breakdown on my channel
           </div>
         </div>
 
         {/* Phase 3: Lead magnet pill */}
-        <div style={{
-          marginTop: 24,
-          opacity: interpolate(phase3, [0, 1], [0, 1]),
-          transform: `translateY(${interpolate(phase3, [0, 1], [20, 0])}px)`,
-        }}>
-          <div style={{
-            padding: '14px 36px',
-            backgroundColor: `${SHORTS_ACCENT}22`,
-            border: `2px solid ${SHORTS_ACCENT}`,
-            borderRadius: 32,
-          }}>
-            <span style={{ fontSize: 36, fontFamily: 'Space Grotesk, sans-serif', fontWeight: 700, color: SHORTS_ACCENT }}>
+        <div
+          style={{
+            marginTop: 24,
+            opacity: interpolate(phase3, [0, 1], [0, 1]),
+            transform: `translateY(${interpolate(phase3, [0, 1], [20, 0])}px)`,
+          }}
+        >
+          <div
+            style={{
+              padding: '14px 36px',
+              backgroundColor: `${SHORTS_ACCENT}22`,
+              border: `2px solid ${SHORTS_ACCENT}`,
+              borderRadius: 32,
+            }}
+          >
+            <span
+              style={{
+                fontSize: 36,
+                fontFamily: 'Space Grotesk, sans-serif',
+                fontWeight: 700,
+                color: SHORTS_ACCENT,
+              }}
+            >
               Free cheat sheet — link in bio
             </span>
           </div>
@@ -1475,12 +1727,10 @@ const MicroRewardPulse: React.FC<{
     fps,
     config: { stiffness: 320, damping: 14, mass: 0.5 },
   });
-  const opacity = interpolate(
-    localFrame,
-    [0, 10, 60, 90],
-    [0, 1, 1, 0],
-    { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
-  );
+  const opacity = interpolate(localFrame, [0, 10, 60, 90], [0, 1, 1, 0], {
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
+  });
 
   const rewardColors: Record<string, string> = {
     revelation: '#F59E0B',
@@ -1528,11 +1778,7 @@ const MicroRewardPulse: React.FC<{
 // ═══════════════════════════════════════════════════════════════════════════════
 // MAIN COMPOSITION
 // ═══════════════════════════════════════════════════════════════════════════════
-export const ViralShort: React.FC<ViralShortProps> = ({
-  storyboard,
-  clipStart,
-  clipEnd,
-}) => {
+export const ViralShort: React.FC<ViralShortProps> = ({ storyboard, clipStart, clipEnd }) => {
   const { fps } = useVideoConfig();
 
   // ── Select scene ──
@@ -1541,7 +1787,7 @@ export const ViralShort: React.FC<ViralShortProps> = ({
 
   if (clipStart !== undefined) {
     const contentScenes = storyboard.scenes.filter(
-      (s) => s.type !== 'title' && s.type !== 'summary',
+      (s) => s.type !== 'title' && s.type !== 'summary'
     );
     selectedScene = contentScenes[clipStart] || contentScenes[0];
     selectedIndex = storyboard.scenes.indexOf(selectedScene);
@@ -1590,9 +1836,7 @@ export const ViralShort: React.FC<ViralShortProps> = ({
   };
 
   return (
-    <AbsoluteFill
-      style={{ backgroundColor: SHORTS_BG, width: WIDTH, height: HEIGHT }}
-    >
+    <AbsoluteFill style={{ backgroundColor: SHORTS_BG, width: WIDTH, height: HEIGHT }}>
       {/* ── Hook: 1 second ── */}
       <Sequence from={0} durationInFrames={HOOK_FRAMES}>
         <HookScreen text={hookText} subtext={selectedScene.heading} />
@@ -1606,18 +1850,12 @@ export const ViralShort: React.FC<ViralShortProps> = ({
         {(() => {
           const wcScene = selectedScene as WorldClassScene;
           return wcScene.microRewards && wcScene.microRewards.length > 0 ? (
-            <MicroRewardPulse
-              microRewards={wcScene.microRewards}
-              contentStartFrame={HOOK_FRAMES}
-            />
+            <MicroRewardPulse microRewards={wcScene.microRewards} contentStartFrame={HOOK_FRAMES} />
           ) : null;
         })()}
 
         {/* Center captions */}
-        <CenterCaptions
-          wordTimestamps={wordTimestamps}
-          audioOffset={audioOffsetSeconds}
-        />
+        <CenterCaptions wordTimestamps={wordTimestamps} audioOffset={audioOffsetSeconds} />
 
         {/* Avatar bubble — human face boosts algorithm priority */}
         <AvatarBubble />
@@ -1647,12 +1885,10 @@ export const ViralShort: React.FC<ViralShortProps> = ({
               });
               // Fade out at end of content
               const totalAudioFrames = HOOK_FRAMES + contentFrames;
-              const fadeOut = interpolate(
-                f,
-                [totalAudioFrames - 30, totalAudioFrames],
-                [1, 0],
-                { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
-              );
+              const fadeOut = interpolate(f, [totalAudioFrames - 30, totalAudioFrames], [1, 0], {
+                extrapolateLeft: 'clamp',
+                extrapolateRight: 'clamp',
+              });
               return fadeIn * fadeOut;
             }}
           />
@@ -1699,16 +1935,14 @@ function generateHookText(heading: string, topic: string): string {
     return `BEST PRACTICE?\nACTUALLY, IT'S WRONG`;
 
   // ── Cognitive dissonance hooks ──
-  if (lower.includes('safe') || lower.includes('default'))
-    return `THE DEFAULT\nIS A TRAP`;
+  if (lower.includes('safe') || lower.includes('default')) return `THE DEFAULT\nIS A TRAP`;
   if (lower.includes('wrong') || lower.includes('myth') || lower.includes('lie'))
     return `EVERYTHING YOU KNOW\nABOUT ${T} IS WRONG`;
   if (lower.includes('think') || lower.includes('assume') || lower.includes('obvious'))
     return `YOU THINK\nTHIS IS SAFE`;
 
   // ── Curiosity gap hooks ──
-  if (lower.includes('secret') || lower.includes('hidden'))
-    return `THE HIDDEN COST\nOF ${T}`;
+  if (lower.includes('secret') || lower.includes('hidden')) return `THE HIDDEN COST\nOF ${T}`;
   if (lower.includes('danger') || lower.includes('risk') || lower.includes('threat'))
     return `THE ${T} RISK\nNO ONE MENTIONS`;
   if (lower.includes('nobody') || lower.includes('no one') || lower.includes('rarely'))
@@ -1749,11 +1983,7 @@ function generateHookText(heading: string, topic: string): string {
 }
 
 // ── calculateMetadata for registration ─────────────────────────────────────────
-export function calculateViralShortMetadata({
-  props,
-}: {
-  props: Record<string, unknown>;
-}) {
+export function calculateViralShortMetadata({ props }: { props: Record<string, unknown> }) {
   const sb = props.storyboard as Storyboard;
   if (!sb || !sb.scenes || sb.scenes.length === 0) {
     return { durationInFrames: 1800, fps: 60, width: 1080, height: 1920 };
@@ -1763,9 +1993,7 @@ export function calculateViralShortMetadata({
   let scene: Scene;
 
   if (clipStartIdx !== undefined) {
-    const contentScenes = sb.scenes.filter(
-      (s) => s.type !== 'title' && s.type !== 'summary',
-    );
+    const contentScenes = sb.scenes.filter((s) => s.type !== 'title' && s.type !== 'summary');
     scene = contentScenes[clipStartIdx] || contentScenes[0];
   } else {
     scene = selectBestScene(sb.scenes).scene;

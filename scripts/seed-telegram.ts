@@ -88,7 +88,7 @@ export function buildSeedMessage(args: {
 async function sendTelegramMessage(
   botToken: string,
   channelId: string,
-  text: string,
+  text: string
 ): Promise<{ ok: boolean; error?: string }> {
   const url = `${TELEGRAM_API_BASE}${botToken}/sendMessage`;
   const body = {
@@ -121,13 +121,9 @@ export async function seedTelegram(args: {
   send?: (token: string, channel: string, text: string) => Promise<{ ok: boolean; error?: string }>;
 }): Promise<{ skipped: boolean; reason?: string }> {
   const botToken =
-    args.botToken ??
-    process.env['TELEGRAM_BOT_TOKEN'] ??
-    process.env['TG_BOT_TOKEN'];
+    args.botToken ?? process.env['TELEGRAM_BOT_TOKEN'] ?? process.env['TG_BOT_TOKEN'];
   const channelId =
-    args.channelId ??
-    process.env['TELEGRAM_CHANNEL_ID'] ??
-    process.env['TG_CHANNEL_ID'];
+    args.channelId ?? process.env['TELEGRAM_CHANNEL_ID'] ?? process.env['TG_CHANNEL_ID'];
 
   if (!botToken) {
     console.log('[seed-telegram] TELEGRAM_BOT_TOKEN not set — skipping seed (returning ok)');

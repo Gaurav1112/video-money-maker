@@ -25,7 +25,8 @@ const PUBLISHED_DIR = 'data/opinions-published';
 function listEpisodes(): string[] {
   const dir = 'content/opinions';
   if (!fs.existsSync(dir)) return [];
-  return fs.readdirSync(dir)
+  return fs
+    .readdirSync(dir)
     .filter((f) => f.endsWith('.md'))
     .map((f) => f.replace(/\.md$/, ''))
     .sort();
@@ -133,8 +134,8 @@ function main(): void {
         shortUrl: shortResult.url,
       },
       null,
-      2,
-    ),
+      2
+    )
   );
   console.log(`\n[opinion-publish] Published ${slug}`);
   console.log(`  long  : ${longResult.url}`);

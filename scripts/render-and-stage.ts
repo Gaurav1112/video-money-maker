@@ -57,7 +57,7 @@ function loadTopicQueue(): TopicQueueFile | null {
 function markSessionRendered(topicSlug: string, sessionNumber: number): void {
   const queue = loadTopicQueue();
   if (!queue) return;
-  const topic = queue.topics.find(t => t.slug === topicSlug);
+  const topic = queue.topics.find((t) => t.slug === topicSlug);
   if (topic && !topic.rendered.includes(sessionNumber)) {
     topic.rendered.push(sessionNumber);
     topic.rendered.sort((a, b) => a - b);
@@ -100,14 +100,18 @@ function showPipelineStatus(): void {
       const unrendered = t.sessions - t.rendered.length;
       if (unrendered > 0) {
         const bar = '|'.repeat(t.rendered.length) + '.'.repeat(unrendered);
-        console.log(`  ${t.slug.padEnd(25)} [${bar}] ${t.rendered.length}/${t.sessions} (${t.priority})`);
+        console.log(
+          `  ${t.slug.padEnd(25)} [${bar}] ${t.rendered.length}/${t.sessions} (${t.priority})`
+        );
       }
     }
 
-    console.log(`\n  Total: ${totalRendered}/${totalSessions} rendered, ${totalPublished} published`);
+    console.log(
+      `\n  Total: ${totalRendered}/${totalSessions} rendered, ${totalPublished} published`
+    );
     console.log(`  Ready to publish: ${totalRendered - totalPublished}`);
     console.log(`  Remaining: ${totalSessions - totalRendered} sessions`);
-    console.log(`  Est. time: ${((totalSessions - totalRendered) * 8 / 60).toFixed(1)} hours`);
+    console.log(`  Est. time: ${(((totalSessions - totalRendered) * 8) / 60).toFixed(1)} hours`);
   }
 
   const entryKeys = Object.keys(manifest.entries);
@@ -117,7 +121,9 @@ function showPipelineStatus(): void {
     for (const key of recent) {
       const e = manifest.entries[key];
       const dur = e.timings.total ? formatDuration(e.timings.total) : '?';
-      console.log(`  ${key.padEnd(20)} ${e.status.padEnd(10)} ${dur} ${e.errors.length > 0 ? `(${e.errors.length} errors)` : ''}`);
+      console.log(
+        `  ${key.padEnd(20)} ${e.status.padEnd(10)} ${dur} ${e.errors.length > 0 ? `(${e.errors.length} errors)` : ''}`
+      );
     }
   }
 
@@ -195,10 +201,7 @@ function log(level: 'INFO' | 'WARN' | 'ERROR' | 'SUCCESS' | 'STEP', msg: string)
   console.log(line);
 
   ensureDir(LOG_DIR);
-  fs.appendFileSync(
-    path.join(LOG_DIR, 'render-and-stage.log'),
-    line + '\n',
-  );
+  fs.appendFileSync(path.join(LOG_DIR, 'render-and-stage.log'), line + '\n');
 }
 
 function runCmd(cmd: string, label: string): void {
@@ -272,7 +275,7 @@ async function main() {
     session = next.session;
     log('INFO', `Auto-picked next: ${next.name} (${topic}) session ${session}`);
   } else {
-    const positional = args.filter(a => !a.startsWith('--'));
+    const positional = args.filter((a) => !a.startsWith('--'));
     if (positional.length < 2) {
       console.log('Usage: npx tsx scripts/render-and-stage.ts <topic-slug> <session-number>');
       console.log('       npx tsx scripts/render-and-stage.ts kafka 2');
@@ -301,7 +304,12 @@ async function main() {
   const propsFile = path.join(PROJECT_ROOT, `output/test-props-s${session}.json`);
   const longOutputDir = path.join(GURU_SISHYA_BASE, topic, `session-${session}`, 'long');
   const verticalDir = path.join(GURU_SISHYA_BASE, topic, `session-${session}`, 'vertical');
-  const verticalPartsDir = path.join(GURU_SISHYA_BASE, topic, `session-${session}`, 'vertical-parts');
+  const verticalPartsDir = path.join(
+    GURU_SISHYA_BASE,
+    topic,
+    `session-${session}`,
+    'vertical-parts'
+  );
 
   console.log('');
   console.log('================================================================');
@@ -361,8 +369,8 @@ async function main() {
     const t2 = timedRun(() => {
       runCmd(
         `npx remotion render src/compositions/index.tsx LongVideo "${longOutput}" ` +
-        `--props="${propsFile}" --concurrency=50% --gl=angle --crf=23`,
-        'LongVideo render',
+          `--props="${propsFile}" --concurrency=50% --gl=angle --crf=23`,
+        'LongVideo render'
       );
     });
     entry.timings.longRender = t2.elapsed;
@@ -376,8 +384,8 @@ async function main() {
       const t3 = timedRun(() => {
         runCmd(
           `npx remotion render src/compositions/index.tsx VerticalLong "${vertOutput}" ` +
-          `--props="${propsFile}" --codec=h264 --crf=18 --audio-bitrate=192K --concurrency=4`,
-          'VerticalLong render',
+            `--props="${propsFile}" --codec=h264 --crf=18 --audio-bitrate=192K --concurrency=4`,
+          'VerticalLong render'
         );
       });
       entry.timings.verticalRender = t3.elapsed;
@@ -388,7 +396,7 @@ async function main() {
       const t4 = timedRun(() => {
         runCmd(
           `npx tsx scripts/render-vertical-parts.ts ${topic} ${session}`,
-          'Vertical parts render',
+          'Vertical parts render'
         );
       });
       entry.timings.partsRender = t4.elapsed;
@@ -402,10 +410,7 @@ async function main() {
     log('STEP', '[5/8] Generating thumbnail...');
     const thumbnailOutput = path.join(PROJECT_ROOT, `output/${topic}-s${session}-thumbnail.png`);
     const t5 = timedRun(() => {
-      runCmd(
-        `npx tsx scripts/generate-thumbnail.ts ${propsFile}`,
-        'Thumbnail generation',
-      );
+      runCmd(`npx tsx scripts/generate-thumbnail.ts ${propsFile}`, 'Thumbnail generation');
     });
     entry.timings.thumbnail = t5.elapsed;
     log('SUCCESS', `Thumbnail generated in ${formatDuration(t5.elapsed)}`);
@@ -415,7 +420,7 @@ async function main() {
     const t6 = timedRun(() => {
       runCmd(
         `npx tsx scripts/generate-upload-metadata.ts ${topic} ${session}`,
-        'Metadata generation',
+        'Metadata generation'
       );
     });
     entry.timings.metadata = t6.elapsed;
@@ -442,7 +447,9 @@ async function main() {
         for (let p = 1; p <= 5; p++) {
           // Find part files — they use the format topic-s{N}-part{P}of{T}.mp4
           const partFiles = fs.existsSync(verticalPartsDir)
-            ? fs.readdirSync(verticalPartsDir).filter(f => f.includes(`-part${p}of`) && f.endsWith('.mp4'))
+            ? fs
+                .readdirSync(verticalPartsDir)
+                .filter((f) => f.includes(`-part${p}of`) && f.endsWith('.mp4'))
             : [];
           if (partFiles.length > 0) {
             const partSrc = path.join(verticalPartsDir, partFiles[0]);
@@ -508,7 +515,6 @@ async function main() {
     saveManifest(manifest);
     markSessionRendered(topic, session);
     log('SUCCESS', 'Manifest + queue updated');
-
   } catch (err) {
     entry.status = 'failed';
     entry.errors.push((err as Error).message);
@@ -536,27 +542,34 @@ async function main() {
   console.log('  Staged files:');
   if (entry.files.long) console.log(`    long.mp4`);
   if (entry.files.verticalFull) console.log(`    vertical-full.mp4`);
-  entry.files.parts.forEach(p => console.log(`    ${p}`));
+  entry.files.parts.forEach((p) => console.log(`    ${p}`));
   if (entry.files.thumbnail) console.log(`    thumbnail.png`);
   if (entry.files.metadata) console.log(`    metadata.json`);
-  entry.files.partMetadata.forEach(m => console.log(`    ${m}`));
+  entry.files.partMetadata.forEach((m) => console.log(`    ${m}`));
   console.log('');
   console.log(`  Staging dir: ${stagingDir}`);
   console.log(`  Manifest:    ${MANIFEST_PATH}`);
   console.log('');
   console.log('  Timings:');
-  if (entry.timings.storyboard) console.log(`    Storyboard:      ${formatDuration(entry.timings.storyboard)}`);
-  if (entry.timings.longRender) console.log(`    Long render:     ${formatDuration(entry.timings.longRender)}`);
-  if (entry.timings.verticalRender) console.log(`    Vertical render: ${formatDuration(entry.timings.verticalRender)}`);
-  if (entry.timings.partsRender) console.log(`    Parts render:    ${formatDuration(entry.timings.partsRender)}`);
-  if (entry.timings.thumbnail) console.log(`    Thumbnail:       ${formatDuration(entry.timings.thumbnail)}`);
-  if (entry.timings.metadata) console.log(`    Metadata:        ${formatDuration(entry.timings.metadata)}`);
-  if (entry.timings.staging) console.log(`    Staging:         ${formatDuration(entry.timings.staging)}`);
+  if (entry.timings.storyboard)
+    console.log(`    Storyboard:      ${formatDuration(entry.timings.storyboard)}`);
+  if (entry.timings.longRender)
+    console.log(`    Long render:     ${formatDuration(entry.timings.longRender)}`);
+  if (entry.timings.verticalRender)
+    console.log(`    Vertical render: ${formatDuration(entry.timings.verticalRender)}`);
+  if (entry.timings.partsRender)
+    console.log(`    Parts render:    ${formatDuration(entry.timings.partsRender)}`);
+  if (entry.timings.thumbnail)
+    console.log(`    Thumbnail:       ${formatDuration(entry.timings.thumbnail)}`);
+  if (entry.timings.metadata)
+    console.log(`    Metadata:        ${formatDuration(entry.timings.metadata)}`);
+  if (entry.timings.staging)
+    console.log(`    Staging:         ${formatDuration(entry.timings.staging)}`);
   console.log(`    TOTAL:           ${totalTime}`);
   console.log('');
 }
 
-main().catch(err => {
+main().catch((err) => {
   console.error('Fatal error:', err);
   process.exit(1);
 });

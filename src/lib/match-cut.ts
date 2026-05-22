@@ -93,10 +93,7 @@ export interface AudioFingerprint {
  * @param hookText  The hook text string shown at frame 0
  * @param bgColor   CSS background colour at frame 0 (default: near-black)
  */
-export function buildFingerprint(
-  hookText: string,
-  bgColor: string = '#0A0A0A',
-): VisualFingerprint {
+export function buildFingerprint(hookText: string, bgColor: string = '#0A0A0A'): VisualFingerprint {
   return {
     hookText,
     bgColor,
@@ -120,10 +117,7 @@ export function buildFingerprint(
  * @param frame  Current Remotion frame (from useCurrentFrame())
  * @param total  durationInFrames of the composition
  */
-export function tweenToFirstFrame(
-  frame: number,
-  total: number,
-): LoopTweenValues {
+export function tweenToFirstFrame(frame: number, total: number): LoopTweenValues {
   const loopStart = total - LOOP_BACK_FRAMES;
 
   // Outside the loop-back window — zero cost, no overlay rendered.
@@ -141,7 +135,7 @@ export function tweenToFirstFrame(
   const eased = progress * progress * progress;
 
   // Background arrives slightly ahead of the text (grounds the eye first).
-  const bgOpacity = interpolate(progress, [0, 0.45, 1], [0, 0.80, 1], {
+  const bgOpacity = interpolate(progress, [0, 0.45, 1], [0, 0.8, 1], {
     extrapolateLeft: 'clamp',
     extrapolateRight: 'clamp',
   });
@@ -179,10 +173,7 @@ export function tweenToFirstFrame(
  * @param frame  Current frame
  * @param total  durationInFrames
  */
-export function audioFingerprintAtFrame(
-  frame: number,
-  total: number,
-): AudioFingerprint {
+export function audioFingerprintAtFrame(frame: number, total: number): AudioFingerprint {
   // Intro fade-in: 0 → 1 over the first 8 frames.
   const introRms = interpolate(frame, [0, 8], [0, 1], {
     extrapolateLeft: 'clamp',

@@ -1,11 +1,5 @@
 import React from 'react';
-import {
-  useCurrentFrame,
-  useVideoConfig,
-  AbsoluteFill,
-  interpolate,
-  spring,
-} from 'remotion';
+import { useCurrentFrame, useVideoConfig, AbsoluteFill, interpolate, spring } from 'remotion';
 import { FONTS } from '../../lib/theme';
 import { SAFE_ZONE, COMPONENT_DIMS } from '../../lib/vertical-layouts';
 import type { AnimationCue } from '../../types';
@@ -32,12 +26,8 @@ const LOSER_KEYWORDS =
   /\b(slower|worse|no|higher latency|single point|limited|manual|complex|exponential|ceiling)\b/i;
 
 function autoDetectWinner(a: string, b: string): 'A' | 'B' | 'tie' {
-  const aNet =
-    (a.match(WINNER_KEYWORDS) || []).length -
-    (a.match(LOSER_KEYWORDS) || []).length;
-  const bNet =
-    (b.match(WINNER_KEYWORDS) || []).length -
-    (b.match(LOSER_KEYWORDS) || []).length;
+  const aNet = (a.match(WINNER_KEYWORDS) || []).length - (a.match(LOSER_KEYWORDS) || []).length;
+  const bNet = (b.match(WINNER_KEYWORDS) || []).length - (b.match(LOSER_KEYWORDS) || []).length;
   if (aNet > bNet) return 'A';
   if (bNet > aNet) return 'B';
   return 'tie';
@@ -67,14 +57,13 @@ interface ParsedRow {
 
 function parseRows(headers: string[], rows: string[][]): ParsedRow[] {
   const cleanRows = rows.filter(
-    (row) => !row.every((cell) => /^[-:]+$/.test(cell) || cell.trim() === ''),
+    (row) => !row.every((cell) => /^[-:]+$/.test(cell) || cell.trim() === '')
   );
   return cleanRows.map((row) => {
     const label = row[0] || '';
     const valueA = row[1] || '—';
     const valueB = row[2] || '—';
-    const winner =
-      headers.length >= 3 ? autoDetectWinner(valueA, valueB) : 'tie';
+    const winner = headers.length >= 3 ? autoDetectWinner(valueA, valueB) : 'tie';
     return { label, valueA, valueB, winner };
   });
 }
@@ -255,10 +244,7 @@ const ComparisonCard: React.FC<CardProps> = ({
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'center',
-                borderBottom:
-                  i < rows.length - 1
-                    ? `1px solid ${DARK.cardBorder}`
-                    : 'none',
+                borderBottom: i < rows.length - 1 ? `1px solid ${DARK.cardBorder}` : 'none',
                 paddingBottom: i < rows.length - 1 ? 4 : 0,
               }}
             >
@@ -359,8 +345,7 @@ const VerticalComparisonTable: React.FC<VerticalComparisonTableProps> = ({
   /* ── Determine overall winner for badge ─────────────────────────────────── */
   const aWins = parsedRows.filter((r) => r.winner === 'A').length;
   const bWins = parsedRows.filter((r) => r.winner === 'B').length;
-  const overallWinner: 'A' | 'B' | null =
-    aWins > bWins ? 'A' : bWins > aWins ? 'B' : null;
+  const overallWinner: 'A' | 'B' | null = aWins > bWins ? 'A' : bWins > aWins ? 'B' : null;
 
   /* ── Layout constants ───────────────────────────────────────────────────── */
   const CANVAS_W = 1080;
@@ -375,7 +360,7 @@ const VerticalComparisonTable: React.FC<VerticalComparisonTableProps> = ({
   const CARD_W = SAFE_ZONE.contentWidth;
 
   const CARD_A_Y = TITLE_Y + TITLE_H + 20;
-  const CARD_A_H = compDims.topHeight;    // 700
+  const CARD_A_H = compDims.topHeight; // 700
 
   const VS_Y = CARD_A_Y + CARD_A_H + 55; // midpoint between cards
   const VS_SIZE = 90;
@@ -484,13 +469,7 @@ const VerticalComparisonTable: React.FC<VerticalComparisonTableProps> = ({
       />
 
       {/* ── VS Badge ──────────────────────────────────────────────────────────── */}
-      <VSBadge
-        scale={vsScale}
-        opacity={vsOpacity}
-        x={CANVAS_W / 2}
-        y={VS_Y}
-        size={VS_SIZE}
-      />
+      <VSBadge scale={vsScale} opacity={vsOpacity} x={CANVAS_W / 2} y={VS_Y} size={VS_SIZE} />
 
       {/* ── Card B ────────────────────────────────────────────────────────────── */}
       <ComparisonCard

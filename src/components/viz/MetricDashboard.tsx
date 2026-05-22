@@ -99,8 +99,8 @@ const SparkLine: React.FC<{
   // Generate smooth pseudo-random data based on frame
   for (let i = 0; i < points; i++) {
     const seed = Math.sin(i * 12.9898 + 78.233) * 43758.5453;
-    const base = (seed - Math.floor(seed));
-    const wave = 0.3 * Math.sin((frame * 0.02) + i * 0.5);
+    const base = seed - Math.floor(seed);
+    const wave = 0.3 * Math.sin(frame * 0.02 + i * 0.5);
     data.push(0.2 + base * 0.6 + wave);
   }
 
@@ -115,7 +115,12 @@ const SparkLine: React.FC<{
   const areaPath = pathParts.join(' ') + ` L ${width} ${height} L 0 ${height} Z`;
 
   return (
-    <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} style={{ overflow: 'visible' }}>
+    <svg
+      width={width}
+      height={height}
+      viewBox={`0 0 ${width} ${height}`}
+      style={{ overflow: 'visible' }}
+    >
       {/* Grid lines */}
       {[0.25, 0.5, 0.75].map((frac) => (
         <line
@@ -129,12 +134,36 @@ const SparkLine: React.FC<{
         />
       ))}
       {/* Y-axis labels */}
-      <text x={-4} y={4} fill="rgba(255,255,255,0.2)" fontSize={5} fontFamily="'JetBrains Mono', monospace" textAnchor="end">hi</text>
-      <text x={-4} y={height} fill="rgba(255,255,255,0.2)" fontSize={5} fontFamily="'JetBrains Mono', monospace" textAnchor="end">lo</text>
+      <text
+        x={-4}
+        y={4}
+        fill="rgba(255,255,255,0.2)"
+        fontSize={5}
+        fontFamily="'JetBrains Mono', monospace"
+        textAnchor="end"
+      >
+        hi
+      </text>
+      <text
+        x={-4}
+        y={height}
+        fill="rgba(255,255,255,0.2)"
+        fontSize={5}
+        fontFamily="'JetBrains Mono', monospace"
+        textAnchor="end"
+      >
+        lo
+      </text>
       {/* Area fill */}
       <path d={areaPath} fill={`${color}12`} opacity={progress} />
       {/* Line */}
-      <path d={pathParts.join(' ')} fill="none" stroke={color} strokeWidth={1.5} opacity={progress * 0.8} />
+      <path
+        d={pathParts.join(' ')}
+        fill="none"
+        stroke={color}
+        strokeWidth={1.5}
+        opacity={progress * 0.8}
+      />
       {/* Current value dot */}
       {progress > 0.5 && (
         <circle
@@ -196,7 +225,9 @@ export const MetricDashboard: React.FC<MetricDashboardProps> = ({ sync, frame })
             opacity: 0.5 + 0.5 * Math.sin(frame * 0.1),
           }}
         />
-        <span style={{ fontSize: 11, fontWeight: 700, color: '#22C55E', letterSpacing: 1 }}>LIVE</span>
+        <span style={{ fontSize: 11, fontWeight: 700, color: '#22C55E', letterSpacing: 1 }}>
+          LIVE
+        </span>
       </div>
 
       {/* Dashboard title */}
@@ -283,7 +314,11 @@ export const MetricDashboard: React.FC<MetricDashboardProps> = ({ sync, frame })
                 opacity: cardEntrance,
                 transform: `translateY(${interpolate(cardSpring, [0, 1], [30, 0])}px) scale(${interpolate(cardSpring, [0, 1], [0.88, 1])})`,
                 boxShadow: glowPhase
-                  ? `0 0 ${20 + glowIntensity * 20}px ${metric.color}${Math.round(glowIntensity * 80).toString(16).padStart(2, '0')}`
+                  ? `0 0 ${20 + glowIntensity * 20}px ${metric.color}${Math.round(
+                      glowIntensity * 80
+                    )
+                      .toString(16)
+                      .padStart(2, '0')}`
                   : 'none',
               }}
             >
@@ -393,17 +428,35 @@ export const MetricDashboard: React.FC<MetricDashboardProps> = ({ sync, frame })
         }}
       >
         {/* Y axis label */}
-        <div style={{
-          position: 'absolute',
-          left: -28,
-          top: 0,
-          height: '100%',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'space-between',
-        }}>
-          <span style={{ fontSize: 7, color: 'rgba(255,255,255,0.25)', fontFamily: "'JetBrains Mono', monospace" }}>100%</span>
-          <span style={{ fontSize: 7, color: 'rgba(255,255,255,0.25)', fontFamily: "'JetBrains Mono', monospace" }}>0%</span>
+        <div
+          style={{
+            position: 'absolute',
+            left: -28,
+            top: 0,
+            height: '100%',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between',
+          }}
+        >
+          <span
+            style={{
+              fontSize: 7,
+              color: 'rgba(255,255,255,0.25)',
+              fontFamily: "'JetBrains Mono', monospace",
+            }}
+          >
+            100%
+          </span>
+          <span
+            style={{
+              fontSize: 7,
+              color: 'rgba(255,255,255,0.25)',
+              fontFamily: "'JetBrains Mono', monospace",
+            }}
+          >
+            0%
+          </span>
         </div>
         {[0.4, 0.7, 0.5, 0.9, 0.6, 0.8, 0.75, 0.55, 0.95, 0.65].map((h, i) => {
           // Spring animation for each bar
@@ -421,28 +474,41 @@ export const MetricDashboard: React.FC<MetricDashboardProps> = ({ sync, frame })
                 width: 12,
                 height: animH,
                 borderRadius: 3,
-                background:
-                  i % 3 === 0
-                    ? THEME.saffron
-                    : i % 3 === 1
-                    ? THEME.teal
-                    : THEME.indigo,
+                background: i % 3 === 0 ? THEME.saffron : i % 3 === 1 ? THEME.teal : THEME.indigo,
                 opacity: 0.6 + 0.4 * Math.sin(frame * 0.08 + i * 0.7),
               }}
             />
           );
         })}
         {/* X axis labels */}
-        <div style={{
-          position: 'absolute',
-          bottom: -14,
-          left: 0,
-          right: 0,
-          display: 'flex',
-          justifyContent: 'space-between',
-        }}>
-          <span style={{ fontSize: 7, color: 'rgba(255,255,255,0.2)', fontFamily: "'JetBrains Mono', monospace" }}>1h</span>
-          <span style={{ fontSize: 7, color: 'rgba(255,255,255,0.2)', fontFamily: "'JetBrains Mono', monospace" }}>now</span>
+        <div
+          style={{
+            position: 'absolute',
+            bottom: -14,
+            left: 0,
+            right: 0,
+            display: 'flex',
+            justifyContent: 'space-between',
+          }}
+        >
+          <span
+            style={{
+              fontSize: 7,
+              color: 'rgba(255,255,255,0.2)',
+              fontFamily: "'JetBrains Mono', monospace",
+            }}
+          >
+            1h
+          </span>
+          <span
+            style={{
+              fontSize: 7,
+              color: 'rgba(255,255,255,0.2)',
+              fontFamily: "'JetBrains Mono', monospace",
+            }}
+          >
+            now
+          </span>
         </div>
       </div>
     </div>

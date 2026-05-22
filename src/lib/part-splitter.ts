@@ -8,26 +8,26 @@ import { Storyboard, Scene } from '../types';
 import { TIMING } from './constants';
 
 export interface VideoPart {
-  partNumber: number;       // 1-based
+  partNumber: number; // 1-based
   totalParts: number;
   scenes: Scene[];
   durationInFrames: number;
   durationSeconds: number;
-  audioStartSeconds: number;   // where to start in master audio
-  audioEndSeconds: number;     // where to end in master audio
+  audioStartSeconds: number; // where to start in master audio
+  audioEndSeconds: number; // where to end in master audio
   isFirst: boolean;
   isLast: boolean;
-  hookText: string;            // "Part 1/4" or cliffhanger
-  ctaText: string;             // "Follow for Part 2" or final CTA
+  hookText: string; // "Part 1/4" or cliffhanger
+  ctaText: string; // "Follow for Part 2" or final CTA
 }
 
 /** Platform-specific split configurations */
 export type SplitMode = 'connected-series' | 'youtube-short' | 'instagram-reel';
 
 const SPLIT_CONFIGS: Record<SplitMode, { target: number; max: number; min: number }> = {
-  'connected-series': { target: 150, max: 180, min: 60 },   // ~2:30 parts, 3 per session
-  'youtube-short':    { target: 50,  max: 58,  min: 15 },   // <60s for Shorts shelf
-  'instagram-reel':   { target: 55,  max: 88,  min: 15 },   // <90s for Reels
+  'connected-series': { target: 150, max: 180, min: 60 }, // ~2:30 parts, 3 per session
+  'youtube-short': { target: 50, max: 58, min: 15 }, // <60s for Shorts shelf
+  'instagram-reel': { target: 55, max: 88, min: 15 }, // <90s for Reels
 };
 
 // Default config (backward compat)
@@ -44,7 +44,10 @@ const MIN_PART_DURATION = 60;
  * 4. Never split mid-scene
  * 5. Each part gets intro/outro metadata for rendering
  */
-export function splitIntoParts(storyboard: Storyboard, mode: SplitMode = 'connected-series'): VideoPart[] {
+export function splitIntoParts(
+  storyboard: Storyboard,
+  mode: SplitMode = 'connected-series'
+): VideoPart[] {
   const fps = storyboard.fps || 30;
   const scenes = storyboard.scenes;
   const sceneOffsets = storyboard.sceneOffsets || [];
@@ -76,17 +79,19 @@ export function splitIntoParts(storyboard: Storyboard, mode: SplitMode = 'connec
     if (currentDuration + sceneDuration > config.max && currentScenes.length > 1) {
       // Finalize current part
       const audioStart = currentStartOffset;
-      const audioEnd = contentOffsets[i] ?? (audioStart + currentDuration);
+      const audioEnd = contentOffsets[i] ?? audioStart + currentDuration;
 
-      parts.push(createPart(
-        parts.length + 1,
-        0, // totalParts set later
-        currentScenes,
-        currentDuration,
-        audioStart,
-        audioEnd,
-        storyboard.topic,
-      ));
+      parts.push(
+        createPart(
+          parts.length + 1,
+          0, // totalParts set later
+          currentScenes,
+          currentDuration,
+          audioStart,
+          audioEnd,
+          storyboard.topic
+        )
+      );
 
       // Start new part
       currentScenes = [];
@@ -104,25 +109,29 @@ export function splitIntoParts(storyboard: Storyboard, mode: SplitMode = 'connec
         scene.type === 'review' ||
         (i < contentScenes.length - 1 && contentScenes[i + 1].type === 'title');
 
-      const nextSceneDuration = i < contentScenes.length - 1
-        ? (contentScenes[i + 1].endFrame - contentScenes[i + 1].startFrame) / fps
-        : 0;
+      const nextSceneDuration =
+        i < contentScenes.length - 1
+          ? (contentScenes[i + 1].endFrame - contentScenes[i + 1].startFrame) / fps
+          : 0;
 
       // Split if natural break OR would exceed MAX with next scene
       if (isNaturalBreak || currentDuration + nextSceneDuration > config.max) {
-        if (i < contentScenes.length - 1) { // Don't split if this is the last scene
+        if (i < contentScenes.length - 1) {
+          // Don't split if this is the last scene
           const audioStart = currentStartOffset;
-          const audioEnd = contentOffsets[i + 1] ?? (audioStart + currentDuration);
+          const audioEnd = contentOffsets[i + 1] ?? audioStart + currentDuration;
 
-          parts.push(createPart(
-            parts.length + 1,
-            0,
-            currentScenes,
-            currentDuration,
-            audioStart,
-            audioEnd,
-            storyboard.topic,
-          ));
+          parts.push(
+            createPart(
+              parts.length + 1,
+              0,
+              currentScenes,
+              currentDuration,
+              audioStart,
+              audioEnd,
+              storyboard.topic
+            )
+          );
 
           currentScenes = [];
           currentStartOffset = audioEnd;
@@ -137,15 +146,17 @@ export function splitIntoParts(storyboard: Storyboard, mode: SplitMode = 'connec
     const audioStart = currentStartOffset;
     const audioEnd = audioStart + currentDuration;
 
-    parts.push(createPart(
-      parts.length + 1,
-      0,
-      currentScenes,
-      currentDuration,
-      audioStart,
-      audioEnd,
-      storyboard.topic,
-    ));
+    parts.push(
+      createPart(
+        parts.length + 1,
+        0,
+        currentScenes,
+        currentDuration,
+        audioStart,
+        audioEnd,
+        storyboard.topic
+      )
+    );
   }
 
   // Set totalParts and fix isFirst/isLast
@@ -186,7 +197,7 @@ function createPart(
   durationSeconds: number,
   audioStartSeconds: number,
   audioEndSeconds: number,
-  _topic: string,
+  _topic: string
 ): VideoPart {
   const fps = 30;
   return {
@@ -208,15 +219,12 @@ function createPart(
  * Create a sub-storyboard for a specific part.
  * This can be passed directly to VerticalLong for rendering.
  */
-export function createPartStoryboard(
-  originalStoryboard: Storyboard,
-  part: VideoPart,
-): Storyboard {
+export function createPartStoryboard(originalStoryboard: Storyboard, part: VideoPart): Storyboard {
   const fps = originalStoryboard.fps || 30;
 
   // Re-index scenes starting from frame 0
   let frameOffset = 0;
-  const reindexedScenes = part.scenes.map(scene => {
+  const reindexedScenes = part.scenes.map((scene) => {
     const duration = scene.endFrame - scene.startFrame;
     const newScene: Scene = {
       ...scene,
@@ -257,14 +265,12 @@ export function createPartStoryboard(
  */
 export function getSplitSummary(storyboard: Storyboard): string {
   const parts = splitIntoParts(storyboard);
-  const lines = [
-    `${storyboard.topic} S${storyboard.sessionNumber}: ${parts.length} parts`,
-  ];
+  const lines = [`${storyboard.topic} S${storyboard.sessionNumber}: ${parts.length} parts`];
   for (const part of parts) {
     const mins = Math.floor(part.durationSeconds / 60);
     const secs = part.durationSeconds % 60;
     lines.push(
-      `  Part ${part.partNumber}/${part.totalParts}: ${mins}:${secs.toString().padStart(2, '0')} (${part.scenes.length} scenes) — ${part.ctaText}`,
+      `  Part ${part.partNumber}/${part.totalParts}: ${mins}:${secs.toString().padStart(2, '0')} (${part.scenes.length} scenes) — ${part.ctaText}`
     );
   }
   return lines.join('\n');

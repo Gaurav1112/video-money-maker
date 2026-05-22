@@ -11,7 +11,7 @@ export class SyncTimeline {
     sceneOffsets: number[],
     wordTimestamps: WordTimestamp[][],
     fps: number,
-    introFrames: number,
+    introFrames: number
   ) {
     this.sceneOffsets = sceneOffsets;
     this.wordTimestamps = wordTimestamps;
@@ -24,7 +24,10 @@ export class SyncTimeline {
         // Find next valid offset
         let nextOffset = -1;
         for (let j = i + 1; j < sceneOffsets.length; j++) {
-          if (sceneOffsets[j] !== -1) { nextOffset = sceneOffsets[j]; break; }
+          if (sceneOffsets[j] !== -1) {
+            nextOffset = sceneOffsets[j];
+            break;
+          }
         }
         if (nextOffset !== -1) return nextOffset - offset;
       }
@@ -35,7 +38,10 @@ export class SyncTimeline {
     });
   }
 
-  getSyncState(sceneIndex: number, relativeFrame: number): {
+  getSyncState(
+    sceneIndex: number,
+    relativeFrame: number
+  ): {
     currentWord: string;
     wordIndex: number;
     sceneProgress: number;
@@ -78,7 +84,7 @@ export class SyncTimeline {
     }
 
     const sceneProgress = Math.min(1, currentTimeInScene / sceneDuration);
-    const fullNarration = words.map(w => w.word).join(' ');
+    const fullNarration = words.map((w) => w.word).join(' ');
     const phraseBoundaries = SyncTimeline.computePhraseBoundaries(fullNarration);
 
     return {
@@ -124,7 +130,7 @@ export class SyncTimeline {
   }
 
   static computePhraseBoundaries(narration: string): number[] {
-    const words = narration.split(/\s+/).filter(w => w.length > 0);
+    const words = narration.split(/\s+/).filter((w) => w.length > 0);
     const boundaries: number[] = [];
 
     for (let i = 0; i < words.length; i++) {
@@ -132,11 +138,7 @@ export class SyncTimeline {
       if (/[.!?;:]$/.test(word)) {
         boundaries.push(i);
       }
-      if (
-        word.endsWith(',') &&
-        i + 1 < words.length &&
-        /^(and|but|or)$/i.test(words[i + 1])
-      ) {
+      if (word.endsWith(',') && i + 1 < words.length && /^(and|but|or)$/i.test(words[i + 1])) {
         boundaries.push(i);
       }
     }

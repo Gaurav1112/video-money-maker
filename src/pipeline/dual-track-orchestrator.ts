@@ -20,12 +20,17 @@
  *       video-multi.mp4   ← optional: video + dual audio tracks (ffmpeg)
  */
 
-import * as fs from "fs";
-import * as path from "path";
-import { execFile } from "child_process";
-import { promisify } from "util";
-import { synthesizeScenes, HinglishTTSOptions } from "../audio/tts-engines/edge-tts-hinglish";
-import { rewriteScenes, RewriteOptions, getHinglishHook, HookCategory } from "../lib/hinglish-rewriter";
+import * as fs from 'fs';
+import * as path from 'path';
+import { execFile } from 'child_process';
+import { promisify } from 'util';
+import { synthesizeScenes, HinglishTTSOptions } from '../audio/tts-engines/edge-tts-hinglish';
+import {
+  rewriteScenes,
+  RewriteOptions,
+  getHinglishHook,
+  HookCategory,
+} from '../lib/hinglish-rewriter';
 
 const execFileAsync = promisify(execFile);
 
@@ -48,7 +53,7 @@ export interface SessionInput {
 }
 
 export interface TrackResult {
-  language: "en" | "hi";
+  language: 'en' | 'hi';
   /** Concatenated MP3 path for all scenes */
   audioPath: string;
   /** Per-scene audio paths */
@@ -77,22 +82,19 @@ export interface DualTrackResult {
  *
  * Replace the body if tts-engine.ts changes its export shape.
  */
-async function renderEnglishTrack(
-  scenes: Scene[],
-  outputDir: string
-): Promise<TrackResult> {
+async function renderEnglishTrack(scenes: Scene[], outputDir: string): Promise<TrackResult> {
   // Dynamic import so this file compiles even when tts-engine.ts is absent
   // in the patch context (the orchestrator is a drop-in addition).
   let synthesizeFn: (text: string, options?: unknown) => Promise<{ audioPath: string }>;
   try {
-    const mod = (await import("../pipeline/tts-engine")) as {
+    const mod = (await import('../pipeline/tts-engine')) as {
       synthesize?: (text: string, opts?: unknown) => Promise<{ audioPath: string }>;
       default?: (text: string, opts?: unknown) => Promise<{ audioPath: string }>;
       generateAudio?: (text: string, opts?: unknown) => Promise<{ audioPath: string }>;
     };
     const candidate = mod.synthesize ?? mod.default ?? mod.generateAudio;
     if (!candidate) {
-      throw new Error("tts-engine has no synthesize/default/generateAudio export");
+      throw new Error('tts-engine has no synthesize/default/generateAudio export');
     }
     synthesizeFn = candidate;
   } catch {
@@ -100,11 +102,11 @@ async function renderEnglishTrack(
     // edge-tts-hinglish.ts). The earlier `await import("edge-tts-node")`
     // never worked because that npm package was never published — this
     // path now uses the actual project TTS provider (Python edge_tts).
-    const { spawn } = await import("child_process");
-    const crypto = await import("crypto");
-    const helperPath = path.resolve(__dirname, "../../scripts/edge-tts-synth.py");
+    const { spawn } = await import('child_process');
+    const crypto = await import('crypto');
+    const helperPath = path.resolve(__dirname, '../../scripts/edge-tts-synth.py');
     synthesizeFn = async (text: string) => {
-      const hash = crypto.createHash("sha256").update(text).digest("hex").slice(0, 12);
+      const hash = crypto.createHash('sha256').update(text).digest('hex').slice(0, 12);
       const audioPath = path.join(outputDir, `.tts-cache`, `en-${hash}.mp3`);
       fs.mkdirSync(path.dirname(audioPath), { recursive: true });
       if (!fs.existsSync(audioPath)) {
@@ -113,15 +115,21 @@ async function renderEnglishTrack(
            </speak>`;
         await new Promise<void>((resolve, reject) => {
           const proc = spawn(
-            "python3",
-            [helperPath, "--voice", "en-IN-PrabhatNeural", "--rate", "-5%", "--out", audioPath],
-            { stdio: ["pipe", "pipe", "pipe"] },
+            'python3',
+            [helperPath, '--voice', 'en-IN-PrabhatNeural', '--rate', '-5%', '--out', audioPath],
+            { stdio: ['pipe', 'pipe', 'pipe'] }
           );
-          let stderr = "";
-          proc.stderr.on("data", (d) => { stderr += d.toString(); });
-          proc.on("error", reject);
-          proc.on("close", (code) => code === 0 ? resolve() : reject(new Error(`edge-tts-synth.py exited ${code}: ${stderr}`)));
-          proc.stdin.write(ssml, "utf8");
+          let stderr = '';
+          proc.stderr.on('data', (d) => {
+            stderr += d.toString();
+          });
+          proc.on('error', reject);
+          proc.on('close', (code) =>
+            code === 0
+              ? resolve()
+              : reject(new Error(`edge-tts-synth.py exited ${code}: ${stderr}`))
+          );
+          proc.stdin.write(ssml, 'utf8');
           proc.stdin.end();
         });
       }
@@ -133,18 +141,18 @@ async function renderEnglishTrack(
   const fromCache: boolean[] = [];
 
   for (let i = 0; i < scenes.length; i++) {
-    const sceneDir = path.join(outputDir, "en");
+    const sceneDir = path.join(outputDir, 'en');
     fs.mkdirSync(sceneDir, { recursive: true });
     const result = await synthesizeFn(scenes[i].narration, { outputDir: sceneDir });
     scenePaths.push(result.audioPath);
     fromCache.push(false); // tts-engine handles its own caching internally
   }
 
-  const concatPath = path.join(outputDir, "audio-en.mp3");
+  const concatPath = path.join(outputDir, 'audio-en.mp3');
   await concatMp3Files(scenePaths, concatPath);
 
   return {
-    language: "en",
+    language: 'en',
     audioPath: concatPath,
     scenePaths,
     fromCache,
@@ -171,10 +179,10 @@ async function renderHinglishTrack(
   }
 
   // 2. Synthesize all scenes in parallel
-  const hiOutputDir = path.join(outputDir, "hi");
+  const hiOutputDir = path.join(outputDir, 'hi');
   const sceneResults = await synthesizeScenes(hinglishScenes, {
     outputDir: hiOutputDir,
-    cacheDir: path.join(hiOutputDir, ".tts-cache"),
+    cacheDir: path.join(hiOutputDir, '.tts-cache'),
     ...ttsOptions,
   });
 
@@ -182,11 +190,11 @@ async function renderHinglishTrack(
   const fromCache = sceneResults.map((r) => r.fromCache);
 
   // 3. Concatenate all scene MP3s into single track file
-  const concatPath = path.join(outputDir, "audio-hi.mp3");
+  const concatPath = path.join(outputDir, 'audio-hi.mp3');
   await concatMp3Files(scenePaths, concatPath);
 
   return {
-    language: "hi",
+    language: 'hi',
     audioPath: concatPath,
     scenePaths,
     fromCache,
@@ -223,7 +231,7 @@ export async function renderDualTrack(
   options: OrchestratorOptions = {}
 ): Promise<DualTrackResult> {
   const {
-    outputBaseDir = "output",
+    outputBaseDir = 'output',
     hinglishTTS = {},
     hinglishRewrite = {},
     renderEnglish = true,
@@ -241,8 +249,8 @@ export async function renderDualTrack(
     renderEnglish
       ? renderEnglishTrack(sessionInput.scenes, outputDir)
       : Promise.resolve<TrackResult>({
-          language: "en",
-          audioPath: path.join(outputDir, "audio-en.mp3"),
+          language: 'en',
+          audioPath: path.join(outputDir, 'audio-en.mp3'),
           scenePaths: [],
           fromCache: [],
         }),
@@ -282,29 +290,39 @@ export async function muxDualAudio(
   dualTrack: DualTrackResult,
   muxOptions: MuxOptions
 ): Promise<string> {
-  const outputPath =
-    muxOptions.outputPath ??
-    path.join(dualTrack.outputDir, "video-multi.mp4");
+  const outputPath = muxOptions.outputPath ?? path.join(dualTrack.outputDir, 'video-multi.mp4');
 
   const args = [
-    "-y",
-    "-i", muxOptions.videoPath,
-    "-i", dualTrack.english.audioPath,
-    "-i", dualTrack.hinglish.audioPath,
-    "-map", "0:v",
-    "-map", "1:a",
-    "-map", "2:a",
-    "-metadata:s:a:0", "language=en",
-    "-metadata:s:a:0", "title=English",
-    "-metadata:s:a:1", "language=hi",
-    "-metadata:s:a:1", "title=Hinglish",
-    "-c:v", "copy",
-    "-c:a", "aac",
-    "-shortest",
+    '-y',
+    '-i',
+    muxOptions.videoPath,
+    '-i',
+    dualTrack.english.audioPath,
+    '-i',
+    dualTrack.hinglish.audioPath,
+    '-map',
+    '0:v',
+    '-map',
+    '1:a',
+    '-map',
+    '2:a',
+    '-metadata:s:a:0',
+    'language=en',
+    '-metadata:s:a:0',
+    'title=English',
+    '-metadata:s:a:1',
+    'language=hi',
+    '-metadata:s:a:1',
+    'title=Hinglish',
+    '-c:v',
+    'copy',
+    '-c:a',
+    'aac',
+    '-shortest',
     outputPath,
   ];
 
-  await execFileAsync("ffmpeg", args);
+  await execFileAsync('ffmpeg', args);
   return outputPath;
 }
 
@@ -314,7 +332,7 @@ export async function muxDualAudio(
 
 async function concatMp3Files(inputPaths: string[], outputPath: string): Promise<void> {
   if (inputPaths.length === 0) {
-    throw new Error("concatMp3Files: no input files provided");
+    throw new Error('concatMp3Files: no input files provided');
   }
   if (inputPaths.length === 1) {
     fs.copyFileSync(inputPaths[0], outputPath);
@@ -322,19 +340,23 @@ async function concatMp3Files(inputPaths: string[], outputPath: string): Promise
   }
 
   // Write ffmpeg concat list file in the same directory as output
-  const listPath = outputPath.replace(/\.mp3$/, "-concat-list.txt");
+  const listPath = outputPath.replace(/\.mp3$/, '-concat-list.txt');
   const listContent = inputPaths
     .map((p) => `file '${path.resolve(p).replace(/'/g, "'\\''")}'`)
-    .join("\n");
-  fs.writeFileSync(listPath, listContent, "utf-8");
+    .join('\n');
+  fs.writeFileSync(listPath, listContent, 'utf-8');
 
   try {
-    await execFileAsync("ffmpeg", [
-      "-y",
-      "-f", "concat",
-      "-safe", "0",
-      "-i", listPath,
-      "-c", "copy",
+    await execFileAsync('ffmpeg', [
+      '-y',
+      '-f',
+      'concat',
+      '-safe',
+      '0',
+      '-i',
+      listPath,
+      '-c',
+      'copy',
       outputPath,
     ]);
   } finally {
@@ -343,5 +365,8 @@ async function concatMp3Files(inputPaths: string[], outputPath: string): Promise
 }
 
 function sanitizePathSegment(s: string): string {
-  return s.toLowerCase().replace(/[^a-z0-9-]/g, "-").replace(/-+/g, "-");
+  return s
+    .toLowerCase()
+    .replace(/[^a-z0-9-]/g, '-')
+    .replace(/-+/g, '-');
 }

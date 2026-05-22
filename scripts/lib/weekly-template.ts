@@ -51,21 +51,24 @@ function deriveTags(shorts: Short[]): string[] {
 export function buildWeeklyArticle(shorts: Short[], isoWeek: string): WeeklyArticle {
   const title = `Week in Tech Shorts — ${isoWeek}`;
 
-  const intro = shorts.length > 0
-    ? `This week on the GuruSishya channel I shipped ${shorts.length} bite-sized tech Shorts covering systems-design fundamentals. Below is the digest with direct links — each one is under 60 seconds.`
-    : `No new Shorts this week; the digest is paused.`;
+  const intro =
+    shorts.length > 0
+      ? `This week on the GuruSishya channel I shipped ${shorts.length} bite-sized tech Shorts covering systems-design fundamentals. Below is the digest with direct links — each one is under 60 seconds.`
+      : `No new Shorts this week; the digest is paused.`;
 
-  const sections = shorts.map((s, i) => {
-    const num = i + 1;
-    return [
-      `## ${num}. ${s.title}`,
-      ``,
-      `Topic: \`${s.topic}\``,
-      ``,
-      `Watch: ${s.youtubeUrl}`,
-      ``,
-    ].join('\n');
-  }).join('\n');
+  const sections = shorts
+    .map((s, i) => {
+      const num = i + 1;
+      return [
+        `## ${num}. ${s.title}`,
+        ``,
+        `Topic: \`${s.topic}\``,
+        ``,
+        `Watch: ${s.youtubeUrl}`,
+        ``,
+      ].join('\n');
+    })
+    .join('\n');
 
   const cta = [
     `## Subscribe`,
@@ -74,12 +77,7 @@ export function buildWeeklyArticle(shorts: Short[], isoWeek: string): WeeklyArti
     ``,
   ].join('\n');
 
-  const body = [
-    intro,
-    ``,
-    sections,
-    cta,
-  ].join('\n');
+  const body = [intro, ``, sections, cta].join('\n');
 
   return {
     title,

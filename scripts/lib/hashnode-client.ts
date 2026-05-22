@@ -35,7 +35,7 @@ mutation PublishPost($input: PublishPostInput!) {
 export function publishToHashnode(
   article: WeeklyArticle,
   apiKey: string,
-  publicationId: string,
+  publicationId: string
 ): Promise<HashnodeResult> {
   const payload = JSON.stringify({
     query: MUTATION,
@@ -80,7 +80,9 @@ export function publishToHashnode(
             }
             const post = parsed.data?.publishPost?.post;
             if (!post) {
-              reject(new Error(`Hashnode: missing publishPost.post in response: ${raw.slice(0, 200)}`));
+              reject(
+                new Error(`Hashnode: missing publishPost.post in response: ${raw.slice(0, 200)}`)
+              );
               return;
             }
             resolve({ url: post.url, id: post.id });
@@ -88,7 +90,7 @@ export function publishToHashnode(
             reject(new Error(`Hashnode JSON parse failure: ${(e as Error).message}`));
           }
         });
-      },
+      }
     );
     req.on('error', reject);
     req.write(payload);

@@ -69,9 +69,8 @@ export const ConceptBox: React.FC<ConceptBoxProps> = ({
   });
 
   // Shake (for error/warning boxes)
-  const shakeX = shake && elapsed < 20
-    ? n.smoothAt(elapsed * 5.3, -6, 6) * Math.max(0, 1 - elapsed / 20)
-    : 0;
+  const shakeX =
+    shake && elapsed < 20 ? n.smoothAt(elapsed * 5.3, -6, 6) * Math.max(0, 1 - elapsed / 20) : 0;
 
   // Split animation
   const splitProgress = split
@@ -101,7 +100,11 @@ export const ConceptBox: React.FC<ConceptBoxProps> = ({
         }}
       >
         {Array.from({ length: splitCount }).map((_, i) => {
-          const slideX = interpolate(splitProgress, [0, 1], [0, (i - (splitCount - 1) / 2) * (width + gap)]);
+          const slideX = interpolate(
+            splitProgress,
+            [0, 1],
+            [0, (i - (splitCount - 1) / 2) * (width + gap)]
+          );
           const subLabel = splitLabels?.[i] ?? `${label} ${i}`;
           return (
             <div
@@ -146,12 +149,10 @@ export const ConceptBox: React.FC<ConceptBoxProps> = ({
     return (
       <div style={{ display: 'flex', gap, opacity, transform: `scale(${scaleSpring})` }}>
         {Array.from({ length: replicate }).map((_, i) => {
-          const delayFactor = interpolate(
-            elapsed - i * 8,
-            [0, 20],
-            [0, 1],
-            { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
-          );
+          const delayFactor = interpolate(elapsed - i * 8, [0, 20], [0, 1], {
+            extrapolateLeft: 'clamp',
+            extrapolateRight: 'clamp',
+          });
           return (
             <div
               key={i}

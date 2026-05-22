@@ -24,7 +24,7 @@ import { openDb, DB_PATH } from '../queue/init-db.js';
 // ─── Types (mirrors config/publish-queue.json schema) ───────────────────────
 
 type PublishStatus = 'pending' | 'published' | 'failed' | 'skipped';
-type SlotType      = 'long' | 'vertical-1' | 'vertical-23';
+type SlotType = 'long' | 'vertical-1' | 'vertical-23';
 
 interface PublishEntry {
   id: string;
@@ -56,38 +56,35 @@ interface PublishQueue {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-const QUEUE_JSON_PATH = path.resolve(
-  process.cwd(),
-  'config',
-  'publish-queue.json'
-);
+const QUEUE_JSON_PATH = path.resolve(process.cwd(), 'config', 'publish-queue.json');
 
 function mapStatus(jsonStatus: PublishStatus): string {
   switch (jsonStatus) {
-    case 'published': return 'published';
-    case 'failed':    return 'failed';
-    case 'skipped':   return 'dead_letter'; // treat old skips as dead-letter for review
-    default:          return 'pending';
+    case 'published':
+      return 'published';
+    case 'failed':
+      return 'failed';
+    case 'skipped':
+      return 'dead_letter'; // treat old skips as dead-letter for review
+    default:
+      return 'pending';
   }
 }
 
-function platformStatus(
-  jsonStatus: PublishStatus,
-  platformId: string | null,
-): string {
+function platformStatus(jsonStatus: PublishStatus, platformId: string | null): string {
   if (platformId && platformId !== 'pending') return 'published';
   if (jsonStatus === 'skipped') return 'dead_letter';
-  if (jsonStatus === 'failed')  return 'failed';
+  if (jsonStatus === 'failed') return 'failed';
   return 'pending';
 }
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
 function main(): void {
-  const argv    = process.argv.slice(2);
-  const dryRun  = argv.includes('--dry-run');
+  const argv = process.argv.slice(2);
+  const dryRun = argv.includes('--dry-run');
   const verbose = argv.includes('--verbose');
-  const verify  = argv.includes('--verify');
+  const verify = argv.includes('--verify');
 
   // ── Verify mode ──────────────────────────────────────────────────────────
   if (verify) {
@@ -103,7 +100,7 @@ function main(): void {
   }
 
   console.log(`📂 Reading ${QUEUE_JSON_PATH} …`);
-  const raw   = fs.readFileSync(QUEUE_JSON_PATH, 'utf-8');
+  const raw = fs.readFileSync(QUEUE_JSON_PATH, 'utf-8');
   const queue = JSON.parse(raw) as PublishQueue;
   console.log(`   Found ${queue.entries.length} entries (version ${queue.version})`);
 
@@ -117,8 +114,8 @@ function main(): void {
 
   // ── Migrate ───────────────────────────────────────────────────────────────
   let inserted = 0;
-  let skipped  = 0;
-  let errors   = 0;
+  let skipped = 0;
+  let errors = 0;
 
   const insertItem = db.prepare(`
     INSERT OR IGNORE INTO queue_items
@@ -155,7 +152,7 @@ function main(): void {
             entry.files.video,
             additionalVideos,
             entry.files.metadata,
-            entry.files.thumbnail ?? null,
+            entry.files.thumbnail ?? null
           );
 
           if (r.changes > 0) {
@@ -164,28 +161,37 @@ function main(): void {
             // YouTube platform row
             const ytStatus = platformStatus(entry.status, entry.youtubeVideoId);
             insertPlatform.run(
-              entry.id, 'youtube', ytStatus,
-              (entry.youtubeVideoId && entry.youtubeVideoId !== 'pending')
-                ? entry.youtubeVideoId : null,
+              entry.id,
+              'youtube',
+              ytStatus,
+              entry.youtubeVideoId && entry.youtubeVideoId !== 'pending'
+                ? entry.youtubeVideoId
+                : null,
               entry.attempts,
-              entry.errorMessage ?? null,
+              entry.errorMessage ?? null
             );
 
             // Instagram platform row
             const igStatus = platformStatus(entry.status, entry.instagramMediaId);
             insertPlatform.run(
-              entry.id, 'instagram', igStatus,
-              (entry.instagramMediaId && entry.instagramMediaId !== 'pending')
-                ? entry.instagramMediaId : null,
+              entry.id,
+              'instagram',
+              igStatus,
+              entry.instagramMediaId && entry.instagramMediaId !== 'pending'
+                ? entry.instagramMediaId
+                : null,
               entry.attempts,
-              entry.errorMessage ?? null,
+              entry.errorMessage ?? null
             );
 
             // Telegram — new platform, always starts pending unless overall skipped
             insertPlatform.run(
-              entry.id, 'telegram',
+              entry.id,
+              'telegram',
               entry.status === 'skipped' ? 'dead_letter' : 'pending',
-              null, 0, null,
+              null,
+              0,
+              null
             );
 
             if (verbose) {
@@ -242,18 +248,17 @@ function runVerify(): void {
     process.exit(1);
   }
 
-  const raw   = fs.readFileSync(QUEUE_JSON_PATH, 'utf-8');
+  const raw = fs.readFileSync(QUEUE_JSON_PATH, 'utf-8');
   const queue = JSON.parse(raw) as PublishQueue;
-  const db    = openDb();
+  const db = openDb();
 
-  interface CountRow { count: number }
-  const dbCount = (db.prepare(
-    'SELECT COUNT(*) AS count FROM queue_items'
-  ).get() as CountRow).count;
+  interface CountRow {
+    count: number;
+  }
+  const dbCount = (db.prepare('SELECT COUNT(*) AS count FROM queue_items').get() as CountRow).count;
 
-  const ppCount = (db.prepare(
-    'SELECT COUNT(*) AS count FROM platform_publishes'
-  ).get() as CountRow).count;
+  const ppCount = (db.prepare('SELECT COUNT(*) AS count FROM platform_publishes').get() as CountRow)
+    .count;
 
   console.log(`\n── Verify ─────────────────────────────────────────`);
   console.log(`  JSON entries       : ${queue.entries.length}`);
@@ -262,16 +267,21 @@ function runVerify(): void {
 
   const missing: string[] = [];
   for (const entry of queue.entries.slice(0, 20)) {
-    interface ExistsRow { count: number }
-    const exists = (db.prepare(
-      'SELECT COUNT(*) AS count FROM queue_items WHERE id = ?'
-    ).get(entry.id) as ExistsRow).count > 0;
+    interface ExistsRow {
+      count: number;
+    }
+    const exists =
+      (
+        db
+          .prepare('SELECT COUNT(*) AS count FROM queue_items WHERE id = ?')
+          .get(entry.id) as ExistsRow
+      ).count > 0;
     if (!exists) missing.push(entry.id);
   }
 
   if (missing.length > 0) {
     console.error(`\n❌ Missing entries (first 20 sample):`);
-    missing.forEach(id => console.error(`   - ${id}`));
+    missing.forEach((id) => console.error(`   - ${id}`));
     process.exit(1);
   }
 

@@ -21,7 +21,7 @@ const THEME = {
 };
 
 // Initial bar heights (0–1 normalised), 6 bars
-const INITIAL_HEIGHTS = [0.65, 0.30, 0.85, 0.45, 0.70, 0.20];
+const INITIAL_HEIGHTS = [0.65, 0.3, 0.85, 0.45, 0.7, 0.2];
 
 // Bubble sort steps: each step is [i, j] — the pair being compared/swapped
 interface SortStep {
@@ -31,19 +31,19 @@ interface SortStep {
 }
 
 const SORT_STEPS: SortStep[] = [
-  { comparing: [0, 1], swaps: true,  sortedIndices: [] },
+  { comparing: [0, 1], swaps: true, sortedIndices: [] },
   { comparing: [1, 2], swaps: false, sortedIndices: [] },
-  { comparing: [2, 3], swaps: true,  sortedIndices: [] },
-  { comparing: [3, 4], swaps: true,  sortedIndices: [] },
-  { comparing: [4, 5], swaps: true,  sortedIndices: [5] },
+  { comparing: [2, 3], swaps: true, sortedIndices: [] },
+  { comparing: [3, 4], swaps: true, sortedIndices: [] },
+  { comparing: [4, 5], swaps: true, sortedIndices: [5] },
   { comparing: [0, 1], swaps: false, sortedIndices: [5] },
-  { comparing: [1, 2], swaps: true,  sortedIndices: [5] },
+  { comparing: [1, 2], swaps: true, sortedIndices: [5] },
   { comparing: [2, 3], swaps: false, sortedIndices: [5] },
-  { comparing: [3, 4], swaps: true,  sortedIndices: [4, 5] },
+  { comparing: [3, 4], swaps: true, sortedIndices: [4, 5] },
   { comparing: [0, 1], swaps: false, sortedIndices: [4, 5] },
   { comparing: [1, 2], swaps: false, sortedIndices: [4, 5] },
   { comparing: [2, 3], swaps: false, sortedIndices: [3, 4, 5] },
-  { comparing: [0, 1], swaps: true,  sortedIndices: [3, 4, 5] },
+  { comparing: [0, 1], swaps: true, sortedIndices: [3, 4, 5] },
   { comparing: [1, 2], swaps: false, sortedIndices: [2, 3, 4, 5] },
   { comparing: [0, 1], swaps: false, sortedIndices: [0, 1, 2, 3, 4, 5] },
 ];
@@ -135,9 +135,7 @@ export const SortingViz: React.FC<SortingVizProps> = ({ sync, frame }) => {
         <span style={{ fontSize: 11, fontWeight: 700, color: THEME.saffron, letterSpacing: 0.5 }}>
           O(n{'\u00B2'})
         </span>
-        <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.4)' }}>
-          worst case
-        </span>
+        <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.4)' }}>worst case</span>
       </div>
 
       {/* Step counter — top-right */}
@@ -208,69 +206,65 @@ export const SortingViz: React.FC<SortingVizProps> = ({ sync, frame }) => {
         />
 
         {/* Curved comparison arrow between the two bars being compared */}
-        {step && (() => {
-          const slotA = step.comparing[0];
-          const slotB = step.comparing[1];
-          const xA = slotX(slotA) + BAR_W / 2;
-          const xB = slotX(slotB) + BAR_W / 2;
-          const idxA = prevOrder[slotA];
-          const idxB = prevOrder[slotB];
-          const hA = INITIAL_HEIGHTS[idxA] * BAR_MAX_H;
-          const hB = INITIAL_HEIGHTS[idxB] * BAR_MAX_H;
-          const minTop = BAR_BOTTOM_Y - Math.max(hA, hB);
-          const arcY = minTop - 44;
-          const midX = (xA + xB) / 2;
+        {step &&
+          (() => {
+            const slotA = step.comparing[0];
+            const slotB = step.comparing[1];
+            const xA = slotX(slotA) + BAR_W / 2;
+            const xB = slotX(slotB) + BAR_W / 2;
+            const idxA = prevOrder[slotA];
+            const idxB = prevOrder[slotB];
+            const hA = INITIAL_HEIGHTS[idxA] * BAR_MAX_H;
+            const hB = INITIAL_HEIGHTS[idxB] * BAR_MAX_H;
+            const minTop = BAR_BOTTOM_Y - Math.max(hA, hB);
+            const arcY = minTop - 44;
+            const midX = (xA + xB) / 2;
 
-          return (
-            <g opacity={0.5 + 0.4 * Math.sin(frame * 0.18)}>
-              <path
-                d={`M ${xA} ${minTop - 10} Q ${midX} ${arcY} ${xB} ${minTop - 10}`}
-                fill="none"
-                stroke={isSwapStep ? THEME.saffron : THEME.comparing}
-                strokeWidth={2}
-                strokeDasharray={isSwapStep ? 'none' : '4 3'}
-              />
-              {/* Arrowheads at both ends */}
-              <polygon
-                points={`${xB},${minTop - 10} ${xB - 5},${minTop - 18} ${xB + 5},${minTop - 18}`}
-                fill={isSwapStep ? THEME.saffron : THEME.comparing}
-              />
-              <polygon
-                points={`${xA},${minTop - 10} ${xA - 5},${minTop - 18} ${xA + 5},${minTop - 18}`}
-                fill={isSwapStep ? THEME.saffron : THEME.comparing}
-              />
-              {/* Label on arc */}
-              <text
-                x={midX}
-                y={arcY - 4}
-                textAnchor="middle"
-                fill={isSwapStep ? THEME.saffron : 'rgba(255,255,255,0.5)'}
-                fontSize={10}
-                fontWeight={700}
-                fontFamily="Inter, system-ui, sans-serif"
-              >
-                {isSwapStep ? 'SWAP' : 'compare'}
-              </text>
-            </g>
-          );
-        })()}
+            return (
+              <g opacity={0.5 + 0.4 * Math.sin(frame * 0.18)}>
+                <path
+                  d={`M ${xA} ${minTop - 10} Q ${midX} ${arcY} ${xB} ${minTop - 10}`}
+                  fill="none"
+                  stroke={isSwapStep ? THEME.saffron : THEME.comparing}
+                  strokeWidth={2}
+                  strokeDasharray={isSwapStep ? 'none' : '4 3'}
+                />
+                {/* Arrowheads at both ends */}
+                <polygon
+                  points={`${xB},${minTop - 10} ${xB - 5},${minTop - 18} ${xB + 5},${minTop - 18}`}
+                  fill={isSwapStep ? THEME.saffron : THEME.comparing}
+                />
+                <polygon
+                  points={`${xA},${minTop - 10} ${xA - 5},${minTop - 18} ${xA + 5},${minTop - 18}`}
+                  fill={isSwapStep ? THEME.saffron : THEME.comparing}
+                />
+                {/* Label on arc */}
+                <text
+                  x={midX}
+                  y={arcY - 4}
+                  textAnchor="middle"
+                  fill={isSwapStep ? THEME.saffron : 'rgba(255,255,255,0.5)'}
+                  fontSize={10}
+                  fontWeight={700}
+                  fontFamily="Inter, system-ui, sans-serif"
+                >
+                  {isSwapStep ? 'SWAP' : 'compare'}
+                </text>
+              </g>
+            );
+          })()}
 
         {INITIAL_HEIGHTS.map((_, barIndexInOrder) => {
           const currentSlot = prevOrder.indexOf(barIndexInOrder);
           const nextSlot = nextOrder.indexOf(barIndexInOrder);
 
           const isComparing =
-            step &&
-            (step.comparing[0] === currentSlot || step.comparing[1] === currentSlot);
+            step && (step.comparing[0] === currentSlot || step.comparing[1] === currentSlot);
           const isSwapping = isSwapStep && isComparing;
 
           let barX: number;
           if (isSwapping && currentSlot !== nextSlot) {
-            barX = interpolate(
-              stepProgress,
-              [0, 1],
-              [slotX(currentSlot), slotX(nextSlot)]
-            );
+            barX = interpolate(stepProgress, [0, 1], [slotX(currentSlot), slotX(nextSlot)]);
           } else {
             barX = slotX(currentSlot);
           }
@@ -284,11 +278,7 @@ export const SortingViz: React.FC<SortingVizProps> = ({ sync, frame }) => {
           const h = INITIAL_HEIGHTS[barIndexInOrder] * BAR_MAX_H;
 
           const isSorted = step && step.sortedIndices.includes(currentSlot);
-          const barColor = isSorted
-            ? THEME.sorted
-            : isComparing
-            ? THEME.comparing
-            : THEME.default;
+          const barColor = isSorted ? THEME.sorted : isComparing ? THEME.comparing : THEME.default;
 
           const entranceSpring = spring({
             frame: frame - barIndexInOrder * 5,
@@ -299,7 +289,10 @@ export const SortingViz: React.FC<SortingVizProps> = ({ sync, frame }) => {
           const displayY = BAR_BOTTOM_Y - displayH + arcYOffset;
 
           return (
-            <g key={`bar-${barIndexInOrder}`} filter={isComparing ? 'url(#comparing-glow)' : undefined}>
+            <g
+              key={`bar-${barIndexInOrder}`}
+              filter={isComparing ? 'url(#comparing-glow)' : undefined}
+            >
               {/* Bar body */}
               <rect
                 x={barX}
@@ -394,12 +387,63 @@ export const SortingViz: React.FC<SortingVizProps> = ({ sync, frame }) => {
 
         {/* Legend */}
         <g transform="translate(60, 410)">
-          <rect x={0} y={-8} width={14} height={14} rx={3} fill={`${THEME.default}44`} stroke={THEME.default} strokeWidth={1.5} />
-          <text x={20} y={4} fill="rgba(255,255,255,0.4)" fontSize={11} fontFamily="Inter, system-ui, sans-serif">unsorted</text>
-          <rect x={110} y={-8} width={14} height={14} rx={3} fill={`${THEME.comparing}44`} stroke={THEME.comparing} strokeWidth={1.5} />
-          <text x={130} y={4} fill="rgba(255,255,255,0.4)" fontSize={11} fontFamily="Inter, system-ui, sans-serif">comparing</text>
-          <rect x={240} y={-8} width={14} height={14} rx={3} fill={`${THEME.sorted}44`} stroke={THEME.sorted} strokeWidth={1.5} />
-          <text x={260} y={4} fill="rgba(255,255,255,0.4)" fontSize={11} fontFamily="Inter, system-ui, sans-serif">sorted</text>
+          <rect
+            x={0}
+            y={-8}
+            width={14}
+            height={14}
+            rx={3}
+            fill={`${THEME.default}44`}
+            stroke={THEME.default}
+            strokeWidth={1.5}
+          />
+          <text
+            x={20}
+            y={4}
+            fill="rgba(255,255,255,0.4)"
+            fontSize={11}
+            fontFamily="Inter, system-ui, sans-serif"
+          >
+            unsorted
+          </text>
+          <rect
+            x={110}
+            y={-8}
+            width={14}
+            height={14}
+            rx={3}
+            fill={`${THEME.comparing}44`}
+            stroke={THEME.comparing}
+            strokeWidth={1.5}
+          />
+          <text
+            x={130}
+            y={4}
+            fill="rgba(255,255,255,0.4)"
+            fontSize={11}
+            fontFamily="Inter, system-ui, sans-serif"
+          >
+            comparing
+          </text>
+          <rect
+            x={240}
+            y={-8}
+            width={14}
+            height={14}
+            rx={3}
+            fill={`${THEME.sorted}44`}
+            stroke={THEME.sorted}
+            strokeWidth={1.5}
+          />
+          <text
+            x={260}
+            y={4}
+            fill="rgba(255,255,255,0.4)"
+            fontSize={11}
+            fontFamily="Inter, system-ui, sans-serif"
+          >
+            sorted
+          </text>
         </g>
       </svg>
     </div>

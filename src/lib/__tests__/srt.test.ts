@@ -8,7 +8,9 @@ describe('wordTimestampsToSrt', () => {
 
   it('groups words into ~6-word cues', () => {
     const words = Array.from({ length: 12 }, (_, i) => ({
-      word: `w${i}`, start: i * 0.5, end: (i + 1) * 0.5,
+      word: `w${i}`,
+      start: i * 0.5,
+      end: (i + 1) * 0.5,
     }));
     const srt = wordTimestampsToSrt(words, { wordsPerCue: 6 });
     expect(srt).toContain('1\n00:00:00,000 --> 00:00:03,000\nw0 w1 w2 w3 w4 w5\n');

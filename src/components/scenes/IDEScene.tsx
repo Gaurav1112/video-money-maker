@@ -21,44 +21,175 @@ interface IDESceneProps {
 type TokenType = 'keyword' | 'string' | 'comment' | 'number' | 'function' | 'normal';
 
 const TOKEN_COLORS: Record<TokenType, string> = {
-  keyword: '#60A5FA',   // blue
-  string: '#4ADE80',    // green
-  comment: '#6B7280',   // gray
-  number: '#FDE68A',    // yellow
-  function: '#C084FC',  // purple
-  normal: '#E5E7EB',    // white-ish
+  keyword: '#60A5FA', // blue
+  string: '#4ADE80', // green
+  comment: '#6B7280', // gray
+  number: '#FDE68A', // yellow
+  function: '#C084FC', // purple
+  normal: '#E5E7EB', // white-ish
 };
 
 const KEYWORDS: Record<string, Set<string>> = {
   python: new Set([
-    'def', 'class', 'import', 'from', 'return', 'if', 'else', 'elif',
-    'for', 'while', 'in', 'not', 'and', 'or', 'True', 'False', 'None',
-    'try', 'except', 'finally', 'with', 'as', 'yield', 'lambda', 'pass',
-    'raise', 'async', 'await', 'self', 'print', 'break', 'continue',
+    'def',
+    'class',
+    'import',
+    'from',
+    'return',
+    'if',
+    'else',
+    'elif',
+    'for',
+    'while',
+    'in',
+    'not',
+    'and',
+    'or',
+    'True',
+    'False',
+    'None',
+    'try',
+    'except',
+    'finally',
+    'with',
+    'as',
+    'yield',
+    'lambda',
+    'pass',
+    'raise',
+    'async',
+    'await',
+    'self',
+    'print',
+    'break',
+    'continue',
   ]),
   typescript: new Set([
-    'const', 'let', 'var', 'function', 'return', 'if', 'else', 'for',
-    'while', 'class', 'interface', 'type', 'import', 'export', 'from',
-    'async', 'await', 'new', 'this', 'true', 'false', 'null', 'undefined',
-    'try', 'catch', 'finally', 'throw', 'switch', 'case', 'break', 'default',
-    'extends', 'implements', 'static', 'private', 'public', 'protected',
+    'const',
+    'let',
+    'var',
+    'function',
+    'return',
+    'if',
+    'else',
+    'for',
+    'while',
+    'class',
+    'interface',
+    'type',
+    'import',
+    'export',
+    'from',
+    'async',
+    'await',
+    'new',
+    'this',
+    'true',
+    'false',
+    'null',
+    'undefined',
+    'try',
+    'catch',
+    'finally',
+    'throw',
+    'switch',
+    'case',
+    'break',
+    'default',
+    'extends',
+    'implements',
+    'static',
+    'private',
+    'public',
+    'protected',
   ]),
   javascript: new Set([
-    'const', 'let', 'var', 'function', 'return', 'if', 'else', 'for',
-    'while', 'class', 'import', 'export', 'from', 'async', 'await',
-    'new', 'this', 'true', 'false', 'null', 'undefined',
-    'try', 'catch', 'finally', 'throw', 'switch', 'case', 'break',
+    'const',
+    'let',
+    'var',
+    'function',
+    'return',
+    'if',
+    'else',
+    'for',
+    'while',
+    'class',
+    'import',
+    'export',
+    'from',
+    'async',
+    'await',
+    'new',
+    'this',
+    'true',
+    'false',
+    'null',
+    'undefined',
+    'try',
+    'catch',
+    'finally',
+    'throw',
+    'switch',
+    'case',
+    'break',
   ]),
   java: new Set([
-    'public', 'private', 'protected', 'static', 'void', 'class', 'interface',
-    'extends', 'implements', 'new', 'return', 'if', 'else', 'for', 'while',
-    'import', 'package', 'try', 'catch', 'finally', 'throw', 'throws',
-    'this', 'super', 'true', 'false', 'null', 'final', 'abstract',
+    'public',
+    'private',
+    'protected',
+    'static',
+    'void',
+    'class',
+    'interface',
+    'extends',
+    'implements',
+    'new',
+    'return',
+    'if',
+    'else',
+    'for',
+    'while',
+    'import',
+    'package',
+    'try',
+    'catch',
+    'finally',
+    'throw',
+    'throws',
+    'this',
+    'super',
+    'true',
+    'false',
+    'null',
+    'final',
+    'abstract',
   ]),
   go: new Set([
-    'func', 'package', 'import', 'var', 'const', 'type', 'struct', 'interface',
-    'return', 'if', 'else', 'for', 'range', 'switch', 'case', 'default',
-    'go', 'chan', 'select', 'defer', 'map', 'make', 'nil', 'true', 'false',
+    'func',
+    'package',
+    'import',
+    'var',
+    'const',
+    'type',
+    'struct',
+    'interface',
+    'return',
+    'if',
+    'else',
+    'for',
+    'range',
+    'switch',
+    'case',
+    'default',
+    'go',
+    'chan',
+    'select',
+    'defer',
+    'map',
+    'make',
+    'nil',
+    'true',
+    'false',
   ]),
 };
 
@@ -197,12 +328,7 @@ export const IDEScene: React.FC<IDESceneProps> = ({
   const highlightSet = new Set(highlightLines);
 
   // Sidebar file list (decorative)
-  const sidebarFiles = [
-    filename,
-    'config.ts',
-    'utils.ts',
-    'index.ts',
-  ];
+  const sidebarFiles = [filename, 'config.ts', 'utils.ts', 'index.ts'];
 
   const hasTerminal = !!terminal;
   const editorHeightPercent = hasTerminal ? '75%' : '100%';
@@ -376,12 +502,9 @@ export const IDEScene: React.FC<IDESceneProps> = ({
                     const lineRevealFrame = lineIdx * framesPerLine;
                     const lineVisible = frame >= lineRevealFrame;
                     const lineOpacity = lineVisible
-                      ? interpolate(
-                          frame,
-                          [lineRevealFrame, lineRevealFrame + 8],
-                          [0, 1],
-                          { extrapolateRight: 'clamp' },
-                        )
+                      ? interpolate(frame, [lineRevealFrame, lineRevealFrame + 8], [0, 1], {
+                          extrapolateRight: 'clamp',
+                        })
                       : 0;
 
                     // Current line indicator (yellow left border)
@@ -495,13 +618,31 @@ export const IDEScene: React.FC<IDESceneProps> = ({
                       borderBottom: '1px solid #2D2D3F',
                     }}
                   >
-                    <span style={{ fontSize: 11, color: '#6B7280', fontFamily: "'Inter', system-ui, sans-serif" }}>
+                    <span
+                      style={{
+                        fontSize: 11,
+                        color: '#6B7280',
+                        fontFamily: "'Inter', system-ui, sans-serif",
+                      }}
+                    >
                       TERMINAL
                     </span>
-                    <span style={{ fontSize: 11, color: '#4B5563', fontFamily: "'Inter', system-ui, sans-serif" }}>
+                    <span
+                      style={{
+                        fontSize: 11,
+                        color: '#4B5563',
+                        fontFamily: "'Inter', system-ui, sans-serif",
+                      }}
+                    >
                       OUTPUT
                     </span>
-                    <span style={{ fontSize: 11, color: '#4B5563', fontFamily: "'Inter', system-ui, sans-serif" }}>
+                    <span
+                      style={{
+                        fontSize: 11,
+                        color: '#4B5563',
+                        fontFamily: "'Inter', system-ui, sans-serif",
+                      }}
+                    >
                       PROBLEMS
                     </span>
                   </div>
@@ -525,7 +666,7 @@ export const IDEScene: React.FC<IDESceneProps> = ({
                         frame,
                         [terminalStart, terminalStart + 15],
                         [0, 1],
-                        { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
+                        { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }
                       );
                       return (
                         <span style={{ opacity: terminalOpacity }}>

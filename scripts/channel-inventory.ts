@@ -21,13 +21,16 @@ const OUT_PATH = 'data/channel-inventory.json';
 function isoDurationToSeconds(iso: string): number {
   const m = iso.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
   if (!m) return 0;
-  return (+(m[1] || 0)) * 3600 + (+(m[2] || 0)) * 60 + (+(m[3] || 0));
+  return +(m[1] || 0) * 3600 + +(m[2] || 0) * 60 + +(m[3] || 0);
 }
 
 async function main() {
   const auth = getYouTubeAuthClient();
   const yt = google.youtube({ version: 'v3', auth });
-  const ch = await yt.channels.list({ part: ['contentDetails', 'snippet', 'statistics'], mine: true });
+  const ch = await yt.channels.list({
+    part: ['contentDetails', 'snippet', 'statistics'],
+    mine: true,
+  });
   const channel = ch.data.items?.[0];
   if (!channel) throw new Error('No channel found for authenticated user');
   console.log(`Channel: ${channel.snippet?.title}`);
@@ -81,28 +84,39 @@ async function main() {
   records.sort((a, b) => b.views - a.views);
 
   fs.mkdirSync('data', { recursive: true });
-  fs.writeFileSync(OUT_PATH, JSON.stringify({
-    fetchedAt: new Date().toISOString(),
-    channelTitle: channel.snippet?.title,
-    subscriberCount: Number(channel.statistics?.subscriberCount ?? 0),
-    totalUploads: records.length,
-    records,
-  }, null, 2));
+  fs.writeFileSync(
+    OUT_PATH,
+    JSON.stringify(
+      {
+        fetchedAt: new Date().toISOString(),
+        channelTitle: channel.snippet?.title,
+        subscriberCount: Number(channel.statistics?.subscriberCount ?? 0),
+        totalUploads: records.length,
+        records,
+      },
+      null,
+      2
+    )
+  );
   console.log(`Wrote ${OUT_PATH} (${records.length} records, sorted by views desc).\n`);
 
   // Print summary
   console.log('=== TOP 10 by views ===');
-  records.slice(0, 10).forEach(r => {
-    console.log(`${String(r.views).padStart(6)} views | ${String(r.ageInDays).padStart(3)}d old | ${r.privacyStatus.padEnd(8)} | ${r.title.slice(0, 70)}`);
+  records.slice(0, 10).forEach((r) => {
+    console.log(
+      `${String(r.views).padStart(6)} views | ${String(r.ageInDays).padStart(3)}d old | ${r.privacyStatus.padEnd(8)} | ${r.title.slice(0, 70)}`
+    );
   });
   console.log('\n=== BOTTOM 10 by views (oldest first) ===');
   const bottom = [...records].sort((a, b) => a.views - b.views).slice(0, 10);
-  bottom.forEach(r => {
-    console.log(`${String(r.views).padStart(6)} views | ${String(r.ageInDays).padStart(3)}d old | ${r.privacyStatus.padEnd(8)} | ${r.title.slice(0, 70)}`);
+  bottom.forEach((r) => {
+    console.log(
+      `${String(r.views).padStart(6)} views | ${String(r.ageInDays).padStart(3)}d old | ${r.privacyStatus.padEnd(8)} | ${r.title.slice(0, 70)}`
+    );
   });
   console.log('\n=== Bucket counts ===');
   const buckets = { '0-9': 0, '10-49': 0, '50-99': 0, '100-499': 0, '500-999': 0, '1k+': 0 };
-  records.forEach(r => {
+  records.forEach((r) => {
     if (r.views < 10) buckets['0-9']++;
     else if (r.views < 50) buckets['10-49']++;
     else if (r.views < 100) buckets['50-99']++;
@@ -113,4 +127,7 @@ async function main() {
   Object.entries(buckets).forEach(([k, v]) => console.log(`  ${k.padStart(8)}: ${v} videos`));
 }
 
-main().catch(err => { console.error(err); process.exit(1); });
+main().catch((err) => {
+  console.error(err);
+  process.exit(1);
+});

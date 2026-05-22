@@ -27,15 +27,25 @@ import { createNoise } from './seeded-noise';
 // ---------------------------------------------------------------------------
 // Lightweight regex tokenizer
 // ---------------------------------------------------------------------------
-type TokenType = 'keyword' | 'string' | 'comment' | 'number' | 'operator' | 'plain' | 'type' | 'function';
+type TokenType =
+  | 'keyword'
+  | 'string'
+  | 'comment'
+  | 'number'
+  | 'operator'
+  | 'plain'
+  | 'type'
+  | 'function';
 
 interface Token {
   type: TokenType;
   value: string;
 }
 
-const TS_KEYWORDS = /\b(const|let|var|function|return|if|else|for|while|class|interface|type|import|export|from|async|await|new|this|extends|implements|void|null|undefined|true|false|string|number|boolean|any|never)\b/g;
-const PY_KEYWORDS = /\b(def|class|return|if|elif|else|for|while|import|from|as|try|except|with|yield|lambda|and|or|not|in|is|None|True|False|pass|break|continue)\b/g;
+const TS_KEYWORDS =
+  /\b(const|let|var|function|return|if|else|for|while|class|interface|type|import|export|from|async|await|new|this|extends|implements|void|null|undefined|true|false|string|number|boolean|any|never)\b/g;
+const PY_KEYWORDS =
+  /\b(def|class|return|if|elif|else|for|while|import|from|as|try|except|with|yield|lambda|and|or|not|in|is|None|True|False|pass|break|continue)\b/g;
 const STRINGS = /(["'`])(?:(?!\1)[^\\]|\\.)*\1/g;
 const COMMENTS_SL = /\/\/.*|#.*/g;
 const NUMBERS = /\b\d+\.?\d*\b/g;
@@ -45,8 +55,8 @@ const TYPES = /\b([A-Z][A-Za-z0-9_]*)\b/g;
 function tokenizeLine(line: string, language: string): Token[] {
   // Simple approach: replace matched regions with tokens
   const tokens: Token[] = [];
-  let remaining = line;
-  let pos = 0;
+  const remaining = line;
+  const pos = 0;
 
   // Find all matches across all patterns, sort by position, emit tokens
   type Match = { start: number; end: number; type: TokenType; value: string };
@@ -89,14 +99,14 @@ function tokenizeLine(line: string, language: string): Token[] {
 // Token colors (GuruSishya palette)
 // ---------------------------------------------------------------------------
 const TOKEN_COLORS: Record<TokenType, string> = {
-  keyword: '#38BDF8',    // sky blue
-  string: '#22C55E',     // green
-  comment: '#64748B',    // muted slate
-  number: '#F97316',     // orange
-  operator: '#F8FAFC',   // white
-  plain: '#CBD5E1',      // light slate
-  type: '#A78BFA',       // purple
-  function: '#FCD34D',   // yellow
+  keyword: '#38BDF8', // sky blue
+  string: '#22C55E', // green
+  comment: '#64748B', // muted slate
+  number: '#F97316', // orange
+  operator: '#F8FAFC', // white
+  plain: '#CBD5E1', // light slate
+  type: '#A78BFA', // purple
+  function: '#FCD34D', // yellow
 };
 
 // ---------------------------------------------------------------------------
@@ -191,7 +201,14 @@ export const CodeTyper: React.FC<CodeTyperProps> = ({
             }}
           >
             {/* Line number */}
-            <span style={{ color: '#475569', fontSize: fontSize * 0.75, minWidth: 32, userSelect: 'none' }}>
+            <span
+              style={{
+                color: '#475569',
+                fontSize: fontSize * 0.75,
+                minWidth: 32,
+                userSelect: 'none',
+              }}
+            >
               {lineIdx + 1}
             </span>
             {/* Tokens */}

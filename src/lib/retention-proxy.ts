@@ -70,8 +70,8 @@ export interface VideoMetrics {
 /** Per-section score breakdown */
 export interface SectionScore {
   section: string;
-  score: number;       // 0–100 within this section
-  weight: number;      // weight in final total (sum = 100)
+  score: number; // 0–100 within this section
+  weight: number; // weight in final total (sum = 100)
   contribution: number; // score × weight / 100
   notes: string[];
 }
@@ -102,12 +102,12 @@ export interface RetentionProxyResult {
 //   The #3 driver is pattern interrupt frequency
 //
 const SECTION_WEIGHTS = {
-  hook: 25,           // Hook quality: text + voice + visual + shock factor
+  hook: 25, // Hook quality: text + voice + visual + shock factor
   earlyRetention: 20, // 0–30s: stake escalation, no dead air, first interrupt
-  midRetention: 25,   // 30s–70%: interrupts/min, CTA buyback, loop payoff
-  ctaQuality: 10,     // CTA timing + presence of buyback
-  endRetention: 10,   // Last 20%: recall bait, loop close, numbered completion
-  production: 10,     // Captions, audio dynamics, cuts/min
+  midRetention: 25, // 30s–70%: interrupts/min, CTA buyback, loop payoff
+  ctaQuality: 10, // CTA timing + presence of buyback
+  endRetention: 10, // Last 20%: recall bait, loop close, numbered completion
+  production: 10, // Captions, audio dynamics, cuts/min
 } as const;
 
 // ─── Hook shock-scoring ───────────────────────────────────────────────────────
@@ -130,29 +130,69 @@ export function scoreTitle(title: string): number {
   const patterns: HookPattern[] = [
     // Tier 1: Proven top performers on this channel (900+ views)
     // Catch all "90% … WRONG" patterns regardless of words between them
-    { pattern: /90%\s+\w[\w\s]+wrong/i, score: 95, label: '90% WRONG formula (channel #1 performer)' },
-    { pattern: /\d+%\s*(engineer|dev|developer)s?\s*(are|get|prepare|answer|do)\s*wrong/i, score: 95, label: '90% WRONG formula strict' },
+    {
+      pattern: /90%\s+\w[\w\s]+wrong/i,
+      score: 95,
+      label: '90% WRONG formula (channel #1 performer)',
+    },
+    {
+      pattern: /\d+%\s*(engineer|dev|developer)s?\s*(are|get|prepare|answer|do)\s*wrong/i,
+      score: 95,
+      label: '90% WRONG formula strict',
+    },
     { pattern: /\d+%.*wrong/i, score: 92, label: '% WRONG general' },
     { pattern: /90%\s*(get|are|do)/i, score: 92, label: '90% shock hook' },
     { pattern: /wrong|mistake|error|fail/i, score: 75, label: 'Error/failure hook' },
 
     // Tier 2: Strong performers (500–900 views)
-    { pattern: /(fail|failing|failed)\s*(your|the|my)?\s*interview/i, score: 88, label: 'Interview fail hook' },
+    {
+      pattern: /(fail|failing|failed)\s*(your|the|my)?\s*interview/i,
+      score: 88,
+      label: 'Interview fail hook',
+    },
     { pattern: /or\s+fail\s+your/i, score: 85, label: 'Or fail hook' },
-    { pattern: /health\s+check|explained\s+in\s+\d+\s+min/i, score: 78, label: 'Urgency + time hook' },
+    {
+      pattern: /health\s+check|explained\s+in\s+\d+\s+min/i,
+      score: 78,
+      label: 'Urgency + time hook',
+    },
     { pattern: /(secret|trick|hack)\s+(to|behind|of)/i, score: 80, label: 'Secret/trick hook' },
-    { pattern: /\d+\s*(billion|million|M|B)\s*(request|user|view)/i, score: 77, label: 'Scale curiosity hook' },
+    {
+      pattern: /\d+\s*(billion|million|M|B)\s*(request|user|view)/i,
+      score: 77,
+      label: 'Scale curiosity hook',
+    },
 
     // Tier 3: Moderate performers (250–500 views)
-    { pattern: /(answer|strategy)\s+(that|which)\s+(get|work|land)/i, score: 68, label: 'Outcome hook' },
-    { pattern: /(most|every)\s+(dev|engineer|programmer)/i, score: 65, label: 'Group identity hook' },
+    {
+      pattern: /(answer|strategy)\s+(that|which)\s+(get|work|land)/i,
+      score: 68,
+      label: 'Outcome hook',
+    },
+    {
+      pattern: /(most|every)\s+(dev|engineer|programmer)/i,
+      score: 65,
+      label: 'Group identity hook',
+    },
     { pattern: /\d+(lpa|lakh|salary|pay)/i, score: 72, label: 'Loss aversion (salary) hook' },
 
     // Tier 4: Weak performers (< 100 views) — descriptive hooks
-    { pattern: /in\s+\d+\s+(second|minute|min|sec)/i, score: 30, label: 'Descriptive "in N seconds" hook' },
-    { pattern: /(explained|tutorial|guide|introduction|overview)/i, score: 25, label: 'Descriptive/tutorial hook' },
+    {
+      pattern: /in\s+\d+\s+(second|minute|min|sec)/i,
+      score: 30,
+      label: 'Descriptive "in N seconds" hook',
+    },
+    {
+      pattern: /(explained|tutorial|guide|introduction|overview)/i,
+      score: 25,
+      label: 'Descriptive/tutorial hook',
+    },
     { pattern: /when\s+to\s+use/i, score: 28, label: 'Descriptive comparison hook' },
-    { pattern: /#systemdesign\s*$|#shorts\s*$/i, score: 22, label: 'Hashtag-only identifier (no hook)' },
+    {
+      pattern: /#systemdesign\s*$|#shorts\s*$/i,
+      score: 22,
+      label: 'Hashtag-only identifier (no hook)',
+    },
   ];
 
   // Start from 0; a "neutral" title (no pattern match) gets 40 (non-zero but below CI gate).
@@ -218,14 +258,14 @@ function scoreHook(m: VideoMetrics): SectionScore {
   const maxBadHook = isShort ? 5.0 : 25.0;
   const hookPenalty = Math.max(
     0,
-    Math.min(1, (m.hookDurationSeconds - maxGoodHook) / (maxBadHook - maxGoodHook)),
+    Math.min(1, (m.hookDurationSeconds - maxGoodHook) / (maxBadHook - maxGoodHook))
   );
   const hookPoints = Math.round(20 * (1 - hookPenalty));
   score += hookPoints;
   notes.push(
     hookPoints === 20
       ? `✅ Hook duration ${m.hookDurationSeconds}s — optimal`
-      : `⚠️ Hook duration ${m.hookDurationSeconds}s — target ≤ ${maxGoodHook}s (lost ${20 - hookPoints}pts)`,
+      : `⚠️ Hook duration ${m.hookDurationSeconds}s — target ≤ ${maxGoodHook}s (lost ${20 - hookPoints}pts)`
   );
 
   return {
@@ -244,16 +284,13 @@ function scoreEarlyRetention(m: VideoMetrics): SectionScore {
   // Pattern interrupt in first 30s: 40 points
   // Target: ≥ 1 interrupt in 0–30s window
   const expectedInterruptsFirst30 = 1;
-  const actualInterruptsFirst30 = Math.min(
-    m.patternInterruptCount,
-    expectedInterruptsFirst30,
-  );
+  const actualInterruptsFirst30 = Math.min(m.patternInterruptCount, expectedInterruptsFirst30);
   const interruptScore = (actualInterruptsFirst30 / expectedInterruptsFirst30) * 40;
   score += interruptScore;
   notes.push(
     actualInterruptsFirst30 >= expectedInterruptsFirst30
       ? '✅ Pattern interrupt present in first 30s'
-      : '❌ No pattern interrupt in first 30s — viewers drift at 0:30',
+      : '❌ No pattern interrupt in first 30s — viewers drift at 0:30'
   );
 
   // No dead air: 30 points (Karen X. Cheng loop tax)
@@ -264,7 +301,7 @@ function scoreEarlyRetention(m: VideoMetrics): SectionScore {
   notes.push(
     m.cutsPerMinute >= cutsTarget
       ? `✅ ${m.cutsPerMinute.toFixed(1)} cuts/min — above target`
-      : `⚠️ ${m.cutsPerMinute.toFixed(1)} cuts/min — target ≥ ${cutsTarget}/min`,
+      : `⚠️ ${m.cutsPerMinute.toFixed(1)} cuts/min — target ≥ ${cutsTarget}/min`
   );
 
   // Retention beats present: 30 points
@@ -275,7 +312,7 @@ function scoreEarlyRetention(m: VideoMetrics): SectionScore {
   notes.push(
     m.retentionBeatCount >= expectedBeats
       ? `✅ ${m.retentionBeatCount} retention beats — early retention covered`
-      : `⚠️ Only ${m.retentionBeatCount} beats — need ≥ ${expectedBeats} in first 40s`,
+      : `⚠️ Only ${m.retentionBeatCount} beats — need ≥ ${expectedBeats} in first 40s`
   );
 
   return {
@@ -297,24 +334,28 @@ function scoreMidRetention(m: VideoMetrics): SectionScore {
   const interruptRatio = Math.min(1, m.patternInterruptCount / Math.max(1, expectedInterrupts));
   score += interruptRatio * 40;
   notes.push(
-    `Pattern interrupts: ${m.patternInterruptCount}/${expectedInterrupts} expected (${Math.round(interruptRatio * 100)}%)`,
+    `Pattern interrupts: ${m.patternInterruptCount}/${expectedInterrupts} expected (${Math.round(interruptRatio * 100)}%)`
   );
 
   // Open loop count: 30 points
   // 1–2 = full score, 0 = 0, > 3 = penalty (Karen: loop tax)
   const openLoopScore =
-    m.openLoopCount === 0 ? 0
-    : m.openLoopCount === 1 ? 100
-    : m.openLoopCount === 2 ? 95
-    : m.openLoopCount === 3 ? 70
-    : 40; // > 3 = loop overload
+    m.openLoopCount === 0
+      ? 0
+      : m.openLoopCount === 1
+        ? 100
+        : m.openLoopCount === 2
+          ? 95
+          : m.openLoopCount === 3
+            ? 70
+            : 40; // > 3 = loop overload
   score += (openLoopScore / 100) * 30;
   notes.push(
     m.openLoopCount === 0
       ? '❌ No open loops — viewers have no reason to stay'
       : m.openLoopCount <= 2
-      ? `✅ ${m.openLoopCount} open loop(s) — optimal`
-      : `⚠️ ${m.openLoopCount} open loops — Karen X. Cheng rule: ≤ 2 or loop tax`,
+        ? `✅ ${m.openLoopCount} open loop(s) — optimal`
+        : `⚠️ ${m.openLoopCount} open loops — Karen X. Cheng rule: ≤ 2 or loop tax`
   );
 
   // Retention beat count relative to expected: 30 points
@@ -439,13 +480,17 @@ function scoreProduction(m: VideoMetrics): SectionScore {
     notes.push(`✅ Audio dynamic range ${m.audioDynamicRangeDb.toFixed(1)}dB — optimal`);
   } else if (m.audioDynamicRangeDb < 3) {
     audioPoints = 5;
-    notes.push(`❌ Audio too flat (${m.audioDynamicRangeDb.toFixed(1)}dB) — no emotional variation`);
+    notes.push(
+      `❌ Audio too flat (${m.audioDynamicRangeDb.toFixed(1)}dB) — no emotional variation`
+    );
   } else if (m.audioDynamicRangeDb < 6) {
     audioPoints = 18;
     notes.push(`⚠️ Audio range low (${m.audioDynamicRangeDb.toFixed(1)}dB) — target ≥ 6dB`);
   } else {
     audioPoints = 20;
-    notes.push(`⚠️ Audio range high (${m.audioDynamicRangeDb.toFixed(1)}dB) — may feel inconsistent`);
+    notes.push(
+      `⚠️ Audio range high (${m.audioDynamicRangeDb.toFixed(1)}dB) — may feel inconsistent`
+    );
   }
   score += audioPoints;
 
@@ -457,7 +502,7 @@ function scoreProduction(m: VideoMetrics): SectionScore {
   notes.push(
     m.cutsPerMinute >= cutsTarget
       ? `✅ ${m.cutsPerMinute.toFixed(1)} cuts/min`
-      : `⚠️ ${m.cutsPerMinute.toFixed(1)} cuts/min — target ≥ ${cutsTarget}/min for ${isShort ? 'Shorts' : 'long-form'}`,
+      : `⚠️ ${m.cutsPerMinute.toFixed(1)} cuts/min — target ≥ ${cutsTarget}/min for ${isShort ? 'Shorts' : 'long-form'}`
   );
 
   return {
@@ -492,17 +537,14 @@ export function scoreRetention(metrics: VideoMetrics): RetentionProxyResult {
 
   // Auto-fail if hook section scores < 30% of its weight (hook is non-negotiable)
   const hookSection = sections.find((s) => s.section.startsWith('Hook'));
-  const hookMinScore = (SECTION_WEIGHTS.hook * 0.30);
-  const hookAutoFail =
-    hookSection !== undefined && hookSection.contribution < hookMinScore;
+  const hookMinScore = SECTION_WEIGHTS.hook * 0.3;
+  const hookAutoFail = hookSection !== undefined && hookSection.contribution < hookMinScore;
 
   const finalPassed = passed && !hookAutoFail;
 
   // Build recommendations (sorted by highest score impact first)
   const recommendations: string[] = [];
-  const failingSections = sections
-    .filter((s) => s.score < 60)
-    .sort((a, b) => b.weight - a.weight);
+  const failingSections = sections.filter((s) => s.score < 60).sort((a, b) => b.weight - a.weight);
 
   for (const section of failingSections) {
     for (const note of section.notes) {
@@ -514,7 +556,7 @@ export function scoreRetention(metrics: VideoMetrics): RetentionProxyResult {
 
   if (hookAutoFail) {
     recommendations.unshift(
-      '🚨 AUTO-FAIL: Hook section scored below minimum threshold (< 30% of weight). Fix hook before anything else.',
+      '🚨 AUTO-FAIL: Hook section scored below minimum threshold (< 30% of weight). Fix hook before anything else.'
     );
   }
 
@@ -547,7 +589,7 @@ export function expectedScoreRange(views: number): [number, number] {
   if (views >= 600) return [70, 84];
   if (views >= 300) return [60, 72];
   if (views >= 100) return [48, 62];
-  if (views >= 30)  return [38, 50];
+  if (views >= 30) return [38, 50];
   return [0, 42];
 }
 
@@ -597,7 +639,7 @@ export function formatRetentionComment(result: RetentionProxyResult): string {
 
   lines.push('');
   lines.push(
-    '*Retention Proxy v1.0 — Fix #26 — Sources: MrBeast 35% rule, Derral Eves AVD math, Karen X. Cheng loop tax*',
+    '*Retention Proxy v1.0 — Fix #26 — Sources: MrBeast 35% rule, Derral Eves AVD math, Karen X. Cheng loop tax*'
   );
 
   return lines.join('\n');

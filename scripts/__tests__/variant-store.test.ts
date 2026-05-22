@@ -19,9 +19,7 @@ describe('writeVariantRecord', () => {
       uploadedAt: '2026-05-21T00:00:00Z',
       siblingVideoId: 'def',
     });
-    const written = JSON.parse(
-      fs.readFileSync(path.join(tmp, 'abc.json'), 'utf8'),
-    );
+    const written = JSON.parse(fs.readFileSync(path.join(tmp, 'abc.json'), 'utf8'));
     expect(written.variant).toBe('A');
     expect(written.hookFormula).toBe('specific_stat');
     expect(written.videoId).toBe('abc');
@@ -48,7 +46,7 @@ describe('readPairedComparisons', () => {
         hookFormula: 'specific_stat',
         uploadedAt: '',
         siblingVideoId: 'b1',
-      }),
+      })
     );
     fs.writeFileSync(
       path.join(vDir, 'b1.json'),
@@ -59,15 +57,15 @@ describe('readPairedComparisons', () => {
         hookFormula: 'wrong_answer_first',
         uploadedAt: '',
         siblingVideoId: 'a1',
-      }),
+      })
     );
     fs.writeFileSync(
       path.join(aDir, 'a1.json'),
-      JSON.stringify({ videoId: 'a1', averageViewPercentage: 80 }),
+      JSON.stringify({ videoId: 'a1', averageViewPercentage: 80 })
     );
     fs.writeFileSync(
       path.join(aDir, 'b1.json'),
-      JSON.stringify({ videoId: 'b1', averageViewPercentage: 60 }),
+      JSON.stringify({ videoId: 'b1', averageViewPercentage: 60 })
     );
     const pairs = readPairedComparisons(vDir, aDir);
     expect(pairs).toHaveLength(1);

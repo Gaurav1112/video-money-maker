@@ -25,7 +25,7 @@ export function getSpecificHook(quiz: QuizQuestion): string {
   if (TOPIC_HOOKS[quiz.topic]) return TOPIC_HOOKS[quiz.topic];
 
   const bigMatch = quiz.explanation.match(
-    /(\d[\d,.]*\s*(?:trillion|billion|million|thousand))\s+([\w\s]+?)(?:\.|,|and)/i,
+    /(\d[\d,.]*\s*(?:trillion|billion|million|thousand))\s+([\w\s]+?)(?:\.|,|and)/i
   );
   if (bigMatch) {
     const num = bigMatch[1].trim().toUpperCase();
@@ -34,7 +34,7 @@ export function getSpecificHook(quiz: QuizQuestion): string {
   }
 
   const companyMatch = quiz.explanation.match(
-    /(Google|Netflix|Uber|LinkedIn|Meta|Amazon|Stripe|Cloudflare)\s+[\w\s]+?(?:\.|,)/i,
+    /(Google|Netflix|Uber|LinkedIn|Meta|Amazon|Stripe|Cloudflare)\s+[\w\s]+?(?:\.|,)/i
   );
   if (companyMatch) {
     const company = companyMatch[0].replace(/[.,]$/, '').trim();
@@ -52,7 +52,7 @@ export function getSpecificHook(quiz: QuizQuestion): string {
  */
 export function getCompanyDramaticHook(quiz: QuizQuestion): string {
   const companyMatch = quiz.explanation.match(
-    /(Google|Netflix|Uber|LinkedIn|Meta|Amazon|Stripe|Cloudflare|GitHub|Twitter)\s+[\w\s]+?(?:\.|,)/i,
+    /(Google|Netflix|Uber|LinkedIn|Meta|Amazon|Stripe|Cloudflare|GitHub|Twitter)\s+[\w\s]+?(?:\.|,)/i
   );
   if (companyMatch) {
     const company = companyMatch[0].replace(/[.,]$/, '').trim();

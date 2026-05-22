@@ -29,7 +29,8 @@ const GATE_VERSION = '1.0.0';
 /** Cache TTL: 7 days in milliseconds */
 const CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 
-const DEFAULT_CACHE_DIR = process.env['QUALITY_CACHE_DIR'] ?? path.join(process.cwd(), 'data', 'quality-cache');
+const DEFAULT_CACHE_DIR =
+  process.env['QUALITY_CACHE_DIR'] ?? path.join(process.cwd(), 'data', 'quality-cache');
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -86,14 +87,18 @@ export class QualityCache {
       if (fs.existsSync(this.statsFile)) {
         return JSON.parse(fs.readFileSync(this.statsFile, 'utf-8'));
       }
-    } catch { /* start fresh */ }
+    } catch {
+      /* start fresh */
+    }
     return { totalEntries: 0, hits: 0, misses: 0, expired: 0, cacheDir: this.cacheDir };
   }
 
   private saveStats(): void {
     try {
       fs.writeFileSync(this.statsFile, JSON.stringify(this._stats, null, 2));
-    } catch { /* best-effort */ }
+    } catch {
+      /* best-effort */
+    }
   }
 
   private entryPath(cacheKey: string): string {
@@ -158,7 +163,9 @@ export class QualityCache {
 
     this._stats.hits++;
     this.saveStats();
-    console.log(`[quality-cache] ⚡ Cache HIT for ${path.basename(videoPath)} (key: ${cacheKey.slice(0, 12)}...)`);
+    console.log(
+      `[quality-cache] ⚡ Cache HIT for ${path.basename(videoPath)} (key: ${cacheKey.slice(0, 12)}...)`
+    );
     return entry.report;
   }
 
@@ -214,7 +221,9 @@ export class QualityCache {
         fs.unlinkSync(entryFile);
         return true;
       }
-    } catch { /* best-effort */ }
+    } catch {
+      /* best-effort */
+    }
     return false;
   }
 
@@ -245,7 +254,11 @@ export class QualityCache {
       }
     };
 
-    try { walkDir(this.cacheDir); } catch { /* best-effort */ }
+    try {
+      walkDir(this.cacheDir);
+    } catch {
+      /* best-effort */
+    }
     console.log(`[quality-cache] 🧹 Purged ${purged} expired entries`);
     return purged;
   }
@@ -263,7 +276,12 @@ export class QualityCache {
 export async function runCachedQualityGate(
   videoPath: string,
   metadataPath: string,
-  options: { format?: 'long' | 'short'; workDir?: string; determinism?: boolean; bypassCache?: boolean } = {},
+  options: {
+    format?: 'long' | 'short';
+    workDir?: string;
+    determinism?: boolean;
+    bypassCache?: boolean;
+  } = {}
 ): Promise<{ report: QualityReport; fromCache: boolean }> {
   const cache = new QualityCache();
 

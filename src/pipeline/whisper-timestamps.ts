@@ -100,7 +100,11 @@ export async function refineTimestamps(
   audioPath: string,
   proportionalTimestamps: Array<{ word: string; start: number; end: number }>,
   duration: number
-): Promise<{ wordTimestamps: Array<{ word: string; start: number; end: number }>; duration: number; source: 'whisper' | 'proportional' }> {
+): Promise<{
+  wordTimestamps: Array<{ word: string; start: number; end: number }>;
+  duration: number;
+  source: 'whisper' | 'proportional';
+}> {
   if (!isWhisperEnabled()) {
     return { wordTimestamps: proportionalTimestamps, duration, source: 'proportional' };
   }
@@ -120,7 +124,9 @@ export async function refineTimestamps(
   // Use whisper's duration if it detected one (more accurate than file-size estimate)
   const refinedDuration = result.duration > 0 ? result.duration : duration;
 
-  console.log(`  ✓ Whisper: ${result.words.length} words extracted in ${elapsed}s (duration: ${refinedDuration.toFixed(1)}s)`);
+  console.log(
+    `  ✓ Whisper: ${result.words.length} words extracted in ${elapsed}s (duration: ${refinedDuration.toFixed(1)}s)`
+  );
 
   return {
     wordTimestamps: result.words,

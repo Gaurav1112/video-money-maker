@@ -92,8 +92,11 @@ interface PublishConfig {
 
 function loadJson<T>(p: string, fallback: T): T {
   if (!fs.existsSync(p)) return fallback;
-  try { return JSON.parse(fs.readFileSync(p, 'utf-8')); }
-  catch { return fallback; }
+  try {
+    return JSON.parse(fs.readFileSync(p, 'utf-8'));
+  } catch {
+    return fallback;
+  }
 }
 
 function formatDuration(ms: number): string {
@@ -113,15 +116,19 @@ function formatDate(d: Date): string {
 }
 
 function formatDateTime(d: Date): string {
-  return d.toLocaleDateString('en-US', {
-    weekday: 'short',
-    month: 'short',
-    day: 'numeric',
-  }) + ' ' + d.toLocaleTimeString('en-US', {
-    hour: 'numeric',
-    minute: '2-digit',
-    hour12: true,
-  });
+  return (
+    d.toLocaleDateString('en-US', {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+    }) +
+    ' ' +
+    d.toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
+    })
+  );
 }
 
 function getDirSize(dir: string): string {
@@ -129,18 +136,25 @@ function getDirSize(dir: string): string {
   try {
     const { execSync } = require('child_process');
     return execSync(`du -sh "${dir}" 2>/dev/null`, { encoding: 'utf-8' }).split('\t')[0].trim();
-  } catch { return '?'; }
+  } catch {
+    return '?';
+  }
 }
 
 // ─── Schedule Calculator ────────────────────────────────────────────────────
 
 function getNextPublishDates(config: PublishConfig, count: number): Date[] {
   const dayMap: Record<string, number> = {
-    Sunday: 0, Monday: 1, Tuesday: 2, Wednesday: 3,
-    Thursday: 4, Friday: 5, Saturday: 6,
+    Sunday: 0,
+    Monday: 1,
+    Tuesday: 2,
+    Wednesday: 3,
+    Thursday: 4,
+    Friday: 5,
+    Saturday: 6,
   };
 
-  const publishDays = config.schedule.days.map(d => dayMap[d]).filter(d => d !== undefined);
+  const publishDays = config.schedule.days.map((d) => dayMap[d]).filter((d) => d !== undefined);
   const [hours, mins] = config.schedule.timeIST.split(':').map(Number);
 
   // IST offset: UTC+5:30
@@ -148,7 +162,7 @@ function getNextPublishDates(config: PublishConfig, count: number): Date[] {
 
   const dates: Date[] = [];
   const now = new Date();
-  let d = new Date(now);
+  const d = new Date(now);
 
   while (dates.length < count) {
     if (publishDays.includes(d.getDay())) {
@@ -176,11 +190,17 @@ function renderDashboard(): void {
   const queue = loadJson<TopicQueue>(TOPIC_QUEUE_PATH, { version: 1, topics: [] });
   const manifest = loadJson<Manifest>(MANIFEST_PATH, { version: 1, lastUpdated: '', entries: {} });
   const batchState = loadJson<BatchState>(BATCH_STATE_PATH, {
-    lastRun: '', lastTopic: '', lastSession: 0,
-    completedCount: 0, failedCount: 0, avgSessionMs: 25 * 60 * 1000, failures: [],
+    lastRun: '',
+    lastTopic: '',
+    lastSession: 0,
+    completedCount: 0,
+    failedCount: 0,
+    avgSessionMs: 25 * 60 * 1000,
+    failures: [],
   });
   const publishHistory = loadJson<PublishHistory>(PUBLISH_HISTORY_PATH, {
-    totalPublished: 0, entries: [],
+    totalPublished: 0,
+    entries: [],
   });
   const publishConfig = loadJson<PublishConfig>(PUBLISH_CONFIG_PATH, {
     schedule: { days: ['Tuesday', 'Thursday', 'Saturday'], timeIST: '19:15' },
@@ -197,8 +217,14 @@ function renderDashboard(): void {
   let failedCount = 0;
 
   for (const [, entry] of Object.entries(manifest.entries)) {
-    if (entry.status === 'staged') { renderedCount++; stagedCount++; }
-    if (entry.status === 'uploaded') { renderedCount++; uploadedCount++; }
+    if (entry.status === 'staged') {
+      renderedCount++;
+      stagedCount++;
+    }
+    if (entry.status === 'uploaded') {
+      renderedCount++;
+      uploadedCount++;
+    }
     if (entry.status === 'failed') failedCount++;
   }
 
@@ -211,8 +237,12 @@ function renderDashboard(): void {
   const remaining = totalSessions - renderedCount;
   const sessionsPerDay = 3;
   const daysToRender = Math.ceil(remaining / sessionsPerDay);
-  const daysToUpload = Math.ceil((renderedCount - effectiveUploaded + remaining) / (publishConfig.schedule.days.length || 3));
-  const completionDate = new Date(Date.now() + Math.max(daysToRender, daysToUpload) * 24 * 3600 * 1000);
+  const daysToUpload = Math.ceil(
+    (renderedCount - effectiveUploaded + remaining) / (publishConfig.schedule.days.length || 3)
+  );
+  const completionDate = new Date(
+    Date.now() + Math.max(daysToRender, daysToUpload) * 24 * 3600 * 1000
+  );
 
   // ── Render ─────────────────────────────────────────────────────────────
 
@@ -230,18 +260,23 @@ function renderDashboard(): void {
   console.log(`    Sessions:   ${totalSessions}`);
 
   const renderedPct = totalSessions > 0 ? ((renderedCount / totalSessions) * 100).toFixed(1) : '0';
-  const uploadedPct = totalSessions > 0 ? ((effectiveUploaded / totalSessions) * 100).toFixed(1) : '0';
+  const uploadedPct =
+    totalSessions > 0 ? ((effectiveUploaded / totalSessions) * 100).toFixed(1) : '0';
 
   const renderBar = makeProgressBar(renderedCount, totalSessions, 30);
   const uploadBar = makeProgressBar(effectiveUploaded, totalSessions, 30);
 
   console.log(`    Rendered:   ${renderBar} ${renderedCount}/${totalSessions} (${renderedPct}%)`);
-  console.log(`    Uploaded:   ${uploadBar} ${effectiveUploaded}/${totalSessions} (${uploadedPct}%)`);
+  console.log(
+    `    Uploaded:   ${uploadBar} ${effectiveUploaded}/${totalSessions} (${uploadedPct}%)`
+  );
   console.log(`    Staged:     ${stagedCount} (ready for upload)`);
   console.log(`    Failed:     ${failedCount}`);
   console.log('');
   console.log(`    Avg render time:       ${formatDuration(avgMs)} per session`);
-  console.log(`    Estimated completion:  ${formatDate(completionDate)} (at ${sessionsPerDay} sessions/day)`);
+  console.log(
+    `    Estimated completion:  ${formatDate(completionDate)} (at ${sessionsPerDay} sessions/day)`
+  );
   console.log('');
 
   // ── Storage ────────────────────────────────────────────────────────────
@@ -284,9 +319,14 @@ function renderDashboard(): void {
 
   for (const [key, entry] of Object.entries(manifest.entries)) {
     if (entry.completedAt) {
-      const statusIcon = entry.status === 'staged' ? '[STAGED]' :
-        entry.status === 'uploaded' ? '[UPLOADED]' :
-        entry.status === 'failed' ? '[FAILED]' : `[${entry.status.toUpperCase()}]`;
+      const statusIcon =
+        entry.status === 'staged'
+          ? '[STAGED]'
+          : entry.status === 'uploaded'
+            ? '[UPLOADED]'
+            : entry.status === 'failed'
+              ? '[FAILED]'
+              : `[${entry.status.toUpperCase()}]`;
       activities.push({
         key: `${entry.topic} S${entry.session}`,
         status: statusIcon,
@@ -331,10 +371,14 @@ function renderDashboard(): void {
 
   for (let i = 0; i < nextDates.length; i++) {
     const session = stagedSessions[i] || '(no video staged)';
-    const label = i === 0 ? 'Long-form' :
-      i === 1 ? 'Part 1 Short' :
-      i === 2 ? 'Parts 2+3 Shorts' :
-      `Upload ${i + 1}`;
+    const label =
+      i === 0
+        ? 'Long-form'
+        : i === 1
+          ? 'Part 1 Short'
+          : i === 2
+            ? 'Parts 2+3 Shorts'
+            : `Upload ${i + 1}`;
     console.log(`    ${formatDateTime(nextDates[i]).padEnd(30)} ${session} (${label})`);
   }
   console.log('');
@@ -368,7 +412,9 @@ function renderDashboard(): void {
     } else if (pctUsed > 80) {
       issues.push(`Disk space getting low: ${avail} available (${pctUsed}% used)`);
     }
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
 
   // Check log errors from last 24h
   const renderLog = path.join(LOG_DIR, 'render-and-stage.log');
@@ -377,13 +423,13 @@ function renderDashboard(): void {
       const logContent = fs.readFileSync(renderLog, 'utf-8');
       const lines = logContent.split('\n');
       const oneDayAgo = new Date(Date.now() - 24 * 3600 * 1000).toISOString();
-      const recentErrors = lines.filter(l =>
-        l.includes(' X ') && l.slice(1, 25) > oneDayAgo
-      );
+      const recentErrors = lines.filter((l) => l.includes(' X ') && l.slice(1, 25) > oneDayAgo);
       if (recentErrors.length > 0) {
         issues.push(`${recentErrors.length} error(s) in render log (last 24h)`);
       }
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
   }
 
   if (issues.length === 0) {
@@ -422,8 +468,13 @@ function renderJson(): void {
   const queue = loadJson<TopicQueue>(TOPIC_QUEUE_PATH, { version: 1, topics: [] });
   const manifest = loadJson<Manifest>(MANIFEST_PATH, { version: 1, lastUpdated: '', entries: {} });
   const batchState = loadJson<BatchState>(BATCH_STATE_PATH, {
-    lastRun: '', lastTopic: '', lastSession: 0,
-    completedCount: 0, failedCount: 0, avgSessionMs: 0, failures: [],
+    lastRun: '',
+    lastTopic: '',
+    lastSession: 0,
+    completedCount: 0,
+    failedCount: 0,
+    avgSessionMs: 0,
+    failures: [],
   });
 
   const totalSessions = queue.topics.reduce((sum, t) => sum + t.sessions, 0);
@@ -437,16 +488,22 @@ function renderJson(): void {
     if (entry.status === 'failed') failed++;
   }
 
-  console.log(JSON.stringify({
-    timestamp: new Date().toISOString(),
-    topics: queue.topics.length,
-    totalSessions,
-    rendered,
-    uploaded,
-    failed,
-    remaining: totalSessions - rendered,
-    batchState,
-  }, null, 2));
+  console.log(
+    JSON.stringify(
+      {
+        timestamp: new Date().toISOString(),
+        topics: queue.topics.length,
+        totalSessions,
+        rendered,
+        uploaded,
+        failed,
+        remaining: totalSessions - rendered,
+        batchState,
+      },
+      null,
+      2
+    )
+  );
 }
 
 // ─── Main ───────────────────────────────────────────────────────────────────
@@ -466,14 +523,14 @@ async function main() {
       process.stdout.write('\x1Bc');
       renderDashboard();
       console.log(`  (Refreshing every ${interval / 1000}s. Press Ctrl+C to stop.)`);
-      await new Promise(resolve => setTimeout(resolve, interval));
+      await new Promise((resolve) => setTimeout(resolve, interval));
     }
   }
 
   renderDashboard();
 }
 
-main().catch(err => {
+main().catch((err) => {
   console.error('Fatal error:', err);
   process.exit(1);
 });

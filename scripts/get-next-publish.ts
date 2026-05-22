@@ -65,9 +65,9 @@ const MAX_RETRY_ATTEMPTS = 3;
 
 /** Map day-of-week number (0=Sunday) to slot types allowed on that day */
 const DAY_SLOT_MAP: Record<number, PublishSlotType[]> = {
-  2: ['long'],          // Tuesday
-  4: ['vertical-1'],    // Thursday
-  6: ['vertical-23'],   // Saturday
+  2: ['long'], // Tuesday
+  4: ['vertical-1'], // Thursday
+  6: ['vertical-23'], // Saturday
 };
 
 // ─── Helpers ───────────────────────────────────────────────────────────────
@@ -98,14 +98,14 @@ function saveQueue(queue: PublishQueue): void {
 
 function findNextEntry(
   queue: PublishQueue,
-  options: { force: boolean; specificId?: string },
+  options: { force: boolean; specificId?: string }
 ): PublishEntry | null {
   const today = getTodayDate();
   const dayOfWeek = getTodayDayOfWeek();
 
   // Specific entry by ID
   if (options.specificId) {
-    const entry = queue.entries.find(e => e.id === options.specificId);
+    const entry = queue.entries.find((e) => e.id === options.specificId);
     if (!entry) {
       console.error(`Entry not found: ${options.specificId}`);
       process.exit(1);
@@ -119,8 +119,8 @@ function findNextEntry(
 
   // Get allowed slot types for today
   const allowedSlots = options.force
-    ? ['long', 'vertical-1', 'vertical-23'] as PublishSlotType[]
-    : (DAY_SLOT_MAP[dayOfWeek] || []);
+    ? (['long', 'vertical-1', 'vertical-23'] as PublishSlotType[])
+    : DAY_SLOT_MAP[dayOfWeek] || [];
 
   if (allowedSlots.length === 0 && !options.force) {
     console.error(`Today is not a publish day. Use --force to override.`);
@@ -171,19 +171,19 @@ function showStatus(queue: PublishQueue): void {
   console.log(`Last updated:   ${queue.lastUpdated}`);
 
   // Next 5 pending
-  const nextPending = queue.entries
-    .filter(e => e.status === 'pending')
-    .slice(0, 5);
+  const nextPending = queue.entries.filter((e) => e.status === 'pending').slice(0, 5);
 
   if (nextPending.length > 0) {
     console.log('\nNext 5 pending:');
     for (const e of nextPending) {
-      console.log(`  ${e.scheduledDate} (${e.dayOfWeek.padEnd(8)}) ${e.topic} S${e.session} [${e.slotType}]`);
+      console.log(
+        `  ${e.scheduledDate} (${e.dayOfWeek.padEnd(8)}) ${e.topic} S${e.session} [${e.slotType}]`
+      );
     }
   }
 
   // Failed entries
-  const failedEntries = queue.entries.filter(e => e.status === 'failed');
+  const failedEntries = queue.entries.filter((e) => e.status === 'failed');
   if (failedEntries.length > 0) {
     console.log('\nFailed entries:');
     for (const e of failedEntries) {
@@ -220,8 +220,9 @@ function main() {
   const statusMode = args.includes('--status');
   const jsonMode = args.includes('--json');
 
-  const idArg = args.find(a => a.startsWith('--id='))?.split('=')[1]
-    || (args.indexOf('--id') >= 0 ? args[args.indexOf('--id') + 1] : undefined);
+  const idArg =
+    args.find((a) => a.startsWith('--id='))?.split('=')[1] ||
+    (args.indexOf('--id') >= 0 ? args[args.indexOf('--id') + 1] : undefined);
 
   const queue = loadQueue();
 

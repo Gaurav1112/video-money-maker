@@ -18,39 +18,103 @@ function getTopicColors(topic: string): [string, string, string] {
   const lower = topic.toLowerCase();
 
   // Infrastructure / DevOps — deep blue
-  if (['load balanc', 'scaling', 'server', 'deploy', 'ci/cd', 'cdn', 'edge', 'cloudflare', 'docker', 'kubernetes', 'nginx'].some(k => lower.includes(k))) {
+  if (
+    [
+      'load balanc',
+      'scaling',
+      'server',
+      'deploy',
+      'ci/cd',
+      'cdn',
+      'edge',
+      'cloudflare',
+      'docker',
+      'kubernetes',
+      'nginx',
+    ].some((k) => lower.includes(k))
+  ) {
     return ['#1E3A8A', '#0EA5E9', '#3B82F6'];
   }
   // Messaging / Streaming — amber/orange
-  if (['kafka', 'rabbit', 'message', 'queue', 'event', 'pub/sub', 'stream'].some(k => lower.includes(k))) {
+  if (
+    ['kafka', 'rabbit', 'message', 'queue', 'event', 'pub/sub', 'stream'].some((k) =>
+      lower.includes(k)
+    )
+  ) {
     return ['#7C2D12', '#F97316', '#FB923C'];
   }
   // Database / Storage — emerald green
-  if (['database', 'sql', 'nosql', 'postgres', 'mongo', 'redis', 'cache', 'memcache', 'storage'].some(k => lower.includes(k))) {
+  if (
+    ['database', 'sql', 'nosql', 'postgres', 'mongo', 'redis', 'cache', 'memcache', 'storage'].some(
+      (k) => lower.includes(k)
+    )
+  ) {
     return ['#064E3B', '#10B981', '#34D399'];
   }
   // Algorithms / DSA — teal
-  if (['algo', 'sort', 'tree', 'graph', 'array', 'string', 'hash', 'dynamic', 'dp', 'recursion', 'stack', 'queue', 'linked list', 'binary', 'bfs', 'dfs', 'greedy'].some(k => lower.includes(k))) {
+  if (
+    [
+      'algo',
+      'sort',
+      'tree',
+      'graph',
+      'array',
+      'string',
+      'hash',
+      'dynamic',
+      'dp',
+      'recursion',
+      'stack',
+      'queue',
+      'linked list',
+      'binary',
+      'bfs',
+      'dfs',
+      'greedy',
+    ].some((k) => lower.includes(k))
+  ) {
     return ['#134E4A', '#14B8A6', '#5EEAD4'];
   }
   // Design Patterns / Architecture — purple
-  if (['design pattern', 'architecture', 'system design', 'microservice', 'pattern', 'solid', 'clean'].some(k => lower.includes(k))) {
+  if (
+    [
+      'design pattern',
+      'architecture',
+      'system design',
+      'microservice',
+      'pattern',
+      'solid',
+      'clean',
+    ].some((k) => lower.includes(k))
+  ) {
     return ['#4C1D95', '#8B5CF6', '#A78BFA'];
   }
   // Networking — indigo
-  if (['network', 'tcp', 'http', 'dns', 'api', 'rest', 'graphql', 'grpc', 'gateway', 'proxy'].some(k => lower.includes(k))) {
+  if (
+    ['network', 'tcp', 'http', 'dns', 'api', 'rest', 'graphql', 'grpc', 'gateway', 'proxy'].some(
+      (k) => lower.includes(k)
+    )
+  ) {
     return ['#312E81', '#6366F1', '#818CF8'];
   }
   // Security — red/crimson
-  if (['security', 'auth', 'oauth', 'jwt', 'encrypt', 'rate limit', 'throttl', 'firewall'].some(k => lower.includes(k))) {
+  if (
+    ['security', 'auth', 'oauth', 'jwt', 'encrypt', 'rate limit', 'throttl', 'firewall'].some((k) =>
+      lower.includes(k)
+    )
+  ) {
     return ['#7F1D1D', '#EF4444', '#FCA5A5'];
   }
   // Frontend — pink/rose
-  if (['react', 'frontend', 'css', 'html', 'vue', 'angular', 'next', 'svelte'].some(k => lower.includes(k))) {
+  if (
+    ['react', 'frontend', 'css', 'html', 'vue', 'angular', 'next', 'svelte'].some((k) =>
+      lower.includes(k)
+    )
+  ) {
     return ['#831843', '#EC4899', '#F9A8D4'];
   }
   // Concurrency — cyan
-  if (['concurrency', 'thread', 'async', 'parallel', 'goroutine'].some(k => lower.includes(k))) {
+  if (['concurrency', 'thread', 'async', 'parallel', 'goroutine'].some((k) => lower.includes(k))) {
     return ['#164E63', '#06B6D4', '#67E8F9'];
   }
   // Default — ocean blue
@@ -61,7 +125,7 @@ function getTopicColors(topic: string): [string, string, string] {
 function formatTopic(topic: string): string {
   return topic
     .split(/[-_]/)
-    .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
     .join(' ');
 }
 

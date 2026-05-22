@@ -22,11 +22,7 @@ const NarratorIndicator: React.FC<NarratorIndicatorProps> = ({
   if (!isActive) return null;
 
   // Pulse opacity
-  const pulse = interpolate(
-    Math.sin(frame * 0.15),
-    [-1, 1],
-    [0.6, 1],
-  );
+  const pulse = interpolate(Math.sin(frame * 0.15), [-1, 1], [0.6, 1]);
 
   // Waveform bars
   const bars = [0, 1, 2, 3, 4];
@@ -81,12 +77,14 @@ const NarratorIndicator: React.FC<NarratorIndicatorProps> = ({
           }}
         >
           {bars.map((i) => {
-            const barHeight = interpolate(
-              Math.sin(frame * 0.2 + i * 1.2),
-              [-1, 1],
-              [4, 18],
-            );
-            const barColors = [COLORS.saffron, COLORS.gold, COLORS.saffron, COLORS.gold, COLORS.saffron];
+            const barHeight = interpolate(Math.sin(frame * 0.2 + i * 1.2), [-1, 1], [4, 18]);
+            const barColors = [
+              COLORS.saffron,
+              COLORS.gold,
+              COLORS.saffron,
+              COLORS.gold,
+              COLORS.saffron,
+            ];
             return (
               <div
                 key={i}

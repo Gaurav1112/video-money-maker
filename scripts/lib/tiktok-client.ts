@@ -66,7 +66,7 @@ function postJson<T>(url: string, body: object, headers: Record<string, string>)
             reject(new Error(`TikTok JSON parse failure: ${(e as Error).message}`));
           }
         });
-      },
+      }
     );
     req.on('error', reject);
     req.write(payload);
@@ -99,7 +99,7 @@ function putBinary(uploadUrl: string, filePath: string, fileSize: number): Promi
           }
           resolve();
         });
-      },
+      }
     );
     req.on('error', reject);
     fs.createReadStream(filePath).pipe(req);
@@ -109,7 +109,7 @@ function putBinary(uploadUrl: string, filePath: string, fileSize: number): Promi
 export async function uploadToTikTok(
   videoPath: string,
   caption: string,
-  opts: TikTokOpts,
+  opts: TikTokOpts
 ): Promise<TikTokResult> {
   const stat = fs.statSync(videoPath);
   const videoSize = stat.size;
@@ -135,7 +135,7 @@ export async function uploadToTikTok(
   const init = await postJson<InitResponse>(
     'https://open.tiktokapis.com/v2/post/publish/video/init/',
     initBody,
-    { Authorization: `Bearer ${opts.accessToken}` },
+    { Authorization: `Bearer ${opts.accessToken}` }
   );
 
   if (init.error && init.error.code && init.error.code !== 'ok') {

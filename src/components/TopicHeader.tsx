@@ -31,11 +31,7 @@ const TopicHeader: React.FC<TopicHeaderProps> = ({
   const sceneInfo = sceneType ? SCENE_LABELS[sceneType] : null;
 
   // Subtle pulse for the scene type label
-  const labelPulse = interpolate(
-    Math.sin(frame * 0.06),
-    [-1, 1],
-    [0.85, 1],
-  );
+  const labelPulse = interpolate(Math.sin(frame * 0.06), [-1, 1], [0.85, 1]);
 
   return (
     <AbsoluteFill>

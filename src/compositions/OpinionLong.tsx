@@ -43,7 +43,9 @@ export interface OpinionLongProps {
 
 // ─── Metadata ─────────────────────────────────────────────────────────────
 
-export const calculateOpinionLongMetadata: CalculateMetadataFunction<OpinionLongProps & Record<string, unknown>> = ({ props }) => {
+export const calculateOpinionLongMetadata: CalculateMetadataFunction<
+  OpinionLongProps & Record<string, unknown>
+> = ({ props }) => {
   const audios = props.sceneAudios || [];
   const totalSec = audios.reduce((a, s) => a + (s?.duration || 0), 0);
   // Hard cap at 15 min to match spec edge-case clause
@@ -61,7 +63,11 @@ export const calculateOpinionLongMetadata: CalculateMetadataFunction<OpinionLong
 
 function resolveAudio(audioFile: string): string {
   if (!audioFile) return '';
-  if (audioFile.startsWith('http://') || audioFile.startsWith('https://') || audioFile.startsWith('/')) {
+  if (
+    audioFile.startsWith('http://') ||
+    audioFile.startsWith('https://') ||
+    audioFile.startsWith('/')
+  ) {
     return audioFile;
   }
   // Treat as public/ relative path
@@ -73,7 +79,10 @@ function resolveAudio(audioFile: string): string {
 const ChapterBanner: React.FC<{ label: string }> = ({ label }) => {
   const frame = useCurrentFrame();
   // Show banner for first 60 frames (2s)
-  const op = interpolate(frame, [0, 6, 50, 60], [0, 1, 1, 0], { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' });
+  const op = interpolate(frame, [0, 6, 50, 60], [0, 1, 1, 0], {
+    extrapolateRight: 'clamp',
+    extrapolateLeft: 'clamp',
+  });
   return (
     <div
       style={{
@@ -123,9 +132,7 @@ export const OpinionLong: React.FC<OpinionLongProps> = ({ opinion, sceneAudios, 
   return (
     <AbsoluteFill style={{ backgroundColor: COLORS.dark }}>
       {/* Optional BGM bed — kept very quiet so narration dominates */}
-      {bgmFile ? (
-        <Audio src={resolveAudio(bgmFile)} volume={0.08} loop />
-      ) : null}
+      {bgmFile ? <Audio src={resolveAudio(bgmFile)} volume={0.08} loop /> : null}
 
       {sceneAudios.map((scene, i) => {
         const startFrame = offsets[i];

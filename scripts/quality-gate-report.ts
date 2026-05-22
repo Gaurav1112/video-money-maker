@@ -12,17 +12,17 @@ import * as fs from 'fs';
 import type { QualityReport, CheckResult, Severity } from './quality-gate';
 
 const SEVERITY_EMOJI: Record<Severity, string> = {
-  PASS:  '✅',
-  WARN:  '⚠️',
+  PASS: '✅',
+  WARN: '⚠️',
   ERROR: '❌',
   FATAL: '🛑',
 };
 
 const CATEGORY_LABELS: Record<CheckResult['category'], string> = {
-  format:      '📐 Format',
-  visual:      '👁️ Visual',
-  retention:   '📈 Retention',
-  metadata:    '🏷️ Metadata',
+  format: '📐 Format',
+  visual: '👁️ Visual',
+  retention: '📈 Retention',
+  metadata: '🏷️ Metadata',
   determinism: '🔒 Determinism',
 };
 
@@ -31,9 +31,10 @@ function buildReport(report: QualityReport): string {
     ? '## ✅ Quality Gate PASSED — Video approved for upload'
     : '## 🛑 Quality Gate FAILED — Upload BLOCKED';
 
-  const modeNote = report.enforceMode === 'warn'
-    ? '\n> ⚠️ **Warn mode active** (`QUALITY_GATE_ENFORCE=warn`): only FATAL issues block upload. Switch to `enforce` before going live.\n'
-    : '';
+  const modeNote =
+    report.enforceMode === 'warn'
+      ? '\n> ⚠️ **Warn mode active** (`QUALITY_GATE_ENFORCE=warn`): only FATAL issues block upload. Switch to `enforce` before going live.\n'
+      : '';
 
   const summaryTable = [
     '| Metric | Value |',
@@ -58,26 +59,34 @@ function buildReport(report: QualityReport): string {
     byCategory.set(check.category, list);
   }
 
-  const categoryOrder: CheckResult['category'][] = ['format', 'visual', 'retention', 'metadata', 'determinism'];
+  const categoryOrder: CheckResult['category'][] = [
+    'format',
+    'visual',
+    'retention',
+    'metadata',
+    'determinism',
+  ];
 
   const checkSections = categoryOrder
-    .filter(cat => byCategory.has(cat))
-    .map(cat => {
+    .filter((cat) => byCategory.has(cat))
+    .map((cat) => {
       const checks = byCategory.get(cat)!;
-      const allPass = checks.every(c => c.passed);
-      const catStatus = allPass ? '✅' : checks.some(c => c.severity === 'FATAL') ? '🛑' : '❌';
+      const allPass = checks.every((c) => c.passed);
+      const catStatus = allPass ? '✅' : checks.some((c) => c.severity === 'FATAL') ? '🛑' : '❌';
 
-      const rows = checks.map(c => {
-        const emoji = SEVERITY_EMOJI[c.passed ? 'PASS' : c.severity];
-        const details = c.measured
-          ? `<br><sub>Measured: \`${JSON.stringify(c.measured).slice(0, 80)}\`</sub>`
-          : '';
-        return `| ${emoji} | \`${c.checkId}\` | ${c.name} | ${c.message}${details} |`;
-      }).join('\n');
+      const rows = checks
+        .map((c) => {
+          const emoji = SEVERITY_EMOJI[c.passed ? 'PASS' : c.severity];
+          const details = c.measured
+            ? `<br><sub>Measured: \`${JSON.stringify(c.measured).slice(0, 80)}\`</sub>`
+            : '';
+          return `| ${emoji} | \`${c.checkId}\` | ${c.name} | ${c.message}${details} |`;
+        })
+        .join('\n');
 
       return [
         `<details${allPass ? '' : ' open'}>`,
-        `<summary>${catStatus} ${CATEGORY_LABELS[cat]} (${checks.filter(c => c.passed).length}/${checks.length} passed)</summary>`,
+        `<summary>${catStatus} ${CATEGORY_LABELS[cat]} (${checks.filter((c) => c.passed).length}/${checks.length} passed)</summary>`,
         '',
         '| Status | ID | Check | Result |',
         '|---|---|---|---|',
@@ -85,33 +94,41 @@ function buildReport(report: QualityReport): string {
         '',
         '</details>',
       ].join('\n');
-    }).join('\n\n');
+    })
+    .join('\n\n');
 
   // Failed checks callout
-  const failedChecks = report.checks.filter(c => !c.passed);
-  const failedCallout = failedChecks.length === 0 ? '' : [
-    '',
-    '---',
-    '',
-    '## 🚨 Failed Checks — Action Required',
-    '',
-    failedChecks.map(c => {
-      const threshStr = c.threshold
-        ? `\n  - **Threshold:** \`${JSON.stringify(c.threshold)}\``
-        : '';
-      const measuredStr = c.measured
-        ? `\n  - **Measured:** \`${JSON.stringify(c.measured)}\``
-        : '';
-      return [
-        `### ${SEVERITY_EMOJI[c.severity]} \`${c.checkId}\` — ${c.name}`,
-        `- **Severity:** ${c.severity}`,
-        `- **Category:** ${CATEGORY_LABELS[c.category]}`,
-        `- **Message:** ${c.message}`,
-        measuredStr,
-        threshStr,
-      ].filter(Boolean).join('\n');
-    }).join('\n\n'),
-  ].join('\n');
+  const failedChecks = report.checks.filter((c) => !c.passed);
+  const failedCallout =
+    failedChecks.length === 0
+      ? ''
+      : [
+          '',
+          '---',
+          '',
+          '## 🚨 Failed Checks — Action Required',
+          '',
+          failedChecks
+            .map((c) => {
+              const threshStr = c.threshold
+                ? `\n  - **Threshold:** \`${JSON.stringify(c.threshold)}\``
+                : '';
+              const measuredStr = c.measured
+                ? `\n  - **Measured:** \`${JSON.stringify(c.measured)}\``
+                : '';
+              return [
+                `### ${SEVERITY_EMOJI[c.severity]} \`${c.checkId}\` — ${c.name}`,
+                `- **Severity:** ${c.severity}`,
+                `- **Category:** ${CATEGORY_LABELS[c.category]}`,
+                `- **Message:** ${c.message}`,
+                measuredStr,
+                threshStr,
+              ]
+                .filter(Boolean)
+                .join('\n');
+            })
+            .join('\n\n'),
+        ].join('\n');
 
   const footer = [
     '',
@@ -142,10 +159,12 @@ function buildReport(report: QualityReport): string {
 if (require.main === module) {
   const args = process.argv.slice(2);
   const reportPath = args[0];
-  const outputArg = args.find(a => a.startsWith('--output='))?.split('=')[1];
+  const outputArg = args.find((a) => a.startsWith('--output='))?.split('=')[1];
 
   if (!reportPath) {
-    console.error('Usage: npx tsx scripts/quality-gate-report.ts <report.json> [--output=report.md]');
+    console.error(
+      'Usage: npx tsx scripts/quality-gate-report.ts <report.json> [--output=report.md]'
+    );
     process.exit(1);
   }
 

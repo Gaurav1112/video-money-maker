@@ -163,29 +163,22 @@ export const TerminalScene: React.FC<TerminalSceneProps> = ({
             // Determine how much of the command is typed
             const typedChars = Math.max(
               0,
-              Math.min(
-                entry.cmd.length,
-                Math.floor((frame - entry.cmdStart) * CHARS_PER_FRAME),
-              ),
+              Math.min(entry.cmd.length, Math.floor((frame - entry.cmdStart) * CHARS_PER_FRAME))
             );
             const commandVisible = frame >= entry.cmdStart;
             const commandDone = frame >= entry.cmdEnd;
             const outputVisible = frame >= entry.outputStart;
             const outputOpacity = outputVisible
-              ? interpolate(
-                  frame,
-                  [entry.outputStart, entry.outputEnd],
-                  [0, 1],
-                  { extrapolateRight: 'clamp' },
-                )
+              ? interpolate(frame, [entry.outputStart, entry.outputEnd], [0, 1], {
+                  extrapolateRight: 'clamp',
+                })
               : 0;
 
             // Is this the currently-typing command?
             const isActive = frame >= entry.cmdStart && !commandDone;
             // Is this the last completed command (cursor should be here if no more active)
             const isLastDone =
-              commandDone &&
-              (idx === timeline.length - 1 || frame < timeline[idx + 1].cmdStart);
+              commandDone && (idx === timeline.length - 1 || frame < timeline[idx + 1].cmdStart);
 
             if (!commandVisible) return null;
 

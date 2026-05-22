@@ -97,7 +97,7 @@ check('edge-tts generates audio', () => {
   fs.mkdirSync(path.join(PROJECT_ROOT, 'output'), { recursive: true });
   run(
     `edge-tts --voice en-IN-PrabhatNeural --text "Hello, this is a test." --write-media "${testAudioPath}"`,
-    { timeout: 30000 },
+    { timeout: 30000 }
   );
   if (!fs.existsSync(testAudioPath)) {
     throw new Error('edge-tts did not produce output file');
@@ -152,7 +152,7 @@ check('Remotion renders a 5-second test video', () => {
   try {
     run(
       `npx remotion render src/compositions/index.tsx VerticalLong "${testOutput}" --props="${testPropsPath}" --codec=h264 --concurrency=1`,
-      { timeout: 120000 },
+      { timeout: 120000 }
     );
 
     if (!fs.existsSync(testOutput)) {
@@ -162,8 +162,12 @@ check('Remotion renders a 5-second test video', () => {
     return `Rendered ${(size / 1024).toFixed(0)} KB in 5s`;
   } finally {
     // Cleanup
-    try { fs.unlinkSync(testOutput); } catch {}
-    try { fs.unlinkSync(testPropsPath); } catch {}
+    try {
+      fs.unlinkSync(testOutput);
+    } catch {}
+    try {
+      fs.unlinkSync(testPropsPath);
+    } catch {}
   }
 });
 
@@ -181,11 +185,11 @@ check('Content repo accessible', () => {
   if (!contentPath) {
     throw new Error(
       `Content not found at ${CONTENT_DIR} or ${CONTENT_SYMLINK}. ` +
-      'Clone: git clone --depth 1 https://github.com/Gaurav1112/guru-sishya.git ../guru-sishya',
+        'Clone: git clone --depth 1 https://github.com/Gaurav1112/guru-sishya.git ../guru-sishya'
     );
   }
 
-  const jsonFiles = fs.readdirSync(contentPath).filter(f => f.endsWith('.json'));
+  const jsonFiles = fs.readdirSync(contentPath).filter((f) => f.endsWith('.json'));
   if (jsonFiles.length === 0) {
     throw new Error(`No JSON files in ${contentPath}`);
   }
@@ -222,11 +226,11 @@ if (!skipYouTube) {
       run(
         'node -e "' +
           "const {google} = require('googleapis');" +
-          "const c = new google.auth.OAuth2(process.env.YOUTUBE_CLIENT_ID, process.env.YOUTUBE_CLIENT_SECRET);" +
-          "c.setCredentials({refresh_token: process.env.YOUTUBE_REFRESH_TOKEN});" +
+          'const c = new google.auth.OAuth2(process.env.YOUTUBE_CLIENT_ID, process.env.YOUTUBE_CLIENT_SECRET);' +
+          'c.setCredentials({refresh_token: process.env.YOUTUBE_REFRESH_TOKEN});' +
           "console.log('OAuth2 client created');" +
-        '"',
-        { timeout: 10000 },
+          '"',
+        { timeout: 10000 }
       );
       return 'googleapis OAuth2 client OK';
     } catch (err: any) {
@@ -260,8 +264,8 @@ check('Sufficient memory for rendering', () => {
 
 console.log('\n=== Summary ===\n');
 
-const passed = results.filter(r => r.passed).length;
-const failed = results.filter(r => !r.passed).length;
+const passed = results.filter((r) => r.passed).length;
+const failed = results.filter((r) => !r.passed).length;
 const totalMs = results.reduce((sum, r) => sum + r.durationMs, 0);
 
 console.log(`Passed: ${passed}/${results.length}`);
@@ -270,7 +274,7 @@ console.log(`Total time: ${(totalMs / 1000).toFixed(1)}s`);
 
 if (failed > 0) {
   console.log('\nFailed checks:');
-  for (const r of results.filter(r => !r.passed)) {
+  for (const r of results.filter((r) => !r.passed)) {
     console.log(`  - ${r.name}: ${r.message}`);
   }
   console.log('\nFix the above issues before running the pipeline.');

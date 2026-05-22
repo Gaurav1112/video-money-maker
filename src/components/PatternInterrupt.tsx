@@ -37,7 +37,7 @@ export const PatternInterrupt: React.FC<PatternInterruptProps> = ({
 
   // Interrupt at ~30% and ~65% of content
   const interrupts = [
-    { pct: 0.30, msgIdx: 0 },
+    { pct: 0.3, msgIdx: 0 },
     { pct: 0.65, msgIdx: 2 },
   ];
 
@@ -59,7 +59,7 @@ export const PatternInterrupt: React.FC<PatternInterruptProps> = ({
           relFrame,
           [0, 3, FLASH_DURATION - 3, FLASH_DURATION],
           [0, 1, 1, 0],
-          { extrapolateRight: 'clamp' },
+          { extrapolateRight: 'clamp' }
         );
 
         const msg = INTERRUPT_MESSAGES[msgIdx % INTERRUPT_MESSAGES.length];
@@ -80,21 +80,25 @@ export const PatternInterrupt: React.FC<PatternInterruptProps> = ({
             }}
           >
             {/* Brief saffron flash overlay */}
-            <div style={{
-              position: 'absolute',
-              inset: 0,
-              background: `radial-gradient(circle at center, rgba(232,93,38,0.15) 0%, transparent 70%)`,
-            }} />
+            <div
+              style={{
+                position: 'absolute',
+                inset: 0,
+                background: `radial-gradient(circle at center, rgba(232,93,38,0.15) 0%, transparent 70%)`,
+              }}
+            />
 
             {/* Interrupt text */}
-            <div style={{
-              fontSize: 36,
-              fontWeight: 900,
-              color: COLORS.saffron,
-              textShadow: `0 0 20px rgba(232,93,38,0.6), 0 2px 4px rgba(0,0,0,0.8)`,
-              fontFamily: 'Inter, sans-serif',
-              letterSpacing: '0.02em',
-            }}>
+            <div
+              style={{
+                fontSize: 36,
+                fontWeight: 900,
+                color: COLORS.saffron,
+                textShadow: `0 0 20px rgba(232,93,38,0.6), 0 2px 4px rgba(0,0,0,0.8)`,
+                fontFamily: 'Inter, sans-serif',
+                letterSpacing: '0.02em',
+              }}
+            >
               {msg}
             </div>
           </div>

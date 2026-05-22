@@ -24,9 +24,9 @@ export function fnv1a32(input: string): number {
   for (let i = 0; i < input.length; i++) {
     // charCodeAt returns 0–65535; we XOR byte by byte (low byte first)
     const code = input.charCodeAt(i);
-    hash = (((hash ^ (code & 0xff)) * FNV_PRIME) % MOD_32 + MOD_32) % MOD_32;
+    hash = ((((hash ^ (code & 0xff)) * FNV_PRIME) % MOD_32) + MOD_32) % MOD_32;
     if (code > 0xff) {
-      hash = (((hash ^ ((code >> 8) & 0xff)) * FNV_PRIME) % MOD_32 + MOD_32) % MOD_32;
+      hash = ((((hash ^ ((code >> 8) & 0xff)) * FNV_PRIME) % MOD_32) + MOD_32) % MOD_32;
     }
   }
   return hash >>> 0; // coerce to unsigned 32-bit

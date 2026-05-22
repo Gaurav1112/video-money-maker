@@ -53,11 +53,8 @@ export const MetricCard: React.FC<MetricCardProps> = ({
   const elapsed = Math.max(0, frame - startFrame);
   const n = createNoise(seed);
 
-  const resolvedColor = color ?? (
-    direction === 'up' ? '#22C55E' :
-    direction === 'down' ? '#22C55E' :
-    '#38BDF8'
-  );
+  const resolvedColor =
+    color ?? (direction === 'up' ? '#22C55E' : direction === 'down' ? '#22C55E' : '#38BDF8');
 
   // Countup with easing
   const countProgress = interpolate(elapsed, [0, countupFrames], [0, 1], {
@@ -93,9 +90,8 @@ export const MetricCard: React.FC<MetricCardProps> = ({
   const deltaAbs = Math.abs(delta).toFixed(resolvedDecimals);
 
   // Subtle number glow pulse when countup completes
-  const glowPulse = elapsed > countupFrames
-    ? interpolate(Math.sin(frame * 0.08), [-1, 1], [0.4, 0.8])
-    : 0;
+  const glowPulse =
+    elapsed > countupFrames ? interpolate(Math.sin(frame * 0.08), [-1, 1], [0.4, 0.8]) : 0;
 
   return (
     <div
@@ -110,7 +106,9 @@ export const MetricCard: React.FC<MetricCardProps> = ({
         gap: 8,
         opacity: cardOpacity,
         transform: `scale(${cardScale})`,
-        boxShadow: `0 0 ${20 + glowPulse * 20}px ${resolvedColor}${Math.round(glowPulse * 40).toString(16).padStart(2, '0')}`,
+        boxShadow: `0 0 ${20 + glowPulse * 20}px ${resolvedColor}${Math.round(glowPulse * 40)
+          .toString(16)
+          .padStart(2, '0')}`,
       }}
     >
       {/* Value row */}
@@ -171,9 +169,12 @@ export const MetricCard: React.FC<MetricCardProps> = ({
           }}
         >
           <span style={{ color: deltaColor, fontSize: 22, fontWeight: 700 }}>
-            {deltaArrow} {deltaAbs}{unit}
+            {deltaArrow} {deltaAbs}
+            {unit}
           </span>
-          <span style={{ color: '#64748B', fontSize: 16, fontFamily: '"Space Grotesk", sans-serif' }}>
+          <span
+            style={{ color: '#64748B', fontSize: 16, fontFamily: '"Space Grotesk", sans-serif' }}
+          >
             vs before
           </span>
         </div>

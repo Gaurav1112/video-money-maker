@@ -13,7 +13,11 @@ interface ThenNowSplitProps {
  * 1995 (then, left column) vs 2026 (now, right column). Lines reveal in
  * sequence over the first 60% of the scene; settle for the last 40%.
  */
-export const ThenNowSplit: React.FC<ThenNowSplitProps> = ({ thenLines, nowLines, sceneDurationFrames }) => {
+export const ThenNowSplit: React.FC<ThenNowSplitProps> = ({
+  thenLines,
+  nowLines,
+  sceneDurationFrames,
+}) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const all = [...thenLines, ...nowLines];
@@ -46,8 +50,14 @@ export const ThenNowSplit: React.FC<ThenNowSplitProps> = ({ thenLines, nowLines,
       {lines.map((line, i) => {
         const idx = startIdx + i;
         const start = idx * perLine;
-        const op = interpolate(frame, [start, start + 12], [0, 1], { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' });
-        const ty = interpolate(frame, [start, start + 12], [16, 0], { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' });
+        const op = interpolate(frame, [start, start + 12], [0, 1], {
+          extrapolateRight: 'clamp',
+          extrapolateLeft: 'clamp',
+        });
+        const ty = interpolate(frame, [start, start + 12], [16, 0], {
+          extrapolateRight: 'clamp',
+          extrapolateLeft: 'clamp',
+        });
         return (
           <div
             key={i}

@@ -49,9 +49,17 @@ const SITE_URL = 'https://guru-sishya.in';
  * We put it in both to be safe.
  */
 const YT_HASHTAGS = [
-  '#shorts', '#coding', '#programming', '#interviewprep', '#faang',
-  '#dsa', '#systemdesign', '#softwareengineering', '#learntocode',
-  '#gurusishya', '#youtubeshorts',
+  '#shorts',
+  '#coding',
+  '#programming',
+  '#interviewprep',
+  '#faang',
+  '#dsa',
+  '#systemdesign',
+  '#softwareengineering',
+  '#learntocode',
+  '#gurusishya',
+  '#youtubeshorts',
 ];
 
 // ── Deterministic seed (same algorithm as make-reels.ts) ──────────────────────
@@ -62,9 +70,7 @@ function topicSeed(slug: string): number {
 }
 
 function deterministicSceneIndex(storyboard: Storyboard, slug: string): number {
-  const content = storyboard.scenes.filter(
-    (s) => s.type !== 'title' && s.type !== 'summary',
-  );
+  const content = storyboard.scenes.filter((s) => s.type !== 'title' && s.type !== 'summary');
   if (content.length === 0) return 0;
   return topicSeed(slug) % content.length;
 }
@@ -72,7 +78,10 @@ function deterministicSceneIndex(storyboard: Storyboard, slug: string): number {
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
 function slugify(text: string): string {
-  return text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  return text
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
 }
 
 function ensureDir(dir: string): void {
@@ -81,9 +90,7 @@ function ensureDir(dir: string): void {
 
 function getArg(flag: string): string | undefined {
   const idx = process.argv.indexOf(flag);
-  return idx >= 0 && idx + 1 < process.argv.length
-    ? process.argv[idx + 1]
-    : undefined;
+  return idx >= 0 && idx + 1 < process.argv.length ? process.argv[idx + 1] : undefined;
 }
 
 function discoverStoryboards(): string[] {
@@ -125,14 +132,14 @@ function buildYtTitle(storyboard: Storyboard): string {
       { topic },
       shortIndex,
       '#SystemDesign', // typeHashtag — Shorts are System Design / interview-prep niche
-      'en',
+      'en'
     );
     // buildShortsTitle returns "<shock-title> #Shorts #SystemDesign #InterviewPrep #FAANG"
     // already enforces ≤100. Belt-and-braces clamp:
     return title.length <= 100 ? title : title.slice(0, 99) + '…';
   } catch (err) {
     console.warn(
-      `[make-shorts] title-templates fallback for "${topic}" — ${(err as Error).message}`,
+      `[make-shorts] title-templates fallback for "${topic}" — ${(err as Error).message}`
     );
     const fallback = `${topic} explained in 30 seconds #shorts`;
     return fallback.length <= 100 ? fallback : `${fallback.slice(0, 97)}…`;
@@ -159,7 +166,7 @@ function buildMetadata(
   storyboard: Storyboard,
   sceneIndex: number,
   durationFrames: number,
-  outPath: string,
+  outPath: string
 ) {
   return {
     slug,
@@ -177,7 +184,7 @@ function buildMetadata(
       title: buildYtTitle(storyboard),
       description: buildYtDescription(storyboard),
       tags: YT_HASHTAGS.map((t) => t.replace('#', '')),
-      categoryId: '28',         // Science & Technology
+      categoryId: '28', // Science & Technology
       privacyStatus: 'public',
       // B3: deterministic playlist mapping. upload-youtube.ts will
       // find-or-create this playlist and add the video to it. Drives

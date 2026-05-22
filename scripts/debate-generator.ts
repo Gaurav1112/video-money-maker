@@ -72,8 +72,8 @@ const DEBATE_TOPICS: DebateTopic[] = [
 
 // ---- Voice Config ----------------------------------------------------------
 
-const VOICE_A = 'en-US-GuyNeural';          // aggressive, bold claims
-const VOICE_B = 'en-US-JennyNeural';        // measured, data-driven counter
+const VOICE_A = 'en-US-GuyNeural'; // aggressive, bold claims
+const VOICE_B = 'en-US-JennyNeural'; // measured, data-driven counter
 
 // ---- Debate Script Templates -----------------------------------------------
 
@@ -134,9 +134,10 @@ export function generateDebate(topicIndex: number): DebateScript {
 
   // Alternate winner to create comment disagreement
   const winner = topicIndex % 2 === 0 ? a : b;
-  const winnerDeclaration = topicIndex % 2 === 0
-    ? `${a} wins this debate. Not even close. But I know the ${b} fans will disagree in the comments.`
-    : `${b} takes this one. The data is clear. But ${a} fans, tell me why I am wrong.`;
+  const winnerDeclaration =
+    topicIndex % 2 === 0
+      ? `${a} wins this debate. Not even close. But I know the ${b} fans will disagree in the comments.`
+      : `${b} takes this one. The data is clear. But ${a} fans, tell me why I am wrong.`;
 
   // Title variations
   const titleVariants = [
@@ -180,9 +181,7 @@ async function renderDebate(debate: DebateScript): Promise<void> {
   fs.mkdirSync(OUTPUT_DIR, { recursive: true });
   fs.mkdirSync(AUDIO_DIR, { recursive: true });
 
-  const slug = `${debate.topicA}-vs-${debate.topicB}`
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-');
+  const slug = `${debate.topicA}-vs-${debate.topicB}`.toLowerCase().replace(/[^a-z0-9]+/g, '-');
 
   console.log(`\n=== Rendering Debate: ${debate.title} ===\n`);
 
@@ -197,7 +196,7 @@ async function renderDebate(debate: DebateScript): Promise<void> {
     'en-US-AndrewMultilingualNeural',
     `debate-${slug}-hook.mp3`,
     'english',
-    '+20%',
+    '+20%'
   );
   console.log(`  Hook: ${hookAudio.duration.toFixed(1)}s`);
 
@@ -211,7 +210,7 @@ async function renderDebate(debate: DebateScript): Promise<void> {
       voice,
       `debate-${slug}-ex${i}.mp3`,
       'english',
-      ex.speaker === 'A' ? '+25%' : '+15%',
+      ex.speaker === 'A' ? '+25%' : '+15%'
     );
     exchangeAudios.push({ path: result.audioPath, duration: result.duration });
     console.log(`  Exchange ${i + 1} (Speaker ${ex.speaker}): ${result.duration.toFixed(1)}s`);
@@ -223,7 +222,7 @@ async function renderDebate(debate: DebateScript): Promise<void> {
     'en-US-AndrewMultilingualNeural',
     `debate-${slug}-winner.mp3`,
     'english',
-    '+10%',
+    '+10%'
   );
   console.log(`  Winner: ${winnerAudio.duration.toFixed(1)}s`);
 
@@ -243,7 +242,7 @@ async function renderDebate(debate: DebateScript): Promise<void> {
   try {
     execSync(
       `ffmpeg -y -f lavfi -i anullsrc=r=44100:cl=mono -t ${GAP_SECONDS} -codec:a libmp3lame -b:a 128k "${silencePath}"`,
-      { stdio: 'pipe', timeout: 10000 },
+      { stdio: 'pipe', timeout: 10000 }
     );
   } catch {
     // Create minimal silence file if ffmpeg fails
@@ -254,7 +253,7 @@ async function renderDebate(debate: DebateScript): Promise<void> {
     // Generate a short ding/beep between exchanges
     execSync(
       `ffmpeg -y -f lavfi -i "sine=frequency=880:duration=${DING_DURATION}" -af "afade=t=in:st=0:d=0.05,afade=t=out:st=${DING_DURATION - 0.1}:d=0.1,volume=0.3" -codec:a libmp3lame -b:a 128k "${dingPath}"`,
-      { stdio: 'pipe', timeout: 10000 },
+      { stdio: 'pipe', timeout: 10000 }
     );
   } catch {
     fs.writeFileSync(dingPath, Buffer.alloc(512, 0));
@@ -281,7 +280,7 @@ async function renderDebate(debate: DebateScript): Promise<void> {
   try {
     execSync(
       `ffmpeg -y -f concat -safe 0 -i "${concatListPath}" -codec:a libmp3lame -b:a 192k "${masterAudioPath}"`,
-      { stdio: 'pipe', timeout: 60000 },
+      { stdio: 'pipe', timeout: 60000 }
     );
   } catch (err) {
     console.error('  ffmpeg concat failed, falling back to first exchange only');
@@ -293,11 +292,16 @@ async function renderDebate(debate: DebateScript): Promise<void> {
   try {
     const probe = execSync(
       `ffprobe -v quiet -show_entries format=duration -of csv=p=0 "${masterAudioPath}"`,
-      { timeout: 10000 },
-    ).toString().trim();
+      { timeout: 10000 }
+    )
+      .toString()
+      .trim();
     totalDuration = parseFloat(probe) || 45;
   } catch {
-    totalDuration = hookAudio.duration + exchangeAudios.reduce((s, e) => s + e.duration + GAP_SECONDS, 0) + winnerAudio.duration;
+    totalDuration =
+      hookAudio.duration +
+      exchangeAudios.reduce((s, e) => s + e.duration + GAP_SECONDS, 0) +
+      winnerAudio.duration;
   }
 
   console.log(`  Master audio: ${totalDuration.toFixed(1)}s`);
@@ -329,7 +333,8 @@ async function renderDebate(debate: DebateScript): Promise<void> {
   // Exchange scenes
   for (let i = 0; i < debate.exchanges.length; i++) {
     const ex = debate.exchanges[i];
-    const exDur = exchangeAudios[i].duration + (i < debate.exchanges.length - 1 ? DING_DURATION : GAP_SECONDS);
+    const exDur =
+      exchangeAudios[i].duration + (i < debate.exchanges.length - 1 ? DING_DURATION : GAP_SECONDS);
     scenes.push({
       type: 'text',
       content: ex.text,
@@ -377,7 +382,9 @@ async function renderDebate(debate: DebateScript): Promise<void> {
   const videoOutput = path.join(OUTPUT_DIR, `${slug}.mp4`);
 
   const renderCmd = [
-    'npx', 'remotion', 'render',
+    'npx',
+    'remotion',
+    'render',
     'src/compositions/index.tsx',
     'ViralShort',
     videoOutput,
@@ -412,7 +419,14 @@ async function renderDebate(debate: DebateScript): Promise<void> {
         '',
         `#${debate.topicA.replace(/\s+/g, '')} #${debate.topicB.replace(/\s+/g, '')} #techdebate #coding #systemdesign #shorts`,
       ].join('\n'),
-      tags: [debate.topicA, debate.topicB, 'tech debate', debate.category, 'system design', 'coding'],
+      tags: [
+        debate.topicA,
+        debate.topicB,
+        'tech debate',
+        debate.category,
+        'system design',
+        'coding',
+      ],
       categoryId: '27',
     },
     instagram: {
@@ -506,7 +520,9 @@ async function main() {
 
   for (let i = 0; i < debate.exchanges.length; i++) {
     const ex = debate.exchanges[i];
-    console.log(`  [${ex.speaker}] (${ex.speaker === 'A' ? debate.topicA : debate.topicB} -- ${ex.voice}):`);
+    console.log(
+      `  [${ex.speaker}] (${ex.speaker === 'A' ? debate.topicA : debate.topicB} -- ${ex.voice}):`
+    );
     console.log(`     "${ex.text}"`);
     console.log('');
   }

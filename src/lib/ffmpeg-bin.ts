@@ -23,9 +23,9 @@ const ffprobeEnv = process.env.FFPROBE_PATH;
 export const FFMPEG_BIN: string =
   ffmpegEnv && ffmpegEnv.trim().length > 0
     ? ffmpegEnv
-    : (ffmpegStatic as string | null) ?? 'ffmpeg';
+    : ((ffmpegStatic as string | null) ?? 'ffmpeg');
 
 export const FFPROBE_BIN: string =
   ffprobeEnv && ffprobeEnv.trim().length > 0
     ? ffprobeEnv
-    : (ffprobeStaticPkg as { path?: string } | undefined)?.path ?? 'ffprobe';
+    : ((ffprobeStaticPkg as { path?: string } | undefined)?.path ?? 'ffprobe');

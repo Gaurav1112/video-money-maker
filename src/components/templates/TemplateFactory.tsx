@@ -334,25 +334,21 @@ const FallbackRenderer: React.FC<RendererProps> = ({
       {/* Boxes */}
       {config.boxes.map((box, idx) => {
         const enterFrame = idx * (fps * 0.2);
-        const opacity = interpolate(
-          frame,
-          [enterFrame, enterFrame + fps * 0.3],
-          [0, 1],
-          { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
-        );
-        const translateY = interpolate(
-          frame,
-          [enterFrame, enterFrame + fps * 0.3],
-          [20, 0],
-          { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
-        );
+        const opacity = interpolate(frame, [enterFrame, enterFrame + fps * 0.3], [0, 1], {
+          extrapolateLeft: 'clamp',
+          extrapolateRight: 'clamp',
+        });
+        const translateY = interpolate(frame, [enterFrame, enterFrame + fps * 0.3], [20, 0], {
+          extrapolateLeft: 'clamp',
+          extrapolateRight: 'clamp',
+        });
 
         // Highlight the box if a beat references it
         const activeBeat = beats.find(
           (b) =>
             frame >= b.startTime * fps &&
             frame < b.endTime * fps &&
-            b.text.toLowerCase().includes(box.label.toLowerCase().slice(0, 10)),
+            b.text.toLowerCase().includes(box.label.toLowerCase().slice(0, 10))
         );
 
         return (
@@ -364,9 +360,7 @@ const FallbackRenderer: React.FC<RendererProps> = ({
               top: box.y,
               width: box.width,
               height: box.height,
-              backgroundColor: activeBeat
-                ? accentColor
-                : 'rgba(255,255,255,0.06)',
+              backgroundColor: activeBeat ? accentColor : 'rgba(255,255,255,0.06)',
               border: `2px solid ${activeBeat ? accentColor : 'rgba(255,255,255,0.15)'}`,
               borderRadius: 12,
               display: 'flex',
@@ -400,12 +394,10 @@ const FallbackRenderer: React.FC<RendererProps> = ({
         const arrowLen = toY - fromY;
 
         const enterFrame = (idx + 1) * (fps * 0.2);
-        const opacity = interpolate(
-          frame,
-          [enterFrame, enterFrame + fps * 0.2],
-          [0, 0.6],
-          { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
-        );
+        const opacity = interpolate(frame, [enterFrame, enterFrame + fps * 0.2], [0, 0.6], {
+          extrapolateLeft: 'clamp',
+          extrapolateRight: 'clamp',
+        });
 
         return (
           <React.Fragment key={`arrow-${idx}`}>
@@ -461,16 +453,7 @@ const FallbackRenderer: React.FC<RendererProps> = ({
 // TemplateFactory -- the ONE component that dispatches to the right renderer
 // ---------------------------------------------------------------------------
 export const TemplateFactory: React.FC<TemplateFactoryProps> = (props) => {
-  const {
-    templateId,
-    variant,
-    beats,
-    accentColor,
-    fps,
-    sceneHeading,
-    bullets,
-    content,
-  } = props;
+  const { templateId, variant, beats, accentColor, fps, sceneHeading, bullets, content } = props;
 
   // 1. Resolve layout type from templateId
   const layout = LAYOUT_BY_ID[templateId] ?? 'generic';
@@ -515,35 +498,40 @@ export const TemplateFactory: React.FC<TemplateFactoryProps> = (props) => {
     if (layout === 'architecture') {
       const { ARCHITECTURE_CONFIGS } = require('./architecture-configs');
       const configMap = ARCHITECTURE_CONFIGS[templateId];
-      const config = configMap?.[variant] ?? configMap?.overview ?? Object.values(configMap || {})[0];
+      const config =
+        configMap?.[variant] ?? configMap?.overview ?? Object.values(configMap || {})[0];
       if (config) {
         return <Renderer {...rendererProps} config={config} />;
       }
     } else if (layout === 'flow') {
       const { FLOW_CONFIGS } = require('./flow-configs');
       const configMap = FLOW_CONFIGS[templateId];
-      const config = configMap?.[variant] ?? configMap?.overview ?? Object.values(configMap || {})[0];
+      const config =
+        configMap?.[variant] ?? configMap?.overview ?? Object.values(configMap || {})[0];
       if (config) {
         return <Renderer {...rendererProps} config={config} />;
       }
     } else if (layout === 'concept' || layout === 'data-structure') {
       const { CONCEPT_CONFIGS } = require('./concept-configs');
       const configMap = CONCEPT_CONFIGS[templateId];
-      const config = configMap?.[variant] ?? configMap?.overview ?? Object.values(configMap || {})[0];
+      const config =
+        configMap?.[variant] ?? configMap?.overview ?? Object.values(configMap || {})[0];
       if (config) {
         return <Renderer {...rendererProps} config={config} />;
       }
     } else if (layout === 'comparison') {
       const { COMPARISON_CONFIGS } = require('./comparison-configs');
       const configMap = COMPARISON_CONFIGS[templateId];
-      const config = configMap?.[variant] ?? configMap?.overview ?? Object.values(configMap || {})[0];
+      const config =
+        configMap?.[variant] ?? configMap?.overview ?? Object.values(configMap || {})[0];
       if (config) {
         return <Renderer {...rendererProps} config={config} />;
       }
     } else if (layout === 'monitoring' || layout === 'security') {
       const { MONITORING_CONFIGS } = require('./monitoring-configs');
       const configMap = MONITORING_CONFIGS[templateId];
-      const config = configMap?.[variant] ?? configMap?.overview ?? Object.values(configMap || {})[0];
+      const config =
+        configMap?.[variant] ?? configMap?.overview ?? Object.values(configMap || {})[0];
       if (config) {
         return <Renderer {...rendererProps} config={config} />;
       }
@@ -554,11 +542,7 @@ export const TemplateFactory: React.FC<TemplateFactoryProps> = (props) => {
 
   // If config not found, use fallback renderer
   const effectiveBullets =
-    bullets && bullets.length > 0
-      ? bullets
-      : sceneHeading
-        ? [sceneHeading]
-        : [];
+    bullets && bullets.length > 0 ? bullets : sceneHeading ? [sceneHeading] : [];
   rendererProps.generatedConfig = generateConceptConfig(effectiveBullets);
   return <FallbackRenderer {...rendererProps} />;
 };

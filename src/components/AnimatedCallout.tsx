@@ -76,7 +76,7 @@ const AnimatedCallout: React.FC<AnimatedCalloutProps> = ({
 
   // Find if current word matches any trigger
   const cleanWord = currentWord.toLowerCase().replace(/[^a-z]/g, '');
-  const matchedTrigger = CALLOUT_TRIGGERS.find(t => cleanWord.includes(t.keyword));
+  const matchedTrigger = CALLOUT_TRIGGERS.find((t) => cleanWord.includes(t.keyword));
 
   // Use a deterministic approach: trigger when word matches AND we're not in cooldown
   // We use wordsSpoken as a stable trigger point
@@ -108,11 +108,7 @@ const AnimatedCallout: React.FC<AnimatedCalloutProps> = ({
   const pos = positions[sceneIndex % positions.length];
 
   // Glow pulse
-  const glowIntensity = interpolate(
-    Math.sin(frame * 0.1),
-    [-1, 1],
-    [0.4, 0.8],
-  );
+  const glowIntensity = interpolate(Math.sin(frame * 0.1), [-1, 1], [0.4, 0.8]);
 
   return (
     <div

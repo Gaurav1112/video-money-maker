@@ -24,10 +24,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { execFileSync } from 'child_process';
 
-import {
-  renderDualTrack,
-  type SessionInput,
-} from '../src/pipeline/dual-track-orchestrator.js';
+import { renderDualTrack, type SessionInput } from '../src/pipeline/dual-track-orchestrator.js';
 
 // ─── Types ────────────────────────────────────────────────────────────────
 
@@ -81,7 +78,9 @@ function parseArgs(): { topic: string; session: number; outputDir: string } {
   const outputDir = getArg('output-dir');
 
   if (!topic || !sessionStr || !outputDir) {
-    console.error('Usage: render-hinglish-audio.ts --topic <slug> --session <N> --output-dir <dir>');
+    console.error(
+      'Usage: render-hinglish-audio.ts --topic <slug> --session <N> --output-dir <dir>'
+    );
     process.exit(1);
   }
 
@@ -101,15 +100,24 @@ function parseArgs(): { topic: string; session: number; outputDir: string } {
 function stripMp3Metadata(filePath: string): void {
   const tmpPath = `${filePath}.clean.mp3`;
   try {
-    execFileSync('ffmpeg', [
-      '-y',
-      '-i', filePath,
-      '-map_metadata', '-1',
-      '-fflags', '+bitexact',
-      '-flags:a', '+bitexact',
-      '-c:a', 'copy',
-      tmpPath,
-    ], { stdio: 'pipe' });
+    execFileSync(
+      'ffmpeg',
+      [
+        '-y',
+        '-i',
+        filePath,
+        '-map_metadata',
+        '-1',
+        '-fflags',
+        '+bitexact',
+        '-flags:a',
+        '+bitexact',
+        '-c:a',
+        'copy',
+        tmpPath,
+      ],
+      { stdio: 'pipe' }
+    );
     fs.renameSync(tmpPath, filePath);
   } catch {
     // If ffmpeg not available or fails, leave file as-is (non-fatal)
@@ -129,9 +137,7 @@ async function main(): Promise<void> {
   }
   const queue: PublishQueue = JSON.parse(fs.readFileSync(QUEUE_PATH, 'utf-8'));
 
-  const entry = queue.entries.find(
-    (e) => e.topic === topic && Number(e.session) === session,
-  );
+  const entry = queue.entries.find((e) => e.topic === topic && Number(e.session) === session);
 
   if (!entry) {
     console.error(`[render-hinglish-audio] entry not found: topic=${topic} session=${session}`);
@@ -151,7 +157,9 @@ async function main(): Promise<void> {
     process.exit(1);
   }
 
-  console.error(`[render-hinglish-audio] loaded ${metadata.scenes.length} scenes from ${metadataPath}`);
+  console.error(
+    `[render-hinglish-audio] loaded ${metadata.scenes.length} scenes from ${metadataPath}`
+  );
 
   // 3. Build SessionInput
   const sessionInput: SessionInput = {
@@ -161,7 +169,9 @@ async function main(): Promise<void> {
   };
 
   // 4. Render Hinglish track only via the dual-track orchestrator
-  console.error(`[render-hinglish-audio] rendering Hinglish audio for ${topic} session-${session}…`);
+  console.error(
+    `[render-hinglish-audio] rendering Hinglish audio for ${topic} session-${session}…`
+  );
 
   const result = await renderDualTrack(sessionInput, {
     outputBaseDir: outputDir,
@@ -193,11 +203,16 @@ async function main(): Promise<void> {
   // 7. Verify output is non-empty via ffprobe
   try {
     const duration = execFileSync('ffprobe', [
-      '-v', 'error',
-      '-show_entries', 'format=duration',
-      '-of', 'csv=p=0',
+      '-v',
+      'error',
+      '-show_entries',
+      'format=duration',
+      '-of',
+      'csv=p=0',
       audioHiPath,
-    ]).toString().trim();
+    ])
+      .toString()
+      .trim();
     const durationSec = parseFloat(duration);
     if (isNaN(durationSec) || durationSec <= 0) {
       console.error(`[render-hinglish-audio] ❌ output duration is zero or NaN: ${duration}`);

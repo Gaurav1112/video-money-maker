@@ -77,15 +77,17 @@ async function pickForScene(
 
   const allResults = await Promise.all(
     providers.map((p) =>
-      p.search({
-        keywords,
-        minDurationSec,
-        portrait: true,
-        excludeIds: [...usedIds],
-      }).catch((err: unknown) => {
-        console.warn(`[picker] provider ${p.name} error: ${String(err)}`);
-        return [] as StockClip[];
-      })
+      p
+        .search({
+          keywords,
+          minDurationSec,
+          portrait: true,
+          excludeIds: [...usedIds],
+        })
+        .catch((err: unknown) => {
+          console.warn(`[picker] provider ${p.name} error: ${String(err)}`);
+          return [] as StockClip[];
+        })
     )
   );
 
@@ -127,7 +129,9 @@ async function pickForScene(
   }
 
   if (candidates.length === 0) {
-    console.warn(`[picker] scene ${scene.sceneIndex}: no clips for [${keywords.join(', ')}] — using fallback`);
+    console.warn(
+      `[picker] scene ${scene.sceneIndex}: no clips for [${keywords.join(', ')}] — using fallback`
+    );
     return { clip: FALLBACK_CLIP, score: 0, matchedTags: [] };
   }
 

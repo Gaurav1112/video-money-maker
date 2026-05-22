@@ -393,9 +393,7 @@ export function djb2Hash(str: string): number {
  */
 export function fillTemplate(template: string, slots: TitleSlots): string {
   const persona = slots.persona ?? slots.topic;
-  return template
-    .replace(/\{topic\}/g, slots.topic)
-    .replace(/\{persona\}/g, persona);
+  return template.replace(/\{topic\}/g, slots.topic).replace(/\{persona\}/g, persona);
 }
 
 /**
@@ -417,7 +415,7 @@ export function fillTemplate(template: string, slots: TitleSlots): string {
 export function pickShockTitle(
   slots: TitleSlots,
   shortIndex: number = 0,
-  lang: 'en' | 'hi' = 'en',
+  lang: 'en' | 'hi' = 'en'
 ): string {
   const pool = TITLE_TEMPLATES.filter((t) => t.lang === lang);
   if (pool.length === 0) throw new Error(`No templates for lang="${lang}"`);
@@ -440,11 +438,9 @@ export function pickShockTitleByPattern(
   slots: TitleSlots,
   pattern: TitlePattern,
   shortIndex: number = 0,
-  lang: 'en' | 'hi' = 'en',
+  lang: 'en' | 'hi' = 'en'
 ): string {
-  const pool = TITLE_TEMPLATES.filter(
-    (t) => t.pattern === pattern && t.lang === lang,
-  );
+  const pool = TITLE_TEMPLATES.filter((t) => t.pattern === pattern && t.lang === lang);
   if (pool.length === 0) {
     // Graceful fallback: use full pool
     return pickShockTitle(slots, shortIndex, lang);
@@ -469,19 +465,18 @@ export function buildShortsTitle(
   slots: TitleSlots,
   shortIndex: number,
   typeHashtag: string,
-  lang: 'en' | 'hi' = 'en',
+  lang: 'en' | 'hi' = 'en'
 ): string {
   // First short of each session always uses the #1 proven pattern
   const pattern: TitlePattern =
-    shortIndex === 0 ? 'ninety-percent-wrong' : undefined as unknown as TitlePattern;
+    shortIndex === 0 ? 'ninety-percent-wrong' : (undefined as unknown as TitlePattern);
 
   const shockTitle =
     shortIndex === 0
       ? pickShockTitleByPattern(slots, 'ninety-percent-wrong', shortIndex, lang)
       : pickShockTitle(slots, shortIndex, lang);
 
-  const truncated =
-    shockTitle.length > 60 ? shockTitle.slice(0, 59).trimEnd() + '…' : shockTitle;
+  const truncated = shockTitle.length > 60 ? shockTitle.slice(0, 59).trimEnd() + '…' : shockTitle;
 
   const hashtags = `#Shorts ${typeHashtag} #InterviewPrep #FAANG`;
   return `${truncated} ${hashtags}`.trim();

@@ -28,7 +28,14 @@
  */
 
 import { execFile, spawn } from 'node:child_process';
-import { existsSync, copyFileSync, mkdirSync, writeFileSync, createReadStream, readFileSync } from 'node:fs';
+import {
+  existsSync,
+  copyFileSync,
+  mkdirSync,
+  writeFileSync,
+  createReadStream,
+  readFileSync,
+} from 'node:fs';
 import { createHash } from 'node:crypto';
 import { promisify } from 'node:util';
 import { FFMPEG_BIN, FFPROBE_BIN } from '../lib/ffmpeg-bin.js';
@@ -67,9 +74,7 @@ export interface WordStamp {
 const DEFAULT_VOICE = process.env['TTS_VOICE'] ?? 'en-IN-NeerjaNeural';
 /** Primary Hinglish voice — warm male, Indian FAANG-prep audience. */
 const HINGLISH_VOICE = 'hi-IN-MadhurNeural';
-const CACHE_DIR =
-  process.env['TTS_CACHE_DIR'] ??
-  path.join(process.cwd(), 'assets', 'tts-cache');
+const CACHE_DIR = process.env['TTS_CACHE_DIR'] ?? path.join(process.cwd(), 'assets', 'tts-cache');
 
 /**
  * Resolves the active voice track from `TTS_VOICE_TRACK` env var.
@@ -105,7 +110,7 @@ function parseRatePercent(rate: string): number {
  * Throws on failure (no silent fallback — caller must decide).
  */
 export async function synthesize(
-  opts: TtsOptions,
+  opts: TtsOptions
 ): Promise<{ durationSec: number; wordTimestamps?: WordStamp[] }> {
   const { text, outPath } = opts;
   if (!text || !text.trim()) {
@@ -142,9 +147,7 @@ export async function synthesize(
   const voice = opts.voice ?? DEFAULT_VOICE;
   const rate = opts.rate ?? '';
 
-  const cacheKey = createHash('sha256')
-    .update(`${engine}|${voice}|${rate}|${text}`)
-    .digest('hex');
+  const cacheKey = createHash('sha256').update(`${engine}|${voice}|${rate}|${text}`).digest('hex');
   mkdirSync(CACHE_DIR, { recursive: true });
   const cachePath = path.join(CACHE_DIR, `${cacheKey}.mp3`);
   const subsCachePath = path.join(CACHE_DIR, `${cacheKey}.words.json`);
@@ -178,7 +181,9 @@ export async function synthesize(
       }
     } catch (err) {
       // Subs are non-fatal — captions just won't render. Log and continue.
-      console.warn(`[tts] failed to read words.json (${String(err).slice(0, 120)}); captions will skip`);
+      console.warn(
+        `[tts] failed to read words.json (${String(err).slice(0, 120)}); captions will skip`
+      );
     }
   }
 
@@ -195,16 +200,14 @@ export async function synthesize(
  */
 async function synthesizeHinglishHotPath(
   opts: TtsOptions,
-  wantSubs: boolean,
+  wantSubs: boolean
 ): Promise<{ durationSec: number; wordTimestamps?: WordStamp[] }> {
   const { text, outPath } = opts;
   const voice = HINGLISH_VOICE;
   const rate = opts.rate ?? '+0%';
   const ratePercent = parseRatePercent(rate);
 
-  const cacheKey = createHash('sha256')
-    .update(`edge|${voice}|${rate}|${text}`)
-    .digest('hex');
+  const cacheKey = createHash('sha256').update(`edge|${voice}|${rate}|${text}`).digest('hex');
   mkdirSync(CACHE_DIR, { recursive: true });
   const cachePath = path.join(CACHE_DIR, `${cacheKey}.mp3`);
   const subsCachePath = path.join(CACHE_DIR, `${cacheKey}.words.json`);
@@ -239,7 +242,9 @@ async function synthesizeHinglishHotPath(
         wordTimestamps = parsed;
       }
     } catch (err) {
-      console.warn(`[tts/hi] failed to read words.json (${String(err).slice(0, 120)}); captions will skip`);
+      console.warn(
+        `[tts/hi] failed to read words.json (${String(err).slice(0, 120)}); captions will skip`
+      );
     }
   }
 
@@ -258,10 +263,14 @@ async function runSynthWithStdin(args: {
   const helper = path.join(WRAPPER_DIR, 'edge-tts-synth.py');
   const cliArgs = [
     helper,
-    '--voice', args.voice,
-    '--rate', args.rate,
-    '--pitch', args.pitch,
-    '--out', args.outPath,
+    '--voice',
+    args.voice,
+    '--rate',
+    args.rate,
+    '--pitch',
+    args.pitch,
+    '--out',
+    args.outPath,
     ...(args.wordsJsonPath ? ['--write-words', args.wordsJsonPath] : []),
   ];
 
@@ -274,8 +283,13 @@ async function runSynthWithStdin(args: {
           proc.kill();
           reject(new Error(`edge-tts-synth.py timed out after 30s (attempt ${attempt})`));
         }, 30000);
-        proc.stderr?.on('data', (d) => { stderr += String(d); });
-        proc.on('error', (e) => { clearTimeout(timeout); reject(e); });
+        proc.stderr?.on('data', (d) => {
+          stderr += String(d);
+        });
+        proc.on('error', (e) => {
+          clearTimeout(timeout);
+          reject(e);
+        });
         proc.on('close', (code) => {
           clearTimeout(timeout);
           if (code === 0) resolve();
@@ -294,7 +308,7 @@ async function runSynthWithStdin(args: {
       console.warn(`[tts] attempt ${attempt}/3 failed: ${String(err).slice(0, 150)}`);
       if (attempt < 3) {
         const delay = attempt * 2000; // 2s, 4s backoff
-        await new Promise(r => setTimeout(r, delay));
+        await new Promise((r) => setTimeout(r, delay));
       } else {
         throw err;
       }
@@ -318,22 +332,32 @@ async function synthesizeEdge(opts: TtsOptions, wordsJsonPath?: string): Promise
       'python3',
       [
         helper,
-        '--voice', voice,
-        '--rate', rate,
-        '--text', opts.text,
-        '--out-audio', opts.outPath,
-        '--out-words', wordsJsonPath,
+        '--voice',
+        voice,
+        '--rate',
+        rate,
+        '--text',
+        opts.text,
+        '--out-audio',
+        opts.outPath,
+        '--out-words',
+        wordsJsonPath,
       ],
-      { maxBuffer: 16 * 1024 * 1024 },
+      { maxBuffer: 16 * 1024 * 1024 }
     );
     return;
   }
   const args = [
-    '-m', 'edge_tts',
-    '-v', voice,
-    '-t', opts.text,
-    '--write-media', opts.outPath,
-    '--rate', rate,
+    '-m',
+    'edge_tts',
+    '-v',
+    voice,
+    '-t',
+    opts.text,
+    '--write-media',
+    opts.outPath,
+    '--rate',
+    rate,
   ];
   await execFileP('python3', args, { maxBuffer: 16 * 1024 * 1024 });
 }
@@ -353,7 +377,10 @@ export function parseEdgeTtsVtt(vtt: string): WordStamp[] {
   const out: WordStamp[] = [];
   const cueBlocks = vtt.split(/\r?\n\r?\n/);
   for (const block of cueBlocks) {
-    const lines = block.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+    const lines = block
+      .split(/\r?\n/)
+      .map((l) => l.trim())
+      .filter(Boolean);
     const headerIdx = lines.findIndex((l) => /-->/i.test(l));
     if (headerIdx < 0) continue;
     const header = lines[headerIdx]!;
@@ -404,7 +431,7 @@ async function synthesizeElevenLabs(opts: TtsOptions): Promise<void> {
     throw new Error(
       '[tts] ELEVENLABS_VOICE_ID is required when USE_ELEVENLABS=1. ' +
         'No safe Indian-English default exists; configure a cloned voice id ' +
-        'or unset USE_ELEVENLABS to fall back to Edge-TTS (en-IN-NeerjaNeural).',
+        'or unset USE_ELEVENLABS to fall back to Edge-TTS (en-IN-NeerjaNeural).'
     );
   }
   const url = `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`;
@@ -424,10 +451,15 @@ async function synthesizeElevenLabs(opts: TtsOptions): Promise<void> {
   if (!res.ok) {
     const text = await res.text();
     let parsed: ElevenLabsErrorBody | undefined;
-    try { parsed = JSON.parse(text) as ElevenLabsErrorBody; } catch { /* non-json */ }
-    const detail = typeof parsed?.detail === 'object'
-      ? (parsed.detail.message ?? parsed.detail.status ?? text)
-      : (parsed?.detail ?? text);
+    try {
+      parsed = JSON.parse(text) as ElevenLabsErrorBody;
+    } catch {
+      /* non-json */
+    }
+    const detail =
+      typeof parsed?.detail === 'object'
+        ? (parsed.detail.message ?? parsed.detail.status ?? text)
+        : (parsed?.detail ?? text);
     throw new Error(`ElevenLabs ${res.status}: ${String(detail).slice(0, 200)}`);
   }
   const ab = await res.arrayBuffer();
@@ -436,9 +468,12 @@ async function synthesizeElevenLabs(opts: TtsOptions): Promise<void> {
 
 async function probeDurationSec(path: string): Promise<number> {
   const { stdout } = await execFileP(FFPROBE_BIN, [
-    '-v', 'error',
-    '-show_entries', 'format=duration',
-    '-of', 'csv=p=0',
+    '-v',
+    'error',
+    '-show_entries',
+    'format=duration',
+    '-of',
+    'csv=p=0',
     path,
   ]);
   return parseFloat(stdout.trim());

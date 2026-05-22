@@ -14,7 +14,7 @@ const OUTPUT_DIR = path.resolve(PROJECT_ROOT, 'output');
 //   - Nested: [{ topic, sessions: { "1": "md", "2": "md" } }] → each key = 1 session
 router.get('/', (_req, res) => {
   try {
-    const files = fs.readdirSync(CONTENT_DIR).filter(f => f.endsWith('.json'));
+    const files = fs.readdirSync(CONTENT_DIR).filter((f) => f.endsWith('.json'));
     const topics: any[] = [];
 
     for (const file of files) {
@@ -26,19 +26,23 @@ router.get('/', (_req, res) => {
         const renderedSessions: number[] = [];
         const topicDir = path.join(OUTPUT_DIR, slug);
         if (fs.existsSync(topicDir)) {
-          fs.readdirSync(topicDir).filter(f => f.endsWith('.mp4')).forEach(f => {
-            const match = f.match(/s(\d+)\.mp4/);
-            if (match) renderedSessions.push(parseInt(match[1]));
-          });
+          fs.readdirSync(topicDir)
+            .filter((f) => f.endsWith('.mp4'))
+            .forEach((f) => {
+              const match = f.match(/s(\d+)\.mp4/);
+              if (match) renderedSessions.push(parseInt(match[1]));
+            });
         }
         // Also check flat output like: output/slug-s1.mp4
         if (fs.existsSync(OUTPUT_DIR)) {
-          fs.readdirSync(OUTPUT_DIR).filter(f => f.startsWith(slug) && f.endsWith('.mp4')).forEach(f => {
-            const match = f.match(/s(\d+)\.mp4/);
-            if (match && !renderedSessions.includes(parseInt(match[1]))) {
-              renderedSessions.push(parseInt(match[1]));
-            }
-          });
+          fs.readdirSync(OUTPUT_DIR)
+            .filter((f) => f.startsWith(slug) && f.endsWith('.mp4'))
+            .forEach((f) => {
+              const match = f.match(/s(\d+)\.mp4/);
+              if (match && !renderedSessions.includes(parseInt(match[1]))) {
+                renderedSessions.push(parseInt(match[1]));
+              }
+            });
         }
 
         if (Array.isArray(data)) {
@@ -58,8 +62,12 @@ router.get('/', (_req, res) => {
                 name: topicObj.topic || slug,
                 totalSessions: sessionCount,
                 renderedSessions: renderedSessions.sort((a, b) => a - b),
-                status: renderedSessions.length >= sessionCount ? 'complete' :
-                        renderedSessions.length > 0 ? 'partial' : 'pending',
+                status:
+                  renderedSessions.length >= sessionCount
+                    ? 'complete'
+                    : renderedSessions.length > 0
+                      ? 'partial'
+                      : 'pending',
               });
             }
           } else {
@@ -70,8 +78,12 @@ router.get('/', (_req, res) => {
               name: firstItem.topic || firstItem.category || slug,
               totalSessions: data.length,
               renderedSessions: renderedSessions.sort((a, b) => a - b),
-              status: renderedSessions.length >= data.length ? 'complete' :
-                      renderedSessions.length > 0 ? 'partial' : 'pending',
+              status:
+                renderedSessions.length >= data.length
+                  ? 'complete'
+                  : renderedSessions.length > 0
+                    ? 'partial'
+                    : 'pending',
             });
           }
         } else if (data.plan?.sessions) {
@@ -82,11 +94,17 @@ router.get('/', (_req, res) => {
             name: data.plan.topic || data.topic || slug,
             totalSessions: data.plan.sessions.length,
             renderedSessions: renderedSessions.sort((a, b) => a - b),
-            status: renderedSessions.length >= data.plan.sessions.length ? 'complete' :
-                    renderedSessions.length > 0 ? 'partial' : 'pending',
+            status:
+              renderedSessions.length >= data.plan.sessions.length
+                ? 'complete'
+                : renderedSessions.length > 0
+                  ? 'partial'
+                  : 'pending',
           });
         }
-      } catch { /* skip malformed files */ }
+      } catch {
+        /* skip malformed files */
+      }
     }
 
     res.json({ topics: topics.sort((a, b) => a.name.localeCompare(b.name)) });

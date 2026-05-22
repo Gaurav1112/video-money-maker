@@ -68,10 +68,7 @@ function extractFrontmatter(markdown: string): { frontmatter: OpinionFrontmatter
     const key = m[1];
     let val: string | number = m[2];
     // Strip wrapping quotes
-    if (
-      (val.startsWith('"') && val.endsWith('"')) ||
-      (val.startsWith("'") && val.endsWith("'"))
-    ) {
+    if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
       val = val.slice(1, -1);
     }
     // Coerce durationSec to number
@@ -132,8 +129,14 @@ function parseThenNow(raw: string): OpinionThenNow {
   let bucket: 'then' | 'now' | null = null;
   for (const line of lines) {
     if (!line) continue;
-    if (/^In\s+1995\s*:/i.test(line)) { bucket = 'then'; continue; }
-    if (/^In\s+2026\s*:/i.test(line)) { bucket = 'now'; continue; }
+    if (/^In\s+1995\s*:/i.test(line)) {
+      bucket = 'then';
+      continue;
+    }
+    if (/^In\s+2026\s*:/i.test(line)) {
+      bucket = 'now';
+      continue;
+    }
     if (bucket === 'then') then.push(line);
     else if (bucket === 'now') now.push(line);
   }
@@ -163,7 +166,10 @@ function extractBullets(raw: string, markers: RegExp): string[] {
 // ─── Public API ───────────────────────────────────────────────────────────
 
 export class OpinionParserError extends Error {
-  constructor(message: string, public readonly section?: SectionName) {
+  constructor(
+    message: string,
+    public readonly section?: SectionName
+  ) {
     super(message);
     this.name = 'OpinionParserError';
   }
@@ -176,10 +182,7 @@ export function parseOpinionPiece(markdown: string, fallbackSlug: string): Opini
   // Validate required sections
   for (const required of REQUIRED_SECTIONS) {
     if (!sections[required] || !sections[required].trim()) {
-      throw new OpinionParserError(
-        `Missing required section: "## ${required}"`,
-        required
-      );
+      throw new OpinionParserError(`Missing required section: "## ${required}"`, required);
     }
   }
 
@@ -216,13 +219,15 @@ export interface OpinionNarrationScene {
 }
 
 function stripEmojisForSpeech(text: string): string {
-  return text
-    // Common opinion-piece markers
-    .replace(/[✅❌➡️⚡🎯😊💡🍕]/gu, '')
-    // Range covering most emoji blocks
-    .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, '')
-    .replace(/\s+/g, ' ')
-    .trim();
+  return (
+    text
+      // Common opinion-piece markers
+      .replace(/[✅❌➡️⚡🎯😊💡🍕]/gu, '')
+      // Range covering most emoji blocks
+      .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, '')
+      .replace(/\s+/g, ' ')
+      .trim()
+  );
 }
 
 export function buildNarrationPlan(opinion: OpinionPiece): OpinionNarrationScene[] {
@@ -235,8 +240,8 @@ export function buildNarrationPlan(opinion: OpinionPiece): OpinionNarrationScene
     type: 'hook',
     narration: stripEmojisForSpeech(
       `Let me tell you about something I saw today. ${opinion.hook} ` +
-      `Stay with me here, because what looks like a meme about pizza is actually a story about how we ship software in 2026. ` +
-      `And I think a lot of technology leaders are quietly wrestling with the same question.`
+        `Stay with me here, because what looks like a meme about pizza is actually a story about how we ship software in 2026. ` +
+        `And I think a lot of technology leaders are quietly wrestling with the same question.`
     ),
   });
 
@@ -247,9 +252,9 @@ export function buildNarrationPlan(opinion: OpinionPiece): OpinionNarrationScene
     type: 'then-now',
     narration: stripEmojisForSpeech(
       `Picture nineteen ninety five. ${thenSegment}. You ordered something, and it just worked. ` +
-      `Now jump to twenty twenty six. ${nowSegment}. ` +
-      `On paper, every one of those things is an improvement. But somewhere along the way, ` +
-      `the user journey became exhausting. That is what this piece is about.`
+        `Now jump to twenty twenty six. ${nowSegment}. ` +
+        `On paper, every one of those things is an improvement. But somewhere along the way, ` +
+        `the user journey became exhausting. That is what this piece is about.`
     ),
   });
 
@@ -257,9 +262,10 @@ export function buildNarrationPlan(opinion: OpinionPiece): OpinionNarrationScene
     type: 'pros',
     narration: stripEmojisForSpeech(
       `First, let us be fair. Microservices absolutely solve real enterprise problems. ` +
-      opinion.pros.map((p, i) => `Number ${i + 1}. ${p}.`).join(' ') + ' ' +
-      `These are not hypothetical benefits — large engineering organizations have shipped real value on the back of these properties. ` +
-      `If you have ever scaled one service to ten thousand requests per second without scaling everything else, you know exactly why this architecture exists.`
+        opinion.pros.map((p, i) => `Number ${i + 1}. ${p}.`).join(' ') +
+        ' ' +
+        `These are not hypothetical benefits — large engineering organizations have shipped real value on the back of these properties. ` +
+        `If you have ever scaled one service to ten thousand requests per second without scaling everything else, you know exactly why this architecture exists.`
     ),
   });
 
@@ -267,10 +273,11 @@ export function buildNarrationPlan(opinion: OpinionPiece): OpinionNarrationScene
     type: 'cons',
     narration: stripEmojisForSpeech(
       `But in many organizations, the reality looks different. Let me walk through what I keep seeing. ` +
-      opinion.cons.map((c, i) => `${i + 1}. ${c}.`).join(' ') + ' ' +
-      `Sometimes the architecture becomes so distributed that customer simplicity decreases ` +
-      `while technical complexity increases. And here is the uncomfortable truth — customers do not care whether the backend is a monolith, microservices, event driven, or serverless. ` +
-      `They only care about three things. Speed. Reliability. Experience. That is it.`
+        opinion.cons.map((c, i) => `${i + 1}. ${c}.`).join(' ') +
+        ' ' +
+        `Sometimes the architecture becomes so distributed that customer simplicity decreases ` +
+        `while technical complexity increases. And here is the uncomfortable truth — customers do not care whether the backend is a monolith, microservices, event driven, or serverless. ` +
+        `They only care about three things. Speed. Reliability. Experience. That is it.`
     ),
   });
 
@@ -278,9 +285,9 @@ export function buildNarrationPlan(opinion: OpinionPiece): OpinionNarrationScene
     type: 'pivot',
     narration: stripEmojisForSpeech(
       `So here is the pivot I want to leave you with. The real question is not, are we using microservices. ` +
-      `${opinion.pivot} ` +
-      `A well designed monolith can outperform a badly designed microservices ecosystem any day of the week. ` +
-      `I have seen it happen — both directions.`
+        `${opinion.pivot} ` +
+        `A well designed monolith can outperform a badly designed microservices ecosystem any day of the week. ` +
+        `I have seen it happen — both directions.`
     ),
   });
 
@@ -288,9 +295,9 @@ export function buildNarrationPlan(opinion: OpinionPiece): OpinionNarrationScene
     type: 'lesson',
     narration: stripEmojisForSpeech(
       `${opinion.lesson} ` +
-      `As engineering leaders, our job is not to chase the architecture that sounds best on a conference talk. ` +
-      `Our job is to choose the architecture that genuinely improves customer outcomes, ` +
-      `business agility, and operational efficiency. Everything else is just engineering theatre.`
+        `As engineering leaders, our job is not to chase the architecture that sounds best on a conference talk. ` +
+        `Our job is to choose the architecture that genuinely improves customer outcomes, ` +
+        `business agility, and operational efficiency. Everything else is just engineering theatre.`
     ),
   });
 
@@ -299,7 +306,7 @@ export function buildNarrationPlan(opinion: OpinionPiece): OpinionNarrationScene
       type: 'question',
       narration: stripEmojisForSpeech(
         `Now I want to hear from you. ${opinion.question} ` +
-        `Drop your honest take in the comments. And if this resonated, share it with a colleague who is wrestling with the same decision.`
+          `Drop your honest take in the comments. And if this resonated, share it with a colleague who is wrestling with the same decision.`
       ),
     });
   }

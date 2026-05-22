@@ -45,7 +45,16 @@ function computeWPM(timestamps: WordTimestamp[]): number {
   return Math.round(timestamps.length / durationMinutes);
 }
 
-const TRANSITION_WORDS = new Set(['now', 'next', 'however', 'but', 'instead', 'finally', 'also', 'remember']);
+const TRANSITION_WORDS = new Set([
+  'now',
+  'next',
+  'however',
+  'but',
+  'instead',
+  'finally',
+  'also',
+  'remember',
+]);
 
 function detectPauses(timestamps: WordTimestamp[]): PausePoint[] {
   const pauses: PausePoint[] = [];
@@ -53,29 +62,59 @@ function detectPauses(timestamps: WordTimestamp[]): PausePoint[] {
     const gap = timestamps[i].start - timestamps[i - 1].end;
     if (gap >= 0.3) {
       const prevWord = timestamps[i - 1].word;
-      const isSentenceBoundary = gap >= 0.6 ||
-        prevWord.endsWith('.') ||
-        prevWord.endsWith('?') ||
-        prevWord.endsWith('!');
+      const isSentenceBoundary =
+        gap >= 0.6 || prevWord.endsWith('.') || prevWord.endsWith('?') || prevWord.endsWith('!');
 
       const cleanPrev = prevWord.toLowerCase().replace(/[^a-z]/g, '');
       const isTopicTransition = isSentenceBoundary && TRANSITION_WORDS.has(cleanPrev);
 
-      pauses.push({ time: timestamps[i - 1].end, duration: gap, isSentenceBoundary, isTopicTransition });
+      pauses.push({
+        time: timestamps[i - 1].end,
+        duration: gap,
+        isSentenceBoundary,
+        isTopicTransition,
+      });
     }
   }
   return pauses;
 }
 
 const HIGH_ENERGY_KEYWORDS = new Set([
-  'important', 'critical', 'never', 'always', 'must', 'key', 'secret',
-  'wrong', 'mistake', 'fail', 'problem', 'solution', 'trick', 'hack',
-  'powerful', 'amazing', 'incredible', 'exactly', 'remember', 'crucial',
+  'important',
+  'critical',
+  'never',
+  'always',
+  'must',
+  'key',
+  'secret',
+  'wrong',
+  'mistake',
+  'fail',
+  'problem',
+  'solution',
+  'trick',
+  'hack',
+  'powerful',
+  'amazing',
+  'incredible',
+  'exactly',
+  'remember',
+  'crucial',
 ]);
 
 const CONTRAST_KEYWORDS = new Set([
-  'but', 'however', 'instead', 'actually', 'wrong', 'not', 'versus',
-  'difference', 'unlike', 'whereas', 'rather', 'opposite',
+  'but',
+  'however',
+  'instead',
+  'actually',
+  'wrong',
+  'not',
+  'versus',
+  'difference',
+  'unlike',
+  'whereas',
+  'rather',
+  'opposite',
 ]);
 
 function detectEmphasis(timestamps: WordTimestamp[]): EmphasisPoint[] {
@@ -117,9 +156,9 @@ function computeEnergy(timestamps: WordTimestamp[], emphasis: EmphasisPoint[]): 
 
   for (let t = 0; t < totalDuration; t += segmentDuration) {
     const segEnd = Math.min(t + segmentDuration, totalDuration);
-    const wordsInSegment = timestamps.filter(w => w.start >= t && w.start < segEnd).length;
+    const wordsInSegment = timestamps.filter((w) => w.start >= t && w.start < segEnd).length;
     const wpm = (wordsInSegment / segmentDuration) * 60;
-    const emphasisInSegment = emphasis.filter(e => e.time >= t && e.time < segEnd);
+    const emphasisInSegment = emphasis.filter((e) => e.time >= t && e.time < segEnd);
     const emphasisDensity = emphasisInSegment.length / segmentDuration;
 
     let energy: EnergySegment['energy'];
@@ -145,7 +184,11 @@ function computeEnergy(timestamps: WordTimestamp[], emphasis: EmphasisPoint[]): 
 }
 
 function computeEngagementScore(
-  narration: string, wpm: number, emphasis: EmphasisPoint[], pauses: PausePoint[], sceneType: string,
+  narration: string,
+  wpm: number,
+  emphasis: EmphasisPoint[],
+  pauses: PausePoint[],
+  sceneType: string
 ): number {
   let score = 50;
   const firstSentence = narration.split(/[.!?]/)[0] || '';
@@ -162,10 +205,10 @@ function computeEngagementScore(
   const emphasisRatio = emphasis.length / Math.max(idealEmphasis, 1);
   if (emphasisRatio >= 0.8 && emphasisRatio <= 1.5) score += 8;
 
-  score += Math.min(emphasis.filter(e => e.type === 'contrast').length * 3, 9);
-  score += Math.min(emphasis.filter(e => e.type === 'question').length * 4, 12);
+  score += Math.min(emphasis.filter((e) => e.type === 'contrast').length * 3, 9);
+  score += Math.min(emphasis.filter((e) => e.type === 'question').length * 4, 12);
 
-  const sentencePauses = pauses.filter(p => p.isSentenceBoundary).length;
+  const sentencePauses = pauses.filter((p) => p.isSentenceBoundary).length;
   if (sentencePauses >= 2 && sentencePauses <= 8) score += 5;
 
   if (sceneType === 'interview') score += 5;
@@ -183,7 +226,8 @@ export function analyzeScene(scene: Scene): AudioAnalysis {
   const emphasis = detectEmphasis(timestamps);
   const energy = computeEnergy(timestamps, emphasis);
   const engagementScore = computeEngagementScore(narration, wpm, emphasis, pauses, scene.type);
-  const avgPauseDuration = pauses.length > 0 ? pauses.reduce((sum, p) => sum + p.duration, 0) / pauses.length : 0;
+  const avgPauseDuration =
+    pauses.length > 0 ? pauses.reduce((sum, p) => sum + p.duration, 0) / pauses.length : 0;
 
   return { energy, emphasis, pauses, wordsPerMinute: wpm, avgPauseDuration, engagementScore };
 }
@@ -197,7 +241,10 @@ export function analyzeStoryboard(scenes: Scene[]): {
   const ranked = sceneAnalyses
     .map((a, i) => ({ index: i, score: a.engagementScore }))
     .sort((a, b) => b.score - a.score);
-  const bestClipScenes = ranked.slice(0, 5).map(r => r.index).sort((a, b) => a - b);
+  const bestClipScenes = ranked
+    .slice(0, 5)
+    .map((r) => r.index)
+    .sort((a, b) => a - b);
   const overallEngagement = Math.round(
     sceneAnalyses.reduce((sum, a) => sum + a.engagementScore, 0) / Math.max(sceneAnalyses.length, 1)
   );

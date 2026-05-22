@@ -64,7 +64,7 @@ export function publishToDevto(article: WeeklyArticle, apiKey: string): Promise<
             reject(new Error(`Dev.to JSON parse failure: ${(e as Error).message}`));
           }
         });
-      },
+      }
     );
     req.on('error', reject);
     req.write(payload);

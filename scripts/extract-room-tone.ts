@@ -58,41 +58,55 @@ function main() {
   // with a subtle 30ms echo to give a sense of room reflections.
   //
   // anoisesrc amplitude=0.0006 ≈ -65 dBFS (0.0006 * 2^15 ≈ 19.7 → 20*log10(0.0006) ≈ -64.4 dBFS)
-  execFileSync('ffmpeg', [
-    '-y',
-    '-f', 'lavfi',
-    '-i', [
-      'anoisesrc=color=pink',
-      'amplitude=0.0006',
-      'r=48000',
-      `duration=30`,
-    ].join(':'),
-    '-af', [
-      // Band-limit to 80-300 Hz: remove high-frequency hiss, keep low hum
-      'bandpass=f=150:width_type=h:w=220',
-      // Very subtle room echo: 30ms delay at -18 dB — barely perceptible but masks silence
-      'aecho=0.8:0.9:30:0.08',
-      // Upmix mono to stereo center (identical channels — mono-compatible)
-      'pan=stereo|c0=c0|c1=c0',
-      // Final level check: ensure we stay at -65 dBFS
-      'volume=1.0',
-    ].join(','),
-    '-ar', '48000',
-    '-ac', '2',
-    '-t', '30',
-    outputPath,
-  ], { stdio: 'inherit' });
+  execFileSync(
+    'ffmpeg',
+    [
+      '-y',
+      '-f',
+      'lavfi',
+      '-i',
+      ['anoisesrc=color=pink', 'amplitude=0.0006', 'r=48000', `duration=30`].join(':'),
+      '-af',
+      [
+        // Band-limit to 80-300 Hz: remove high-frequency hiss, keep low hum
+        'bandpass=f=150:width_type=h:w=220',
+        // Very subtle room echo: 30ms delay at -18 dB — barely perceptible but masks silence
+        'aecho=0.8:0.9:30:0.08',
+        // Upmix mono to stereo center (identical channels — mono-compatible)
+        'pan=stereo|c0=c0|c1=c0',
+        // Final level check: ensure we stay at -65 dBFS
+        'volume=1.0',
+      ].join(','),
+      '-ar',
+      '48000',
+      '-ac',
+      '2',
+      '-t',
+      '30',
+      outputPath,
+    ],
+    { stdio: 'inherit' }
+  );
 
   // Verify the output level with ffprobe
-  const probeResult = execFileSync('ffmpeg', [
-    '-i', outputPath,
-    '-af', 'astats=metadata=1:reset=1,ametadata=print:key=lavfi.astats.Overall.RMS_level',
-    '-f', 'null',
-    '-',
-  ], { encoding: 'utf-8', stdio: 'pipe' }).toString();
+  const probeResult = execFileSync(
+    'ffmpeg',
+    [
+      '-i',
+      outputPath,
+      '-af',
+      'astats=metadata=1:reset=1,ametadata=print:key=lavfi.astats.Overall.RMS_level',
+      '-f',
+      'null',
+      '-',
+    ],
+    { encoding: 'utf-8', stdio: 'pipe' }
+  ).toString();
 
   console.log(`[extract-room-tone] ✅ Written: ${outputPath}`);
-  console.log(`[extract-room-tone] File size: ${(fs.statSync(outputPath).size / 1024).toFixed(1)} KB`);
+  console.log(
+    `[extract-room-tone] File size: ${(fs.statSync(outputPath).size / 1024).toFixed(1)} KB`
+  );
   console.log(`[extract-room-tone] Duration: 30s @ 48kHz stereo`);
   console.log(`[extract-room-tone] Level target: ~-65 dBFS (bandpassed pink noise)`);
   console.log('');

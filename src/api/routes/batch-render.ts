@@ -33,20 +33,29 @@ router.post('/', (req, res) => {
     const cmd = `npx tsx scripts/render-session.ts ${job.slug} ${job.session} ${fastFlag}`.trim();
     exec(cmd, { cwd: path.resolve(__dirname, '../../..') }, (error) => {
       if (error) {
-        activeRenders.set(jobId, { status: 'failed', progress: 0, error: error.message.slice(0, 200) });
+        activeRenders.set(jobId, {
+          status: 'failed',
+          progress: 0,
+          error: error.message.slice(0, 200),
+        });
       } else {
         activeRenders.set(jobId, { status: 'complete', progress: 100 });
       }
     });
   }
 
-  res.json({ message: `Started ${jobs.length} render jobs`, jobs: jobs.map(j => `${j.slug}-s${j.session}`) });
+  res.json({
+    message: `Started ${jobs.length} render jobs`,
+    jobs: jobs.map((j) => `${j.slug}-s${j.session}`),
+  });
 });
 
 // GET /api/batch-render/status — current status of all render jobs
 router.get('/status', (_req, res) => {
   const status: Record<string, any> = {};
-  activeRenders.forEach((v, k) => { status[k] = v; });
+  activeRenders.forEach((v, k) => {
+    status[k] = v;
+  });
   res.json(status);
 });
 

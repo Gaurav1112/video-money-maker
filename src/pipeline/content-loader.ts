@@ -10,9 +10,10 @@ export function listAvailableTopics(): string[] {
     console.warn(`Content directory not found: ${dir}`);
     return [];
   }
-  return fs.readdirSync(dir)
-    .filter(f => f.endsWith('.json'))
-    .map(f => f.replace('.json', ''));
+  return fs
+    .readdirSync(dir)
+    .filter((f) => f.endsWith('.json'))
+    .map((f) => f.replace('.json', ''));
 }
 
 export function loadTopicContent(filename: string): any {
@@ -38,7 +39,10 @@ export function extractSession(topicData: any, sessionIndex: number): SessionInp
       return {
         topic: item.topic || item.question || 'Unknown',
         sessionNumber: sessionIndex + 1,
-        title: item.topic || (item.question ? item.question.slice(0, 80) : '') || `Session ${sessionIndex + 1}`,
+        title:
+          item.topic ||
+          (item.question ? item.question.slice(0, 80) : '') ||
+          `Session ${sessionIndex + 1}`,
         content: item.cheatSheet || item.lesson || item.answer || '',
         objectives: item.objectives || extractObjectives(item.cheatSheet || item.lesson || ''),
         reviewQuestions: item.reviewQuestions || [],
@@ -76,7 +80,11 @@ export function extractSession(topicData: any, sessionIndex: number): SessionInp
   }
 
   // Structure B: Single topic object with sessions as object { "2": "...", "3": "..." }
-  if (topicData.sessions && typeof topicData.sessions === 'object' && !Array.isArray(topicData.sessions)) {
+  if (
+    topicData.sessions &&
+    typeof topicData.sessions === 'object' &&
+    !Array.isArray(topicData.sessions)
+  ) {
     const sessionKeys = Object.keys(topicData.sessions).sort((a, b) => Number(a) - Number(b));
     const key = sessionKeys[sessionIndex];
     if (!key) return null;
@@ -137,9 +145,9 @@ export function extractSession(topicData: any, sessionIndex: number): SessionInp
       topic: topicData.title || topicData.name || 'Unknown Topic',
       sessionNumber: sessionIndex + 1,
       title: `Questions ${start + 1}-${start + batch.length}`,
-      content: batch.map((q: any) =>
-        `### ${q.question || q.q}\n\n${q.answer || q.a || ''}`
-      ).join('\n\n'),
+      content: batch
+        .map((q: any) => `### ${q.question || q.q}\n\n${q.answer || q.a || ''}`)
+        .join('\n\n'),
       objectives: [`Master ${batch.length} key questions`],
       reviewQuestions: batch.slice(0, 3).map((q: any) => q.question || q.q || ''),
     };

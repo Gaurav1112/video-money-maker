@@ -1,10 +1,5 @@
 import { readFile } from 'node:fs/promises';
-import type {
-  ClipQuery,
-  StockClip,
-  StockProvider,
-  StockSearchProvider,
-} from '../types.js';
+import type { ClipQuery, StockClip, StockProvider, StockSearchProvider } from '../types.js';
 
 /**
  * Provider that searches a static JSON manifest of pre-curated clips.

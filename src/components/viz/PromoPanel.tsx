@@ -84,116 +84,139 @@ export const PromoPanel: React.FC<PromoPanelProps> = ({ sync, frame, keywords })
   const glowPulse = 0.5 + 0.5 * Math.sin(frame * 0.08);
 
   return (
-    <div style={{
-      width: '100%',
-      height: '100%',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: 30,
-      position: 'relative',
-      overflow: 'hidden',
-    }}>
+    <div
+      style={{
+        width: '100%',
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 30,
+        position: 'relative',
+        overflow: 'hidden',
+      }}
+    >
       {/* Background accent glow */}
-      <div style={{
-        position: 'absolute',
-        top: '50%',
-        left: '50%',
-        transform: 'translate(-50%, -50%)',
-        width: 400,
-        height: 400,
-        borderRadius: '50%',
-        background: `radial-gradient(circle, ${card.color}15, transparent 70%)`,
-        filter: 'blur(40px)',
-      }} />
+      <div
+        style={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          width: 400,
+          height: 400,
+          borderRadius: '50%',
+          background: `radial-gradient(circle, ${card.color}15, transparent 70%)`,
+          filter: 'blur(40px)',
+        }}
+      />
 
       {/* Main promo card */}
-      <div style={{
-        transform: `translateY(${translateY}px)`,
-        opacity,
-        textAlign: 'center',
-        zIndex: 1,
-      }}>
+      <div
+        style={{
+          transform: `translateY(${translateY}px)`,
+          opacity,
+          textAlign: 'center',
+          zIndex: 1,
+        }}
+      >
         {/* Big stat number */}
-        <div style={{
-          fontSize: 96,
-          fontWeight: 900,
-          color: card.color,
-          fontFamily: "'Inter', system-ui, sans-serif",
-          lineHeight: 1,
-          textShadow: `0 0 ${60 * glowPulse}px ${card.color}60, 0 0 ${100 * glowPulse}px ${card.color}30`,
-          marginBottom: 14,
-        }}>
+        <div
+          style={{
+            fontSize: 96,
+            fontWeight: 900,
+            color: card.color,
+            fontFamily: "'Inter', system-ui, sans-serif",
+            lineHeight: 1,
+            textShadow: `0 0 ${60 * glowPulse}px ${card.color}60, 0 0 ${100 * glowPulse}px ${card.color}30`,
+            marginBottom: 14,
+          }}
+        >
           {displayStat}
         </div>
 
         {/* Label */}
-        <div style={{
-          fontSize: 22,
-          fontWeight: 700,
-          color: '#fff',
-          fontFamily: "'Inter', system-ui, sans-serif",
-          marginBottom: 8,
-        }}>
+        <div
+          style={{
+            fontSize: 22,
+            fontWeight: 700,
+            color: '#fff',
+            fontFamily: "'Inter', system-ui, sans-serif",
+            marginBottom: 8,
+          }}
+        >
           {card.label}
         </div>
 
         {/* Detail */}
-        <div style={{
-          fontSize: 14,
-          color: '#A9ACB3',
-          fontFamily: "'Inter', system-ui, sans-serif",
-          lineHeight: 1.4,
-        }}>
+        <div
+          style={{
+            fontSize: 14,
+            color: '#A9ACB3',
+            fontFamily: "'Inter', system-ui, sans-serif",
+            lineHeight: 1.4,
+          }}
+        >
           {card.detail}
         </div>
       </div>
 
       {/* Brand footer */}
-      <div style={{
-        position: 'absolute',
-        bottom: 40,
-        textAlign: 'center',
-        opacity: 0.95,
-      }}>
-        <div style={{
-          fontSize: 24,
-          fontWeight: 800,
-          color: '#E85D26',
-          fontFamily: "'Inter', system-ui, sans-serif",
-          textShadow: `0 0 ${20 * glowPulse}px rgba(232, 93, 38, ${0.7 * glowPulse}), 0 0 ${40 * glowPulse}px rgba(232, 93, 38, ${0.35 * glowPulse})`,
-          letterSpacing: 0.5,
-        }}>
+      <div
+        style={{
+          position: 'absolute',
+          bottom: 40,
+          textAlign: 'center',
+          opacity: 0.95,
+        }}
+      >
+        <div
+          style={{
+            fontSize: 24,
+            fontWeight: 800,
+            color: '#E85D26',
+            fontFamily: "'Inter', system-ui, sans-serif",
+            textShadow: `0 0 ${20 * glowPulse}px rgba(232, 93, 38, ${0.7 * glowPulse}), 0 0 ${40 * glowPulse}px rgba(232, 93, 38, ${0.35 * glowPulse})`,
+            letterSpacing: 0.5,
+          }}
+        >
           www.guru-sishya.in
         </div>
-        <div style={{
-          fontSize: 14,
-          color: '#FFD700',
-          fontFamily: "'Inter', system-ui, sans-serif",
-          fontWeight: 600,
-          marginTop: 5,
-          letterSpacing: 0.3,
-        }}>
+        <div
+          style={{
+            fontSize: 14,
+            color: '#FFD700',
+            fontFamily: "'Inter', system-ui, sans-serif",
+            fontWeight: 600,
+            marginTop: 5,
+            letterSpacing: 0.3,
+          }}
+        >
           Master Your Interview
         </div>
       </div>
 
       {/* Rotating dots indicator */}
-      <div style={{
-        position: 'absolute',
-        bottom: 20,
-        display: 'flex',
-        gap: 6,
-      }}>
+      <div
+        style={{
+          position: 'absolute',
+          bottom: 20,
+          display: 'flex',
+          gap: 6,
+        }}
+      >
         {PROMO_CARDS.map((_, i) => (
-          <div key={i} style={{
-            width: i === activeIndex ? 16 : 6,
-            height: 6,
-            borderRadius: 3,
-            background: i === activeIndex ? card.color : '#333',
-            transition: 'width 0.2s',
-          }} />
+          <div
+            key={i}
+            style={{
+              width: i === activeIndex ? 16 : 6,
+              height: 6,
+              borderRadius: 3,
+              background: i === activeIndex ? card.color : '#333',
+              transition: 'width 0.2s',
+            }}
+          />
         ))}
       </div>
     </div>

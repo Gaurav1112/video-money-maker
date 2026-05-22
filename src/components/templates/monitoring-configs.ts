@@ -10,9 +10,22 @@ export const ChaosEngineeringViz: MonitoringConfig = {
     {
       name: 'Success Rate (%)',
       values: [
-        99.9, 99.8, 99.9, 99.7, 99.9,    // normal
-        92.0, 78.0, 61.0, 55.0,            // fault injection
-        60.0, 72.0, 85.0, 94.0, 98.5, 99.6, 99.8, // recovery
+        99.9,
+        99.8,
+        99.9,
+        99.7,
+        99.9, // normal
+        92.0,
+        78.0,
+        61.0,
+        55.0, // fault injection
+        60.0,
+        72.0,
+        85.0,
+        94.0,
+        98.5,
+        99.6,
+        99.8, // recovery
       ],
       threshold: 95,
       color: COLORS.teal,
@@ -21,9 +34,22 @@ export const ChaosEngineeringViz: MonitoringConfig = {
     {
       name: 'Latency p99 (ms)',
       values: [
-        45, 48, 42, 50, 47,               // normal
-        120, 340, 580, 820,                // fault injection
-        650, 420, 210, 110, 65, 50, 48,    // recovery
+        45,
+        48,
+        42,
+        50,
+        47, // normal
+        120,
+        340,
+        580,
+        820, // fault injection
+        650,
+        420,
+        210,
+        110,
+        65,
+        50,
+        48, // recovery
       ],
       threshold: 500,
       color: COLORS.saffron,
@@ -32,9 +58,22 @@ export const ChaosEngineeringViz: MonitoringConfig = {
     {
       name: 'Error Count',
       values: [
-        2, 1, 3, 1, 2,                    // normal
-        45, 120, 280, 350,                 // fault injection
-        220, 90, 30, 8, 3, 2, 1,           // recovery
+        2,
+        1,
+        3,
+        1,
+        2, // normal
+        45,
+        120,
+        280,
+        350, // fault injection
+        220,
+        90,
+        30,
+        8,
+        3,
+        2,
+        1, // recovery
       ],
       threshold: 100,
       color: COLORS.indigo,

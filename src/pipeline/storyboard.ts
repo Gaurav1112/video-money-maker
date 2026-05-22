@@ -172,7 +172,13 @@ export function generateStoryboard(
         scene.visualBeats = computeVisualBeats(scene.narration, scene.wordTimestamps);
       }
       if (scene.type !== 'title' && !scene.templateId) {
-        const tmpl = getVisualTemplate(topic, sessionNumber, scene.heading || '', scene.type, scene.vizVariant);
+        const tmpl = getVisualTemplate(
+          topic,
+          sessionNumber,
+          scene.heading || '',
+          scene.type,
+          scene.vizVariant
+        );
         scene.templateId = tmpl.templateId;
         scene.templateVariant = tmpl.variant;
       }
@@ -213,15 +219,24 @@ export function generateStoryboard(
   if (process.env.RHUBARB === '1') {
     try {
       const { execSync } = require('child_process');
-      const rhubarbBin = path.join(process.cwd(), 'tools', 'Rhubarb-Lip-Sync-1.13.0-macOS', 'rhubarb');
+      const rhubarbBin = path.join(
+        process.cwd(),
+        'tools',
+        'Rhubarb-Lip-Sync-1.13.0-macOS',
+        'rhubarb'
+      );
       const fs = require('fs');
       if (fs.existsSync(rhubarbBin) && fs.existsSync(masterPath)) {
         const wavPath = masterPath.replace(/\.mp3$/, '_lip.wav');
         execSync(`ffmpeg -y -i "${masterPath}" "${wavPath}"`, { timeout: 30000 });
-        const output = execSync(`"${rhubarbBin}" "${wavPath}" -f json`, { timeout: 300000 }).toString();
+        const output = execSync(`"${rhubarbBin}" "${wavPath}" -f json`, {
+          timeout: 300000,
+        }).toString();
         const parsed = JSON.parse(output);
         mouthCues = parsed.mouthCues || [];
-        try { fs.unlinkSync(wavPath); } catch {}
+        try {
+          fs.unlinkSync(wavPath);
+        } catch {}
         console.log(`  ✓ Rhubarb lip sync: ${mouthCues.length} mouth cues`);
       }
     } catch (err) {
@@ -235,13 +250,24 @@ export function generateStoryboard(
   // Look for common misconception patterns in the first content scene
   let shockWrongClaim: string | undefined;
   let shockRightClaim: string | undefined;
-  let shockPattern: 'side-by-side' | 'flip-wipe' | 'truth-bomb' | 'myth-buster' | 'plot-twist' | 'reveal' = 'side-by-side';
+  let shockPattern:
+    | 'side-by-side'
+    | 'flip-wipe'
+    | 'truth-bomb'
+    | 'myth-buster'
+    | 'plot-twist'
+    | 'reveal' = 'side-by-side';
 
   // Skip intro and outro scenes to find first real content
-  const firstContentScene = enrichedScenes.find(s => s.type !== 'title' && s.type !== 'summary' && s.narration?.trim() && s !== enrichedScenes[0]);
+  const firstContentScene = enrichedScenes.find(
+    (s) =>
+      s.type !== 'title' && s.type !== 'summary' && s.narration?.trim() && s !== enrichedScenes[0]
+  );
   if (firstContentScene?.narration) {
     // Pattern 1: "Most/many think X, but actually/however Y"
-    let wrongMatch = firstContentScene.narration.match(/(?:most|many|people|developers|engineers).+?(?:think|say|believe|assume)\s+([^,]+),\s+but\s+(?:actually|however|the\s+truth|in\s+reality)\s+([^.!]+)/i);
+    let wrongMatch = firstContentScene.narration.match(
+      /(?:most|many|people|developers|engineers).+?(?:think|say|believe|assume)\s+([^,]+),\s+but\s+(?:actually|however|the\s+truth|in\s+reality)\s+([^.!]+)/i
+    );
     if (wrongMatch) {
       shockWrongClaim = wrongMatch[1].trim();
       shockRightClaim = wrongMatch[2].trim();
@@ -250,7 +276,9 @@ export function generateStoryboard(
 
     // Pattern 2: "Wrong: X | Right: Y"
     if (!shockWrongClaim) {
-      wrongMatch = firstContentScene.narration.match(/(?:wrong|incorrect|false)\s*:?\s*([^|.!]+)\s*\|?\s*(?:right|correct|true)\s*:?\s*([^.!]+)/i);
+      wrongMatch = firstContentScene.narration.match(
+        /(?:wrong|incorrect|false)\s*:?\s*([^|.!]+)\s*\|?\s*(?:right|correct|true)\s*:?\s*([^.!]+)/i
+      );
       if (wrongMatch) {
         shockWrongClaim = wrongMatch[1].trim();
         shockRightClaim = wrongMatch[2].trim();

@@ -52,16 +52,16 @@ export type ValidationCode =
 
 const THRESHOLDS = {
   MAX_SENTENCE_WORDS: 12,
-  MAX_SENTENCE_WORDS_HARD: 15,    // hard fail above this
-  MIN_ACTIVE_VOICE_RATIO: 0.80,
-  MIN_DENSITY: 0.40,
+  MAX_SENTENCE_WORDS_HARD: 15, // hard fail above this
+  MIN_ACTIVE_VOICE_RATIO: 0.8,
+  MIN_DENSITY: 0.4,
   LONG_WORD_MIN: 700,
   LONG_WORD_MAX: 1150,
   SHORT_WORD_MIN: 60,
   SHORT_WORD_MAX: 140,
-  MIN_TEACH_RATIO: 0.50,
-  QUESTION_CADENCE_EVERY_N: 5,    // 1 question per 5 sentences
-  STAT_CADENCE_EVERY_N: 10,       // 1 stat per 10 sentences
+  MIN_TEACH_RATIO: 0.5,
+  QUESTION_CADENCE_EVERY_N: 5, // 1 question per 5 sentences
+  STAT_CADENCE_EVERY_N: 10, // 1 stat per 10 sentences
   PATTERN_INTERRUPT_EVERY_SEC: 35, // 1 interrupt per 35s
 } as const;
 
@@ -82,16 +82,28 @@ const BANNED_PHRASES: readonly string[] = [
   'see you in the next video',
   'stay tuned',
   'comment below',
-  "in this tutorial",
+  'in this tutorial',
   "today we'll be learning",
   "i'm going to show you",
   'let me explain',
 ];
 
 const HEDGE_WORDS: readonly string[] = [
-  'kind of', 'sort of', 'maybe', 'perhaps', 'might want',
-  'could be', 'possibly', 'in a way', 'more or less', 'i think',
-  'i believe', 'arguably', 'somewhat', 'fairly', 'rather',
+  'kind of',
+  'sort of',
+  'maybe',
+  'perhaps',
+  'might want',
+  'could be',
+  'possibly',
+  'in a way',
+  'more or less',
+  'i think',
+  'i believe',
+  'arguably',
+  'somewhat',
+  'fairly',
+  'rather',
 ];
 
 // ─── Pattern detection helpers ─────────────────────────────────────────────────
@@ -109,7 +121,9 @@ function looksPassive(sentence: string): boolean {
 
 /** Check if a sentence contains a number or stat */
 function containsStat(sentence: string): boolean {
-  return /\d+%|\d+[MBK]?\s*(LPA|crore|lakh|million|billion|requests|users|ms|seconds)|₹\d+|\b\d{4}\b/.test(sentence);
+  return /\d+%|\d+[MBK]?\s*(LPA|crore|lakh|million|billion|requests|users|ms|seconds)|₹\d+|\b\d{4}\b/.test(
+    sentence
+  );
 }
 
 /** Check if a sentence is a question */
@@ -119,14 +133,14 @@ function isQuestion(sentence: string): boolean {
 
 /** Check for pattern-interrupt markers (company, salary, year, archetype) */
 function hasPatternInterrupt(text: string): boolean {
-  return /amazon|flipkart|swiggy|zomato|phonepe|razorpay|meesho|cred|hotstar|google|microsoft|uber|₹\d+LPA|\b20\d{2}\b/i.test(text);
+  return /amazon|flipkart|swiggy|zomato|phonepe|razorpay|meesho|cred|hotstar|google|microsoft|uber|₹\d+LPA|\b20\d{2}\b/i.test(
+    text
+  );
 }
 
 // ─── Individual rule checkers ──────────────────────────────────────────────────
 
-function checkBannedPhrases(
-  segments: ScriptSegment[],
-): ValidationError[] {
+function checkBannedPhrases(segments: ScriptSegment[]): ValidationError[] {
   const errors: ValidationError[] = [];
   segments.forEach((seg, idx) => {
     const lower = seg.text.toLowerCase();
@@ -145,9 +159,7 @@ function checkBannedPhrases(
   return errors;
 }
 
-function checkHedgeWords(
-  segments: ScriptSegment[],
-): ValidationError[] {
+function checkHedgeWords(segments: ScriptSegment[]): ValidationError[] {
   const errors: ValidationError[] = [];
   segments.forEach((seg, idx) => {
     const lower = seg.text.toLowerCase();
@@ -166,9 +178,7 @@ function checkHedgeWords(
   return errors;
 }
 
-function checkSentenceLength(
-  segments: ScriptSegment[],
-): ValidationError[] {
+function checkSentenceLength(segments: ScriptSegment[]): ValidationError[] {
   const errors: ValidationError[] = [];
   segments.forEach((seg, idx) => {
     const sentences = splitSentences(seg.text);
@@ -196,9 +206,7 @@ function checkSentenceLength(
   return errors;
 }
 
-function checkActiveVoice(
-  segments: ScriptSegment[],
-): ValidationError[] {
+function checkActiveVoice(segments: ScriptSegment[]): ValidationError[] {
   const errors: ValidationError[] = [];
   let totalSentences = 0;
   let passiveSentences = 0;
@@ -223,9 +231,7 @@ function checkActiveVoice(
   return errors;
 }
 
-function checkQuestionCadence(
-  segments: ScriptSegment[],
-): ValidationError[] {
+function checkQuestionCadence(segments: ScriptSegment[]): ValidationError[] {
   const errors: ValidationError[] = [];
   const allSentences: string[] = [];
   segments.forEach((seg) => allSentences.push(...splitSentences(seg.text)));
@@ -233,7 +239,11 @@ function checkQuestionCadence(
   if (allSentences.length < THRESHOLDS.QUESTION_CADENCE_EVERY_N) return errors;
 
   // Check each window of 5 sentences
-  for (let i = 0; i < allSentences.length - THRESHOLDS.QUESTION_CADENCE_EVERY_N; i += THRESHOLDS.QUESTION_CADENCE_EVERY_N) {
+  for (
+    let i = 0;
+    i < allSentences.length - THRESHOLDS.QUESTION_CADENCE_EVERY_N;
+    i += THRESHOLDS.QUESTION_CADENCE_EVERY_N
+  ) {
     const window = allSentences.slice(i, i + THRESHOLDS.QUESTION_CADENCE_EVERY_N);
     if (!window.some(isQuestion)) {
       errors.push({
@@ -247,16 +257,18 @@ function checkQuestionCadence(
   return errors;
 }
 
-function checkStatCadence(
-  segments: ScriptSegment[],
-): ValidationError[] {
+function checkStatCadence(segments: ScriptSegment[]): ValidationError[] {
   const errors: ValidationError[] = [];
   const allSentences: string[] = [];
   segments.forEach((seg) => allSentences.push(...splitSentences(seg.text)));
 
   if (allSentences.length < THRESHOLDS.STAT_CADENCE_EVERY_N) return errors;
 
-  for (let i = 0; i < allSentences.length - THRESHOLDS.STAT_CADENCE_EVERY_N; i += THRESHOLDS.STAT_CADENCE_EVERY_N) {
+  for (
+    let i = 0;
+    i < allSentences.length - THRESHOLDS.STAT_CADENCE_EVERY_N;
+    i += THRESHOLDS.STAT_CADENCE_EVERY_N
+  ) {
     const window = allSentences.slice(i, i + THRESHOLDS.STAT_CADENCE_EVERY_N);
     if (!window.some(containsStat)) {
       errors.push({
@@ -270,32 +282,32 @@ function checkStatCadence(
   return errors;
 }
 
-function checkCtaMentions(
-  segments: ScriptSegment[],
-): ValidationError[] {
+function checkCtaMentions(segments: ScriptSegment[]): ValidationError[] {
   const fullText = segments.map((s) => s.text).join(' ');
   const count = (fullText.match(/guru-sishya\.in/gi) ?? []).length;
   if (count !== 2) {
-    return [{
-      code: 'CTA_DOUBLE_MENTION',
-      severity: 'error',
-      message: `"guru-sishya.in" must appear exactly 2 times. Found: ${count}`,
-      value: count,
-    }];
+    return [
+      {
+        code: 'CTA_DOUBLE_MENTION',
+        severity: 'error',
+        message: `"guru-sishya.in" must appear exactly 2 times. Found: ${count}`,
+        value: count,
+      },
+    ];
   }
   return [];
 }
 
-function checkPatternInterruptDensity(
-  segments: ScriptSegment[],
-): ValidationError[] {
+function checkPatternInterruptDensity(segments: ScriptSegment[]): ValidationError[] {
   const errors: ValidationError[] = [];
   // Check every ~35s window for a pattern interrupt
-  const windowEnd = segments.filter((s) => s.timeEndSec > 0).reduce((max, s) => Math.max(max, s.timeEndSec), 0);
+  const windowEnd = segments
+    .filter((s) => s.timeEndSec > 0)
+    .reduce((max, s) => Math.max(max, s.timeEndSec), 0);
 
   for (let t = 0; t < windowEnd; t += THRESHOLDS.PATTERN_INTERRUPT_EVERY_SEC) {
     const windowSegs = segments.filter(
-      (s) => s.timeStartSec >= t && s.timeStartSec < t + THRESHOLDS.PATTERN_INTERRUPT_EVERY_SEC,
+      (s) => s.timeStartSec >= t && s.timeStartSec < t + THRESHOLDS.PATTERN_INTERRUPT_EVERY_SEC
     );
     const windowText = windowSegs.map((s) => s.text).join(' ');
     if (windowText.length > 10 && !hasPatternInterrupt(windowText)) {
@@ -310,9 +322,7 @@ function checkPatternInterruptDensity(
   return errors;
 }
 
-function checkSegmentTypeCoverage(
-  segments: ScriptSegment[],
-): ValidationError[] {
+function checkSegmentTypeCoverage(segments: ScriptSegment[]): ValidationError[] {
   const errors: ValidationError[] = [];
   const found = new Set(segments.map((s) => s.type));
   for (const required of ['HOOK', 'TENSION', 'TEACH', 'CTA'] as SegmentType[]) {
@@ -328,119 +338,121 @@ function checkSegmentTypeCoverage(
   return errors;
 }
 
-function checkDensity(
-  segments: ScriptSegment[],
-  densityScore: number,
-): ValidationError[] {
+function checkDensity(segments: ScriptSegment[], densityScore: number): ValidationError[] {
   if (densityScore < THRESHOLDS.MIN_DENSITY) {
-    return [{
-      code: 'MIN_DENSITY',
-      severity: 'error',
-      message: `Density score ${densityScore.toFixed(2)} below minimum ${THRESHOLDS.MIN_DENSITY}. Script is too sparse. Add company examples, stats, and concrete details.`,
-      value: densityScore,
-    }];
+    return [
+      {
+        code: 'MIN_DENSITY',
+        severity: 'error',
+        message: `Density score ${densityScore.toFixed(2)} below minimum ${THRESHOLDS.MIN_DENSITY}. Script is too sparse. Add company examples, stats, and concrete details.`,
+        value: densityScore,
+      },
+    ];
   }
   return [];
 }
 
-function checkWordCount(
-  segments: ScriptSegment[],
-  format: 'long' | 'short',
-): ValidationError[] {
+function checkWordCount(segments: ScriptSegment[], format: 'long' | 'short'): ValidationError[] {
   const totalWords = segments.reduce((acc, s) => acc + s.wordCount, 0);
   const code = format === 'long' ? 'WORD_COUNT_RANGE' : 'SHORT_WORD_COUNT';
-  const [min, max] = format === 'long'
-    ? [THRESHOLDS.LONG_WORD_MIN, THRESHOLDS.LONG_WORD_MAX]
-    : [THRESHOLDS.SHORT_WORD_MIN, THRESHOLDS.SHORT_WORD_MAX];
+  const [min, max] =
+    format === 'long'
+      ? [THRESHOLDS.LONG_WORD_MIN, THRESHOLDS.LONG_WORD_MAX]
+      : [THRESHOLDS.SHORT_WORD_MIN, THRESHOLDS.SHORT_WORD_MAX];
 
   if (totalWords < min || totalWords > max) {
-    return [{
-      code,
-      severity: 'error',
-      message: `${format} script has ${totalWords} words. Expected ${min}–${max}.`,
-      value: totalWords,
-    }];
+    return [
+      {
+        code,
+        severity: 'error',
+        message: `${format} script has ${totalWords} words. Expected ${min}–${max}.`,
+        value: totalWords,
+      },
+    ];
   }
   return [];
 }
 
-function checkTeachRatio(
-  segments: ScriptSegment[],
-): ValidationError[] {
+function checkTeachRatio(segments: ScriptSegment[]): ValidationError[] {
   const total = segments.reduce((acc, s) => acc + s.wordCount, 0);
-  const teachWords = segments.filter((s) => s.type === 'TEACH').reduce((acc, s) => acc + s.wordCount, 0);
+  const teachWords = segments
+    .filter((s) => s.type === 'TEACH')
+    .reduce((acc, s) => acc + s.wordCount, 0);
   if (total === 0) return [];
 
   const ratio = teachWords / total;
   if (ratio < THRESHOLDS.MIN_TEACH_RATIO) {
-    return [{
-      code: 'TEACH_RATIO',
-      severity: 'warning',
-      message: `TEACH segments are only ${(ratio * 100).toFixed(1)}% of total words (min: ${THRESHOLDS.MIN_TEACH_RATIO * 100}%). Add more TEACH content.`,
-      value: ratio,
-    }];
+    return [
+      {
+        code: 'TEACH_RATIO',
+        severity: 'warning',
+        message: `TEACH segments are only ${(ratio * 100).toFixed(1)}% of total words (min: ${THRESHOLDS.MIN_TEACH_RATIO * 100}%). Add more TEACH content.`,
+        value: ratio,
+      },
+    ];
   }
   return [];
 }
 
-function checkHookFirst(
-  segments: ScriptSegment[],
-): ValidationError[] {
+function checkHookFirst(segments: ScriptSegment[]): ValidationError[] {
   if (segments.length === 0) return [];
   const firstHook = segments.find((s) => s.type === 'HOOK');
   if (!firstHook) {
-    return [{
-      code: 'HOOK_WITHIN_5S',
-      severity: 'error',
-      message: 'No HOOK segment found. Script must open with a hook.',
-    }];
+    return [
+      {
+        code: 'HOOK_WITHIN_5S',
+        severity: 'error',
+        message: 'No HOOK segment found. Script must open with a hook.',
+      },
+    ];
   }
   if (firstHook.timeStartSec > 5) {
-    return [{
-      code: 'HOOK_WITHIN_5S',
-      severity: 'error',
-      message: `First HOOK starts at ${firstHook.timeStartSec}s. Must start within first 5 seconds.`,
-      value: firstHook.timeStartSec,
-    }];
+    return [
+      {
+        code: 'HOOK_WITHIN_5S',
+        severity: 'error',
+        message: `First HOOK starts at ${firstHook.timeStartSec}s. Must start within first 5 seconds.`,
+        value: firstHook.timeStartSec,
+      },
+    ];
   }
   return [];
 }
 
-function checkCtaEndsScript(
-  segments: ScriptSegment[],
-): ValidationError[] {
+function checkCtaEndsScript(segments: ScriptSegment[]): ValidationError[] {
   if (segments.length === 0) return [];
   const last = segments[segments.length - 1];
   if (last.type !== 'CTA') {
-    return [{
-      code: 'CTA_ENDS_SCRIPT',
-      severity: 'error',
-      message: `Last segment is type "${last.type}". Script must end with CTA.`,
-      value: last.type,
-    }];
+    return [
+      {
+        code: 'CTA_ENDS_SCRIPT',
+        severity: 'error',
+        message: `Last segment is type "${last.type}". Script must end with CTA.`,
+        value: last.type,
+      },
+    ];
   }
   return [];
 }
 
-function checkTopicSpecificity(
-  segments: ScriptSegment[],
-): ValidationError[] {
+function checkTopicSpecificity(segments: ScriptSegment[]): ValidationError[] {
   const fullText = segments.map((s) => s.text).join(' ');
   if (!hasPatternInterrupt(fullText)) {
-    return [{
-      code: 'TOPIC_SPECIFICITY',
-      severity: 'error',
-      message: 'No company names, salary bands, or years found in script. Every script needs at least one specific anchor (Amazon, ₹45LPA, 2023).',
-    }];
+    return [
+      {
+        code: 'TOPIC_SPECIFICITY',
+        severity: 'error',
+        message:
+          'No company names, salary bands, or years found in script. Every script needs at least one specific anchor (Amazon, ₹45LPA, 2023).',
+      },
+    ];
   }
   return [];
 }
 
 // ─── Main validate function ────────────────────────────────────────────────────
 
-export function validate(
-  script: GeneratedScript,
-): ValidationResult {
+export function validate(script: GeneratedScript): ValidationResult {
   const { segments, metadata } = script;
   const allIssues: ValidationError[] = [
     ...checkBannedPhrases(segments),
@@ -468,15 +480,26 @@ export function validate(
 
   // Build breakdown map
   const allCodes: ValidationCode[] = [
-    'NO_BANNED_PHRASES', 'MAX_SENTENCE_LENGTH', 'ACTIVE_VOICE_RATIO',
-    'QUESTION_CADENCE', 'STAT_CADENCE', 'CTA_DOUBLE_MENTION',
-    'PATTERN_INTERRUPT_DENSITY', 'SEGMENT_TYPE_COVERAGE', 'MIN_DENSITY',
-    'WORD_COUNT_RANGE', 'SHORT_WORD_COUNT', 'NO_HEDGE_WORDS', 'TEACH_RATIO',
-    'HOOK_WITHIN_5S', 'CTA_ENDS_SCRIPT', 'TOPIC_SPECIFICITY',
+    'NO_BANNED_PHRASES',
+    'MAX_SENTENCE_LENGTH',
+    'ACTIVE_VOICE_RATIO',
+    'QUESTION_CADENCE',
+    'STAT_CADENCE',
+    'CTA_DOUBLE_MENTION',
+    'PATTERN_INTERRUPT_DENSITY',
+    'SEGMENT_TYPE_COVERAGE',
+    'MIN_DENSITY',
+    'WORD_COUNT_RANGE',
+    'SHORT_WORD_COUNT',
+    'NO_HEDGE_WORDS',
+    'TEACH_RATIO',
+    'HOOK_WITHIN_5S',
+    'CTA_ENDS_SCRIPT',
+    'TOPIC_SPECIFICITY',
   ];
   const failedCodes = new Set(errors.map((e) => e.code));
   const breakdown = Object.fromEntries(
-    allCodes.map((code) => [code, !failedCodes.has(code)]),
+    allCodes.map((code) => [code, !failedCodes.has(code)])
   ) as Record<ValidationCode, boolean>;
 
   return {

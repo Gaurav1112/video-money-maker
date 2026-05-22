@@ -84,9 +84,9 @@ router.post('/', (req, res) => {
 
       // 3. Generate TTS audio (language-aware voice selection)
       const audioResults = await generateSceneAudios(
-        script.map(s => ({ narration: s.narration, type: s.type })),
+        script.map((s) => ({ narration: s.narration, type: s.type })),
         voice,
-        voice_language,
+        voice_language
       );
       updateRenderJob(jobId, { progress: 60 });
 

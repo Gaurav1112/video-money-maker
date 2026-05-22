@@ -178,8 +178,7 @@ export function pickEligibleStoryboard(now: Date = new Date()): {
   if (eligible.length > 0) {
     // Deterministic daily pick from the eligible set
     const dayOfYear = Math.floor(
-      (now.getTime() - new Date(now.getFullYear(), 0, 0).getTime()) /
-        86400000,
+      (now.getTime() - new Date(now.getFullYear(), 0, 0).getTime()) / 86400000
     );
     const idx = dayOfYear % eligible.length;
     return { ...eligible[idx], reason: 'fresh' };
@@ -234,7 +233,7 @@ function cliPick(): void {
     process.exit(1);
   }
   process.stderr.write(
-    `[published-state] picked ${result.path} (topic="${result.topic}", reason=${result.reason})\n`,
+    `[published-state] picked ${result.path} (topic="${result.topic}", reason=${result.reason})\n`
   );
   if (process.env.GITHUB_OUTPUT) {
     fs.appendFileSync(process.env.GITHUB_OUTPUT, `path=${result.path}\n`);
@@ -268,7 +267,7 @@ function cliRecord(metaPathOrTopic: string, videoId: string): void {
 
   const entry = recordPublish({ topic, session, slug, videoId });
   process.stderr.write(
-    `[published-state] recorded ${entry.topic}${entry.session !== undefined ? `/s${entry.session}` : ''} → ${entry.videoId} @ ${entry.publishedAt}\n`,
+    `[published-state] recorded ${entry.topic}${entry.session !== undefined ? `/s${entry.session}` : ''} → ${entry.videoId} @ ${entry.publishedAt}\n`
   );
 }
 
@@ -283,16 +282,12 @@ if (
     const meta = process.argv[3];
     const videoId = process.argv[4];
     if (!meta || !videoId) {
-      process.stderr.write(
-        'usage: published-state.ts record <metadata.json|topic> <videoId>\n',
-      );
+      process.stderr.write('usage: published-state.ts record <metadata.json|topic> <videoId>\n');
       process.exit(2);
     }
     cliRecord(meta, videoId);
   } else {
-    process.stderr.write(
-      'usage: published-state.ts <pick | record <meta> <videoId>>\n',
-    );
+    process.stderr.write('usage: published-state.ts <pick | record <meta> <videoId>>\n');
     process.exit(2);
   }
 }

@@ -32,13 +32,15 @@ function main() {
     console.log('');
     console.log('Examples:');
     console.log('  npx tsx scripts/render-4k.ts output/test-props.json');
-    console.log('  npx tsx scripts/render-4k.ts output/test-props.json output/4k-final.mp4 --native');
+    console.log(
+      '  npx tsx scripts/render-4k.ts output/test-props.json output/4k-final.mp4 --native'
+    );
     process.exit(1);
   }
 
   const useNative = args.includes('--native');
   const useFast = args.includes('--fast');
-  const positionalArgs = args.filter(a => !a.startsWith('--'));
+  const positionalArgs = args.filter((a) => !a.startsWith('--'));
 
   const propsFile = positionalArgs[0];
   if (!fs.existsSync(propsFile)) {

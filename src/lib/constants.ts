@@ -31,17 +31,17 @@ export const SCENE_DEFAULTS = {
 
 // Shorts/Reels: 50-60% of long-form durations for faster pacing
 export const SHORT_SCENE_DEFAULTS = {
-  titleDuration: 3,        // was 5
-  textDuration: 5,         // was 8-10
-  codeDuration: 6,         // was 10
-  tableDuration: 4,        // was 6
-  interviewDuration: 5,    // was 8
+  titleDuration: 3, // was 5
+  textDuration: 5, // was 8-10
+  codeDuration: 6, // was 10
+  tableDuration: 4, // was 6
+  interviewDuration: 5, // was 8
   reviewQuestionDuration: 5, // was 10
-  summaryDuration: 4,      // was 8
+  summaryDuration: 4, // was 8
 } as const;
 
 export const MAX_SHORT_DURATION_FRAMES = 1800; // 60 seconds at 30fps
-export const MAX_REEL_DURATION_FRAMES = 2700;  // 90 seconds at 30fps
+export const MAX_REEL_DURATION_FRAMES = 2700; // 90 seconds at 30fps
 
 export const INTRO_DURATION = 150; // frames (5 seconds — cinematic intro styles need 150f for 3-phase animation)
 export const VERTICAL_INTRO_DURATION = 45; // frames (1.5 seconds — vertical must hook instantly)

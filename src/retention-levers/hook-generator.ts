@@ -7,30 +7,30 @@ export type HookPattern = 'contradiction' | 'curiosity' | 'urgency' | 'pattern-b
 
 export const HOOK_PATTERNS = {
   contradiction: [
-    "❌ Most engineers think {concept} is {wrong}",
-    "❌ Everyone does {concept} this way",
-    "❌ {concept} is supposed to be {myth}",
+    '❌ Most engineers think {concept} is {wrong}',
+    '❌ Everyone does {concept} this way',
+    '❌ {concept} is supposed to be {myth}',
   ],
   curiosity: [
     "🤔 Wait, you don't know about {concept}? Here's why...",
-    "🤔 {percent}% of engineers get {concept} wrong",
+    '🤔 {percent}% of engineers get {concept} wrong',
     "🤔 I didn't know this trick until...",
   ],
   urgency: [
     "⚠️ Your system will crash if you don't understand {concept}",
-    "⚠️ This one mistake costs companies millions",
-    "⚠️ 90% of systems fail because of...",
+    '⚠️ This one mistake costs companies millions',
+    '⚠️ 90% of systems fail because of...',
   ],
   pattern_break: [
-    "🎬 Most videos teach {concept} wrong. Watch this:",
-    "🎬 Forget everything you know about {concept}",
-    "🎬 I just discovered {concept} works completely different",
+    '🎬 Most videos teach {concept} wrong. Watch this:',
+    '🎬 Forget everything you know about {concept}',
+    '🎬 I just discovered {concept} works completely different',
   ],
   surprise: [
-    "😱 {concept} is {speed}x faster than you think",
-    "😱 The easiest way to do {concept} is...",
-    "😱 {expert} just revealed {concept} secret",
-  ]
+    '😱 {concept} is {speed}x faster than you think',
+    '😱 The easiest way to do {concept} is...',
+    '😱 {expert} just revealed {concept} secret',
+  ],
 };
 
 export function generateHooks(topic: string): Array<{
@@ -46,21 +46,21 @@ export function generateHooks(topic: string): Array<{
       pattern: 'contradiction',
       curiosityGap: 'high',
       urgency: true,
-      expectedWatchthrough: 0.95
+      expectedWatchthrough: 0.95,
     },
     {
       hook: `⚠️ Your system will crash if you don't understand ${topic} at scale`,
       pattern: 'urgency',
       curiosityGap: 'high',
       urgency: true,
-      expectedWatchthrough: 0.92
+      expectedWatchthrough: 0.92,
     },
     {
       hook: `🤔 I didn't know ${topic} worked like this until...`,
       pattern: 'curiosity',
       curiosityGap: 'high',
       urgency: false,
-      expectedWatchthrough: 0.88
+      expectedWatchthrough: 0.88,
     },
   ];
 }
@@ -75,11 +75,11 @@ export function evaluateHook(hook: string): {
   // Curiosity gap (0-40 points)
   if (hook.includes('?')) factors.curiosityGap = 20;
   if (hook.includes('...')) factors.curiosityGap += 20;
-  
+
   // Urgency (0-30 points)
   if (hook.includes('⚠️') || hook.includes('❌')) factors.urgency = 15;
   if (hook.includes('crash') || hook.includes('fail')) factors.urgency += 15;
-  
+
   // Specificity (0-30 points)
   if (hook.includes('%')) factors.specificity = 15;
   if (hook.includes('💰') || hook.includes('⏱️')) factors.specificity += 15;

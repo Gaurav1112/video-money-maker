@@ -69,7 +69,9 @@ function main() {
   lines.push(``);
   lines.push(`INSTRUCTIONS:`);
   lines.push(`- Record in a quiet room, consistent distance from mic`);
-  lines.push(`- Follow the tone markers: [HOOK] = urgent, [QUESTION] = clear, [ANSWER] = confident`);
+  lines.push(
+    `- Follow the tone markers: [HOOK] = urgent, [QUESTION] = clear, [ANSWER] = confident`
+  );
   lines.push(`- Pause 5 seconds between quizzes (or record them as separate files)`);
   lines.push(`- Save individual files as: voice-recordings/quiz-0.mp3, quiz-1.mp3, etc.`);
   lines.push(``);
@@ -132,7 +134,9 @@ function main() {
   lines.push(`   voice-recordings/quiz-${from}.mp3 through quiz-${to}.mp3`);
   lines.push(``);
   lines.push(`2. Render all quizzes with your voice:`);
-  lines.push(`   npx tsx scripts/batch-render-quizzes.ts --from ${from} --to ${to} --audio-dir voice-recordings/`);
+  lines.push(
+    `   npx tsx scripts/batch-render-quizzes.ts --from ${from} --to ${to} --audio-dir voice-recordings/`
+  );
   lines.push(``);
 
   const output = lines.join('\n');

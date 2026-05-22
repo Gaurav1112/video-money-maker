@@ -14,15 +14,18 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { execSync } from 'child_process';
-import { getDailyQuiz, getQuizByIndex, QUIZ_BANK, buildTags, type QuizQuestion } from '../src/lib/quiz-content';
+import {
+  getDailyQuiz,
+  getQuizByIndex,
+  QUIZ_BANK,
+  buildTags,
+  type QuizQuestion,
+} from '../src/lib/quiz-content';
 import { generateSceneAudios } from '../src/pipeline/tts-engine';
 import { generateStoryboard } from '../src/pipeline/storyboard';
 import { wordTimestampsToSrt } from '../src/lib/srt';
 import { applyHook, type HookFormula } from '../src/lib/quiz-hook';
-import {
-  readPairedComparisons,
-  pickWinningFormula,
-} from './lib/variant-store';
+import { readPairedComparisons, pickWinningFormula } from './lib/variant-store';
 
 // ─── Paths ──────────────────────────────────────────────────────────────────
 
@@ -46,13 +49,17 @@ function deriveSpokenCode(quiz: QuizQuestion): string {
 function extractKeyInsight(explanation: string): string {
   // Find the first sentence containing a power word
   const sentences = explanation.split(/\.\s+/);
-  const insight = sentences.find(s => /NOT|NEVER|WRONG|LOST|EVERY|ALWAYS|CRITICAL|MOST|ONLY/i.test(s));
+  const insight = sentences.find((s) =>
+    /NOT|NEVER|WRONG|LOST|EVERY|ALWAYS|CRITICAL|MOST|ONLY/i.test(s)
+  );
   return (insight ?? sentences[0]).trim();
 }
 
 function deriveSpokenExample(quiz: QuizQuestion): string {
   // Heuristic: build a "Here's what happens at scale" narration
-  const companyMatch = quiz.explanation.match(/(Google|Netflix|Uber|LinkedIn|Meta|Amazon|Stripe|Cloudflare|GitHub|Twitter)/i);
+  const companyMatch = quiz.explanation.match(
+    /(Google|Netflix|Uber|LinkedIn|Meta|Amazon|Stripe|Cloudflare|GitHub|Twitter)/i
+  );
   const company = companyMatch?.[1] ?? 'a top tech company';
   return `Here's how this plays out in the real world. ${company} runs into this exact problem at massive scale. The wrong approach leads to outages, data loss, and angry users. The right approach — the one we just covered — is what they actually use in production. The lesson: this matters. Pay attention to these defaults.`;
 }
@@ -62,18 +69,28 @@ function deriveSpokenExample(quiz: QuizQuestion): string {
 function loudnormPass(inputPath: string, outputPath: string): void {
   console.log('   [loudnorm] pass 1 (measure)...');
   const measureCmd = `ffmpeg -y -i "${inputPath}" -af loudnorm=I=-14:TP=-1.5:LRA=11:print_format=json -f null - 2>&1 | tail -20`;
-  const measureOut = execSync(measureCmd, { cwd: PROJECT_ROOT, encoding: 'utf8', shell: '/bin/bash' });
+  const measureOut = execSync(measureCmd, {
+    cwd: PROJECT_ROOT,
+    encoding: 'utf8',
+    shell: '/bin/bash',
+  });
   const jsonStart = measureOut.indexOf('{');
   const jsonEnd = measureOut.lastIndexOf('}');
   if (jsonStart < 0 || jsonEnd < 0) {
     console.warn('   [loudnorm] could not parse pass-1 output; falling back to single-pass');
-    execSync(`ffmpeg -y -i "${inputPath}" -af loudnorm=I=-14:TP=-1.5:LRA=11 -c:v copy "${outputPath}"`, { cwd: PROJECT_ROOT, stdio: 'inherit' });
+    execSync(
+      `ffmpeg -y -i "${inputPath}" -af loudnorm=I=-14:TP=-1.5:LRA=11 -c:v copy "${outputPath}"`,
+      { cwd: PROJECT_ROOT, stdio: 'inherit' }
+    );
     return;
   }
   const m = JSON.parse(measureOut.slice(jsonStart, jsonEnd + 1));
   console.log(`   [loudnorm] pass 2 (apply, measured_I=${m.input_i})...`);
   const applyFilter = `loudnorm=I=-14:TP=-1.5:LRA=11:measured_I=${m.input_i}:measured_LRA=${m.input_lra}:measured_TP=${m.input_tp}:measured_thresh=${m.input_thresh}:offset=${m.target_offset}:linear=true`;
-  execSync(`ffmpeg -y -i "${inputPath}" -af "${applyFilter}" -c:v copy "${outputPath}"`, { cwd: PROJECT_ROOT, stdio: 'inherit' });
+  execSync(`ffmpeg -y -i "${inputPath}" -af "${applyFilter}" -c:v copy "${outputPath}"`, {
+    cwd: PROJECT_ROOT,
+    stdio: 'inherit',
+  });
 }
 
 // ─── CLI Args ───────────────────────────────────────────────────────────────
@@ -159,21 +176,23 @@ async function main() {
   // Determine which quiz to render.
   // Feature 002: when no explicit --short index is given, `topic` (CLI flag)
   // takes precedence over the QUIZ_TOPIC_LOCK env / default lock-date logic.
-  const quiz = explicitShort !== null
-    ? getQuizByIndex(explicitShort)
-    : getDailyQuiz(date, topic ?? undefined);
+  const quiz =
+    explicitShort !== null ? getQuizByIndex(explicitShort) : getDailyQuiz(date, topic ?? undefined);
   if (explicitShort === null) {
-    console.log(`Topic filter (resolved): ${quiz.topic} (CLI=${topic ?? '-'}, env=${process.env.QUIZ_TOPIC_LOCK ?? '-'})`);
+    console.log(
+      `Topic filter (resolved): ${quiz.topic} (CLI=${topic ?? '-'}, env=${process.env.QUIZ_TOPIC_LOCK ?? '-'})`
+    );
   }
 
   // Build a stable ID for file naming
-  const quizIndex = explicitShort !== null
-    ? explicitShort % QUIZ_BANK.length
-    : (() => {
-        const startOfYear = new Date(date.getFullYear(), 0, 0);
-        const diff = date.getTime() - startOfYear.getTime();
-        return Math.floor(diff / (1000 * 60 * 60 * 24)) % QUIZ_BANK.length;
-      })();
+  const quizIndex =
+    explicitShort !== null
+      ? explicitShort % QUIZ_BANK.length
+      : (() => {
+          const startOfYear = new Date(date.getFullYear(), 0, 0);
+          const diff = date.getTime() - startOfYear.getTime();
+          return Math.floor(diff / (1000 * 60 * 60 * 24)) % QUIZ_BANK.length;
+        })();
   const episodeId = `${quiz.topic}-quiz-${quizIndex}`;
 
   // Feature 001 (A/B): pick which hook formulas to render.
@@ -220,10 +239,10 @@ async function main() {
   // Quizzes can override CODE/EXAMPLE/END with hand-written spokenCode /
   // spokenExample / spokenCTA. Otherwise we derive sensible defaults.
   const narrationParts = [
-    quiz.spokenHook,                                                  // ~3s hook
-    '',  // pause
-    quiz.question,                                                    // ~5s question
-    'Take a moment. Think about it.',                                 // ~3s pause
+    quiz.spokenHook, // ~3s hook
+    '', // pause
+    quiz.question, // ~5s question
+    'Take a moment. Think about it.', // ~3s pause
     '',
     // CODE phase narration — ~16s
     quiz.spokenCode ?? deriveSpokenCode(quiz),
@@ -239,7 +258,8 @@ async function main() {
     // LOOP TRIGGER — ~6s
     `But wait. ${quiz.twist}`,
     // END CTA — ~4s
-    quiz.spokenCTA ?? `${quiz.endQuestion}. Drop your answer in the comments and check out the full course at www dot guru dash sishya dot in.`,
+    quiz.spokenCTA ??
+      `${quiz.endQuestion}. Drop your answer in the comments and check out the full course at www dot guru dash sishya dot in.`,
   ];
   const fullNarration = narrationParts.filter(Boolean).join(' ');
 
@@ -247,7 +267,7 @@ async function main() {
     [{ narration: fullNarration, type: 'text' }],
     'en-IN-PrabhatNeural',
     'indian-english',
-    { text: '+10%' },
+    { text: '+10%' }
   );
 
   // ── Step 2: Build storyboard (for audio stitching only) ──
@@ -290,8 +310,7 @@ async function main() {
   console.log(`[3/4] Rendering ${formulas.length} variant(s)...`);
   for (let i = 0; i < formulas.length; i++) {
     const formula = formulas[i];
-    const variantLabel =
-      formulas.length === 1 ? '' : i === 0 ? '-variantA' : '-variantB';
+    const variantLabel = formulas.length === 1 ? '' : i === 0 ? '-variantA' : '-variantB';
     const variantId = `${episodeId}${variantLabel}`;
     console.log(`\n  -- Variant ${variantLabel || '(single)'} | ${formula} --`);
 
@@ -308,7 +327,9 @@ async function main() {
 
     const outputPath = path.join(OUTPUT_DIR, `${variantId}.mp4`);
     const renderCmd = [
-      'npx', 'remotion', 'render',
+      'npx',
+      'remotion',
+      'render',
       'src/compositions/index.tsx',
       'QuizShort',
       outputPath,
@@ -335,7 +356,9 @@ async function main() {
     // Export thumbnail per variant (uses same formula so frame matches)
     const thumbnailPath = path.join(OUTPUT_DIR, `${variantId}-thumbnail.jpg`);
     const thumbCmd = [
-      'npx', 'remotion', 'still',
+      'npx',
+      'remotion',
+      'still',
       'src/compositions/index.tsx',
       'QuizThumbnail',
       thumbnailPath,
@@ -366,8 +389,8 @@ async function main() {
           // siblingVideoId is filled in by the upload step once both ids exist.
         },
         null,
-        2,
-      ),
+        2
+      )
     );
     console.log(`   Variant partial: ${partialPath}`);
   }
@@ -419,7 +442,9 @@ async function main() {
 
   const descriptionWords = metadata.youtube.description.split(/\s+/).filter(Boolean).length;
   if (descriptionWords < 150) {
-    console.warn(`   [warn] description is ${descriptionWords} words (<150). Quiz "${quiz.title}" has short explanation/twist — consider expanding.`);
+    console.warn(
+      `   [warn] description is ${descriptionWords} words (<150). Quiz "${quiz.title}" has short explanation/twist — consider expanding.`
+    );
   }
 
   const metadataPath = path.join(OUTPUT_DIR, `${episodeId}-metadata.json`);

@@ -30,10 +30,10 @@ import type { RetentionBeatType } from './retention-engine';
 export type DropoffRisk = 'critical' | 'high' | 'medium' | 'low';
 
 export interface DropoffWindow {
-  windowStart: number;  // seconds
-  windowEnd: number;    // seconds
+  windowStart: number; // seconds
+  windowEnd: number; // seconds
   risk: DropoffRisk;
-  predictedDropPercent: number;  // estimated % of remaining viewers who leave
+  predictedDropPercent: number; // estimated % of remaining viewers who leave
   reason: string;
   counterTactic: RetentionBeatType;
   tacticText: string;
@@ -55,7 +55,16 @@ export interface DropoffPrediction {
 
 export interface ScriptSegmentInput {
   id: string;
-  type: 'hook' | 'content' | 'code' | 'diagram' | 'cta' | 'review' | 'summary' | 'retention_beat' | string;
+  type:
+    | 'hook'
+    | 'content'
+    | 'code'
+    | 'diagram'
+    | 'cta'
+    | 'review'
+    | 'summary'
+    | 'retention_beat'
+    | string;
   startSeconds: number;
   endSeconds: number;
   isHardConcept?: boolean;
@@ -66,55 +75,41 @@ export interface ScriptSegmentInput {
 
 /** Derral Eves: AVD math baseline for cold/new channels */
 const BASELINE_AVD_COLD_CHANNEL = 0.25; // 25% — GuruSishya current state
-const TARGET_AVD_SHORTS = 0.65;         // 65% = 10× algo distribution
-const TARGET_AVD_LONGFORM = 0.45;       // 45% = breaks cold spiral
+const TARGET_AVD_SHORTS = 0.65; // 65% = 10× algo distribution
+const TARGET_AVD_LONGFORM = 0.45; // 45% = breaks cold spiral
 
 /** MrBeast rule: 35% drop in first 30s if hook fails promise+stakes */
 const HOOK_FAIL_DROP = 0.35;
 
 /** Counter-tactic effectiveness: each tactic reduces drop by this fraction */
 const TACTIC_EFFECTIVENESS: Record<RetentionBeatType, number> = {
-  open_loop:           0.60, // 60% of the predicted drop is neutralized
-  stake_escalation:    0.55,
-  pattern_interrupt:   0.50,
-  curiosity_gap:       0.65,
-  cta_buyback:         0.70, // most effective: directly counters perceived end
-  numbered_tease:      0.45,
-  status_reveal:       0.40,
-  loss_aversion:       0.50,
-  recall_bait:         0.55,
-  surprise_subversion: 0.60,
+  open_loop: 0.6, // 60% of the predicted drop is neutralized
+  stake_escalation: 0.55,
+  pattern_interrupt: 0.5,
+  curiosity_gap: 0.65,
+  cta_buyback: 0.7, // most effective: directly counters perceived end
+  numbered_tease: 0.45,
+  status_reveal: 0.4,
+  loss_aversion: 0.5,
+  recall_bait: 0.55,
+  surprise_subversion: 0.6,
 };
 
 // ─── Counter-tactic text generator ───────────────────────────────────────────
 
-function tacticText(
-  tactic: RetentionBeatType,
-  topic: string,
-  windowStart: number,
-): string {
+function tacticText(tactic: RetentionBeatType, topic: string, windowStart: number): string {
   const t = formatTime(windowStart);
   const tactics: Record<RetentionBeatType, string> = {
-    open_loop:
-      `[AT ${t}] Open loop: "I'll show you the ONE thing most engineers miss about ${topic} — but first..."`,
-    stake_escalation:
-      `[AT ${t}] Stake escalation: "If you get ${topic} wrong in your interview, you're not just failing this question."`,
-    pattern_interrupt:
-      `[AT ${t}] Pattern interrupt: zoom punch + audio sting + 3-word text slam`,
-    curiosity_gap:
-      `[AT ${t}] Curiosity gap: "What would you say if a Google interviewer asked you about ${topic} right now? Answer at ${formatTime(windowStart + 90)}."`,
-    cta_buyback:
-      `[AT ${t}] CTA buyback: "WAIT — before that link — I haven't shown you the #1 mistake with ${topic} yet."`,
-    numbered_tease:
-      `[AT ${t}] Numbered tease: "5 things about ${topic} — #4 is what 90% miss in FAANG interviews."`,
-    status_reveal:
-      `[AT ${t}] Status reveal: "A principal engineer at Amazon told me something about ${topic} that changed everything."`,
-    loss_aversion:
-      `[AT ${t}] Loss aversion: "Engineers who don't know this about ${topic} leave ₹15LPA on the table every year."`,
-    recall_bait:
-      `[AT ${t}] Recall bait: "Remember the question I asked at the start? Here's why your first answer about ${topic} was wrong."`,
-    surprise_subversion:
-      `[AT ${t}] Surprise subversion: "Most engineers think ${topic} requires more servers. It's actually the opposite."`,
+    open_loop: `[AT ${t}] Open loop: "I'll show you the ONE thing most engineers miss about ${topic} — but first..."`,
+    stake_escalation: `[AT ${t}] Stake escalation: "If you get ${topic} wrong in your interview, you're not just failing this question."`,
+    pattern_interrupt: `[AT ${t}] Pattern interrupt: zoom punch + audio sting + 3-word text slam`,
+    curiosity_gap: `[AT ${t}] Curiosity gap: "What would you say if a Google interviewer asked you about ${topic} right now? Answer at ${formatTime(windowStart + 90)}."`,
+    cta_buyback: `[AT ${t}] CTA buyback: "WAIT — before that link — I haven't shown you the #1 mistake with ${topic} yet."`,
+    numbered_tease: `[AT ${t}] Numbered tease: "5 things about ${topic} — #4 is what 90% miss in FAANG interviews."`,
+    status_reveal: `[AT ${t}] Status reveal: "A principal engineer at Amazon told me something about ${topic} that changed everything."`,
+    loss_aversion: `[AT ${t}] Loss aversion: "Engineers who don't know this about ${topic} leave ₹15LPA on the table every year."`,
+    recall_bait: `[AT ${t}] Recall bait: "Remember the question I asked at the start? Here's why your first answer about ${topic} was wrong."`,
+    surprise_subversion: `[AT ${t}] Surprise subversion: "Most engineers think ${topic} requires more servers. It's actually the opposite."`,
   };
   return tactics[tactic];
 }
@@ -148,15 +143,10 @@ function formatTime(seconds: number): string {
  *
  * Returns predicted at-risk windows sorted by risk level (critical → low).
  */
-export function predictDropoffs(
-  segments: ScriptSegmentInput[],
-  topic: string,
-): DropoffPrediction {
+export function predictDropoffs(segments: ScriptSegmentInput[], topic: string): DropoffPrediction {
   const sorted = [...segments].sort((a, b) => a.startSeconds - b.startSeconds);
-  const totalDuration =
-    sorted.length > 0 ? sorted[sorted.length - 1].endSeconds : 0;
-  const format: 'long_form' | 'short_form' =
-    totalDuration <= 180 ? 'short_form' : 'long_form';
+  const totalDuration = sorted.length > 0 ? sorted[sorted.length - 1].endSeconds : 0;
+  const format: 'long_form' | 'short_form' = totalDuration <= 180 ? 'short_form' : 'long_form';
 
   const windows: DropoffWindow[] = [];
 
@@ -190,7 +180,7 @@ export function predictDropoffs(
       (s) =>
         s.type === 'retention_beat' &&
         s.startSeconds >= cta.endSeconds &&
-        s.startSeconds <= cta.endSeconds + 8,
+        s.startSeconds <= cta.endSeconds + 8
     );
     if (!buybackExists) {
       windows.push({
@@ -209,12 +199,12 @@ export function predictDropoffs(
   // ── Risk 3: YouTube 2-min cliff (1:45–2:10) — long-form only ─────────────
   if (format === 'long_form' && totalDuration > 130) {
     const cliffStart = 105; // 1:45
-    const cliffEnd = 130;   // 2:10
+    const cliffEnd = 130; // 2:10
     const hasInterruptNearCliff = sorted.some(
       (s) =>
         s.type === 'retention_beat' &&
         s.startSeconds >= cliffStart - 15 &&
-        s.startSeconds <= cliffEnd + 10,
+        s.startSeconds <= cliffEnd + 10
     );
     if (!hasInterruptNearCliff) {
       windows.push({
@@ -222,7 +212,8 @@ export function predictDropoffs(
         windowEnd: cliffEnd,
         risk: 'high',
         predictedDropPercent: 18,
-        reason: 'YouTube 2-min cliff: median drop point globally when intro ends and content begins with no re-hook',
+        reason:
+          'YouTube 2-min cliff: median drop point globally when intro ends and content begins with no re-hook',
         counterTactic: 'pattern_interrupt',
         tacticText: tacticText('pattern_interrupt', topic, cliffStart),
         audioEvent: audioEventForTactic('pattern_interrupt'),
@@ -238,7 +229,7 @@ export function predictDropoffs(
       (s) =>
         s.type === 'retention_beat' &&
         s.startSeconds >= dropWindow - 3 &&
-        s.startSeconds <= dropWindow + 10,
+        s.startSeconds <= dropWindow + 10
     );
     if (!hasFollowupBeat) {
       windows.push({
@@ -258,10 +249,7 @@ export function predictDropoffs(
   let lastInterruptAt = 0;
   for (let t = 30; t < totalDuration; t += 5) {
     const hasRecentInterrupt = sorted.some(
-      (s) =>
-        s.type === 'retention_beat' &&
-        s.startSeconds >= lastInterruptAt &&
-        s.startSeconds <= t,
+      (s) => s.type === 'retention_beat' && s.startSeconds >= lastInterruptAt && s.startSeconds <= t
     );
     if (hasRecentInterrupt) {
       lastInterruptAt = t;
@@ -291,7 +279,7 @@ export function predictDropoffs(
       (s) =>
         s.type === 'retention_beat' &&
         s.startSeconds >= dropWindow &&
-        s.startSeconds <= dropWindow + 12,
+        s.startSeconds <= dropWindow + 12
     );
     if (!hasBeatAfter) {
       windows.push({
@@ -310,7 +298,7 @@ export function predictDropoffs(
   // ── Risk 7: Final 15% of video ────────────────────────────────────────────
   const finalWindowStart = totalDuration * 0.85;
   const hasEndBeat = sorted.some(
-    (s) => s.type === 'retention_beat' && s.startSeconds >= finalWindowStart,
+    (s) => s.type === 'retention_beat' && s.startSeconds >= finalWindowStart
   );
   if (!hasEndBeat && totalDuration > 60) {
     windows.push({
@@ -318,7 +306,8 @@ export function predictDropoffs(
       windowEnd: totalDuration,
       risk: 'medium',
       predictedDropPercent: 7,
-      reason: '"I\'ve got the gist" early exits in final 15% — needs a recall bait or numbered list completion',
+      reason:
+        '"I\'ve got the gist" early exits in final 15% — needs a recall bait or numbered list completion',
       counterTactic: 'recall_bait',
       tacticText: tacticText('recall_bait', topic, finalWindowStart),
       audioEvent: audioEventForTactic('recall_bait'),
@@ -334,19 +323,15 @@ export function predictDropoffs(
   };
   windows.sort(
     (a, b) =>
-      riskOrder[a.risk] - riskOrder[b.risk] ||
-      b.predictedDropPercent - a.predictedDropPercent,
+      riskOrder[a.risk] - riskOrder[b.risk] || b.predictedDropPercent - a.predictedDropPercent
   );
 
   // ── AVD estimates ─────────────────────────────────────────────────────────
-  const worstCaseTotalDrop = windows.reduce(
-    (sum, w) => sum + w.predictedDropPercent / 100,
-    0,
-  );
+  const worstCaseTotalDrop = windows.reduce((sum, w) => sum + w.predictedDropPercent / 100, 0);
 
   const estimatedAvdWithoutFixes = Math.max(
     0.05,
-    BASELINE_AVD_COLD_CHANNEL * (1 - Math.min(0.8, worstCaseTotalDrop)),
+    BASELINE_AVD_COLD_CHANNEL * (1 - Math.min(0.8, worstCaseTotalDrop))
   );
 
   // With fixes: each tactic neutralizes a fraction of its window's drop
@@ -357,7 +342,7 @@ export function predictDropoffs(
 
   const estimatedAvdWithFixes = Math.min(
     0.85,
-    BASELINE_AVD_COLD_CHANNEL + (0.45 - BASELINE_AVD_COLD_CHANNEL) * (1 - Math.min(0.8, fixedDrop)),
+    BASELINE_AVD_COLD_CHANNEL + (0.45 - BASELINE_AVD_COLD_CHANNEL) * (1 - Math.min(0.8, fixedDrop))
   );
 
   const targetAvd = format === 'short_form' ? TARGET_AVD_SHORTS : TARGET_AVD_LONGFORM;
@@ -375,10 +360,7 @@ export function predictDropoffs(
 
 // ─── Formatting ───────────────────────────────────────────────────────────────
 
-export function formatDropoffReport(
-  prediction: DropoffPrediction,
-  topic: string,
-): string {
+export function formatDropoffReport(prediction: DropoffPrediction, topic: string): string {
   const lines: string[] = [
     `Drop-Off Prediction: ${topic}`,
     '═'.repeat(60),
@@ -394,7 +376,7 @@ export function formatDropoffReport(
   for (const w of prediction.windows) {
     const riskIcon = w.risk === 'critical' ? '🔴' : w.risk === 'high' ? '🟠' : '🟡';
     lines.push(
-      `${riskIcon} ${formatTime(w.windowStart)}–${formatTime(w.windowEnd)} [${w.risk.toUpperCase()}] -${w.predictedDropPercent}% predicted`,
+      `${riskIcon} ${formatTime(w.windowStart)}–${formatTime(w.windowEnd)} [${w.risk.toUpperCase()}] -${w.predictedDropPercent}% predicted`
     );
     lines.push(`   Reason: ${w.reason}`);
     lines.push(`   Fix: ${w.tacticText}`);

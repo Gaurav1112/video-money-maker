@@ -27,14 +27,14 @@ interface ProgressBarProps {
 }
 
 const SCENE_ICONS: Record<string, string> = {
-  title: '\u{1F3AC}',      // clapper board
-  text: '\u{1F4DD}',       // memo
-  code: '\u{1F4BB}',       // laptop
-  diagram: '\u{1F4CA}',    // chart
-  table: '\u{1F5C2}',      // file dividers
-  interview: '\u{1F3AF}',  // target
-  review: '\u{2753}',      // question mark
-  summary: '\u{1F3C6}',    // trophy
+  title: '\u{1F3AC}', // clapper board
+  text: '\u{1F4DD}', // memo
+  code: '\u{1F4BB}', // laptop
+  diagram: '\u{1F4CA}', // chart
+  table: '\u{1F5C2}', // file dividers
+  interview: '\u{1F3AF}', // target
+  review: '\u{2753}', // question mark
+  summary: '\u{1F3C6}', // trophy
 };
 
 const ProgressBar: React.FC<ProgressBarProps> = ({
@@ -53,18 +53,10 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
   const clampedProgress = Math.min(1, Math.max(0, progress));
 
   // Shimmer effect on the progress fill
-  const shimmerX = interpolate(
-    frame % 120,
-    [0, 120],
-    [-100, 200],
-  );
+  const shimmerX = interpolate(frame % 120, [0, 120], [-100, 200]);
 
   // Current word segment glow pulse
-  const wordPulse = interpolate(
-    Math.sin(frame * 0.15),
-    [-1, 1],
-    [0.5, 1.0],
-  );
+  const wordPulse = interpolate(Math.sin(frame * 0.15), [-1, 1], [0.5, 1.0]);
 
   // Scene name slide-in animation
   const sceneTransitionFrame = sceneStartFrame ?? 0;
@@ -93,9 +85,9 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
   };
 
   const milestoneEmoji: Record<number, string> = {
-    0.25: '\u{1F389}',  // party popper
-    0.5: '\u{1F525}',   // fire
-    0.75: '\u{1F680}',  // rocket
+    0.25: '\u{1F389}', // party popper
+    0.5: '\u{1F525}', // fire
+    0.75: '\u{1F680}', // rocket
   };
 
   // Generate word boundary tick marks (show up to 30 ticks for readability)
@@ -139,34 +131,35 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
         </div>
 
         {/* Word boundary tick marks */}
-        {totalWords > 0 && Array.from({ length: tickCount }).map((_, i) => {
-          const wordIdx = i * tickStep;
-          const tickPos = wordIdx / totalWords;
-          const isPast = tickPos <= clampedProgress;
-          const isCurrent = Math.abs(wordIdx - currentWordIndex) <= tickStep;
+        {totalWords > 0 &&
+          Array.from({ length: tickCount }).map((_, i) => {
+            const wordIdx = i * tickStep;
+            const tickPos = wordIdx / totalWords;
+            const isPast = tickPos <= clampedProgress;
+            const isCurrent = Math.abs(wordIdx - currentWordIndex) <= tickStep;
 
-          return (
-            <div
-              key={`tick-${i}`}
-              style={{
-                position: 'absolute',
-                bottom: 0,
-                left: `${tickPos * 100}%`,
-                width: 1,
-                height: isCurrent ? 10 : 6,
-                backgroundColor: isCurrent
-                  ? COLORS.saffron
-                  : isPast
-                    ? `${COLORS.gold}44`
-                    : `${COLORS.gray}20`,
-                opacity: isCurrent ? wordPulse : 1,
-                borderRadius: 1,
-                boxShadow: isCurrent ? `0 0 6px ${COLORS.saffron}66` : 'none',
-                transform: 'translateX(-50%)',
-              }}
-            />
-          );
-        })}
+            return (
+              <div
+                key={`tick-${i}`}
+                style={{
+                  position: 'absolute',
+                  bottom: 0,
+                  left: `${tickPos * 100}%`,
+                  width: 1,
+                  height: isCurrent ? 10 : 6,
+                  backgroundColor: isCurrent
+                    ? COLORS.saffron
+                    : isPast
+                      ? `${COLORS.gold}44`
+                      : `${COLORS.gray}20`,
+                  opacity: isCurrent ? wordPulse : 1,
+                  borderRadius: 1,
+                  boxShadow: isCurrent ? `0 0 6px ${COLORS.saffron}66` : 'none',
+                  transform: 'translateX(-50%)',
+                }}
+              />
+            );
+          })}
 
         {/* Scene markers */}
         {sceneMarkers.map((marker, i) => {
@@ -273,9 +266,7 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
             border: `1px solid ${COLORS.gray}15`,
           }}
         >
-          <span style={{ fontSize: 12 }}>
-            {SCENE_ICONS[currentSceneType] || '\u{1F4DD}'}
-          </span>
+          <span style={{ fontSize: 12 }}>{SCENE_ICONS[currentSceneType] || '\u{1F4DD}'}</span>
           <span
             style={{
               fontSize: SIZES.caption - 3,
@@ -292,53 +283,54 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
       )}
 
       {/* Milestone celebration */}
-      {activeMilestone !== undefined && (() => {
-        const crossFrame = Math.round(activeMilestone * totalFrames);
-        const milestoneAge = frame - crossFrame;
-        const mScale = spring({
-          frame: milestoneAge,
-          fps,
-          config: { damping: 10, stiffness: 200, mass: 0.5 },
-        });
-        const mOpacity = interpolate(milestoneAge, [0, 10, 35, 45], [0, 1, 1, 0], {
-          extrapolateLeft: 'clamp',
-          extrapolateRight: 'clamp',
-        });
+      {activeMilestone !== undefined &&
+        (() => {
+          const crossFrame = Math.round(activeMilestone * totalFrames);
+          const milestoneAge = frame - crossFrame;
+          const mScale = spring({
+            frame: milestoneAge,
+            fps,
+            config: { damping: 10, stiffness: 200, mass: 0.5 },
+          });
+          const mOpacity = interpolate(milestoneAge, [0, 10, 35, 45], [0, 1, 1, 0], {
+            extrapolateLeft: 'clamp',
+            extrapolateRight: 'clamp',
+          });
 
-        return (
-          <div
-            style={{
-              position: 'absolute',
-              bottom: 40,
-              left: '50%',
-              transform: `translateX(-50%) scale(${interpolate(mScale, [0, 1], [0.5, 1])})`,
-              opacity: mOpacity,
-              display: 'flex',
-              alignItems: 'center',
-              gap: 10,
-              backgroundColor: `${COLORS.dark}EE`,
-              padding: '10px 24px',
-              borderRadius: 12,
-              border: `2px solid ${COLORS.gold}`,
-              boxShadow: `0 0 20px ${COLORS.gold}44`,
-              zIndex: 200,
-            }}
-          >
-            <span style={{ fontSize: 28 }}>{milestoneEmoji[activeMilestone] || '\u{1F389}'}</span>
-            <span
+          return (
+            <div
               style={{
-                fontSize: 20,
-                fontFamily: FONTS.heading,
-                fontWeight: 800,
-                color: COLORS.gold,
-                letterSpacing: 1,
+                position: 'absolute',
+                bottom: 40,
+                left: '50%',
+                transform: `translateX(-50%) scale(${interpolate(mScale, [0, 1], [0.5, 1])})`,
+                opacity: mOpacity,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 10,
+                backgroundColor: `${COLORS.dark}EE`,
+                padding: '10px 24px',
+                borderRadius: 12,
+                border: `2px solid ${COLORS.gold}`,
+                boxShadow: `0 0 20px ${COLORS.gold}44`,
+                zIndex: 200,
               }}
             >
-              {milestoneLabels[activeMilestone] || `${Math.round(activeMilestone * 100)}%`}
-            </span>
-          </div>
-        );
-      })()}
+              <span style={{ fontSize: 28 }}>{milestoneEmoji[activeMilestone] || '\u{1F389}'}</span>
+              <span
+                style={{
+                  fontSize: 20,
+                  fontFamily: FONTS.heading,
+                  fontWeight: 800,
+                  color: COLORS.gold,
+                  letterSpacing: 1,
+                }}
+              >
+                {milestoneLabels[activeMilestone] || `${Math.round(activeMilestone * 100)}%`}
+              </span>
+            </div>
+          );
+        })()}
     </AbsoluteFill>
   );
 };

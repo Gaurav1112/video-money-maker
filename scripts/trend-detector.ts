@@ -28,8 +28,8 @@ interface TrendStory {
   url: string;
   source: 'hackernews' | 'reddit' | 'github' | 'status';
   subreddit?: string;
-  score: number;           // upvotes on the platform (or stars for GitHub)
-  trendScore: number;      // our computed trend-worthiness score
+  score: number; // upvotes on the platform (or stars for GitHub)
+  trendScore: number; // our computed trend-worthiness score
   commentsCount: number;
   postedAt: Date;
   id: string;
@@ -63,19 +63,73 @@ interface QuizTemplate {
 // ─── Scoring Keywords ────────────────────────────────────────────────────────
 
 const HIGH_IMPACT_KEYWORDS = [
-  'outage', 'crash', 'breach', 'vulnerability', 'down', 'hack', 'fired',
-  'lawsuit', 'acquired', 'deprecated', 'dead', 'billion', 'million',
-  'shutdown', 'banned', 'exploit', 'leaked', 'broken', 'compromised',
-  'incident', 'zero-day', 'ransomware', 'layoff', 'bankrupt',
+  'outage',
+  'crash',
+  'breach',
+  'vulnerability',
+  'down',
+  'hack',
+  'fired',
+  'lawsuit',
+  'acquired',
+  'deprecated',
+  'dead',
+  'billion',
+  'million',
+  'shutdown',
+  'banned',
+  'exploit',
+  'leaked',
+  'broken',
+  'compromised',
+  'incident',
+  'zero-day',
+  'ransomware',
+  'layoff',
+  'bankrupt',
 ];
 
 const TECH_BRAND_KEYWORDS = [
-  'kubernetes', 'docker', 'aws', 'google', 'microsoft', 'meta', 'apple',
-  'cloudflare', 'github', 'openai', 'rust', 'go', 'python', 'javascript',
-  'typescript', 'react', 'linux', 'android', 'chrome', 'firefox', 'nginx',
-  'redis', 'postgres', 'kafka', 'terraform', 'vercel', 'supabase',
-  'anthropic', 'gemini', 'llama', 'chatgpt', 'copilot', 'nvidia',
-  'amazon', 'azure', 'gcp', 'oracle', 'samsung', 'intel', 'amd',
+  'kubernetes',
+  'docker',
+  'aws',
+  'google',
+  'microsoft',
+  'meta',
+  'apple',
+  'cloudflare',
+  'github',
+  'openai',
+  'rust',
+  'go',
+  'python',
+  'javascript',
+  'typescript',
+  'react',
+  'linux',
+  'android',
+  'chrome',
+  'firefox',
+  'nginx',
+  'redis',
+  'postgres',
+  'kafka',
+  'terraform',
+  'vercel',
+  'supabase',
+  'anthropic',
+  'gemini',
+  'llama',
+  'chatgpt',
+  'copilot',
+  'nvidia',
+  'amazon',
+  'azure',
+  'gcp',
+  'oracle',
+  'samsung',
+  'intel',
+  'amd',
 ];
 
 // ─── Fetch Helpers ───────────────────────────────────────────────────────────
@@ -120,9 +174,7 @@ async function fetchHTML(url: string, timeoutMs: number = 15000): Promise<string
 
 async function fetchHackerNewsTop(limit: number = 30): Promise<TrendStory[]> {
   console.log('  Fetching HackerNews top stories...');
-  const ids: number[] = await fetchJSON(
-    'https://hacker-news.firebaseio.com/v0/topstories.json',
-  );
+  const ids: number[] = await fetchJSON('https://hacker-news.firebaseio.com/v0/topstories.json');
 
   const topIds = ids.slice(0, limit);
   const stories: TrendStory[] = [];
@@ -131,9 +183,7 @@ async function fetchHackerNewsTop(limit: number = 30): Promise<TrendStory[]> {
   for (let i = 0; i < topIds.length; i += 10) {
     const batch = topIds.slice(i, i + 10);
     const items = await Promise.all(
-      batch.map((id) =>
-        fetchJSON(`https://hacker-news.firebaseio.com/v0/item/${id}.json`),
-      ),
+      batch.map((id) => fetchJSON(`https://hacker-news.firebaseio.com/v0/item/${id}.json`))
     );
 
     for (const item of items) {
@@ -161,9 +211,7 @@ async function fetchHackerNewsTop(limit: number = 30): Promise<TrendStory[]> {
 async function fetchRedditHot(subreddit: string, limit: number = 25): Promise<TrendStory[]> {
   console.log(`  Fetching Reddit r/${subreddit} hot posts...`);
 
-  const data = await fetchJSON(
-    `https://www.reddit.com/r/${subreddit}/hot.json?limit=${limit}`,
-  );
+  const data = await fetchJSON(`https://www.reddit.com/r/${subreddit}/hot.json?limit=${limit}`);
 
   const stories: TrendStory[] = [];
 
@@ -240,7 +288,10 @@ async function fetchGitHubTrending(): Promise<TrendStory[]> {
 
 // ─── Cloud Status Pages ─────────────────────────────────────────────────────
 
-async function fetchCloudStatus(): Promise<{ statuses: CloudStatusResult[]; stories: TrendStory[] }> {
+async function fetchCloudStatus(): Promise<{
+  statuses: CloudStatusResult[];
+  stories: TrendStory[];
+}> {
   console.log('  Checking cloud provider status pages...');
   const statuses: CloudStatusResult[] = [];
   const stories: TrendStory[] = [];
@@ -276,7 +327,12 @@ async function fetchCloudStatus(): Promise<{ statuses: CloudStatusResult[]; stor
     }
   } catch (err) {
     console.warn(`    GitHub Status fetch failed: ${(err as Error).message}`);
-    statuses.push({ provider: 'GitHub', status: 'unknown', description: 'fetch failed', url: 'https://www.githubstatus.com/' });
+    statuses.push({
+      provider: 'GitHub',
+      status: 'unknown',
+      description: 'fetch failed',
+      url: 'https://www.githubstatus.com/',
+    });
   }
 
   // AWS Health Status -- HTML page, check for non-operational indicators
@@ -307,7 +363,12 @@ async function fetchCloudStatus(): Promise<{ statuses: CloudStatusResult[]; stor
     }
   } catch (err) {
     console.warn(`    AWS Status fetch failed: ${(err as Error).message}`);
-    statuses.push({ provider: 'AWS', status: 'unknown', description: 'fetch failed', url: 'https://health.aws.amazon.com/health/status' });
+    statuses.push({
+      provider: 'AWS',
+      status: 'unknown',
+      description: 'fetch failed',
+      url: 'https://health.aws.amazon.com/health/status',
+    });
   }
 
   // GCP Status -- HTML page
@@ -337,7 +398,12 @@ async function fetchCloudStatus(): Promise<{ statuses: CloudStatusResult[]; stor
     }
   } catch (err) {
     console.warn(`    GCP Status fetch failed: ${(err as Error).message}`);
-    statuses.push({ provider: 'GCP', status: 'unknown', description: 'fetch failed', url: 'https://status.cloud.google.com/' });
+    statuses.push({
+      provider: 'GCP',
+      status: 'unknown',
+      description: 'fetch failed',
+      url: 'https://status.cloud.google.com/',
+    });
   }
 
   // Print status summary
@@ -435,7 +501,8 @@ function detectEventType(title: string): string {
   const titleLower = title.toLowerCase();
 
   if (/outage|down|crash|incident/.test(titleLower)) return 'outage';
-  if (/breach|hack|vulnerability|exploit|zero-day|leaked|compromised/.test(titleLower)) return 'security';
+  if (/breach|hack|vulnerability|exploit|zero-day|leaked|compromised/.test(titleLower))
+    return 'security';
   if (/acquired|billion|million|deal/.test(titleLower)) return 'acquisition';
   if (/deprecated|dead|shutdown|end.of.life/.test(titleLower)) return 'deprecation';
   if (/fired|layoff|bankrupt|lawsuit/.test(titleLower)) return 'corporate';
@@ -444,68 +511,93 @@ function detectEventType(title: string): string {
   return 'general';
 }
 
-const QUIZ_TEMPLATES: Record<string, {
-  questionTemplate: (subject: string) => string;
-  options: (subject: string) => string[];
-  correctIndex: number;
-  explanationHint: string;
-  twistTemplate: (subject: string) => string;
-}> = {
+const QUIZ_TEMPLATES: Record<
+  string,
+  {
+    questionTemplate: (subject: string) => string;
+    options: (subject: string) => string[];
+    correctIndex: number;
+    explanationHint: string;
+    twistTemplate: (subject: string) => string;
+  }
+> = {
   outage: {
     questionTemplate: (s) => `What is the most common root cause of ${s} outages?`,
     options: (s) => [`DDoS attack`, `A single config change`, `Hardware failure`],
     correctIndex: 1,
-    explanationHint: 'Historically, most major outages trace back to a config push or deployment gone wrong — not external attacks.',
-    twistTemplate: (s) => `The scariest part: YOUR app probably depends on ${s} and you did not even know`,
+    explanationHint:
+      'Historically, most major outages trace back to a config push or deployment gone wrong — not external attacks.',
+    twistTemplate: (s) =>
+      `The scariest part: YOUR app probably depends on ${s} and you did not even know`,
   },
   security: {
     questionTemplate: (s) => `When ${s} gets breached, what is the #1 thing attackers go after?`,
     options: (s) => [`Source code`, `API keys and secrets`, `User databases`],
     correctIndex: 1,
-    explanationHint: 'API keys and secrets are the fastest path to lateral movement. Source code is secondary.',
-    twistTemplate: (s) => `Most devs have ${s} credentials in at least 3 places they have forgotten about`,
+    explanationHint:
+      'API keys and secrets are the fastest path to lateral movement. Source code is secondary.',
+    twistTemplate: (s) =>
+      `Most devs have ${s} credentials in at least 3 places they have forgotten about`,
   },
   acquisition: {
     questionTemplate: (s) => `When a tech giant acquires a product, what happens to the API first?`,
     options: (s) => [`It gets better`, `Pricing changes within 6 months`, `Nothing changes`],
     correctIndex: 1,
-    explanationHint: 'Acquisitions almost always lead to pricing changes as the new parent monetizes the user base.',
+    explanationHint:
+      'Acquisitions almost always lead to pricing changes as the new parent monetizes the user base.',
     twistTemplate: (s) => `If you built on ${s}, your migration clock just started ticking`,
   },
   deprecation: {
     questionTemplate: (s) => `When ${s} gets deprecated, what breaks first?`,
     options: (s) => [`Your CI/CD pipeline`, `Security patches stop`, `Nothing — it keeps working`],
     correctIndex: 1,
-    explanationHint: 'The most dangerous thing about deprecation is silent security rot — no more patches.',
-    twistTemplate: (s) => `50% of production systems still run deprecated versions of something critical`,
+    explanationHint:
+      'The most dangerous thing about deprecation is silent security rot — no more patches.',
+    twistTemplate: (s) =>
+      `50% of production systems still run deprecated versions of something critical`,
   },
   corporate: {
-    questionTemplate: (s) => `What happens to open-source projects when the backing company has layoffs?`,
+    questionTemplate: (s) =>
+      `What happens to open-source projects when the backing company has layoffs?`,
     options: (s) => [`Community takes over`, `Maintenance slows to a crawl`, `Nothing changes`],
     correctIndex: 1,
-    explanationHint: 'Most "community" open-source projects depend on paid maintainers. When they leave, PRs pile up.',
-    twistTemplate: (s) => `Check your package.json — at least one dep is maintained by exactly ONE person`,
+    explanationHint:
+      'Most "community" open-source projects depend on paid maintainers. When they leave, PRs pile up.',
+    twistTemplate: (s) =>
+      `Check your package.json — at least one dep is maintained by exactly ONE person`,
   },
   release: {
     questionTemplate: (s) => `What is the biggest risk of adopting ${s} early?`,
-    options: (s) => [`Bugs everywhere`, `Breaking changes in next version`, `Documentation is wrong`],
+    options: (s) => [
+      `Bugs everywhere`,
+      `Breaking changes in next version`,
+      `Documentation is wrong`,
+    ],
     correctIndex: 1,
-    explanationHint: 'Early adoption means your code becomes a migration project when v2 ships with breaking changes.',
-    twistTemplate: (s) => `The best time to adopt ${s} is 6 months after everyone else stops complaining`,
+    explanationHint:
+      'Early adoption means your code becomes a migration project when v2 ships with breaking changes.',
+    twistTemplate: (s) =>
+      `The best time to adopt ${s} is 6 months after everyone else stops complaining`,
   },
   comparison: {
     questionTemplate: (s) => `What matters more than which tech stack you choose?`,
     options: (s) => [`Performance benchmarks`, `How well your team knows it`, `GitHub stars`],
     correctIndex: 1,
-    explanationHint: 'Team familiarity beats theoretical performance in almost every real-world project.',
+    explanationHint:
+      'Team familiarity beats theoretical performance in almost every real-world project.',
     twistTemplate: (s) => `The "best" tool is the one your team can debug at 3 AM during an outage`,
   },
   general: {
     questionTemplate: (s) => `What do most developers get wrong about ${s}?`,
-    options: (s) => [`They over-engineer it`, `They skip the fundamentals`, `They follow trends blindly`],
+    options: (s) => [
+      `They over-engineer it`,
+      `They skip the fundamentals`,
+      `They follow trends blindly`,
+    ],
     correctIndex: 1,
     explanationHint: 'The fundamentals are boring but they prevent 80% of production incidents.',
-    twistTemplate: (s) => `The next time ${s} trends on HackerNews, ask yourself: do I actually understand the basics?`,
+    twistTemplate: (s) =>
+      `The next time ${s} trends on HackerNews, ask yourself: do I actually understand the basics?`,
   },
 };
 
@@ -515,9 +607,8 @@ function generateQuizFromTrend(story: TrendStory): QuizTemplate {
   const template = QUIZ_TEMPLATES[eventType] || QUIZ_TEMPLATES.general;
 
   // Build hook text — two lines, punchy, uses the actual headline
-  const shortTitle = story.title.length > 40
-    ? story.title.slice(0, 40).replace(/\s+\S*$/, '...')
-    : story.title;
+  const shortTitle =
+    story.title.length > 40 ? story.title.slice(0, 40).replace(/\s+\S*$/, '...') : story.title;
 
   const hookText = `${subject} just made headlines\nand most devs missed WHY`;
   const spokenHook = `${subject} is all over the news right now, and most developers are missing the real story.`;
@@ -536,9 +627,10 @@ function generateQuizFromTrend(story: TrendStory): QuizTemplate {
     sourceUrl: story.url,
     sourceTitle: story.title,
     sourceScore: story.score,
-    sourceOrigin: story.source === 'hackernews'
-      ? `HackerNews (score: ${story.score})`
-      : `Reddit r/${story.subreddit} (${story.score} upvotes)`,
+    sourceOrigin:
+      story.source === 'hackernews'
+        ? `HackerNews (score: ${story.score})`
+        : `Reddit r/${story.subreddit} (${story.score} upvotes)`,
     generatedAt: new Date().toISOString(),
   };
 }
@@ -573,7 +665,9 @@ function printQuizTemplate(quiz: QuizTemplate): void {
   console.log(`Spoken:     "${quiz.spokenHook}"`);
   console.log(`Question:   "${quiz.question}"`);
   console.log(`Options:    A) ${quiz.options[0]}  B) ${quiz.options[1]}  C) ${quiz.options[2]}`);
-  console.log(`Correct:    ${String.fromCharCode(65 + quiz.correctIndex)}) ${quiz.options[quiz.correctIndex]}`);
+  console.log(
+    `Correct:    ${String.fromCharCode(65 + quiz.correctIndex)}) ${quiz.options[quiz.correctIndex]}`
+  );
   console.log(`Explanation: ${quiz.explanation}`);
   console.log(`Twist:      "${quiz.twist}"`);
   console.log(`End CTA:    "${quiz.endQuestion}"`);
@@ -618,7 +712,7 @@ async function main() {
   // ── Step 1: Fetch from all sources ──
   console.log('[1/3] Fetching trending stories...\n');
 
-  let allStories: TrendStory[] = [];
+  const allStories: TrendStory[] = [];
   const errors: string[] = [];
 
   // Fetch HackerNews, Reddit, GitHub Trending, and Cloud Status in parallel
@@ -635,7 +729,10 @@ async function main() {
     if (result.status === 'fulfilled') {
       if (i === 4) {
         // Cloud status returns { statuses, stories }
-        const cloudResult = result.value as { statuses: CloudStatusResult[]; stories: TrendStory[] };
+        const cloudResult = result.value as {
+          statuses: CloudStatusResult[];
+          stories: TrendStory[];
+        };
         allStories.push(...cloudResult.stories);
       } else {
         allStories.push(...(result.value as TrendStory[]));
@@ -725,19 +822,26 @@ async function main() {
 
   const timestamp = new Date().toISOString().slice(0, 10);
   const trendsPath = path.join(outputDir, `trends-${timestamp}.json`);
-  fs.writeFileSync(trendsPath, JSON.stringify({
-    fetchedAt: new Date().toISOString(),
-    threshold: minScore,
-    trendingCount: trending.length,
-    quizzes,
-    allTrending: trending.map((s) => ({
-      title: s.title,
-      url: s.url,
-      source: s.source,
-      score: s.score,
-      trendScore: s.trendScore,
-    })),
-  }, null, 2));
+  fs.writeFileSync(
+    trendsPath,
+    JSON.stringify(
+      {
+        fetchedAt: new Date().toISOString(),
+        threshold: minScore,
+        trendingCount: trending.length,
+        quizzes,
+        allTrending: trending.map((s) => ({
+          title: s.title,
+          url: s.url,
+          source: s.source,
+          score: s.score,
+          trendScore: s.trendScore,
+        })),
+      },
+      null,
+      2
+    )
+  );
 
   console.log(`  Saved trends: ${trendsPath}`);
 
@@ -772,12 +876,20 @@ async function main() {
       sceneInputs,
       'en-US-AndrewMultilingualNeural',
       'english',
-      { text: '+20%' },
+      { text: '+20%' }
     );
 
     // Build scenes for ViralShort storyboard
     const FPS = 30;
-    const scenes: Array<{ type: 'title' | 'text' | 'summary'; content: string; narration: string; heading?: string; duration: number; startFrame: number; endFrame: number }> = [];
+    const scenes: Array<{
+      type: 'title' | 'text' | 'summary';
+      content: string;
+      narration: string;
+      heading?: string;
+      duration: number;
+      startFrame: number;
+      endFrame: number;
+    }> = [];
 
     const sceneHeadings = ['Hook', quiz.topic, 'The Answer', 'Plot Twist', 'Your Turn'];
     for (let i = 0; i < narrationParts.length; i++) {
@@ -814,7 +926,9 @@ async function main() {
     const videoOutput = path.join(outputDir, `trend-${quiz.topic}-${timestamp}.mp4`);
 
     const renderCmd = [
-      'npx', 'remotion', 'render',
+      'npx',
+      'remotion',
+      'render',
       'src/compositions/index.tsx',
       'ViralShort',
       videoOutput,
@@ -884,9 +998,7 @@ async function main() {
       console.log(`\nQUESTION (read aloud):`);
       console.log(`  "${q.question}"`);
       console.log(`\nOPTIONS (pause 3 seconds after reading):`);
-      q.options.forEach((o, j) =>
-        console.log(`  ${String.fromCharCode(65 + j)}) ${o}`),
-      );
+      q.options.forEach((o, j) => console.log(`  ${String.fromCharCode(65 + j)}) ${o}`));
       console.log(`\nREVEAL (with energy):`);
       console.log(`  "${q.explanation}"`);
       console.log(`\nTWIST (lean in, lower voice):`);

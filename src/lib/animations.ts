@@ -33,7 +33,12 @@ export const scaleIn = (frame: number, startFrame: number, duration = 30) =>
     easing: Easing.out(Easing.cubic),
   });
 
-export const typewriter = (text: string, frame: number, startFrame: number, charsPerFrame = 0.8) => {
+export const typewriter = (
+  text: string,
+  frame: number,
+  startFrame: number,
+  charsPerFrame = 0.8
+) => {
   const elapsed = Math.max(0, frame - startFrame);
   const chars = Math.floor(elapsed * charsPerFrame);
   return text.slice(0, chars);
@@ -65,7 +70,7 @@ export const springScale = (frame: number, startFrame: number, fps: number = 30)
       config: { damping: 10, stiffness: 150, mass: 0.6 },
     }),
     [0, 1],
-    [0.7, 1],
+    [0.7, 1]
   );
 
 export const wiggle = (frame: number, startFrame: number, amplitude = 4, speed = 0.5) => {
@@ -75,7 +80,12 @@ export const wiggle = (frame: number, startFrame: number, amplitude = 4, speed =
 };
 
 // Zoom into an element (simulates camera movement)
-export const zoomIn = (frame: number, startFrame: number, scale: number = 1.2, duration: number = 45) =>
+export const zoomIn = (
+  frame: number,
+  startFrame: number,
+  scale: number = 1.2,
+  duration: number = 45
+) =>
   interpolate(frame, [startFrame, startFrame + duration], [1, scale], {
     extrapolateLeft: 'clamp',
     extrapolateRight: 'clamp',
@@ -83,7 +93,12 @@ export const zoomIn = (frame: number, startFrame: number, scale: number = 1.2, d
   });
 
 // Zoom out from an element
-export const zoomOut = (frame: number, startFrame: number, scale: number = 1.2, duration: number = 45) =>
+export const zoomOut = (
+  frame: number,
+  startFrame: number,
+  scale: number = 1.2,
+  duration: number = 45
+) =>
   interpolate(frame, [startFrame, startFrame + duration], [scale, 1], {
     extrapolateLeft: 'clamp',
     extrapolateRight: 'clamp',
@@ -112,15 +127,19 @@ export const kenBurns = (frame: number, startFrame: number, duration: number = 3
 };
 
 // Pulse glow effect — oscillates between two opacity values
-export const pulseGlow = (frame: number, speed: number = 0.08, min: number = 0.3, max: number = 0.8) =>
-  interpolate(Math.sin(frame * speed), [-1, 1], [min, max]);
+export const pulseGlow = (
+  frame: number,
+  speed: number = 0.08,
+  min: number = 0.3,
+  max: number = 0.8
+) => interpolate(Math.sin(frame * speed), [-1, 1], [min, max]);
 
 // Zoom pulse — subtle oscillation 1.0 -> maxScale -> 1.0 with phase offset
 export const zoomPulse = (
   frame: number,
   cycleDurationFrames: number = 120,
   maxScale: number = 1.02,
-  phaseOffset: number = 0,
+  phaseOffset: number = 0
 ) => {
   const progress = ((frame + phaseOffset) % cycleDurationFrames) / cycleDurationFrames;
   const wave = Math.sin(progress * Math.PI * 2);
@@ -128,7 +147,12 @@ export const zoomPulse = (
 };
 
 // Slide from left with fade — for bullet point entrances
-export const slideFromLeft = (frame: number, startFrame: number, distance: number = 40, duration: number = 20) => ({
+export const slideFromLeft = (
+  frame: number,
+  startFrame: number,
+  distance: number = 40,
+  duration: number = 20
+) => ({
   x: interpolate(frame, [startFrame, startFrame + duration], [-distance, 0], {
     extrapolateLeft: 'clamp',
     extrapolateRight: 'clamp',
@@ -141,7 +165,12 @@ export const slideFromLeft = (frame: number, startFrame: number, distance: numbe
 });
 
 // Sweep underline — grows width from 0 to target with glow
-export const sweepUnderline = (frame: number, startFrame: number, maxWidth: number = 300, duration: number = 25) =>
+export const sweepUnderline = (
+  frame: number,
+  startFrame: number,
+  maxWidth: number = 300,
+  duration: number = 25
+) =>
   interpolate(frame, [startFrame, startFrame + duration], [0, maxWidth], {
     extrapolateLeft: 'clamp',
     extrapolateRight: 'clamp',

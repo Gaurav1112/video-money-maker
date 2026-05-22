@@ -32,16 +32,19 @@ function parseArgs() {
   };
   const require = (flag: string): string => {
     const v = get(flag);
-    if (!v) { console.error(`Missing required arg: ${flag}`); process.exit(1); }
+    if (!v) {
+      console.error(`Missing required arg: ${flag}`);
+      process.exit(1);
+    }
     return v!;
   };
 
   return {
     platformPublishId: parseInt(require('--platform-publish-id'), 10),
-    idempotencyKey:    require('--idempotency-key'),
-    error:             require('--error'),
-    runId:             get('--run-id') ?? process.env['GITHUB_RUN_ID'] ?? 'local',
-    cookieExpiry:      argv.includes('--cookie-expiry'),
+    idempotencyKey: require('--idempotency-key'),
+    error: require('--error'),
+    runId: get('--run-id') ?? process.env['GITHUB_RUN_ID'] ?? 'local',
+    cookieExpiry: argv.includes('--cookie-expiry'),
   };
 }
 
@@ -58,7 +61,7 @@ function setOutput(key: string, value: string): void {
 // ─── Webhook notification (Slack or Discord) ──────────────────────────────────
 
 function sendWebhook(message: string): void {
-  const slackUrl   = process.env['SLACK_WEBHOOK_URL'];
+  const slackUrl = process.env['SLACK_WEBHOOK_URL'];
   const discordUrl = process.env['DISCORD_WEBHOOK_URL'];
 
   if (!slackUrl && !discordUrl) {
@@ -70,13 +73,13 @@ function sendWebhook(message: string): void {
 
   if (slackUrl) {
     targets.push({
-      url:  slackUrl,
+      url: slackUrl,
       body: JSON.stringify({ text: message }),
     });
   }
   if (discordUrl) {
     targets.push({
-      url:  discordUrl,
+      url: discordUrl,
       body: JSON.stringify({ content: message }),
     });
   }
@@ -84,17 +87,20 @@ function sendWebhook(message: string): void {
   for (const { url, body } of targets) {
     try {
       const parsed = new URL(url);
-      const req = https.request({
-        hostname: parsed.hostname,
-        path:     parsed.pathname + parsed.search,
-        method:   'POST',
-        headers:  {
-          'Content-Type':   'application/json',
-          'Content-Length': Buffer.byteLength(body),
+      const req = https.request(
+        {
+          hostname: parsed.hostname,
+          path: parsed.pathname + parsed.search,
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Content-Length': Buffer.byteLength(body),
+          },
         },
-      }, (res) => {
-        console.log(`Webhook response: ${res.statusCode}`);
-      });
+        (res) => {
+          console.log(`Webhook response: ${res.statusCode}`);
+        }
+      );
       req.on('error', (e) => console.warn(`Webhook error: ${e.message}`));
       req.write(body);
       req.end();
@@ -120,9 +126,11 @@ function main(): void {
     max_attempts: number;
   }
 
-  const row = db.prepare(
-    'SELECT id, queue_item_id, platform, status, idempotency_key, attempts, max_attempts FROM platform_publishes WHERE id = ?'
-  ).get(args.platformPublishId) as PPRow | undefined;
+  const row = db
+    .prepare(
+      'SELECT id, queue_item_id, platform, status, idempotency_key, attempts, max_attempts FROM platform_publishes WHERE id = ?'
+    )
+    .get(args.platformPublishId) as PPRow | undefined;
 
   if (!row) {
     console.error(`❌ platform_publish id ${args.platformPublishId} not found`);
@@ -133,8 +141,8 @@ function main(): void {
   if (row.idempotency_key !== args.idempotencyKey) {
     console.warn(
       `⚠️  Idempotency key mismatch — this may be a stale retry. Skipping fail update.\n` +
-      `   Expected: ${row.idempotency_key}\n` +
-      `   Got:      ${args.idempotencyKey}`
+        `   Expected: ${row.idempotency_key}\n` +
+        `   Got:      ${args.idempotencyKey}`
     );
     setOutput('result', 'key_mismatch');
     return;
@@ -152,7 +160,8 @@ function main(): void {
 
   const failTx = db.transaction(() => {
     // Update platform status — reset claimed_by on failure so next run can claim it
-    db.prepare(`
+    db.prepare(
+      `
       UPDATE platform_publishes
       SET    status      = ?,
              last_error  = ?,
@@ -160,36 +169,43 @@ function main(): void {
              updated_at  = strftime('%Y-%m-%dT%H:%M:%fZ','now')
       WHERE  id              = ?
         AND  idempotency_key = ?
-    `).run(newStatus, args.error, newStatus, args.platformPublishId, args.idempotencyKey);
+    `
+    ).run(newStatus, args.error, newStatus, args.platformPublishId, args.idempotencyKey);
 
     // Write publish log
-    db.prepare(`
+    db.prepare(
+      `
       INSERT INTO publish_log
         (queue_item_id, platform, status, error, run_id, idempotency_key)
       VALUES (?, ?, 'failure', ?, ?, ?)
-    `).run(row.queue_item_id, row.platform, args.error, args.runId, args.idempotencyKey);
+    `
+    ).run(row.queue_item_id, row.platform, args.error, args.runId, args.idempotencyKey);
 
     if (isDeadLetter) {
       // Insert into dead_letter table
-      db.prepare(`
+      db.prepare(
+        `
         INSERT INTO dead_letter (queue_item_id, platform, error, run_id, attempts)
         VALUES (?, ?, ?, ?, ?)
-      `).run(row.queue_item_id, row.platform, args.error, args.runId, row.attempts);
+      `
+      ).run(row.queue_item_id, row.platform, args.error, args.runId, row.attempts);
 
       // Update queue item overall_status
-      db.prepare(`
+      db.prepare(
+        `
         UPDATE queue_items
         SET    overall_status = 'dead_letter',
                updated_at    = strftime('%Y-%m-%dT%H:%M:%fZ','now')
         WHERE  id             = ?
-      `).run(row.queue_item_id);
+      `
+      ).run(row.queue_item_id);
     }
   });
 
   failTx();
 
   const repoUrl = `https://github.com/${process.env['GITHUB_REPOSITORY'] ?? 'Gaurav1112/video-money-maker'}`;
-  const runUrl  = `${repoUrl}/actions/runs/${args.runId}`;
+  const runUrl = `${repoUrl}/actions/runs/${args.runId}`;
 
   if (isDeadLetter) {
     const alarmType = args.cookieExpiry ? '🍪 COOKIE/TOKEN EXPIRY' : '💀 DEAD LETTER';
@@ -211,7 +227,7 @@ function main(): void {
   } else {
     console.log(
       `⚠️  Recorded failure (attempt ${row.attempts}/${row.max_attempts}): ` +
-      `${row.queue_item_id}/${row.platform} — ${args.error}`
+        `${row.queue_item_id}/${row.platform} — ${args.error}`
     );
     setOutput('result', 'failed');
   }

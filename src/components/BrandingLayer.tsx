@@ -72,7 +72,8 @@ export const BrandingLayer: React.FC<BrandingLayerProps> = ({
       >
         {/* Scrolling marquee — 3 copies for seamless loop */}
         {(() => {
-          const marqueeText = '  ★  guru-sishya.in  |  Master Your Interview  |  Land Your Dream Job  |  Subscribe for Daily Tips  |  www.guru-sishya.in  |  @guru_sishya.in  ';
+          const marqueeText =
+            '  ★  guru-sishya.in  |  Master Your Interview  |  Land Your Dream Job  |  Subscribe for Daily Tips  |  www.guru-sishya.in  |  @guru_sishya.in  ';
           const fullText = marqueeText + marqueeText + marqueeText;
           const speed = 1.5; // pixels per frame
           const textWidth = fullText.length * 8; // approximate
@@ -87,14 +88,16 @@ export const BrandingLayer: React.FC<BrandingLayerProps> = ({
                 transform: `translateX(${offset}px)`,
               }}
             >
-              <span style={{
-                fontSize: 18,
-                fontFamily: "'Inter', system-ui, sans-serif",
-                fontWeight: 800,
-                letterSpacing: 2,
-                color: '#FFFFFF',
-                textShadow: 'none',
-              }}>
+              <span
+                style={{
+                  fontSize: 18,
+                  fontFamily: "'Inter', system-ui, sans-serif",
+                  fontWeight: 800,
+                  letterSpacing: 2,
+                  color: '#FFFFFF',
+                  textShadow: 'none',
+                }}
+              >
                 {fullText}
               </span>
             </div>
@@ -118,7 +121,8 @@ export const BrandingLayer: React.FC<BrandingLayerProps> = ({
         }}
       >
         {(() => {
-          const marqueeText = '  ★  guru-sishya.in  |  Crack FAANG Interviews  |  System Design + DSA  |  Free on YouTube  |  www.guru-sishya.in  |  Follow @guru_sishya.in  ';
+          const marqueeText =
+            '  ★  guru-sishya.in  |  Crack FAANG Interviews  |  System Design + DSA  |  Free on YouTube  |  www.guru-sishya.in  |  Follow @guru_sishya.in  ';
           const fullText = marqueeText + marqueeText + marqueeText;
           const speed = 1.2;
           const textWidth = fullText.length * 8;
@@ -133,14 +137,16 @@ export const BrandingLayer: React.FC<BrandingLayerProps> = ({
                 transform: `translateX(${-offset}px)`,
               }}
             >
-              <span style={{
-                fontSize: 18,
-                fontFamily: "'Inter', system-ui, sans-serif",
-                fontWeight: 800,
-                letterSpacing: 2,
-                color: '#FFFFFF',
-                textShadow: 'none',
-              }}>
+              <span
+                style={{
+                  fontSize: 18,
+                  fontFamily: "'Inter', system-ui, sans-serif",
+                  fontWeight: 800,
+                  letterSpacing: 2,
+                  color: '#FFFFFF',
+                  textShadow: 'none',
+                }}
+              >
                 {fullText}
               </span>
             </div>
@@ -164,7 +170,10 @@ export const BrandingLayer: React.FC<BrandingLayerProps> = ({
 };
 
 /** Lower-third CTA banner — dark pill with saffron border, slides up from bottom */
-const LowerThirdCta: React.FC<{ topicSlug?: string; format: 'long' | 'short' }> = ({ topicSlug, format }) => {
+const LowerThirdCta: React.FC<{ topicSlug?: string; format: 'long' | 'short' }> = ({
+  topicSlug,
+  format,
+}) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const isShort = format === 'short';
@@ -172,9 +181,13 @@ const LowerThirdCta: React.FC<{ topicSlug?: string; format: 'long' | 'short' }> 
   // Slide up over 10 frames, hold, slide down in last 10 frames
   const slideUp = spring({ frame, fps, config: { damping: 15, stiffness: 120 } });
   const totalFrames = Math.round(fps * 3);
-  const slideDown = frame > totalFrames - 10
-    ? interpolate(frame, [totalFrames - 10, totalFrames], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' })
-    : 0;
+  const slideDown =
+    frame > totalFrames - 10
+      ? interpolate(frame, [totalFrames - 10, totalFrames], [0, 1], {
+          extrapolateLeft: 'clamp',
+          extrapolateRight: 'clamp',
+        })
+      : 0;
 
   const translateY = interpolate(slideUp, [0, 1], [80, 0]) + slideDown * 80;
   const opacity = slideUp * (1 - slideDown);
@@ -204,20 +217,24 @@ const LowerThirdCta: React.FC<{ topicSlug?: string; format: 'long' | 'short' }> 
           backdropFilter: 'blur(10px)',
         }}
       >
-        <span style={{
-          fontSize: isShort ? 14 : 17,
-          fontFamily: "'Inter', system-ui, sans-serif",
-          fontWeight: 600,
-          color: '#1E293B',
-        }}>
+        <span
+          style={{
+            fontSize: isShort ? 14 : 17,
+            fontFamily: "'Inter', system-ui, sans-serif",
+            fontWeight: 600,
+            color: '#1E293B',
+          }}
+        >
           Full notes & practice →
         </span>
-        <span style={{
-          fontSize: isShort ? 14 : 17,
-          fontFamily: "'Inter', system-ui, sans-serif",
-          fontWeight: 800,
-          color: '#2563EB',
-        }}>
+        <span
+          style={{
+            fontSize: isShort ? 14 : 17,
+            fontFamily: "'Inter', system-ui, sans-serif",
+            fontWeight: 800,
+            color: '#2563EB',
+          }}
+        >
           {url}
         </span>
       </div>
@@ -233,9 +250,13 @@ const MidVideoCta: React.FC<{ format: 'long' | 'short' }> = ({ format }) => {
 
   // Slide in over 15 frames, hold, slide out in last 15 frames
   const slideIn = spring({ frame, fps, config: { damping: 15, stiffness: 120 } });
-  const slideOut = frame > 120
-    ? interpolate(frame, [120, 150], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' })
-    : 0;
+  const slideOut =
+    frame > 120
+      ? interpolate(frame, [120, 150], [0, 1], {
+          extrapolateLeft: 'clamp',
+          extrapolateRight: 'clamp',
+        })
+      : 0;
 
   const translateX = interpolate(slideIn, [0, 1], [300, 0]) + slideOut * 300;
   const opacity = slideIn * (1 - slideOut);
@@ -292,23 +313,27 @@ const MidVideoCta: React.FC<{ format: 'long' | 'short' }> = ({ format }) => {
             marginTop: 8,
           }}
         >
-          <div style={{
-            background: '#059669',
-            color: '#FFFFFF',
-            padding: '6px 16px',
-            borderRadius: 8,
-            fontSize: isShort ? 14 : 17,
-            fontWeight: 800,
-            fontFamily: "'Inter', system-ui, sans-serif",
-          }}>
+          <div
+            style={{
+              background: '#059669',
+              color: '#FFFFFF',
+              padding: '6px 16px',
+              borderRadius: 8,
+              fontSize: isShort ? 14 : 17,
+              fontWeight: 800,
+              fontFamily: "'Inter', system-ui, sans-serif",
+            }}
+          >
             100% FREE
           </div>
-          <span style={{
-            fontSize: isShort ? 18 : 23,
-            fontWeight: 800,
-            color: '#FFFFFF',
-            fontFamily: "'Inter', system-ui, sans-serif",
-          }}>
+          <span
+            style={{
+              fontSize: isShort ? 18 : 23,
+              fontWeight: 800,
+              color: '#FFFFFF',
+              fontFamily: "'Inter', system-ui, sans-serif",
+            }}
+          >
             www.guru-sishya.in
           </span>
         </div>

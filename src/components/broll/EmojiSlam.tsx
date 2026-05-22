@@ -67,22 +67,39 @@ export const EmojiSlam: React.FC<EmojiSlamProps> = ({
   const scale = interpolate(scaleSpring, [0, 1], [0, 1]);
 
   // Fade out
-  const opacity = frame < totalHold
-    ? 1
-    : interpolate(frame, [totalHold, totalDur], [1, 0], {
-        extrapolateLeft: 'clamp',
-        extrapolateRight: 'clamp',
-      });
+  const opacity =
+    frame < totalHold
+      ? 1
+      : interpolate(frame, [totalHold, totalDur], [1, 0], {
+          extrapolateLeft: 'clamp',
+          extrapolateRight: 'clamp',
+        });
 
   // Slight seeded rotation on land
   const rotation = n.smoothAt(0, -8, 8);
 
   // Position mapping
   const posMap: Record<string, React.CSSProperties> = {
-    center: { top: '50%', left: '50%', transform: `translate(-50%, -50%) translateY(${dropY}px) scale(${scale}) rotate(${rotation}deg)` },
-    'top-left': { top: 40, left: 40, transform: `translateY(${dropY}px) scale(${scale}) rotate(${rotation}deg)` },
-    'top-right': { top: 40, right: 40, transform: `translateY(${dropY}px) scale(${scale}) rotate(${rotation}deg)` },
-    'bottom-center': { bottom: 60, left: '50%', transform: `translateX(-50%) translateY(${dropY}px) scale(${scale}) rotate(${rotation}deg)` },
+    center: {
+      top: '50%',
+      left: '50%',
+      transform: `translate(-50%, -50%) translateY(${dropY}px) scale(${scale}) rotate(${rotation}deg)`,
+    },
+    'top-left': {
+      top: 40,
+      left: 40,
+      transform: `translateY(${dropY}px) scale(${scale}) rotate(${rotation}deg)`,
+    },
+    'top-right': {
+      top: 40,
+      right: 40,
+      transform: `translateY(${dropY}px) scale(${scale}) rotate(${rotation}deg)`,
+    },
+    'bottom-center': {
+      bottom: 60,
+      left: '50%',
+      transform: `translateX(-50%) translateY(${dropY}px) scale(${scale}) rotate(${rotation}deg)`,
+    },
   };
 
   return (
@@ -97,11 +114,12 @@ export const EmojiSlam: React.FC<EmojiSlamProps> = ({
         gap: 8,
         ...posMap[position],
         // Override transform to combine all transforms
-        transform: position === 'center'
-          ? `translate(-50%, -50%) translateY(${dropY}px) scale(${scale}) rotate(${rotation}deg)`
-          : position === 'bottom-center'
-          ? `translateX(-50%) translateY(${dropY}px) scale(${scale}) rotate(${rotation}deg)`
-          : `translateY(${dropY}px) scale(${scale}) rotate(${rotation}deg)`,
+        transform:
+          position === 'center'
+            ? `translate(-50%, -50%) translateY(${dropY}px) scale(${scale}) rotate(${rotation}deg)`
+            : position === 'bottom-center'
+              ? `translateX(-50%) translateY(${dropY}px) scale(${scale}) rotate(${rotation}deg)`
+              : `translateY(${dropY}px) scale(${scale}) rotate(${rotation}deg)`,
       }}
     >
       <span

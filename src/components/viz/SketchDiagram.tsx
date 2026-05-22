@@ -14,12 +14,12 @@ const { fontFamily: caveatFont } = loadFont();
 export interface SketchNode {
   id: string;
   label: string;
-  x: number;       // percentage 0-100
-  y: number;       // percentage 0-100
-  width?: number;   // pixels, default 160
-  height?: number;  // pixels, default 70
+  x: number; // percentage 0-100
+  y: number; // percentage 0-100
+  width?: number; // pixels, default 160
+  height?: number; // pixels, default 70
   color?: string;
-  icon?: string;    // emoji or text icon
+  icon?: string; // emoji or text icon
   beatIndex?: number;
 }
 
@@ -69,7 +69,7 @@ function getGenerator() {
 function drawableToPathElements(
   drawable: any,
   key: string,
-  extraProps?: React.SVGProps<SVGPathElement>,
+  extraProps?: React.SVGProps<SVGPathElement>
 ): React.ReactElement[] {
   const gen = getGenerator();
   const paths: Array<{ d: string; stroke: string; strokeWidth: number; fill?: string }> =
@@ -125,9 +125,7 @@ function getActiveBeatIndex(frame: number, fps: number, beats: VisualBeat[]): nu
 // ---------------------------------------------------------------------------
 // Arrow head path (small triangle)
 // ---------------------------------------------------------------------------
-function arrowHeadPath(
-  x1: number, y1: number, x2: number, y2: number, size: number = 12,
-): string {
+function arrowHeadPath(x1: number, y1: number, x2: number, y2: number, size: number = 12): string {
   const angle = Math.atan2(y2 - y1, x2 - x1);
   const a1 = angle + Math.PI * 0.82;
   const a2 = angle - Math.PI * 0.82;
@@ -139,7 +137,7 @@ function arrowHeadPath(
 // ---------------------------------------------------------------------------
 function edgeEndpoint(
   fromNode: SketchNode,
-  toNode: SketchNode,
+  toNode: SketchNode
 ): { x1: number; y1: number; x2: number; y2: number } {
   const from = getNodeCenter(fromNode);
   const to = getNodeCenter(toNode);
@@ -153,8 +151,8 @@ function edgeEndpoint(
   // Offset from center to border
   const fromHW = fromPos.w / 2;
   const fromHH = fromPos.h / 2;
-  let tFx = Math.abs(cosA) > 0.001 ? Math.abs(fromHW / cosA) : Infinity;
-  let tFy = Math.abs(sinA) > 0.001 ? Math.abs(fromHH / sinA) : Infinity;
+  const tFx = Math.abs(cosA) > 0.001 ? Math.abs(fromHW / cosA) : Infinity;
+  const tFy = Math.abs(sinA) > 0.001 ? Math.abs(fromHH / sinA) : Infinity;
   const tF = Math.min(tFx, tFy);
   const x1 = from.cx + cosA * tF;
   const y1 = from.cy + sinA * tF;
@@ -164,8 +162,8 @@ function edgeEndpoint(
   const angleBack = angle + Math.PI;
   const cosB = Math.cos(angleBack);
   const sinB = Math.sin(angleBack);
-  let tTx = Math.abs(cosB) > 0.001 ? Math.abs(toHW / cosB) : Infinity;
-  let tTy = Math.abs(sinB) > 0.001 ? Math.abs(toHH / sinB) : Infinity;
+  const tTx = Math.abs(cosB) > 0.001 ? Math.abs(toHW / cosB) : Infinity;
+  const tTy = Math.abs(sinB) > 0.001 ? Math.abs(toHH / sinB) : Infinity;
   const tT = Math.min(tTx, tTy);
   const x2 = to.cx + cosB * tT;
   const y2 = to.cy + sinB * tT;
@@ -193,7 +191,15 @@ export const SketchDiagram: React.FC<SketchDiagramProps> = ({
     const gen = getGenerator();
     const nodeDrawables: Record<string, any> = {};
     const highlightDrawables: Record<string, any> = {};
-    const edgeDrawables: Array<{ key: string; drawable: any; arrowHead: string; label?: string; midX: number; midY: number; dashed: boolean }> = [];
+    const edgeDrawables: Array<{
+      key: string;
+      drawable: any;
+      arrowHead: string;
+      label?: string;
+      midX: number;
+      midY: number;
+      dashed: boolean;
+    }> = [];
 
     // Node rectangles
     nodes.forEach((node, idx) => {
@@ -222,7 +228,7 @@ export const SketchDiagram: React.FC<SketchDiagramProps> = ({
     });
 
     // Edge lines
-    const nodeMap = new Map(nodes.map(n => [n.id, n]));
+    const nodeMap = new Map(nodes.map((n) => [n.id, n]));
     edges.forEach((edge, idx) => {
       const fromNode = nodeMap.get(edge.from);
       const toNode = nodeMap.get(edge.to);
@@ -261,7 +267,7 @@ export const SketchDiagram: React.FC<SketchDiagramProps> = ({
   // ---------------------------------------------------------------------------
   // We use two modes: if nodes have beatIndex, use beat-based reveal.
   // Otherwise, reveal everything progressively via frame timing.
-  const hasBeatIndexes = nodes.some(n => n.beatIndex !== undefined);
+  const hasBeatIndexes = nodes.some((n) => n.beatIndex !== undefined);
 
   function isNodeVisible(node: SketchNode): boolean {
     if (!hasBeatIndexes) {
@@ -342,22 +348,16 @@ export const SketchDiagram: React.FC<SketchDiagramProps> = ({
           const enterFrame = hasBeatIndexes
             ? (edge.beatIndex ?? 0) * (fps * 0.4)
             : (nodes.length + idx) * (fps * 0.25);
-          const opacity = interpolate(
-            frame,
-            [enterFrame, enterFrame + fps * 0.3],
-            [0, 0.7],
-            { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
-          );
+          const opacity = interpolate(frame, [enterFrame, enterFrame + fps * 0.3], [0, 0.7], {
+            extrapolateLeft: 'clamp',
+            extrapolateRight: 'clamp',
+          });
 
           return (
             <g key={edgeData.key} opacity={opacity}>
               {drawableToPathElements(edgeData.drawable, edgeData.key)}
               {/* Arrow head */}
-              <path
-                d={edgeData.arrowHead}
-                fill="#AAAAAA"
-                stroke="none"
-              />
+              <path d={edgeData.arrowHead} fill="#AAAAAA" stroke="none" />
               {/* Edge label */}
               {edgeData.label && (
                 <text
@@ -401,17 +401,14 @@ export const SketchDiagram: React.FC<SketchDiagramProps> = ({
               transform={`translate(${center.cx}, ${center.cy}) scale(${scale}) translate(${-center.cx}, ${-center.cy})`}
             >
               {/* Node rectangle (rough.js) */}
-              {drawableToPathElements(
-                drawables.nodeDrawables[node.id],
-                `node-${node.id}`,
-              )}
+              {drawableToPathElements(drawables.nodeDrawables[node.id], `node-${node.id}`)}
 
               {/* Active highlight circle */}
               {active &&
                 drawableToPathElements(
                   drawables.highlightDrawables[node.id],
                   `highlight-${node.id}`,
-                  { opacity: 0.8 },
+                  { opacity: 0.8 }
                 )}
 
               {/* Icon (emoji / text) */}

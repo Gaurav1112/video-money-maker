@@ -46,8 +46,14 @@ export const ProsConsList: React.FC<ProsConsListProps> = ({ mode, items, sceneDu
       <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
         {items.map((item, i) => {
           const start = i * perItem;
-          const op = interpolate(frame, [start, start + 14], [0, 1], { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' });
-          const tx = interpolate(frame, [start, start + 14], [-32, 0], { extrapolateRight: 'clamp', extrapolateLeft: 'clamp' });
+          const op = interpolate(frame, [start, start + 14], [0, 1], {
+            extrapolateRight: 'clamp',
+            extrapolateLeft: 'clamp',
+          });
+          const tx = interpolate(frame, [start, start + 14], [-32, 0], {
+            extrapolateRight: 'clamp',
+            extrapolateLeft: 'clamp',
+          });
           return (
             <div
               key={i}

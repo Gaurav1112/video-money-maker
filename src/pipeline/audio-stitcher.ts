@@ -22,12 +22,11 @@ function hasFfmpeg(): boolean {
  */
 function probeDuration(filePath: string): number {
   try {
-    const out = execFileSync('ffprobe', [
-      '-v', 'error',
-      '-show_entries', 'format=duration',
-      '-of', 'csv=p=0',
-      filePath,
-    ], { timeout: 10000, encoding: 'utf-8' });
+    const out = execFileSync(
+      'ffprobe',
+      ['-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', filePath],
+      { timeout: 10000, encoding: 'utf-8' }
+    );
     const parsed = parseFloat(out.trim());
     if (!isNaN(parsed) && parsed > 0) return parsed;
   } catch {
@@ -96,12 +95,24 @@ export function stitchAudio(
   // Generate silence file for gaps between scenes
   const silencePath = path.join(AUDIO_DIR, `_silence_${gapSeconds}s.mp3`);
   if (!fs.existsSync(silencePath)) {
-    execFileSync('ffmpeg', [
-      '-y', '-f', 'lavfi', '-i', `anullsrc=r=24000:cl=mono`,
-      '-t', String(gapSeconds),
-      '-codec:a', 'libmp3lame', '-b:a', '192k',
-      silencePath,
-    ], { timeout: 10000, stdio: 'pipe' });
+    execFileSync(
+      'ffmpeg',
+      [
+        '-y',
+        '-f',
+        'lavfi',
+        '-i',
+        `anullsrc=r=24000:cl=mono`,
+        '-t',
+        String(gapSeconds),
+        '-codec:a',
+        'libmp3lame',
+        '-b:a',
+        '192k',
+        silencePath,
+      ],
+      { timeout: 10000, stdio: 'pipe' }
+    );
   }
 
   // Build ffmpeg concat list and calculate per-scene offsets
@@ -131,12 +142,24 @@ export function stitchAudio(
 
   // Concatenate with ffmpeg (raw concat first, then normalize)
   const rawMasterPath = path.join(AUDIO_DIR, `_raw_${outputName}`);
-  execFileSync('ffmpeg', [
-    '-y', '-f', 'concat', '-safe', '0',
-    '-i', listPath,
-    '-codec:a', 'libmp3lame', '-b:a', '192k',
-    rawMasterPath,
-  ], { timeout: 120000, stdio: 'pipe' });
+  execFileSync(
+    'ffmpeg',
+    [
+      '-y',
+      '-f',
+      'concat',
+      '-safe',
+      '0',
+      '-i',
+      listPath,
+      '-codec:a',
+      'libmp3lame',
+      '-b:a',
+      '192k',
+      rawMasterPath,
+    ],
+    { timeout: 120000, stdio: 'pipe' }
+  );
 
   // Loudness normalization — target -14 LUFS (YouTube standard).
   // True two-pass loudnorm: first pass measures actual loudness stats,
@@ -153,11 +176,19 @@ export function stitchAudio(
   let measuredThresh = '-40';
   let offset = '0';
   try {
-    const measureResult = spawnSync('ffmpeg', [
-      '-i', rawMasterPath,
-      '-af', 'loudnorm=I=-14:LRA=11:TP=-1.5:print_format=json',
-      '-f', 'null', '-',
-    ], { timeout: 120000, encoding: 'utf-8' });
+    const measureResult = spawnSync(
+      'ffmpeg',
+      [
+        '-i',
+        rawMasterPath,
+        '-af',
+        'loudnorm=I=-14:LRA=11:TP=-1.5:print_format=json',
+        '-f',
+        'null',
+        '-',
+      ],
+      { timeout: 120000, encoding: 'utf-8' }
+    );
 
     const stderrStr = (measureResult.stderr || '') as string;
     // ffmpeg prints the JSON block at the end of stderr
@@ -176,26 +207,45 @@ export function stitchAudio(
   }
 
   // Pass 2: Apply measured values for precise normalization + volume boost
-  execFileSync('ffmpeg', [
-    '-y',
-    '-i', rawMasterPath,
-    // Panel-12 Dist P0: REMOVED `volume=3dB` post-loudnorm boost — it was
-    // causing ~-11 LUFS / +1.5 dBTP clipping vs the YT -14 LUFS target.
-    // Single-pass loudnorm with measured values lands at -14 LUFS exactly.
-    // (Mirrors the deletion in src/audio/audio-stitcher.ts so both
-    // legacy and modern pipelines emit spec-compliant audio.)
-    '-af', `loudnorm=I=-14:LRA=11:TP=-1.5:measured_I=${measuredI}:measured_TP=${measuredTP}:measured_LRA=${measuredLRA}:measured_thresh=${measuredThresh}:offset=${offset}:linear=true`,
-    '-codec:a', 'libmp3lame', '-b:a', '192k',
-    masterPath,
-  ], { timeout: 120000, stdio: 'pipe' });
+  execFileSync(
+    'ffmpeg',
+    [
+      '-y',
+      '-i',
+      rawMasterPath,
+      // Panel-12 Dist P0: REMOVED `volume=3dB` post-loudnorm boost — it was
+      // causing ~-11 LUFS / +1.5 dBTP clipping vs the YT -14 LUFS target.
+      // Single-pass loudnorm with measured values lands at -14 LUFS exactly.
+      // (Mirrors the deletion in src/audio/audio-stitcher.ts so both
+      // legacy and modern pipelines emit spec-compliant audio.)
+      '-af',
+      `loudnorm=I=-14:LRA=11:TP=-1.5:measured_I=${measuredI}:measured_TP=${measuredTP}:measured_LRA=${measuredLRA}:measured_thresh=${measuredThresh}:offset=${offset}:linear=true`,
+      '-codec:a',
+      'libmp3lame',
+      '-b:a',
+      '192k',
+      masterPath,
+    ],
+    { timeout: 120000, stdio: 'pipe' }
+  );
 
   // Cleanup temp files
-  try { fs.unlinkSync(listPath); } catch { /* ignore */ }
-  try { fs.unlinkSync(rawMasterPath); } catch { /* ignore */ }
+  try {
+    fs.unlinkSync(listPath);
+  } catch {
+    /* ignore */
+  }
+  try {
+    fs.unlinkSync(rawMasterPath);
+  } catch {
+    /* ignore */
+  }
 
   // Get actual total duration from the output file
   const totalDuration = probeDuration(masterPath);
 
-  console.log(`✓ Master audio: ${outputName} (${totalDuration.toFixed(1)}s, ${validEntries.length} scenes stitched)`);
+  console.log(
+    `✓ Master audio: ${outputName} (${totalDuration.toFixed(1)}s, ${validEntries.length} scenes stitched)`
+  );
   return { masterPath, totalDuration, sceneOffsets };
 }

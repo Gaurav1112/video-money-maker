@@ -43,8 +43,8 @@ export const KenBurns: React.FC<KenBurnsProps> = ({
 
   // Deterministically decide zoom direction and pan direction from seed
   const zoomIn = n.smoothAt(0) > 0; // positive = zoom in, negative = zoom out
-  const panX = n.smoothAt(1) * 40;  // [-40, 40] px
-  const panY = n.smoothAt(2) * 20;  // [-20, 20] px
+  const panX = n.smoothAt(1) * 40; // [-40, 40] px
+  const panY = n.smoothAt(2) * 20; // [-20, 20] px
 
   const resolvedScaleStart = scaleStart ?? (zoomIn ? 1.0 : 1.12);
   const resolvedScaleEnd = scaleEnd ?? (zoomIn ? 1.12 : 1.0);

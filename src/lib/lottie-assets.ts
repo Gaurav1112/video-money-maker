@@ -10,10 +10,20 @@ export interface LottieAsset {
  * Download these from LottieFiles (verify free commercial license per file).
  */
 export const LOTTIE_ASSETS: LottieAsset[] = [
-  { id: 'loading-spinner', file: 'lottie/loading-spinner.json', category: 'status', durationSec: 2 },
+  {
+    id: 'loading-spinner',
+    file: 'lottie/loading-spinner.json',
+    category: 'status',
+    durationSec: 2,
+  },
   { id: 'success-check', file: 'lottie/success-check.json', category: 'status', durationSec: 1.5 },
   { id: 'error-alert', file: 'lottie/error-alert.json', category: 'status', durationSec: 1 },
-  { id: 'warning-triangle', file: 'lottie/warning-triangle.json', category: 'status', durationSec: 1.5 },
+  {
+    id: 'warning-triangle',
+    file: 'lottie/warning-triangle.json',
+    category: 'status',
+    durationSec: 1.5,
+  },
   { id: 'data-flow', file: 'lottie/data-flow.json', category: 'data', durationSec: 3 },
   { id: 'server-pulse', file: 'lottie/server-pulse.json', category: 'action', durationSec: 2 },
   { id: 'database-write', file: 'lottie/database-write.json', category: 'action', durationSec: 2 },
@@ -28,9 +38,9 @@ export const LOTTIE_ASSETS: LottieAsset[] = [
 ];
 
 export function getLottieAsset(id: string): LottieAsset | null {
-  return LOTTIE_ASSETS.find(a => a.id === id) || null;
+  return LOTTIE_ASSETS.find((a) => a.id === id) || null;
 }
 
 export function getLottieByCategory(category: LottieAsset['category']): LottieAsset[] {
-  return LOTTIE_ASSETS.filter(a => a.category === category);
+  return LOTTIE_ASSETS.filter((a) => a.category === category);
 }

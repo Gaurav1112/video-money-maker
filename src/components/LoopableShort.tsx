@@ -60,11 +60,7 @@ import {
   useCurrentFrame,
   useVideoConfig,
 } from 'remotion';
-import {
-  buildFingerprint,
-  tweenToFirstFrame,
-  LOOP_BACK_FRAMES,
-} from '../lib/match-cut';
+import { buildFingerprint, tweenToFirstFrame, LOOP_BACK_FRAMES } from '../lib/match-cut';
 import type { VisualFingerprint } from '../lib/match-cut';
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -141,12 +137,11 @@ export const LoopableShort: React.FC<LoopableShortProps> = ({
     frame,
     [total - LOOP_BACK_FRAMES - 10, total - LOOP_BACK_FRAMES, total],
     [0, 0, 0.65],
-    { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
+    { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }
   );
 
   return (
     <AbsoluteFill style={{ backgroundColor: bgColor, overflow: 'hidden' }}>
-
       {/* ── 1. Content layer ─────────────────────────────────────────────────
            All ViralShort scenes.  Caller MUST pass hideEndCTA={true} to
            suppress the static EndCTA that would break the loop.            */}
@@ -232,7 +227,6 @@ export const LoopableShort: React.FC<LoopableShortProps> = ({
           </AbsoluteFill>
         </AbsoluteFill>
       )}
-
     </AbsoluteFill>
   );
 };

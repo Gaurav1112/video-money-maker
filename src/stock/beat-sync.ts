@@ -17,17 +17,28 @@ export async function snapToBeat(
   const durationSec = (windowMs * 2) / 1000;
 
   try {
-    const { stderr } = await execFileAsync('ffmpeg', [
-      '-y',
-      '-i', audioPath,
-      '-ss', String(startSec),
-      '-t', String(durationSec),
-      '-af', 'astats=metadata=1:reset=1',
-      '-f', 'null',
-      '-',
-    ], { maxBuffer: 5 * 1024 * 1024 });
+    const { stderr } = await execFileAsync(
+      'ffmpeg',
+      [
+        '-y',
+        '-i',
+        audioPath,
+        '-ss',
+        String(startSec),
+        '-t',
+        String(durationSec),
+        '-af',
+        'astats=metadata=1:reset=1',
+        '-f',
+        'null',
+        '-',
+      ],
+      { maxBuffer: 5 * 1024 * 1024 }
+    );
 
-    const rmsMatches = [...stderr.matchAll(/lavfi\.astats\.Overall\.RMS_level=([+-]?\d+(?:\.\d+)?)/g)];
+    const rmsMatches = [
+      ...stderr.matchAll(/lavfi\.astats\.Overall\.RMS_level=([+-]?\d+(?:\.\d+)?)/g),
+    ];
     if (rmsMatches.length === 0) {
       return Math.round((startFrameMs / 1000) * fps);
     }

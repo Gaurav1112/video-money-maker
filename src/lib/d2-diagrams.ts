@@ -11,7 +11,13 @@ export const D2_DIAGRAMS: Record<string, D2DiagramDef> = {
     direction: 'right',
     nodes: [
       { id: 'client', label: 'Client', color: '#1e3a5f', stroke: '#60a5fa' },
-      { id: 'gateway', label: 'API Gateway', color: '#7c2d12', stroke: '#fb923c', shape: 'hexagon' },
+      {
+        id: 'gateway',
+        label: 'API Gateway',
+        color: '#7c2d12',
+        stroke: '#fb923c',
+        shape: 'hexagon',
+      },
       { id: 'auth', label: 'Auth Service', color: '#064e3b', stroke: '#34d399' },
       { id: 'users', label: 'User Service', color: '#1e1b4b', stroke: '#818cf8' },
       { id: 'orders', label: 'Order Service', color: '#1e1b4b', stroke: '#818cf8' },
@@ -37,7 +43,13 @@ export const D2_DIAGRAMS: Record<string, D2DiagramDef> = {
       { id: 'srv1', label: 'Server 1', color: '#064e3b', stroke: '#34d399' },
       { id: 'srv2', label: 'Server 2', color: '#064e3b', stroke: '#34d399' },
       { id: 'srv3', label: 'Server 3', color: '#064e3b', stroke: '#34d399' },
-      { id: 'health', label: 'Health Check', color: '#4a1d6e', stroke: '#c084fc', shape: 'diamond' },
+      {
+        id: 'health',
+        label: 'Health Check',
+        color: '#4a1d6e',
+        stroke: '#c084fc',
+        shape: 'diamond',
+      },
     ],
     edges: [
       { from: 'clients', to: 'lb', label: 'Requests', color: '#60a5fa' },
@@ -50,7 +62,7 @@ export const D2_DIAGRAMS: Record<string, D2DiagramDef> = {
     ],
   },
 
-  'caching': {
+  caching: {
     direction: 'right',
     nodes: [
       { id: 'app', label: 'Application', color: '#1e3a5f', stroke: '#60a5fa' },
@@ -70,13 +82,31 @@ export const D2_DIAGRAMS: Record<string, D2DiagramDef> = {
     ],
   },
 
-  'database': {
+  database: {
     direction: 'down',
     nodes: [
       { id: 'app', label: 'Application', color: '#1e3a5f', stroke: '#60a5fa' },
-      { id: 'primary', label: 'Primary DB', color: '#064e3b', stroke: '#34d399', shape: 'cylinder' },
-      { id: 'replica1', label: 'Read Replica 1', color: '#312e81', stroke: '#a78bfa', shape: 'cylinder' },
-      { id: 'replica2', label: 'Read Replica 2', color: '#312e81', stroke: '#a78bfa', shape: 'cylinder' },
+      {
+        id: 'primary',
+        label: 'Primary DB',
+        color: '#064e3b',
+        stroke: '#34d399',
+        shape: 'cylinder',
+      },
+      {
+        id: 'replica1',
+        label: 'Read Replica 1',
+        color: '#312e81',
+        stroke: '#a78bfa',
+        shape: 'cylinder',
+      },
+      {
+        id: 'replica2',
+        label: 'Read Replica 2',
+        color: '#312e81',
+        stroke: '#a78bfa',
+        shape: 'cylinder',
+      },
       { id: 'shard1', label: 'Shard A-M', color: '#713f12', stroke: '#fbbf24', shape: 'cylinder' },
       { id: 'shard2', label: 'Shard N-Z', color: '#713f12', stroke: '#fbbf24', shape: 'cylinder' },
     ],
@@ -91,15 +121,27 @@ export const D2_DIAGRAMS: Record<string, D2DiagramDef> = {
     ],
   },
 
-  'microservices': {
+  microservices: {
     direction: 'right',
     nodes: [
-      { id: 'gateway', label: 'API Gateway', color: '#7c2d12', stroke: '#fb923c', shape: 'hexagon' },
+      {
+        id: 'gateway',
+        label: 'API Gateway',
+        color: '#7c2d12',
+        stroke: '#fb923c',
+        shape: 'hexagon',
+      },
       { id: 'user_svc', label: 'User Service', color: '#1e1b4b', stroke: '#818cf8' },
       { id: 'order_svc', label: 'Order Service', color: '#1e1b4b', stroke: '#818cf8' },
       { id: 'payment_svc', label: 'Payment Service', color: '#064e3b', stroke: '#34d399' },
       { id: 'mq', label: 'Message Queue', color: '#4a1d6e', stroke: '#c084fc', shape: 'hexagon' },
-      { id: 'registry', label: 'Service Registry', color: '#713f12', stroke: '#fbbf24', shape: 'diamond' },
+      {
+        id: 'registry',
+        label: 'Service Registry',
+        color: '#713f12',
+        stroke: '#fbbf24',
+        shape: 'diamond',
+      },
     ],
     edges: [
       { from: 'gateway', to: 'user_svc', label: 'REST', color: '#818cf8' },
@@ -117,7 +159,13 @@ export const D2_DIAGRAMS: Record<string, D2DiagramDef> = {
     nodes: [
       { id: 'producer1', label: 'Producer A', color: '#1e3a5f', stroke: '#60a5fa' },
       { id: 'producer2', label: 'Producer B', color: '#1e3a5f', stroke: '#60a5fa' },
-      { id: 'broker', label: 'Message Broker', color: '#7c2d12', stroke: '#fb923c', shape: 'hexagon' },
+      {
+        id: 'broker',
+        label: 'Message Broker',
+        color: '#7c2d12',
+        stroke: '#fb923c',
+        shape: 'hexagon',
+      },
       { id: 'queue1', label: 'Queue: Orders', color: '#4a1d6e', stroke: '#c084fc' },
       { id: 'queue2', label: 'Queue: Emails', color: '#4a1d6e', stroke: '#c084fc' },
       { id: 'consumer1', label: 'Consumer 1', color: '#064e3b', stroke: '#34d399' },
@@ -133,14 +181,20 @@ export const D2_DIAGRAMS: Record<string, D2DiagramDef> = {
     ],
   },
 
-  'distributed': {
+  distributed: {
     direction: 'right',
     nodes: [
       { id: 'client', label: 'Client', color: '#1e3a5f', stroke: '#60a5fa' },
       { id: 'node1', label: 'Node 1 (Leader)', color: '#7c2d12', stroke: '#fb923c' },
       { id: 'node2', label: 'Node 2', color: '#1e1b4b', stroke: '#818cf8' },
       { id: 'node3', label: 'Node 3', color: '#1e1b4b', stroke: '#818cf8' },
-      { id: 'consensus', label: 'Consensus', color: '#064e3b', stroke: '#34d399', shape: 'diamond' },
+      {
+        id: 'consensus',
+        label: 'Consensus',
+        color: '#064e3b',
+        stroke: '#34d399',
+        shape: 'diamond',
+      },
       { id: 'log', label: 'WAL Log', color: '#312e81', stroke: '#a78bfa', shape: 'cylinder' },
     ],
     edges: [
@@ -153,13 +207,25 @@ export const D2_DIAGRAMS: Record<string, D2DiagramDef> = {
     ],
   },
 
-  'authentication': {
+  authentication: {
     direction: 'right',
     nodes: [
       { id: 'user', label: 'User', color: '#1e3a5f', stroke: '#60a5fa' },
-      { id: 'auth_server', label: 'Auth Server', color: '#7c2d12', stroke: '#fb923c', shape: 'hexagon' },
+      {
+        id: 'auth_server',
+        label: 'Auth Server',
+        color: '#7c2d12',
+        stroke: '#fb923c',
+        shape: 'hexagon',
+      },
       { id: 'idp', label: 'Identity Provider', color: '#4a1d6e', stroke: '#c084fc' },
-      { id: 'token_store', label: 'Token Store', color: '#713f12', stroke: '#fbbf24', shape: 'cylinder' },
+      {
+        id: 'token_store',
+        label: 'Token Store',
+        color: '#713f12',
+        stroke: '#fbbf24',
+        shape: 'cylinder',
+      },
       { id: 'api', label: 'Protected API', color: '#064e3b', stroke: '#34d399' },
       { id: 'rbac', label: 'RBAC Engine', color: '#312e81', stroke: '#a78bfa', shape: 'diamond' },
     ],
@@ -177,9 +243,27 @@ export const D2_DIAGRAMS: Record<string, D2DiagramDef> = {
     direction: 'right',
     nodes: [
       { id: 'client', label: 'Client', color: '#1e3a5f', stroke: '#60a5fa' },
-      { id: 'limiter', label: 'Rate Limiter', color: '#7c2d12', stroke: '#fb923c', shape: 'hexagon' },
-      { id: 'counter', label: 'Token Bucket', color: '#713f12', stroke: '#fbbf24', shape: 'diamond' },
-      { id: 'redis', label: 'Redis Counter', color: '#4a1d6e', stroke: '#c084fc', shape: 'cylinder' },
+      {
+        id: 'limiter',
+        label: 'Rate Limiter',
+        color: '#7c2d12',
+        stroke: '#fb923c',
+        shape: 'hexagon',
+      },
+      {
+        id: 'counter',
+        label: 'Token Bucket',
+        color: '#713f12',
+        stroke: '#fbbf24',
+        shape: 'diamond',
+      },
+      {
+        id: 'redis',
+        label: 'Redis Counter',
+        color: '#4a1d6e',
+        stroke: '#c084fc',
+        shape: 'cylinder',
+      },
       { id: 'api', label: 'API Server', color: '#064e3b', stroke: '#34d399' },
       { id: 'reject', label: '429 Too Many', color: '#991b1b', stroke: '#f87171', shape: 'oval' },
     ],
@@ -192,14 +276,32 @@ export const D2_DIAGRAMS: Record<string, D2DiagramDef> = {
     ],
   },
 
-  'monitoring': {
+  monitoring: {
     direction: 'down',
     nodes: [
       { id: 'services', label: 'Microservices', color: '#1e1b4b', stroke: '#818cf8' },
-      { id: 'collector', label: 'Metrics Collector', color: '#7c2d12', stroke: '#fb923c', shape: 'hexagon' },
-      { id: 'tsdb', label: 'Time-Series DB', color: '#312e81', stroke: '#a78bfa', shape: 'cylinder' },
+      {
+        id: 'collector',
+        label: 'Metrics Collector',
+        color: '#7c2d12',
+        stroke: '#fb923c',
+        shape: 'hexagon',
+      },
+      {
+        id: 'tsdb',
+        label: 'Time-Series DB',
+        color: '#312e81',
+        stroke: '#a78bfa',
+        shape: 'cylinder',
+      },
       { id: 'dashboard', label: 'Grafana Dashboard', color: '#064e3b', stroke: '#34d399' },
-      { id: 'alerter', label: 'Alert Manager', color: '#991b1b', stroke: '#f87171', shape: 'diamond' },
+      {
+        id: 'alerter',
+        label: 'Alert Manager',
+        color: '#991b1b',
+        stroke: '#f87171',
+        shape: 'diamond',
+      },
       { id: 'oncall', label: 'On-Call Engineer', color: '#713f12', stroke: '#fbbf24' },
     ],
     edges: [
@@ -211,7 +313,7 @@ export const D2_DIAGRAMS: Record<string, D2DiagramDef> = {
     ],
   },
 
-  'cdn': {
+  cdn: {
     direction: 'right',
     nodes: [
       { id: 'user', label: 'User', color: '#1e3a5f', stroke: '#60a5fa' },
@@ -219,7 +321,13 @@ export const D2_DIAGRAMS: Record<string, D2DiagramDef> = {
       { id: 'edge', label: 'Edge Server', color: '#7c2d12', stroke: '#fb923c', shape: 'hexagon' },
       { id: 'pop', label: 'PoP Cache', color: '#713f12', stroke: '#fbbf24' },
       { id: 'origin', label: 'Origin Server', color: '#064e3b', stroke: '#34d399' },
-      { id: 'storage', label: 'Object Store', color: '#312e81', stroke: '#a78bfa', shape: 'cylinder' },
+      {
+        id: 'storage',
+        label: 'Object Store',
+        color: '#312e81',
+        stroke: '#a78bfa',
+        shape: 'cylinder',
+      },
     ],
     edges: [
       { from: 'user', to: 'dns', label: 'Resolve', color: '#c084fc' },
@@ -234,7 +342,13 @@ export const D2_DIAGRAMS: Record<string, D2DiagramDef> = {
     direction: 'right',
     nodes: [
       { id: 'caller', label: 'Caller Service', color: '#1e3a5f', stroke: '#60a5fa' },
-      { id: 'breaker', label: 'Circuit Breaker', color: '#7c2d12', stroke: '#fb923c', shape: 'diamond' },
+      {
+        id: 'breaker',
+        label: 'Circuit Breaker',
+        color: '#7c2d12',
+        stroke: '#fb923c',
+        shape: 'diamond',
+      },
       { id: 'target', label: 'Target Service', color: '#064e3b', stroke: '#34d399' },
       { id: 'fallback', label: 'Fallback', color: '#713f12', stroke: '#fbbf24', shape: 'oval' },
       { id: 'monitor', label: 'Failure Counter', color: '#4a1d6e', stroke: '#c084fc' },

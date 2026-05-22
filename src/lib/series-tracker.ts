@@ -9,18 +9,18 @@ import { QUIZ_BANK, FOCUS_TOPICS, type QuizQuestion } from './quiz-content';
 const STATE_PATH = path.join(process.cwd(), 'output', '.series-state.json');
 
 export interface SeriesState {
-  seriesName: string;       // e.g., "System Design Quiz"
-  dayNumber: number;        // auto-increments
-  topicRotation: string[];  // cycle through topics
+  seriesName: string; // e.g., "System Design Quiz"
+  dayNumber: number; // auto-increments
+  topicRotation: string[]; // cycle through topics
   currentTopicIndex: number; // index into topicRotation
-  lastPostedDate: string;   // ISO date string
-  history: DayEntry[];      // track what was posted each day
+  lastPostedDate: string; // ISO date string
+  history: DayEntry[]; // track what was posted each day
 }
 
 export interface DayEntry {
   day: number;
   topic: string;
-  quizIndex: number;        // index into QUIZ_BANK
+  quizIndex: number; // index into QUIZ_BANK
   date: string;
 }
 
@@ -84,16 +84,16 @@ export function advanceDay(): SeriesState {
   state.currentTopicIndex = (state.currentTopicIndex + 1) % state.topicRotation.length;
 
   // Find an unused quiz for this topic
-  const topicQuizzes = QUIZ_BANK
-    .map((q, i) => ({ quiz: q, globalIndex: i }))
-    .filter(item => item.quiz.topic === topic);
+  const topicQuizzes = QUIZ_BANK.map((q, i) => ({ quiz: q, globalIndex: i })).filter(
+    (item) => item.quiz.topic === topic
+  );
 
   const usedIndices = new Set(
-    state.history.filter(h => h.topic === topic).map(h => h.quizIndex)
+    state.history.filter((h) => h.topic === topic).map((h) => h.quizIndex)
   );
 
   let quizIndex: number;
-  const unused = topicQuizzes.filter(item => !usedIndices.has(item.globalIndex));
+  const unused = topicQuizzes.filter((item) => !usedIndices.has(item.globalIndex));
   if (unused.length > 0) {
     quizIndex = unused[0].globalIndex;
   } else {
@@ -117,7 +117,11 @@ export function advanceDay(): SeriesState {
 /**
  * Get the current day's quiz without advancing. Returns null if no days have been posted.
  */
-export function getCurrentDayQuiz(): { quiz: QuizQuestion; dayNumber: number; topic: string } | null {
+export function getCurrentDayQuiz(): {
+  quiz: QuizQuestion;
+  dayNumber: number;
+  topic: string;
+} | null {
   const state = getSeriesState();
   if (state.history.length === 0) return null;
 
@@ -137,18 +141,16 @@ export function peekNextDayQuiz(): { quiz: QuizQuestion; dayNumber: number; topi
   const nextDay = state.dayNumber + 1;
   const topic = state.topicRotation[state.currentTopicIndex % state.topicRotation.length];
 
-  const topicQuizzes = QUIZ_BANK
-    .map((q, i) => ({ quiz: q, globalIndex: i }))
-    .filter(item => item.quiz.topic === topic);
-
-  const usedIndices = new Set(
-    state.history.filter(h => h.topic === topic).map(h => h.quizIndex)
+  const topicQuizzes = QUIZ_BANK.map((q, i) => ({ quiz: q, globalIndex: i })).filter(
+    (item) => item.quiz.topic === topic
   );
 
-  const unused = topicQuizzes.filter(item => !usedIndices.has(item.globalIndex));
-  const quiz = unused.length > 0
-    ? unused[0].quiz
-    : topicQuizzes[0]?.quiz ?? QUIZ_BANK[0];
+  const usedIndices = new Set(
+    state.history.filter((h) => h.topic === topic).map((h) => h.quizIndex)
+  );
+
+  const unused = topicQuizzes.filter((item) => !usedIndices.has(item.globalIndex));
+  const quiz = unused.length > 0 ? unused[0].quiz : (topicQuizzes[0]?.quiz ?? QUIZ_BANK[0]);
 
   return { quiz, dayNumber: nextDay, topic };
 }
@@ -193,18 +195,18 @@ export function getSeriesDescription(dayNumber: number, totalQuizzes: number): s
  */
 export function formatTopicName(topic: string): string {
   const nameMap: Record<string, string> = {
-    'kafka': 'Kafka',
+    kafka: 'Kafka',
     'api-gateway': 'API Gateway',
     'load-balancing': 'Load Balancing',
-    'database': 'Database',
-    'microservices': 'Microservices',
-    'docker': 'Docker',
-    'kubernetes': 'Kubernetes',
-    'redis': 'Redis',
+    database: 'Database',
+    microservices: 'Microservices',
+    docker: 'Docker',
+    kubernetes: 'Kubernetes',
+    redis: 'Redis',
     'system-design': 'System Design',
     'rest-api': 'REST API',
-    'authentication': 'Auth/JWT',
-    'cicd': 'CI/CD',
+    authentication: 'Auth/JWT',
+    cicd: 'CI/CD',
   };
   return nameMap[topic] || topic;
 }
@@ -247,7 +249,7 @@ export function getSeriesProgress(): {
   return {
     dayNumber: state.dayNumber,
     totalQuizzes,
-    topicsCount: new Set(QUIZ_BANK.map(q => q.topic)).size,
+    topicsCount: new Set(QUIZ_BANK.map((q) => q.topic)).size,
     quizzesUsed,
     daysUntilRepeat: Math.max(0, daysUntilRepeat),
   };

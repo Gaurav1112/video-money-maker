@@ -146,7 +146,7 @@ function fileSizeBytes(filePath: string): number {
 
 async function withRetry<T>(
   fn: () => Promise<T>,
-  { attempts = 3, baseDelayMs = 2000 }: { attempts?: number; baseDelayMs?: number } = {},
+  { attempts = 3, baseDelayMs = 2000 }: { attempts?: number; baseDelayMs?: number } = {}
 ): Promise<T> {
   let lastErr: unknown;
   for (let i = 0; i < attempts; i++) {
@@ -199,22 +199,18 @@ export async function publishToTelegram(meta: MetadataFile, dryRun = false): Pro
   // Strategy: send video if small enough, otherwise thumbnail + caption
   if (videoPath && fs.existsSync(videoPath) && fileSizeBytes(videoPath) <= MAX_DIRECT_VIDEO_BYTES) {
     console.log(`Sending video file (${(fileSizeBytes(videoPath) / 1e6).toFixed(1)} MB)…`);
-    await withRetry(() =>
-      bot.sendVideo(channelId, fs.createReadStream(videoPath), sendOpts),
-    );
+    await withRetry(() => bot.sendVideo(channelId, fs.createReadStream(videoPath), sendOpts));
     console.log('✅ Video sent to Telegram channel');
   } else if (thumbPath && fs.existsSync(thumbPath)) {
     console.log('Video too large or not found — sending thumbnail + caption…');
-    await withRetry(() =>
-      bot.sendPhoto(channelId, fs.createReadStream(thumbPath), sendOpts),
-    );
+    await withRetry(() => bot.sendPhoto(channelId, fs.createReadStream(thumbPath), sendOpts));
     console.log('✅ Thumbnail + caption sent to Telegram channel');
   } else {
     // Last resort: text-only message
     console.warn('No video or thumbnail found — sending text message only');
     const textMessage = caption.replace(/\\/g, ''); // plain text fallback
     await withRetry(() =>
-      bot.sendMessage(channelId, textMessage, { parse_mode: 'HTML', disable_notification: false }),
+      bot.sendMessage(channelId, textMessage, { parse_mode: 'HTML', disable_notification: false })
     );
     console.log('✅ Text message sent to Telegram channel');
   }

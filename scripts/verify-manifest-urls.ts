@@ -7,8 +7,13 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-interface Clip { id: string; url: string; }
-interface Manifest { clips: Clip[]; }
+interface Clip {
+  id: string;
+  url: string;
+}
+interface Manifest {
+  clips: Clip[];
+}
 
 async function main(): Promise<void> {
   const manifestPath = join(process.cwd(), 'assets/stock/manifest.json');

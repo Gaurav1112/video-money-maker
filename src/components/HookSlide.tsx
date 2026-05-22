@@ -8,10 +8,7 @@ interface HookSlideProps {
   startFrame?: number;
 }
 
-const HookSlide: React.FC<HookSlideProps> = ({
-  hookText,
-  startFrame = 0,
-}) => {
+const HookSlide: React.FC<HookSlideProps> = ({ hookText, startFrame = 0 }) => {
   const frame = useCurrentFrame();
 
   const opacity = fadeIn(frame, startFrame, 20);

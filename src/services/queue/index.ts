@@ -184,7 +184,7 @@ export class QueueDb {
           `INSERT OR IGNORE INTO jobs
              (id, episode_number, languages, scheduled_date, status, created_at, updated_at)
            VALUES
-             (@id, @episode_number, @languages, @scheduled_date, 'pending', @now, @now)`,
+             (@id, @episode_number, @languages, @scheduled_date, 'pending', @now, @now)`
         )
         .run({
           id: opts.idempotencyKey,
@@ -198,13 +198,11 @@ export class QueueDb {
       this.db
         .prepare(
           `INSERT OR IGNORE INTO idempotency_keys (key, job_id, created_at)
-           VALUES (@key, @job_id, @now)`,
+           VALUES (@key, @job_id, @now)`
         )
         .run({ key: opts.idempotencyKey, job_id: opts.idempotencyKey, now });
 
-      return this.db
-        .prepare('SELECT * FROM jobs WHERE id = ?')
-        .get(opts.idempotencyKey) as JobRow;
+      return this.db.prepare('SELECT * FROM jobs WHERE id = ?').get(opts.idempotencyKey) as JobRow;
     });
 
     return rowToJob(insert());
@@ -239,7 +237,7 @@ export class QueueDb {
             `UPDATE jobs
              SET status = 'pending', claimed_at = NULL, claimed_by = NULL,
                  updated_at = @now
-             WHERE status = 'claimed' AND claimed_at <= @cutoff`,
+             WHERE status = 'claimed' AND claimed_at <= @cutoff`
           )
           .run({ now: nowIso, cutoff });
 
@@ -256,7 +254,7 @@ export class QueueDb {
                ORDER BY scheduled_date ASC
                LIMIT 1
              )
-             RETURNING *`,
+             RETURNING *`
           )
           .get({ now: nowIso, worker: workerId, today: now.toISOString().slice(0, 10) }) as
           | JobRow
@@ -268,7 +266,7 @@ export class QueueDb {
         this.db
           .prepare(
             `INSERT INTO attempts (job_id, attempt_number, worker_id, started_at)
-             VALUES (@job_id, @attempt_number, @worker_id, @now)`,
+             VALUES (@job_id, @attempt_number, @worker_id, @now)`
           )
           .run({
             job_id: result.id,
@@ -291,22 +289,20 @@ export class QueueDb {
     const now = new Date().toISOString();
 
     this.db.transaction(() => {
-      const job = this.db
-        .prepare('SELECT * FROM jobs WHERE id = ?')
-        .get(jobId) as JobRow | undefined;
+      const job = this.db.prepare('SELECT * FROM jobs WHERE id = ?').get(jobId) as
+        | JobRow
+        | undefined;
       if (!job) throw new Error(`Job not found: ${jobId}`);
 
       this.db
-        .prepare(
-          `UPDATE jobs SET status = 'published', updated_at = @now WHERE id = @id`,
-        )
+        .prepare(`UPDATE jobs SET status = 'published', updated_at = @now WHERE id = @id`)
         .run({ now, id: jobId });
 
       this.db
         .prepare(
           `UPDATE attempts
            SET outcome = 'success', completed_at = @now
-           WHERE job_id = @job_id AND attempt_number = @attempt`,
+           WHERE job_id = @job_id AND attempt_number = @attempt`
         )
         .run({ now, job_id: jobId, attempt: job.attempt_count });
     })();
@@ -324,9 +320,9 @@ export class QueueDb {
     const now = new Date().toISOString();
 
     this.db.transaction(() => {
-      const job = this.db
-        .prepare('SELECT * FROM jobs WHERE id = ?')
-        .get(jobId) as JobRow | undefined;
+      const job = this.db.prepare('SELECT * FROM jobs WHERE id = ?').get(jobId) as
+        | JobRow
+        | undefined;
       if (!job) throw new Error(`Job not found: ${jobId}`);
 
       // Close the attempt record.
@@ -334,21 +330,19 @@ export class QueueDb {
         .prepare(
           `UPDATE attempts
            SET outcome = 'failure', completed_at = @now, error_message = @reason
-           WHERE job_id = @job_id AND attempt_number = @attempt`,
+           WHERE job_id = @job_id AND attempt_number = @attempt`
         )
         .run({ now, job_id: jobId, reason, attempt: job.attempt_count });
 
       if (job.attempt_count >= MAX_ATTEMPTS) {
         this.db
-          .prepare(
-            `UPDATE jobs SET status = 'dead_letter', updated_at = @now WHERE id = @id`,
-          )
+          .prepare(`UPDATE jobs SET status = 'dead_letter', updated_at = @now WHERE id = @id`)
           .run({ now, id: jobId });
 
         this.db
           .prepare(
             `INSERT INTO dead_letter (job_id, reason, moved_at, original_attempt_count)
-             VALUES (@job_id, @reason, @now, @attempts)`,
+             VALUES (@job_id, @reason, @now, @attempts)`
           )
           .run({ job_id: jobId, reason, now, attempts: job.attempt_count });
       } else {
@@ -358,7 +352,7 @@ export class QueueDb {
             `UPDATE jobs
              SET status = 'pending', claimed_at = NULL, claimed_by = NULL,
                  updated_at = @now
-             WHERE id = @id`,
+             WHERE id = @id`
           )
           .run({ now, id: jobId });
       }
@@ -387,9 +381,7 @@ export class QueueDb {
 
   /** Single job by id, or null. */
   get(jobId: string): Job | null {
-    const row = this.db.prepare('SELECT * FROM jobs WHERE id = ?').get(jobId) as
-      | JobRow
-      | undefined;
+    const row = this.db.prepare('SELECT * FROM jobs WHERE id = ?').get(jobId) as JobRow | undefined;
     return row ? rowToJob(row) : null;
   }
 
@@ -404,9 +396,9 @@ export class QueueDb {
 
   /** Read the schedule configuration. */
   getSchedule(): ScheduleConfig {
-    const row = this.db
-      .prepare('SELECT * FROM schedule_config WHERE id = 1')
-      .get() as { days: string; publish_time: string; timezone: string } | undefined;
+    const row = this.db.prepare('SELECT * FROM schedule_config WHERE id = 1').get() as
+      | { days: string; publish_time: string; timezone: string }
+      | undefined;
 
     if (!row) throw new Error('schedule_config is missing — was schema applied?');
     return {
@@ -421,7 +413,7 @@ export class QueueDb {
     this.db
       .prepare(
         `INSERT OR REPLACE INTO schedule_config (id, days, publish_time, timezone)
-         VALUES (1, @days, @time, @tz)`,
+         VALUES (1, @days, @time, @tz)`
       )
       .run({ days: JSON.stringify(cfg.days), time: cfg.publishTime, tz: cfg.timezone });
   }

@@ -1,10 +1,5 @@
 import React from 'react';
-import {
-  useCurrentFrame,
-  useVideoConfig,
-  spring,
-  interpolate,
-} from 'remotion';
+import { useCurrentFrame, useVideoConfig, spring, interpolate } from 'remotion';
 import { AnimatedBox } from '../viz/AnimatedBox';
 import { AnimatedArrow } from '../viz/AnimatedArrow';
 import { COLORS, FONTS, SIZES } from '../../lib/theme';
@@ -37,13 +32,7 @@ export interface ConceptConnection {
 }
 
 export interface ConceptConfig {
-  layoutMode:
-    | 'ring'
-    | 'grid'
-    | 'timeline'
-    | 'tree'
-    | 'stateMachine'
-    | 'freeform';
+  layoutMode: 'ring' | 'grid' | 'timeline' | 'tree' | 'stateMachine' | 'freeform';
   elements: ConceptElement[];
   connections: ConceptConnection[];
   title?: string;
@@ -61,10 +50,7 @@ const BEAT_GAP = 8; // frames between beats
 // Helper: percentage to pixel
 // ---------------------------------------------------------------------------
 
-function pctToPx(
-  pctX: number,
-  pctY: number,
-): { x: number; y: number } {
+function pctToPx(pctX: number, pctY: number): { x: number; y: number } {
   return {
     x: (pctX / 100) * CONTAINER_W,
     y: (pctY / 100) * CONTAINER_H,
@@ -109,9 +95,7 @@ const ConceptElementView: React.FC<{
           top: y - dimension / 2,
           width: dimension,
           height: dimension,
-          transform: isCircle
-            ? `scale(${scale})`
-            : `scale(${scale}) rotate(45deg)`,
+          transform: isCircle ? `scale(${scale})` : `scale(${scale}) rotate(45deg)`,
           opacity,
           display: 'flex',
           alignItems: 'center',
@@ -177,11 +161,7 @@ const ConceptConnectionView: React.FC<{
 
   // Pulse glow overlay for animated connections
   const pulseOpacity = conn.animated
-    ? interpolate(
-        Math.sin(((frame - startFrame) / fps) * Math.PI * 2),
-        [-1, 1],
-        [0.4, 1],
-      )
+    ? interpolate(Math.sin(((frame - startFrame) / fps) * Math.PI * 2), [-1, 1], [0.4, 1])
     : 1;
 
   return (
@@ -202,10 +182,7 @@ const ConceptConnectionView: React.FC<{
 // Title overlay
 // ---------------------------------------------------------------------------
 
-const ConceptTitle: React.FC<{ title: string; fps: number }> = ({
-  title,
-  fps,
-}) => {
+const ConceptTitle: React.FC<{ title: string; fps: number }> = ({ title, fps }) => {
   const frame = useCurrentFrame();
   const entrance = spring({
     frame,
@@ -250,9 +227,7 @@ export interface ConceptRendererProps {
   config: ConceptConfig;
 }
 
-export const ConceptRenderer: React.FC<ConceptRendererProps> = ({
-  config,
-}) => {
+export const ConceptRenderer: React.FC<ConceptRendererProps> = ({ config }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
@@ -282,12 +257,7 @@ export const ConceptRenderer: React.FC<ConceptRendererProps> = ({
 
       {/* Elements */}
       {config.elements.map((el) => (
-        <ConceptElementView
-          key={el.id}
-          el={el}
-          fps={fps}
-          frame={frame}
-        />
+        <ConceptElementView key={el.id} el={el} fps={fps} frame={frame} />
       ))}
     </div>
   );

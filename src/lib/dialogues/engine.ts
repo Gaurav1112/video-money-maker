@@ -54,7 +54,7 @@ function deterministicHash(seed: number): number {
   let t = (seed + 0x6d2b79f5) | 0;
   t = Math.imul(t ^ (t >>> 15), t | 1);
   t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-  return ((t ^ (t >>> 14)) >>> 0);
+  return (t ^ (t >>> 14)) >>> 0;
 }
 
 /**
@@ -74,13 +74,14 @@ function filterLines(
   emotion: DialogueEmotion,
   intensity?: DialogueIntensity,
   gender?: DialogueGender,
-  archetype?: CharacterArchetype,
+  archetype?: CharacterArchetype
 ): DialogueLine[] {
   return lines.filter((l) => {
     if (l.emotion !== emotion) return false;
     if (intensity && l.intensity !== intensity) return false;
     if (gender && gender !== 'any' && l.gender !== 'any' && l.gender !== gender) return false;
-    if (archetype && archetype !== 'any' && l.archetype !== 'any' && l.archetype !== archetype) return false;
+    if (archetype && archetype !== 'any' && l.archetype !== 'any' && l.archetype !== archetype)
+      return false;
     return true;
   });
 }
@@ -119,7 +120,7 @@ export function selectDialogue(query: DialogueQuery): DialogueResult | null {
     query.emotion,
     query.intensity,
     query.gender,
-    query.archetype,
+    query.archetype
   );
 
   if (filtered.length === 0) {
@@ -151,7 +152,7 @@ export function selectDialogue(query: DialogueQuery): DialogueResult | null {
 export function selectDialogueBatch(
   baseQuery: Omit<DialogueQuery, 'seed'>,
   count: number,
-  baseSeed: number,
+  baseSeed: number
 ): DialogueResult[] {
   const results: DialogueResult[] = [];
   const usedIndices = new Set<number>();
@@ -226,7 +227,7 @@ export function getCartoonDialogue(
   episode: number,
   scene: number,
   characterName?: string,
-  archetype?: CharacterArchetype,
+  archetype?: CharacterArchetype
 ): string {
   const seed = buildSeed(episode, scene);
   const variables: Record<string, string> = {};

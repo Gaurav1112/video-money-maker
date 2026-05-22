@@ -75,7 +75,8 @@ interface PostContent {
 
 function buildTeaserPost(metadata: MetadataFile): PostContent {
   const { communityPost } = metadata;
-  if (!communityPost) throw new Error(`metadata.communityPost is missing for episode ${metadata.episodeNumber}`);
+  if (!communityPost)
+    throw new Error(`metadata.communityPost is missing for episode ${metadata.episodeNumber}`);
   return {
     text: communityPost.teaser,
     poll: communityPost.poll,
@@ -84,7 +85,8 @@ function buildTeaserPost(metadata: MetadataFile): PostContent {
 
 function buildRecapPost(metadata: MetadataFile, videoId: string): PostContent {
   const { communityPost } = metadata;
-  if (!communityPost) throw new Error(`metadata.communityPost is missing for episode ${metadata.episodeNumber}`);
+  if (!communityPost)
+    throw new Error(`metadata.communityPost is missing for episode ${metadata.episodeNumber}`);
   const url = `https://youtu.be/${videoId}`;
   return {
     text: communityPost.recap.replace('{VIDEO_URL}', url),
@@ -103,29 +105,35 @@ async function assertNoLoginChallenge(page: Page): Promise<void> {
     await page.screenshot({ path: 'community-post-auth-failure.png' });
     throw new Error(
       'Cookie session has expired — Studio redirected to login. ' +
-      'Refresh YT_STUDIO_COOKIES secret (see INTEGRATION.md) and retry.'
+        'Refresh YT_STUDIO_COOKIES secret (see INTEGRATION.md) and retry.'
     );
   }
 }
 
 async function openCommunityComposer(page: Page): Promise<void> {
   // Primary path: Create button → Community post
-  await page.waitForSelector('[aria-label="Create"], [data-testid="create-button"]', { timeout: TIMEOUT_MS });
+  await page.waitForSelector('[aria-label="Create"], [data-testid="create-button"]', {
+    timeout: TIMEOUT_MS,
+  });
   await page.click('[aria-label="Create"], [data-testid="create-button"]');
 
   // The Create menu shows Community post option
-  const communityOption = page.locator('tp-yt-paper-item:has-text("Community post"), ytcp-ve:has-text("Community post")').first();
+  const communityOption = page
+    .locator('tp-yt-paper-item:has-text("Community post"), ytcp-ve:has-text("Community post")')
+    .first();
   await communityOption.waitFor({ timeout: TIMEOUT_MS });
   await communityOption.click();
 }
 
 async function typePostText(page: Page, text: string): Promise<void> {
   // The community post composer uses a contenteditable div
-  const composer = page.locator(
-    '[contenteditable="true"][aria-label*="community"], ' +
-    '[contenteditable="true"][placeholder*="What"], ' +
-    'ytcp-social-suggestion-input [contenteditable="true"]'
-  ).first();
+  const composer = page
+    .locator(
+      '[contenteditable="true"][aria-label*="community"], ' +
+        '[contenteditable="true"][placeholder*="What"], ' +
+        'ytcp-social-suggestion-input [contenteditable="true"]'
+    )
+    .first();
   await composer.waitFor({ timeout: TIMEOUT_MS });
   await composer.click();
   // Clear any placeholder content then type
@@ -133,7 +141,10 @@ async function typePostText(page: Page, text: string): Promise<void> {
   await composer.type(text, { delay: 20 });
 }
 
-async function attachPoll(page: Page, poll: { question: string; options: string[] }): Promise<void> {
+async function attachPoll(
+  page: Page,
+  poll: { question: string; options: string[] }
+): Promise<void> {
   // Click "Add poll" button if present
   const pollButton = page.locator('[aria-label="Add poll"], button:has-text("Poll")').first();
   try {
@@ -163,24 +174,27 @@ async function submitPost(page: Page): Promise<void> {
 
   // Guard: make sure button is enabled (not greyed out)
   const isDisabled = await postButton.getAttribute('disabled');
-  if (isDisabled !== null) throw new Error('Post button is disabled — text may be empty or invalid');
+  if (isDisabled !== null)
+    throw new Error('Post button is disabled — text may be empty or invalid');
 
   await postButton.click();
 
   // Wait for success indicator: the composer closes or a toast appears
-  await page.waitForFunction(
-    () => {
-      const toast = document.querySelector('ytcp-notification-bar, [class*="success"]');
-      return toast !== null;
-    },
-    { timeout: TIMEOUT_MS }
-  ).catch(async () => {
-    // Fallback: just wait for the dialog to disappear
-    await page.waitForSelector('ytcp-uploads-dialog, [role="dialog"]', {
-      state: 'hidden',
-      timeout: TIMEOUT_MS,
+  await page
+    .waitForFunction(
+      () => {
+        const toast = document.querySelector('ytcp-notification-bar, [class*="success"]');
+        return toast !== null;
+      },
+      { timeout: TIMEOUT_MS }
+    )
+    .catch(async () => {
+      // Fallback: just wait for the dialog to disappear
+      await page.waitForSelector('ytcp-uploads-dialog, [role="dialog"]', {
+        state: 'hidden',
+        timeout: TIMEOUT_MS,
+      });
     });
-  });
 }
 
 // ─── Registry helpers ─────────────────────────────────────────────────────────
@@ -244,9 +258,8 @@ async function main(): Promise<void> {
     throw new Error(`Could not read ${metadataPath}. Run batch-render first.`);
   }
 
-  const post: PostContent = type === 'teaser'
-    ? buildTeaserPost(metadata)
-    : buildRecapPost(metadata, videoId ?? '');
+  const post: PostContent =
+    type === 'teaser' ? buildTeaserPost(metadata) : buildRecapPost(metadata, videoId ?? '');
 
   if (process.env.COMMUNITY_DRY_RUN === 'true') {
     console.log(`\n🔍 DRY RUN — would post (${type}):\n`);

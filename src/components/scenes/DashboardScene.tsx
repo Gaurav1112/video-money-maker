@@ -20,11 +20,12 @@ interface DashboardSceneProps {
 }
 
 // Trend arrow component
-const TrendArrow: React.FC<{ trend: 'up' | 'down' | 'stable'; color: string }> = ({ trend, color }) => {
+const TrendArrow: React.FC<{ trend: 'up' | 'down' | 'stable'; color: string }> = ({
+  trend,
+  color,
+}) => {
   if (trend === 'stable') {
-    return (
-      <span style={{ color, fontSize: 18 }}>→</span>
-    );
+    return <span style={{ color, fontSize: 18 }}>→</span>;
   }
   return (
     <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
@@ -78,23 +79,20 @@ export const DashboardScene: React.FC<DashboardSceneProps> = ({
     return { x, y };
   });
 
-  const pathD = pathPoints
-    .map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`)
-    .join(' ');
+  const pathD = pathPoints.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
 
   // Area fill path (closes to bottom)
-  const areaD = pathD +
+  const areaD =
+    pathD +
     ` L ${pathPoints[pathPoints.length - 1].x} ${chartHeight - chartPadding}` +
     ` L ${pathPoints[0].x} ${chartHeight - chartPadding} Z`;
 
   // Animate chart draw (strokeDasharray)
   const pathLength = 3000; // approximate
-  const chartRevealProgress = interpolate(
-    frame,
-    [15, 90],
-    [0, 1],
-    { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
-  );
+  const chartRevealProgress = interpolate(frame, [15, 90], [0, 1], {
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
+  });
   const dashOffset = pathLength * (1 - chartRevealProgress);
 
   const hasChart = chartData !== undefined || metrics.length > 0;
@@ -222,14 +220,11 @@ export const DashboardScene: React.FC<DashboardSceneProps> = ({
               frame,
               [cardDelay, cardDelay + 60],
               [0, metric.value],
-              { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
+              { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }
             );
 
-            const trendColor = metric.trend === 'up'
-              ? '#4ADE80'
-              : metric.trend === 'down'
-                ? '#F87171'
-                : '#9CA3AF';
+            const trendColor =
+              metric.trend === 'up' ? '#4ADE80' : metric.trend === 'down' ? '#F87171' : '#9CA3AF';
 
             const accentColor = metric.color || '#60A5FA';
 
@@ -289,9 +284,7 @@ export const DashboardScene: React.FC<DashboardSceneProps> = ({
                       {metric.unit}
                     </span>
                   )}
-                  {metric.trend && (
-                    <TrendArrow trend={metric.trend} color={trendColor} />
-                  )}
+                  {metric.trend && <TrendArrow trend={metric.trend} color={trendColor} />}
                 </div>
                 {/* Accent bar at bottom */}
                 <div
@@ -360,11 +353,7 @@ export const DashboardScene: React.FC<DashboardSceneProps> = ({
               })}
 
               {/* Area fill */}
-              <path
-                d={areaD}
-                fill="url(#chartGradient)"
-                opacity={chartRevealProgress * 0.3}
-              />
+              <path d={areaD} fill="url(#chartGradient)" opacity={chartRevealProgress * 0.3} />
 
               {/* Line */}
               <path
@@ -381,21 +370,12 @@ export const DashboardScene: React.FC<DashboardSceneProps> = ({
               {/* Data points */}
               {pathPoints.map((p, i) => {
                 const pointDelay = 15 + (i / pathPoints.length) * 75;
-                const pointOpacity = interpolate(
-                  frame,
-                  [pointDelay, pointDelay + 8],
-                  [0, 1],
-                  { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
-                );
+                const pointOpacity = interpolate(frame, [pointDelay, pointDelay + 8], [0, 1], {
+                  extrapolateLeft: 'clamp',
+                  extrapolateRight: 'clamp',
+                });
                 return (
-                  <circle
-                    key={i}
-                    cx={p.x}
-                    cy={p.y}
-                    r="4"
-                    fill="#4ADE80"
-                    opacity={pointOpacity}
-                  />
+                  <circle key={i} cx={p.x} cy={p.y} r="4" fill="#4ADE80" opacity={pointOpacity} />
                 );
               })}
 

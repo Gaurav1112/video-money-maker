@@ -37,12 +37,12 @@ const EDGE_TTS_PRIMARY = true; // Edge TTS is our primary engine
 
 // Voice map for Edge TTS — supports multiple languages and accents
 const VOICE_MAP: Record<string, string> = {
-  'english': 'en-US-AriaNeural',        // Clear American English
+  english: 'en-US-AriaNeural', // Clear American English
   'indian-english': 'en-IN-PrabhatNeural', // Indian English male teacher (PRIMARY)
-  'hindi': 'hi-IN-MadhurNeural',          // Hindi male
-  'hinglish': 'en-IN-PrabhatNeural',      // Indian English male — handles Hinglish naturally
-  'male-english': 'en-US-GuyNeural',      // Male American
-  'male-indian': 'en-IN-PrabhatNeural',   // Male Indian English
+  hindi: 'hi-IN-MadhurNeural', // Hindi male
+  hinglish: 'en-IN-PrabhatNeural', // Indian English male — handles Hinglish naturally
+  'male-english': 'en-US-GuyNeural', // Male American
+  'male-indian': 'en-IN-PrabhatNeural', // Male Indian English
 };
 
 // Voice map for Kokoro TTS — language-aware voice selection
@@ -53,14 +53,14 @@ const VOICE_MAP: Record<string, string> = {
 // Indian English voices (if_sara, af_heart) handle Hinglish naturally.
 // Blends like "hm_omega+am_puck" also work for mixed-language narration.
 const KOKORO_VOICE_MAP: Record<string, string> = {
-  'english': 'af_bella',            // American English female — clear, engaging
-  'indian-english': 'af_heart',     // Indian English male — authoritative, Khan Sir style
-  'hindi': 'hm_omega',              // Hindi male — deep, authoritative tone
-  'hinglish': 'af_heart',          // Indian English male — handles Hindi+English mix naturally
-  'male-english': 'am_puck',        // American English male
-  'male-indian': 'af_heart',       // Indian English male
-  'male-hindi': 'hm_omega',         // Hindi male — deep, authoritative tone
-  'male-hinglish': 'af_heart',     // Indian English male — good Hinglish delivery
+  english: 'af_bella', // American English female — clear, engaging
+  'indian-english': 'af_heart', // Indian English male — authoritative, Khan Sir style
+  hindi: 'hm_omega', // Hindi male — deep, authoritative tone
+  hinglish: 'af_heart', // Indian English male — handles Hindi+English mix naturally
+  'male-english': 'am_puck', // American English male
+  'male-indian': 'af_heart', // Indian English male
+  'male-hindi': 'hm_omega', // Hindi male — deep, authoritative tone
+  'male-hinglish': 'af_heart', // Indian English male — good Hinglish delivery
 };
 
 // Ensure audio directory exists
@@ -76,9 +76,14 @@ export async function generateAudio(
   // Resolve voices from language maps
   const kokoroVoice = KOKORO_VOICE_MAP[voiceLanguage] || voice;
   const edgeVoice = process.env.EDGE_TTS_VOICE || VOICE_MAP[voiceLanguage] || 'en-IN-PrabhatNeural';
-  console.log(`  [TTS] generateAudio edge=${edgeVoice} kokoro=${kokoroVoice} (lang=${voiceLanguage})`);
+  console.log(
+    `  [TTS] generateAudio edge=${edgeVoice} kokoro=${kokoroVoice} (lang=${voiceLanguage})`
+  );
 
-  const cacheKey = crypto.createHash('sha256').update(text + edgeVoice + voiceLanguage + rate).digest('hex');
+  const cacheKey = crypto
+    .createHash('sha256')
+    .update(text + edgeVoice + voiceLanguage + rate)
+    .digest('hex');
 
   // Check memory cache first, then persistent disk cache
   const cached = cache.get<TTSResult>(cacheKey);
@@ -86,7 +91,8 @@ export async function generateAudio(
   const diskCache = loadDiskCache();
   const diskCached = diskCache[cacheKey];
   if (diskCached && fs.existsSync(diskCached.audioPath)) {
-    cache.set(cacheKey, diskCached); saveDiskCache(cacheKey, diskCached);
+    cache.set(cacheKey, diskCached);
+    saveDiskCache(cacheKey, diskCached);
     console.log(`  [TTS] Disk cache hit: ${path.basename(diskCached.audioPath)}`);
     return diskCached;
   }
@@ -98,7 +104,11 @@ export async function generateAudio(
     try {
       return await kokoroLocalTTS(text, cacheKey, outputName, rate);
     } catch (kokoroErr) {
-      console.warn('Kokoro local TTS failed:', (kokoroErr as Error).message, '— trying Edge TTS...');
+      console.warn(
+        'Kokoro local TTS failed:',
+        (kokoroErr as Error).message,
+        '— trying Edge TTS...'
+      );
     }
   }
 
@@ -168,10 +178,7 @@ async function whisperRefine(result: TTSResult): Promise<TTSResult> {
  *
  * Only runs if ffmpeg is available. Skips silently if not found.
  */
-export async function humanizeTTSAudio(
-  inputPath: string,
-  outputPath: string,
-): Promise<void> {
+export async function humanizeTTSAudio(inputPath: string, outputPath: string): Promise<void> {
   const { execFile } = await import('child_process');
   const { promisify } = await import('util');
   const execFileAsync = promisify(execFile);
@@ -199,9 +206,12 @@ export async function humanizeTTSAudio(
   ].join(',');
 
   await execFileAsync('ffmpeg', [
-    '-i', inputPath,
-    '-af', filterChain,
-    '-ar', '48000',
+    '-i',
+    inputPath,
+    '-af',
+    filterChain,
+    '-ar',
+    '48000',
     '-y',
     outputPath,
   ]);
@@ -220,8 +230,11 @@ async function kokoroTTS(
   // Try /dev/captioned_speech first for REAL word-level timestamps
   try {
     const captionedResult = await kokoroCaptionedSpeech(text, voice, audioPath);
-    cache.set(cacheKey, captionedResult); saveDiskCache(cacheKey, captionedResult);
-    console.log(`  ✓ Kokoro TTS (captioned): ${filename} (${captionedResult.duration.toFixed(1)}s, ${captionedResult.wordTimestamps.length} words)`);
+    cache.set(cacheKey, captionedResult);
+    saveDiskCache(cacheKey, captionedResult);
+    console.log(
+      `  ✓ Kokoro TTS (captioned): ${filename} (${captionedResult.duration.toFixed(1)}s, ${captionedResult.wordTimestamps.length} words)`
+    );
     return captionedResult;
   } catch (captionedErr) {
     console.warn('  Kokoro /dev/captioned_speech unavailable, falling back to /v1/audio/speech...');
@@ -247,8 +260,11 @@ async function kokoroTTS(
 
   const result = makeTimestamps(text, duration, audioPath);
   const refined = await whisperRefine(result);
-  cache.set(cacheKey, refined); saveDiskCache(cacheKey, refined);
-  console.log(`  ✓ Kokoro TTS (${isWhisperEnabled() ? 'whisper' : 'proportional'}): ${filename} (${refined.duration.toFixed(1)}s)`);
+  cache.set(cacheKey, refined);
+  saveDiskCache(cacheKey, refined);
+  console.log(
+    `  ✓ Kokoro TTS (${isWhisperEnabled() ? 'whisper' : 'proportional'}): ${filename} (${refined.duration.toFixed(1)}s)`
+  );
   return refined;
 }
 
@@ -283,15 +299,22 @@ async function kokoroCaptionedSpeech(
   fs.writeFileSync(audioPath, audioBuffer);
 
   // Extract timestamps — handle multiple possible response formats
-  const rawTimestamps: Array<{ word: string; start_time?: number; end_time?: number; start?: number; end?: number }> =
-    data.timestamps || data.words || data.word_timestamps || [];
+  const rawTimestamps: Array<{
+    word: string;
+    start_time?: number;
+    end_time?: number;
+    start?: number;
+    end?: number;
+  }> = data.timestamps || data.words || data.word_timestamps || [];
 
   // Map to our { word, start, end } format
-  const wordTimestamps: Array<{ word: string; start: number; end: number }> = rawTimestamps.map((t) => ({
-    word: t.word,
-    start: t.start_time ?? t.start ?? 0,
-    end: t.end_time ?? t.end ?? 0,
-  }));
+  const wordTimestamps: Array<{ word: string; start: number; end: number }> = rawTimestamps.map(
+    (t) => ({
+      word: t.word,
+      start: t.start_time ?? t.start ?? 0,
+      end: t.end_time ?? t.end ?? 0,
+    })
+  );
 
   // Derive duration from the last timestamp's end time, or estimate from file size
   let duration: number;
@@ -318,7 +341,7 @@ async function kokoroCaptionedSpeech(
 async function chatterboxTTS(
   text: string,
   cacheKey: string,
-  outputName?: string,
+  outputName?: string
 ): Promise<TTSResult> {
   const { execSync } = await import('child_process');
   const mp3Name = outputName || `cb_${cacheKey.slice(0, 12)}.mp3`;
@@ -329,10 +352,11 @@ async function chatterboxTTS(
   const scriptPath = path.join(process.cwd(), 'scripts', 'chatterbox-tts.py');
 
   // Generate WAV via Chatterbox
-  const output = execSync(
-    `python3 "${scriptPath}" --text "${cleanText}" --output "${wavPath}"`,
-    { timeout: 600000 },
-  ).toString().trim();
+  const output = execSync(`python3 "${scriptPath}" --text "${cleanText}" --output "${wavPath}"`, {
+    timeout: 600000,
+  })
+    .toString()
+    .trim();
 
   // Parse duration from last line of output
   const durationLine = output.split('\n').pop() || '0';
@@ -349,9 +373,16 @@ async function chatterboxTTS(
   // Get duration from ffprobe if parsing failed
   if (duration <= 0 && fs.existsSync(mp3Path)) {
     try {
-      const probe = execSync(`ffprobe -v quiet -show_entries format=duration -of csv=p=0 "${mp3Path}"`, { timeout: 10000 }).toString().trim();
+      const probe = execSync(
+        `ffprobe -v quiet -show_entries format=duration -of csv=p=0 "${mp3Path}"`,
+        { timeout: 10000 }
+      )
+        .toString()
+        .trim();
       duration = parseFloat(probe) || 0;
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
   }
 
   // Generate proportional word timestamps (Chatterbox doesn't provide word-level timing)
@@ -363,7 +394,8 @@ async function chatterboxTTS(
   });
 
   const result: TTSResult = { audioPath: mp3Path, wordTimestamps, duration };
-  cache.set(cacheKey, result); saveDiskCache(cacheKey, result);
+  cache.set(cacheKey, result);
+  saveDiskCache(cacheKey, result);
   console.log(`  ✓ Chatterbox TTS: ${mp3Name} (${duration.toFixed(1)}s, ${words.length} words)`);
   return result;
 }
@@ -375,7 +407,7 @@ async function kokoroLocalTTS(
   text: string,
   cacheKey: string,
   outputName?: string,
-  rate: string = '+30%',
+  rate: string = '+30%'
 ): Promise<TTSResult> {
   const { execSync } = require('child_process');
   const scriptPath = path.join(process.cwd(), 'scripts', 'kokoro-tts.py');
@@ -394,15 +426,22 @@ async function kokoroLocalTTS(
 
   const output = execSync(
     `python3 "${scriptPath}" --text "${cleanText}" --output "${wavPath}" --speed ${speed}`,
-    { timeout: 120000 },
-  ).toString().trim();
+    { timeout: 120000 }
+  )
+    .toString()
+    .trim();
 
   // Parse JSON result from stdout
   const result = JSON.parse(output);
 
   // Convert WAV to MP3
-  execSync(`ffmpeg -y -i "${wavPath}" -codec:a libmp3lame -b:a 128k "${mp3Path}"`, { timeout: 30000, stdio: 'pipe' });
-  try { fs.unlinkSync(wavPath); } catch {}
+  execSync(`ffmpeg -y -i "${wavPath}" -codec:a libmp3lame -b:a 128k "${mp3Path}"`, {
+    timeout: 30000,
+    stdio: 'pipe',
+  });
+  try {
+    fs.unlinkSync(wavPath);
+  } catch {}
 
   const ttsResult: TTSResult = {
     audioPath: mp3Path,
@@ -410,8 +449,11 @@ async function kokoroLocalTTS(
     wordTimestamps: result.wordTimestamps,
   };
 
-  cache.set(cacheKey, ttsResult); saveDiskCache(cacheKey, ttsResult);
-  console.log(`  ✓ Kokoro local: ${mp3Name} (${result.duration.toFixed(1)}s, ${result.realtimeFactor}x RT, voice=${result.voice})`);
+  cache.set(cacheKey, ttsResult);
+  saveDiskCache(cacheKey, ttsResult);
+  console.log(
+    `  ✓ Kokoro local: ${mp3Name} (${result.duration.toFixed(1)}s, ${result.realtimeFactor}x RT, voice=${result.voice})`
+  );
   return ttsResult;
 }
 
@@ -437,15 +479,24 @@ async function edgeTTS(
   // Voice: PrabhatNeural (Indian English male) is the primary voice
   const voice = process.env.EDGE_TTS_VOICE || VOICE_MAP[voiceLanguage] || 'en-IN-PrabhatNeural';
 
-  execFileSync('python3', [
-    '-m', 'edge_tts',
-    '--voice', voice,
-    `--rate=${rate}`,       // Per-scene pacing from VideoStyle
-    '--pitch=+2Hz',         // Slightly warmer, more energetic pitch
-    '--text', cleanText,
-    '--write-media', audioPath,
-    '--write-subtitles', vttPath,  // Real VTT timestamps!
-  ], { timeout: 120000 });
+  execFileSync(
+    'python3',
+    [
+      '-m',
+      'edge_tts',
+      '--voice',
+      voice,
+      `--rate=${rate}`, // Per-scene pacing from VideoStyle
+      '--pitch=+2Hz', // Slightly warmer, more energetic pitch
+      '--text',
+      cleanText,
+      '--write-media',
+      audioPath,
+      '--write-subtitles',
+      vttPath, // Real VTT timestamps!
+    ],
+    { timeout: 120000 }
+  );
 
   // Parse VTT for sentence-level timestamps, then distribute words within sentences
   let wordTimestamps: Array<{ word: string; start: number; end: number }> = [];
@@ -462,7 +513,9 @@ async function edgeTTS(
       duration = stats.size / 12000;
       wordTimestamps = makeTimestampsProportional(text, duration);
     }
-    console.log(`  ✓ Edge TTS VTT: ${wordTimestamps.length} word timestamps from real sentence boundaries`);
+    console.log(
+      `  ✓ Edge TTS VTT: ${wordTimestamps.length} word timestamps from real sentence boundaries`
+    );
   } else {
     // No VTT file — fall back to proportional
     const stats = fs.statSync(audioPath);
@@ -472,8 +525,11 @@ async function edgeTTS(
   }
 
   const result: TTSResult = { audioPath, wordTimestamps, duration };
-  cache.set(cacheKey, result); saveDiskCache(cacheKey, result);
-  console.log(`  ✓ Edge TTS (${voice}): ${filename} (${duration.toFixed(1)}s, ${wordTimestamps.length} words)`);
+  cache.set(cacheKey, result);
+  saveDiskCache(cacheKey, result);
+  console.log(
+    `  ✓ Edge TTS (${voice}): ${filename} (${duration.toFixed(1)}s, ${wordTimestamps.length} words)`
+  );
   return result;
 }
 
@@ -485,19 +541,22 @@ async function edgeTTS(
  * with proportional word timing within each sentence — much better than
  * pure proportional across the entire audio.
  */
-function parseEdgeVttToWords(vttContent: string): Array<{ word: string; start: number; end: number }> {
+function parseEdgeVttToWords(
+  vttContent: string
+): Array<{ word: string; start: number; end: number }> {
   const timestamps: Array<{ word: string; start: number; end: number }> = [];
 
   // Parse VTT cues: "HH:MM:SS,mmm --> HH:MM:SS,mmm\ntext"
   // Edge TTS uses comma (,) as ms separator, not dot (.)
-  const cuePattern = /(\d{2}:\d{2}:\d{2}[.,]\d{3})\s*-->\s*(\d{2}:\d{2}:\d{2}[.,]\d{3})\s*\n(.+?)(?=\n\n|\n\d+\n|$)/gs;
+  const cuePattern =
+    /(\d{2}:\d{2}:\d{2}[.,]\d{3})\s*-->\s*(\d{2}:\d{2}:\d{2}[.,]\d{3})\s*\n(.+?)(?=\n\n|\n\d+\n|$)/gs;
   let match;
 
   while ((match = cuePattern.exec(vttContent)) !== null) {
     const start = parseVttTimeEdge(match[1]);
     const end = parseVttTimeEdge(match[2]);
     const text = match[3].trim();
-    const words = text.split(/\s+/).filter(w => w.length > 0);
+    const words = text.split(/\s+/).filter((w) => w.length > 0);
 
     if (words.length === 0) continue;
 
@@ -532,11 +591,7 @@ function parseVttTimeEdge(time: string): number {
 }
 
 // ─── macOS Native TTS (free, works offline) ───
-async function macosTTS(
-  text: string,
-  cacheKey: string,
-  outputName?: string
-): Promise<TTSResult> {
+async function macosTTS(text: string, cacheKey: string, outputName?: string): Promise<TTSResult> {
   const { execFileSync } = await import('child_process');
 
   const filename = outputName || `mac_${cacheKey.slice(0, 12)}.mp3`;
@@ -562,7 +617,8 @@ async function macosTTS(
 
   const result = makeTimestamps(text, duration, m4aPath);
   const refined = await whisperRefine(result);
-  cache.set(cacheKey, refined); saveDiskCache(cacheKey, refined);
+  cache.set(cacheKey, refined);
+  saveDiskCache(cacheKey, refined);
   console.log(`  ✓ macOS TTS: ${filename} (${refined.duration.toFixed(1)}s)`);
   return refined;
 }
@@ -575,7 +631,7 @@ function silentFallback(text: string, cacheKey: string): TTSResult {
   const audioPath = path.join(AUDIO_DIR, `fallback_${cacheKey.slice(0, 12)}.mp3`);
   if (!fs.existsSync(audioPath)) {
     // Minimal silent MP3
-    const silentHeader = Buffer.from([0xFF, 0xFB, 0x90, 0x00]);
+    const silentHeader = Buffer.from([0xff, 0xfb, 0x90, 0x00]);
     const framesNeeded = Math.ceil(duration * 38.28);
     const frames = Buffer.alloc(framesNeeded * 418, 0);
     silentHeader.copy(frames, 0);
@@ -597,9 +653,9 @@ function makeTimestamps(text: string, duration: number, audioPath: string): TTSR
 /** Distribute timestamps proportionally by character count (better than uniform) */
 export function makeTimestampsProportional(
   text: string,
-  duration: number,
+  duration: number
 ): Array<{ word: string; start: number; end: number }> {
-  const words = text.split(/\s+/).filter(w => w.length > 0);
+  const words = text.split(/\s+/).filter((w) => w.length > 0);
   if (words.length === 0) return [];
 
   const totalChars = words.reduce((sum, w) => sum + w.length, 0);
@@ -620,7 +676,7 @@ export function makeTimestampsProportional(
 }
 
 export function parseVttTimestamps(
-  vttContent: string,
+  vttContent: string
 ): Array<{ word: string; start: number; end: number }> {
   const timestamps: Array<{ word: string; start: number; end: number }> = [];
   const cuePattern = /(\d{2}:\d{2}:\d{2}\.\d{3})\s*-->\s*(\d{2}:\d{2}:\d{2}\.\d{3})\s*\n(.+)/g;
@@ -663,7 +719,9 @@ export async function generateSceneAudios(
 ): Promise<TTSResult[]> {
   // Edge TTS is primary — resolve voice from Edge voice map
   const resolvedVoice = VOICE_MAP[voiceLanguage] || voice;
-  console.log(`  [TTS] generateSceneAudios voice=${voice} → resolved=${resolvedVoice} (lang=${voiceLanguage})`);
+  console.log(
+    `  [TTS] generateSceneAudios voice=${voice} → resolved=${resolvedVoice} (lang=${voiceLanguage})`
+  );
 
   // Parallel TTS — up to 4 concurrent Edge TTS processes for ~3x speedup
   const CONCURRENCY = parseInt(process.env.TTS_CONCURRENCY || '4', 10);
@@ -680,7 +738,13 @@ export async function generateSceneAudios(
       console.log(`  Generating audio for scene ${i + 1}/${scenes.length} [${scene.type}]...`);
       const spokenText = preprocessForSpeech(scene.narration);
       const sceneRate = rateMap?.[scene.type] ?? '+30%';
-      results[i] = await generateAudio(spokenText, resolvedVoice, undefined, voiceLanguage, sceneRate);
+      results[i] = await generateAudio(
+        spokenText,
+        resolvedVoice,
+        undefined,
+        voiceLanguage,
+        sceneRate
+      );
     });
     await Promise.all(promises);
   }
@@ -850,24 +914,78 @@ function numberToWords(num: number): string {
   if (num % 1 !== 0) {
     const [whole, decimal] = num.toString().split('.');
     const wholeWords = numberToWords(parseInt(whole));
-    const decimalWords = decimal.split('').map(d => numberToWords(parseInt(d))).join(' ');
+    const decimalWords = decimal
+      .split('')
+      .map((d) => numberToWords(parseInt(d)))
+      .join(' ');
     return `${wholeWords} point ${decimalWords}`;
   }
 
   if (num < 0) return 'negative ' + numberToWords(-num);
 
-  const ones = ['', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine',
-    'ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen'];
-  const tens = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'];
+  const ones = [
+    '',
+    'one',
+    'two',
+    'three',
+    'four',
+    'five',
+    'six',
+    'seven',
+    'eight',
+    'nine',
+    'ten',
+    'eleven',
+    'twelve',
+    'thirteen',
+    'fourteen',
+    'fifteen',
+    'sixteen',
+    'seventeen',
+    'eighteen',
+    'nineteen',
+  ];
+  const tens = [
+    '',
+    '',
+    'twenty',
+    'thirty',
+    'forty',
+    'fifty',
+    'sixty',
+    'seventy',
+    'eighty',
+    'ninety',
+  ];
 
   if (num < 20) return ones[num];
   if (num < 100) return tens[Math.floor(num / 10)] + (num % 10 ? ' ' + ones[num % 10] : '');
-  if (num < 1000) return ones[Math.floor(num / 100)] + ' hundred' + (num % 100 ? ' and ' + numberToWords(num % 100) : '');
+  if (num < 1000)
+    return (
+      ones[Math.floor(num / 100)] +
+      ' hundred' +
+      (num % 100 ? ' and ' + numberToWords(num % 100) : '')
+    );
 
   // Indian number system for Indian audience
-  if (num >= 10000000) return numberToWords(Math.floor(num / 10000000)) + ' crore' + (num % 10000000 ? ' ' + numberToWords(num % 10000000) : '');
-  if (num >= 100000) return numberToWords(Math.floor(num / 100000)) + ' lakh' + (num % 100000 ? ' ' + numberToWords(num % 100000) : '');
-  if (num >= 1000) return numberToWords(Math.floor(num / 1000)) + ' thousand' + (num % 1000 ? ' ' + numberToWords(num % 1000) : '');
+  if (num >= 10000000)
+    return (
+      numberToWords(Math.floor(num / 10000000)) +
+      ' crore' +
+      (num % 10000000 ? ' ' + numberToWords(num % 10000000) : '')
+    );
+  if (num >= 100000)
+    return (
+      numberToWords(Math.floor(num / 100000)) +
+      ' lakh' +
+      (num % 100000 ? ' ' + numberToWords(num % 100000) : '')
+    );
+  if (num >= 1000)
+    return (
+      numberToWords(Math.floor(num / 1000)) +
+      ' thousand' +
+      (num % 1000 ? ' ' + numberToWords(num % 1000) : '')
+    );
 
   return String(num);
 }

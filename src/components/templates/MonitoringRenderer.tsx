@@ -1,11 +1,5 @@
 import React from 'react';
-import {
-  useCurrentFrame,
-  useVideoConfig,
-  AbsoluteFill,
-  interpolate,
-  spring,
-} from 'remotion';
+import { useCurrentFrame, useVideoConfig, AbsoluteFill, interpolate, spring } from 'remotion';
 import { COLORS, FONTS, SIZES } from '../../lib/theme';
 
 /* ─── Types ────────────────────────────────────────────────────────────────── */
@@ -41,7 +35,7 @@ const CHART_BOTTOM = CHART_TOP + CHART_HEIGHT;
 function toSvgPoints(
   values: number[],
   minY: number,
-  maxY: number,
+  maxY: number
 ): Array<{ x: number; y: number }> {
   const range = maxY - minY || 1;
   return values.map((v, i) => ({
@@ -51,10 +45,7 @@ function toSvgPoints(
 }
 
 /** Build an SVG polyline `points` string, truncated to `ratio` (0-1). */
-function polylinePoints(
-  pts: Array<{ x: number; y: number }>,
-  ratio: number,
-): string {
+function polylinePoints(pts: Array<{ x: number; y: number }>, ratio: number): string {
   const count = Math.max(1, Math.ceil(pts.length * ratio));
   return pts
     .slice(0, count)
@@ -64,10 +55,7 @@ function polylinePoints(
 
 /* ─── Component ────────────────────────────────────────────────────────────── */
 
-const MonitoringRenderer: React.FC<MonitoringRendererProps> = ({
-  config,
-  startFrame = 0,
-}) => {
+const MonitoringRenderer: React.FC<MonitoringRendererProps> = ({ config, startFrame = 0 }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const { metrics, alertMessage, title } = config;
@@ -182,16 +170,12 @@ const MonitoringRenderer: React.FC<MonitoringRendererProps> = ({
             boxShadow: `0 8px 48px ${COLORS.dark}AA`,
           }}
         >
-          <svg
-            viewBox={`0 0 ${svgWidth} ${svgHeight}`}
-            style={{ width: '100%', height: 'auto' }}
-          >
+          <svg viewBox={`0 0 ${svgWidth} ${svgHeight}`} style={{ width: '100%', height: 'auto' }}>
             {/* Grid lines */}
             {Array.from({ length: gridLines + 1 }).map((_, i) => {
               const yVal = globalMin + i * gridStep;
               const y =
-                CHART_BOTTOM -
-                ((yVal - globalMin) / (globalMax - globalMin || 1)) * CHART_HEIGHT;
+                CHART_BOTTOM - ((yVal - globalMin) / (globalMax - globalMin || 1)) * CHART_HEIGHT;
               return (
                 <g key={`grid-${i}`}>
                   <line
@@ -242,21 +226,16 @@ const MonitoringRenderer: React.FC<MonitoringRendererProps> = ({
                 elapsed,
                 [metricDelay, metricDelay + drawDuration],
                 [0, 1],
-                { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
+                { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }
               );
 
               const pts = toSvgPoints(metric.values, globalMin, globalMax);
-              const visibleCount = Math.max(
-                1,
-                Math.ceil(pts.length * drawProgress),
-              );
+              const visibleCount = Math.max(1, Math.ceil(pts.length * drawProgress));
 
               // Check if line has crossed threshold
               const crossedThreshold =
                 metric.threshold !== undefined &&
-                metric.values
-                  .slice(0, visibleCount)
-                  .some((v) => v > metric.threshold!);
+                metric.values.slice(0, visibleCount).some((v) => v > metric.threshold!);
 
               const lineColor = crossedThreshold ? COLORS.red : metric.color;
 
@@ -268,15 +247,13 @@ const MonitoringRenderer: React.FC<MonitoringRendererProps> = ({
                       x1={CHART_LEFT}
                       y1={
                         CHART_BOTTOM -
-                        ((metric.threshold - globalMin) /
-                          (globalMax - globalMin || 1)) *
+                        ((metric.threshold - globalMin) / (globalMax - globalMin || 1)) *
                           CHART_HEIGHT
                       }
                       x2={CHART_LEFT + CHART_WIDTH}
                       y2={
                         CHART_BOTTOM -
-                        ((metric.threshold - globalMin) /
-                          (globalMax - globalMin || 1)) *
+                        ((metric.threshold - globalMin) / (globalMax - globalMin || 1)) *
                           CHART_HEIGHT
                       }
                       stroke={COLORS.red}
@@ -335,12 +312,10 @@ const MonitoringRenderer: React.FC<MonitoringRendererProps> = ({
           >
             {metrics.map((metric) => {
               const metricDelay = 10 + metric.beatIndex * 15;
-              const legendOpacity = interpolate(
-                elapsed,
-                [metricDelay, metricDelay + 15],
-                [0, 1],
-                { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
-              );
+              const legendOpacity = interpolate(elapsed, [metricDelay, metricDelay + 15], [0, 1], {
+                extrapolateLeft: 'clamp',
+                extrapolateRight: 'clamp',
+              });
               return (
                 <div
                   key={metric.name}

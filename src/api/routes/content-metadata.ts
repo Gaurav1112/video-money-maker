@@ -14,44 +14,44 @@ const CHANNEL_HANDLE = '@gurusishya';
 const INSTAGRAM_HANDLE = '@guru_sishya.in';
 
 const UNIVERSAL_TAGS = [
-  'guru sishya',                        // brand
-  'coding interview prep',              // universal
-  'system design interview',            // universal
-  'DSA tutorial',                       // universal
-  'FAANG interview',                    // universal
-  'interview prep',                     // universal
-  'software engineer interview',        // universal
-  'tech interview',                     // universal
-  'programming',                        // universal
-  'computer science',                   // universal
+  'guru sishya', // brand
+  'coding interview prep', // universal
+  'system design interview', // universal
+  'DSA tutorial', // universal
+  'FAANG interview', // universal
+  'interview prep', // universal
+  'software engineer interview', // universal
+  'tech interview', // universal
+  'programming', // universal
+  'computer science', // universal
 ];
 
 // Topic tag lookup for hashtags (exactly 3 shown above title)
 const TOPIC_HASHTAG_MAP: Record<string, string> = {
   'load balancing': '#SystemDesign',
-  'caching': '#SystemDesign',
-  'microservices': '#SystemDesign',
-  'database': '#Database',
-  'api': '#SystemDesign',
-  'docker': '#DevOps',
-  'kubernetes': '#DevOps',
-  'kafka': '#SystemDesign',
-  'redis': '#Database',
-  'hash': '#DSA',
-  'tree': '#DSA',
-  'graph': '#DSA',
-  'array': '#DSA',
+  caching: '#SystemDesign',
+  microservices: '#SystemDesign',
+  database: '#Database',
+  api: '#SystemDesign',
+  docker: '#DevOps',
+  kubernetes: '#DevOps',
+  kafka: '#SystemDesign',
+  redis: '#Database',
+  hash: '#DSA',
+  tree: '#DSA',
+  graph: '#DSA',
+  array: '#DSA',
   'linked list': '#DSA',
-  'stack': '#DSA',
-  'queue': '#DSA',
-  'sort': '#DSA',
-  'search': '#DSA',
+  stack: '#DSA',
+  queue: '#DSA',
+  sort: '#DSA',
+  search: '#DSA',
   'dynamic programming': '#DSA',
-  'recursion': '#DSA',
-  'java': '#Java',
-  'python': '#Python',
-  'javascript': '#JavaScript',
-  'react': '#React',
+  recursion: '#DSA',
+  java: '#Java',
+  python: '#Python',
+  javascript: '#JavaScript',
+  react: '#React',
   'design pattern': '#CleanCode',
 };
 
@@ -66,7 +66,8 @@ function getTopicHashtag(topicName: string): string {
 // Rotating title formulas for SEO (keyword-first, under 60 chars, power words)
 const TITLE_FORMULAS = [
   (keyword: string, hook: string) => `${keyword} Explained — ${hook} | Guru Sishya`,
-  (keyword: string, _hook: string, topic: string, n: number) => `Why ${keyword} Matters — ${topic} #${n}`,
+  (keyword: string, _hook: string, topic: string, n: number) =>
+    `Why ${keyword} Matters — ${topic} #${n}`,
   (keyword: string, _hook: string, topic: string) => `${keyword} in Minutes | ${topic} Tutorial`,
   (keyword: string) => `5 ${keyword} Mistakes That KILL Your Interview`,
   (keyword: string) => `${keyword} — What Interviewers ACTUALLY Ask`,
@@ -80,29 +81,60 @@ function generateHook(topicName: string): string {
   const lower = topicName.toLowerCase();
   if (lower.includes('system design') || lower.includes('load') || lower.includes('caching'))
     return 'ace system design';
-  if (lower.includes('dsa') || lower.includes('sort') || lower.includes('tree') || lower.includes('graph'))
+  if (
+    lower.includes('dsa') ||
+    lower.includes('sort') ||
+    lower.includes('tree') ||
+    lower.includes('graph')
+  )
     return 'crack DSA rounds';
   return 'nail your interview';
 }
 
 // DALL-E thumbnail prompts by category
 const THUMBNAIL_PROMPTS: Record<string, string> = {
-  'system-design': 'Dark background #0C0A15, glowing server architecture diagram, neon teal (#1DD1A1) connection lines, futuristic minimal style, no text, 1280x720',
-  'dsa': 'Dark navy background, glowing data structure visualization, saffron (#E85D26) nodes with gold edges, minimal clean style, no text, 1280x720',
-  'behavioral': 'Dark background, professional interview setting silhouette, gold (#FDB813) accent glow, clean minimal, no text, 1280x720',
-  'language': 'Dark background #0C0A15, clean code editor with syntax highlighting, neon teal (#1DD1A1) cursor glow, minimal style, no text, 1280x720',
-  'default': 'Dark background #0C0A15, abstract code visualization with neon accents, futuristic tech aesthetic, no text, 1280x720',
+  'system-design':
+    'Dark background #0C0A15, glowing server architecture diagram, neon teal (#1DD1A1) connection lines, futuristic minimal style, no text, 1280x720',
+  dsa: 'Dark navy background, glowing data structure visualization, saffron (#E85D26) nodes with gold edges, minimal clean style, no text, 1280x720',
+  behavioral:
+    'Dark background, professional interview setting silhouette, gold (#FDB813) accent glow, clean minimal, no text, 1280x720',
+  language:
+    'Dark background #0C0A15, clean code editor with syntax highlighting, neon teal (#1DD1A1) cursor glow, minimal style, no text, 1280x720',
+  default:
+    'Dark background #0C0A15, abstract code visualization with neon accents, futuristic tech aesthetic, no text, 1280x720',
 };
 
 function getThumbnailCategory(topicName: string): string {
   const lower = topicName.toLowerCase();
-  if (lower.includes('system design') || lower.includes('load') || lower.includes('caching') || lower.includes('microservice') || lower.includes('database') || lower.includes('api') || lower.includes('kafka'))
+  if (
+    lower.includes('system design') ||
+    lower.includes('load') ||
+    lower.includes('caching') ||
+    lower.includes('microservice') ||
+    lower.includes('database') ||
+    lower.includes('api') ||
+    lower.includes('kafka')
+  )
     return 'system-design';
-  if (lower.includes('dsa') || lower.includes('tree') || lower.includes('graph') || lower.includes('sort') || lower.includes('hash') || lower.includes('array') || lower.includes('stack') || lower.includes('queue') || lower.includes('linked'))
+  if (
+    lower.includes('dsa') ||
+    lower.includes('tree') ||
+    lower.includes('graph') ||
+    lower.includes('sort') ||
+    lower.includes('hash') ||
+    lower.includes('array') ||
+    lower.includes('stack') ||
+    lower.includes('queue') ||
+    lower.includes('linked')
+  )
     return 'dsa';
-  if (lower.includes('behavioral') || lower.includes('star'))
-    return 'behavioral';
-  if (lower.includes('java') || lower.includes('python') || lower.includes('javascript') || lower.includes('typescript'))
+  if (lower.includes('behavioral') || lower.includes('star')) return 'behavioral';
+  if (
+    lower.includes('java') ||
+    lower.includes('python') ||
+    lower.includes('javascript') ||
+    lower.includes('typescript')
+  )
     return 'language';
   return 'default';
 }
@@ -122,7 +154,10 @@ const SKIP_FILES = new Set([
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
 function slugify(name: string): string {
-  return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
 }
 
 function extractTitleFromMarkdown(markdown: string): string | null {
@@ -138,20 +173,32 @@ function topicSpecificTags(topicName: string): string[] {
   // Add domain-specific tags
   if (lower.includes('java')) tags.push('java', 'java interview', 'java programming', 'jvm');
   if (lower.includes('python')) tags.push('python', 'python interview', 'python programming');
-  if (lower.includes('javascript') || lower.includes('js')) tags.push('javascript', 'js', 'frontend interview');
-  if (lower.includes('react') || lower.includes('nextjs') || lower.includes('next.js')) tags.push('react', 'nextjs', 'frontend', 'web development');
+  if (lower.includes('javascript') || lower.includes('js'))
+    tags.push('javascript', 'js', 'frontend interview');
+  if (lower.includes('react') || lower.includes('nextjs') || lower.includes('next.js'))
+    tags.push('react', 'nextjs', 'frontend', 'web development');
   if (lower.includes('node')) tags.push('nodejs', 'backend', 'server side javascript');
-  if (lower.includes('sql') || lower.includes('rdbms') || lower.includes('database')) tags.push('sql', 'database', 'rdbms', 'postgresql', 'mysql');
+  if (lower.includes('sql') || lower.includes('rdbms') || lower.includes('database'))
+    tags.push('sql', 'database', 'rdbms', 'postgresql', 'mysql');
   if (lower.includes('nosql') || lower.includes('mongo')) tags.push('nosql', 'mongodb', 'dynamodb');
-  if (lower.includes('kafka')) tags.push('apache kafka', 'message queue', 'event streaming', 'distributed systems');
-  if (lower.includes('docker') || lower.includes('k8s') || lower.includes('kubernetes')) tags.push('docker', 'kubernetes', 'devops', 'containers');
-  if (lower.includes('aws') || lower.includes('cloud')) tags.push('aws', 'cloud computing', 'amazon web services');
-  if (lower.includes('system design')) tags.push('system design interview', 'high level design', 'low level design', 'architecture');
-  if (lower.includes('dsa') || lower.includes('data structure') || lower.includes('algo')) tags.push('dsa', 'leetcode', 'competitive programming');
-  if (lower.includes('design pattern')) tags.push('design patterns', 'oop', 'solid principles', 'clean code');
-  if (lower.includes('spring') || lower.includes('boot')) tags.push('spring boot', 'spring framework', 'microservices', 'java backend');
-  if (lower.includes('html') || lower.includes('css')) tags.push('html', 'css', 'web development', 'frontend');
-  if (lower.includes('load balancing')) tags.push('load balancer', 'nginx', 'haproxy', 'scalability');
+  if (lower.includes('kafka'))
+    tags.push('apache kafka', 'message queue', 'event streaming', 'distributed systems');
+  if (lower.includes('docker') || lower.includes('k8s') || lower.includes('kubernetes'))
+    tags.push('docker', 'kubernetes', 'devops', 'containers');
+  if (lower.includes('aws') || lower.includes('cloud'))
+    tags.push('aws', 'cloud computing', 'amazon web services');
+  if (lower.includes('system design'))
+    tags.push('system design interview', 'high level design', 'low level design', 'architecture');
+  if (lower.includes('dsa') || lower.includes('data structure') || lower.includes('algo'))
+    tags.push('dsa', 'leetcode', 'competitive programming');
+  if (lower.includes('design pattern'))
+    tags.push('design patterns', 'oop', 'solid principles', 'clean code');
+  if (lower.includes('spring') || lower.includes('boot'))
+    tags.push('spring boot', 'spring framework', 'microservices', 'java backend');
+  if (lower.includes('html') || lower.includes('css'))
+    tags.push('html', 'css', 'web development', 'frontend');
+  if (lower.includes('load balancing'))
+    tags.push('load balancer', 'nginx', 'haproxy', 'scalability');
   if (lower.includes('hash')) tags.push('hash map', 'hash table', 'data structures');
 
   return Array.from(new Set(tags));
@@ -191,7 +238,7 @@ function generateVideoMeta(
   topicSlug: string,
   sessionTitle: string,
   sessionNumber: number,
-  totalSessions: number,
+  totalSessions: number
 ) {
   const topicTags = topicSpecificTags(topicName);
   const sessionSlug = slugify(sessionTitle);
@@ -232,23 +279,25 @@ function generateVideoMeta(
 
   // ── Tags: 15-20, priority ordered (exact match → long-tail → universal → brand) ──
   const tags = [
-    sessionTitle,                                    // exact match
-    `${topicName} explained`,                        // topic variation
-    `${topicName} interview questions`,              // long-tail
-    `${topicName} tutorial`,                         // tutorial keyword
-    `coding interview ${topicName}`,                 // audience keyword
-    `${topicName} system design`,                    // related
-    `FAANG interview ${topicName}`,                  // FAANG
-    'guru sishya',                                   // brand
-    'coding interview prep',                         // universal
-    'system design interview',                       // universal
-    `${topicName} python`,                           // language
-    `${topicName} java`,                             // language
-    `${topicName} for beginners`,                    // level
-    `${topicName} advanced`,                         // level
-    'DSA tutorial',                                  // universal
-    ...topicTags.slice(0, 5),                        // topic-specific extras
-  ].filter((v, i, a) => a.indexOf(v) === i).slice(0, 20);
+    sessionTitle, // exact match
+    `${topicName} explained`, // topic variation
+    `${topicName} interview questions`, // long-tail
+    `${topicName} tutorial`, // tutorial keyword
+    `coding interview ${topicName}`, // audience keyword
+    `${topicName} system design`, // related
+    `FAANG interview ${topicName}`, // FAANG
+    'guru sishya', // brand
+    'coding interview prep', // universal
+    'system design interview', // universal
+    `${topicName} python`, // language
+    `${topicName} java`, // language
+    `${topicName} for beginners`, // level
+    `${topicName} advanced`, // level
+    'DSA tutorial', // universal
+    ...topicTags.slice(0, 5), // topic-specific extras
+  ]
+    .filter((v, i, a) => a.indexOf(v) === i)
+    .slice(0, 20);
 
   // ── Hashtags: exactly 3, shown above title ──
   const topicTag = getTopicHashtag(topicName);
@@ -269,9 +318,15 @@ function generateVideoMeta(
 
   const igHashtags = [
     `#${topicName.replace(/\s+/g, '')}`,
-    '#CodingInterview', '#FAANG', '#SystemDesign', '#Programming',
-    '#SoftwareEngineer', '#TechInterview', '#InterviewPrep',
-    '#GuruSishya', '#LearnToCode',
+    '#CodingInterview',
+    '#FAANG',
+    '#SystemDesign',
+    '#Programming',
+    '#SoftwareEngineer',
+    '#TechInterview',
+    '#InterviewPrep',
+    '#GuruSishya',
+    '#LearnToCode',
   ].join(' ');
 
   // ── Pinned comment: engagement-driving question ──
@@ -343,7 +398,11 @@ function parseContentFile(file: string): ParsedTopic[] {
     const firstItem = data[0];
     if (!firstItem) return topics;
 
-    if (firstItem.sessions && typeof firstItem.sessions === 'object' && !Array.isArray(firstItem.sessions)) {
+    if (
+      firstItem.sessions &&
+      typeof firstItem.sessions === 'object' &&
+      !Array.isArray(firstItem.sessions)
+    ) {
       // Nested format: [{ topic, sessions: { "1": "md", "2": "md" }, quizBank }]
       for (const topicObj of data) {
         if (!topicObj.sessions || typeof topicObj.sessions !== 'object') continue;
@@ -353,8 +412,9 @@ function parseContentFile(file: string): ParsedTopic[] {
 
         const sessions: ParsedSession[] = sessionKeys.map((key) => {
           const content = topicObj.sessions[key];
-          const title = (typeof content === 'string' ? extractTitleFromMarkdown(content) : null)
-            || `${topicName} — Session ${key}`;
+          const title =
+            (typeof content === 'string' ? extractTitleFromMarkdown(content) : null) ||
+            `${topicName} — Session ${key}`;
           return {
             number: Number(key),
             title,
@@ -384,8 +444,11 @@ function parseContentFile(file: string): ParsedTopic[] {
         const topicName = data[0].topic || data[0].category || slug;
         const sessions: ParsedSession[] = data.map((item: any, i: number) => {
           const content = item.cheatSheet || item.lesson || item.answer || '';
-          const title = (typeof content === 'string' ? extractTitleFromMarkdown(content) : null)
-            || item.topic || item.question?.slice(0, 80) || `Session ${i + 1}`;
+          const title =
+            (typeof content === 'string' ? extractTitleFromMarkdown(content) : null) ||
+            item.topic ||
+            item.question?.slice(0, 80) ||
+            `Session ${i + 1}`;
           return {
             number: i + 1,
             title,
@@ -400,8 +463,10 @@ function parseContentFile(file: string): ParsedTopic[] {
           const topicSlug = slugify(topicName);
           const sessions: ParsedSession[] = items.map((item: any, i: number) => {
             const content = item.cheatSheet || item.lesson || item.answer || '';
-            const title = (typeof content === 'string' ? extractTitleFromMarkdown(content) : null)
-              || item.topic || `Session ${i + 1}`;
+            const title =
+              (typeof content === 'string' ? extractTitleFromMarkdown(content) : null) ||
+              item.topic ||
+              `Session ${i + 1}`;
             return {
               number: i + 1,
               title,
@@ -428,8 +493,9 @@ function parseContentFile(file: string): ParsedTopic[] {
     const sessionKeys = Object.keys(data.sessions).sort((a, b) => Number(a) - Number(b));
     const sessions: ParsedSession[] = sessionKeys.map((key) => {
       const content = data.sessions[key];
-      const title = (typeof content === 'string' ? extractTitleFromMarkdown(content) : null)
-        || `${topicName} — Session ${key}`;
+      const title =
+        (typeof content === 'string' ? extractTitleFromMarkdown(content) : null) ||
+        `${topicName} — Session ${key}`;
       return {
         number: Number(key),
         title,
@@ -469,7 +535,7 @@ router.get('/', (_req, res) => {
       });
     }
 
-    const files = fs.readdirSync(CONTENT_DIR).filter(f => f.endsWith('.json'));
+    const files = fs.readdirSync(CONTENT_DIR).filter((f) => f.endsWith('.json'));
     const allTopics: any[] = [];
     let totalSessions = 0;
     let totalVideos = 0;
@@ -490,7 +556,7 @@ router.get('/', (_req, res) => {
               topic.slug,
               session.title,
               session.number,
-              topic.sessions.length,
+              topic.sessions.length
             )
           );
 
@@ -544,7 +610,7 @@ router.get('/:slug', (req, res) => {
       return res.status(404).json({ error: 'Content directory not found' });
     }
 
-    const files = fs.readdirSync(CONTENT_DIR).filter(f => f.endsWith('.json'));
+    const files = fs.readdirSync(CONTENT_DIR).filter((f) => f.endsWith('.json'));
 
     for (const file of files) {
       const fileSlug = file.replace('.json', '');
@@ -552,9 +618,7 @@ router.get('/:slug', (req, res) => {
 
       try {
         const parsedTopics = parseContentFile(file);
-        const match = parsedTopics.find(
-          t => t.slug === slug || t.sourceFile === slug
-        );
+        const match = parsedTopics.find((t) => t.slug === slug || t.sourceFile === slug);
 
         if (match) {
           const playlist = generatePlaylistMeta(match.name, match.slug, match.sessions.length);
@@ -564,7 +628,7 @@ router.get('/:slug', (req, res) => {
               match.slug,
               session.title,
               session.number,
-              match.sessions.length,
+              match.sessions.length
             )
           );
 
@@ -577,7 +641,9 @@ router.get('/:slug', (req, res) => {
             videos,
           });
         }
-      } catch { /* skip */ }
+      } catch {
+        /* skip */
+      }
     }
 
     res.status(404).json({ error: `Topic not found: ${slug}` });
@@ -594,7 +660,7 @@ router.get('/export/bulk', (_req, res) => {
       return res.status(404).json({ error: 'Content directory not found' });
     }
 
-    const files = fs.readdirSync(CONTENT_DIR).filter(f => f.endsWith('.json'));
+    const files = fs.readdirSync(CONTENT_DIR).filter((f) => f.endsWith('.json'));
     const rows: any[] = [];
 
     for (const file of files) {
@@ -606,7 +672,11 @@ router.get('/export/bulk', (_req, res) => {
         for (const topic of parsedTopics) {
           for (const session of topic.sessions) {
             const meta = generateVideoMeta(
-              topic.name, topic.slug, session.title, session.number, topic.sessions.length,
+              topic.name,
+              topic.slug,
+              session.title,
+              session.number,
+              topic.sessions.length
             );
             rows.push({
               topic: topic.name,
@@ -620,7 +690,9 @@ router.get('/export/bulk', (_req, res) => {
             });
           }
         }
-      } catch { /* skip */ }
+      } catch {
+        /* skip */
+      }
     }
 
     res.json({

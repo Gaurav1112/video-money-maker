@@ -9,7 +9,12 @@ import batchRenderRouter from './routes/batch-render';
 import metadataRouter from './routes/metadata';
 import scheduleRouter from './routes/schedule';
 import contentMetadataRouter from './routes/content-metadata';
-import { listAvailableTopics, loadTopicContent, extractSession, getDemoSession } from '../pipeline/content-loader';
+import {
+  listAvailableTopics,
+  loadTopicContent,
+  extractSession,
+  getDemoSession,
+} from '../pipeline/content-loader';
 import { generateFromPrompt, generateFromContent } from '../pipeline/content-generator';
 import { generateScript } from '../pipeline/script-generator';
 import { SessionInput } from '../types';
@@ -47,12 +52,20 @@ app.post('/api/convert-shorts', async (req, res) => {
   const { exec } = require('child_process');
   const cmd = `npx tsx scripts/render-viral-shorts.ts --topic "${topic}" --session ${session}`;
 
-  exec(cmd, { cwd: path.resolve(__dirname, '../..'), timeout: 300000 }, (error: any, stdout: string, stderr: string) => {
-    if (error) {
-      return res.json({ success: false, error: error.message.slice(0, 500), output: stderr.slice(0, 500) });
+  exec(
+    cmd,
+    { cwd: path.resolve(__dirname, '../..'), timeout: 300000 },
+    (error: any, stdout: string, stderr: string) => {
+      if (error) {
+        return res.json({
+          success: false,
+          error: error.message.slice(0, 500),
+          output: stderr.slice(0, 500),
+        });
+      }
+      res.json({ success: true, output: stdout });
     }
-    res.json({ success: true, output: stdout });
-  });
+  );
 });
 
 // Note: /api/topics is now handled by topicsRouter (routes/topics.ts)
@@ -116,7 +129,7 @@ app.post('/api/preview', (req, res) => {
     topic: session.topic,
     title: session.title,
     language,
-    scenes: script.map(s => ({
+    scenes: script.map((s) => ({
       type: s.type,
       heading: s.heading,
       narration: s.narration.slice(0, 200),

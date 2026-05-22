@@ -102,7 +102,7 @@ const VERIFICATION_DELAY_MS = 10000;
 function graphApiRequest<T>(
   urlPath: string,
   method: 'GET' | 'POST',
-  params?: Record<string, string>,
+  params?: Record<string, string>
 ): Promise<T> {
   return new Promise((resolve, reject) => {
     const fullUrl = new URL(`${GRAPH_API_BASE}${urlPath}`);
@@ -120,14 +120,18 @@ function graphApiRequest<T>(
 
     const req = https.request(options, (res) => {
       let data = '';
-      res.on('data', (chunk) => { data += chunk; });
+      res.on('data', (chunk) => {
+        data += chunk;
+      });
       res.on('end', () => {
         try {
           const parsed = JSON.parse(data);
           if (parsed.error) {
             const errMsg = parsed.error.message || JSON.stringify(parsed.error);
             const errCode = parsed.error.code || 0;
-            const err = new Error(`Instagram API error (${errCode}): ${errMsg}`) as Error & { code: number };
+            const err = new Error(`Instagram API error (${errCode}): ${errMsg}`) as Error & {
+              code: number;
+            };
             err.code = errCode;
             reject(err);
           } else {
@@ -145,7 +149,7 @@ function graphApiRequest<T>(
 }
 
 function sleep(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 // ─── R2 Upload (for making video publicly accessible) ──────────────────────
@@ -160,8 +164,8 @@ function uploadToR2(videoPath: string): string {
   if (!accountId || !accessKeyId || !secretAccessKey || !bucketName || !publicUrl) {
     throw new Error(
       'R2 credentials not configured. Set R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, ' +
-      'R2_SECRET_ACCESS_KEY, R2_BUCKET_NAME, R2_PUBLIC_URL env vars, ' +
-      'or use --url to provide a public video URL directly.',
+        'R2_SECRET_ACCESS_KEY, R2_BUCKET_NAME, R2_PUBLIC_URL env vars, ' +
+        'or use --url to provide a public video URL directly.'
     );
   }
 
@@ -175,8 +179,8 @@ function uploadToR2(videoPath: string): string {
   try {
     execSync(
       `aws s3 cp "${videoPath}" "s3://${bucketName}/${filename}" ` +
-      `--endpoint-url "${endpoint}" ` +
-      `--content-type "video/mp4"`,
+        `--endpoint-url "${endpoint}" ` +
+        `--content-type "video/mp4"`,
       {
         env: {
           ...process.env,
@@ -185,7 +189,7 @@ function uploadToR2(videoPath: string): string {
           AWS_DEFAULT_REGION: 'auto',
         },
         stdio: 'pipe',
-      },
+      }
     );
   } catch (err) {
     throw new Error(`R2 upload failed: ${(err as Error).message}`);
@@ -209,18 +213,15 @@ function deleteFromR2(url: string): void {
   const endpoint = `https://${accountId}.r2.cloudflarestorage.com`;
 
   try {
-    execSync(
-      `aws s3 rm "s3://${bucketName}/${filename}" --endpoint-url "${endpoint}"`,
-      {
-        env: {
-          ...process.env,
-          AWS_ACCESS_KEY_ID: process.env.R2_ACCESS_KEY_ID,
-          AWS_SECRET_ACCESS_KEY: process.env.R2_SECRET_ACCESS_KEY,
-          AWS_DEFAULT_REGION: 'auto',
-        },
-        stdio: 'pipe',
+    execSync(`aws s3 rm "s3://${bucketName}/${filename}" --endpoint-url "${endpoint}"`, {
+      env: {
+        ...process.env,
+        AWS_ACCESS_KEY_ID: process.env.R2_ACCESS_KEY_ID,
+        AWS_SECRET_ACCESS_KEY: process.env.R2_SECRET_ACCESS_KEY,
+        AWS_DEFAULT_REGION: 'auto',
       },
-    );
+      stdio: 'pipe',
+    });
     console.log(`Deleted temp R2 file: ${filename}`);
   } catch {
     console.warn(`Warning: Could not delete temp R2 file: ${filename}`);
@@ -232,7 +233,7 @@ function deleteFromR2(url: string): void {
 function generateCaption(metadata: SessionMetadata, partNumber?: number): string {
   // Try clip-specific caption first
   if (partNumber && metadata.clips) {
-    const clip = metadata.clips.find(c => c.index === partNumber);
+    const clip = metadata.clips.find((c) => c.index === partNumber);
     if (clip?.instagram?.caption) {
       return clip.instagram.caption.slice(0, MAX_CAPTION_LENGTH);
     }
@@ -249,7 +250,10 @@ function generateCaption(metadata: SessionMetadata, partNumber?: number): string
 
 FREE interview prep at guru-sishya.in/${metadata.topicSlug}
 
-${topicTag} #systemdesign #codinginterview #faang #interviewprep #programming #tech #developer`.slice(0, MAX_CAPTION_LENGTH);
+${topicTag} #systemdesign #codinginterview #faang #interviewprep #programming #tech #developer`.slice(
+    0,
+    MAX_CAPTION_LENGTH
+  );
 }
 
 // ─── Upload Reel with Retry ───────────────────────────────────────────────
@@ -258,7 +262,7 @@ async function uploadReel(
   videoUrl: string,
   caption: string,
   accessToken: string,
-  businessId: string,
+  businessId: string
 ): Promise<string> {
   let lastError: Error | null = null;
 
@@ -268,17 +272,13 @@ async function uploadReel(
 
       // Step 1: Create media container
       console.log('Step 1/3: Creating media container...');
-      const container = await graphApiRequest<ContainerResponse>(
-        `/${businessId}/media`,
-        'POST',
-        {
-          media_type: 'REELS',
-          video_url: videoUrl,
-          caption,
-          share_to_feed: 'true',
-          access_token: accessToken,
-        },
-      );
+      const container = await graphApiRequest<ContainerResponse>(`/${businessId}/media`, 'POST', {
+        media_type: 'REELS',
+        video_url: videoUrl,
+        caption,
+        share_to_feed: 'true',
+        access_token: accessToken,
+      });
 
       const containerId = container.id;
       console.log(`Container created: ${containerId}`);
@@ -288,14 +288,10 @@ async function uploadReel(
       let pollAttempts = 0;
 
       while (pollAttempts < MAX_POLL_ATTEMPTS) {
-        const status = await graphApiRequest<StatusResponse>(
-          `/${containerId}`,
-          'GET',
-          {
-            fields: 'status_code',
-            access_token: accessToken,
-          },
-        );
+        const status = await graphApiRequest<StatusResponse>(`/${containerId}`, 'GET', {
+          fields: 'status_code',
+          access_token: accessToken,
+        });
 
         if (pollAttempts % 6 === 0) {
           console.log(`  Status: ${status.status_code} (${pollAttempts * 5}s elapsed)`);
@@ -323,12 +319,11 @@ async function uploadReel(
         {
           creation_id: containerId,
           access_token: accessToken,
-        },
+        }
       );
 
       console.log(`Reel published: ${published.id}`);
       return published.id;
-
     } catch (err: unknown) {
       lastError = err as Error;
       const error = err as Error & { code?: number };
@@ -340,7 +335,9 @@ async function uploadReel(
 
       if (attempt < MAX_RETRIES) {
         const delay = POLL_INTERVAL_MS * attempt * 2;
-        console.warn(`Attempt ${attempt} failed: ${error.message}. Retrying in ${delay / 1000}s...`);
+        console.warn(
+          `Attempt ${attempt} failed: ${error.message}. Retrying in ${delay / 1000}s...`
+        );
         await sleep(delay);
       }
     }
@@ -353,20 +350,16 @@ async function uploadReel(
 
 async function verifyPost(
   mediaId: string,
-  accessToken: string,
+  accessToken: string
 ): Promise<{ verified: boolean; permalink?: string }> {
   console.log(`Verifying post ${mediaId}...`);
   await sleep(VERIFICATION_DELAY_MS);
 
   try {
-    const media = await graphApiRequest<MediaResponse>(
-      `/${mediaId}`,
-      'GET',
-      {
-        fields: 'id,media_url,permalink,timestamp',
-        access_token: accessToken,
-      },
-    );
+    const media = await graphApiRequest<MediaResponse>(`/${mediaId}`, 'GET', {
+      fields: 'id,media_url,permalink,timestamp',
+      access_token: accessToken,
+    });
 
     if (media.id) {
       console.log(`Verified: ${media.permalink || media.id}`);
@@ -385,7 +378,11 @@ async function main(): Promise<void> {
   const args = process.argv.slice(2);
 
   function getArg(name: string): string | undefined {
-    const eqForm = args.find(a => a.startsWith(`--${name}=`))?.split('=').slice(1).join('=');
+    const eqForm = args
+      .find((a) => a.startsWith(`--${name}=`))
+      ?.split('=')
+      .slice(1)
+      .join('=');
     if (eqForm) return eqForm;
     const idx = args.indexOf(`--${name}`);
     if (idx >= 0 && args[idx + 1] && !args[idx + 1].startsWith('--')) {
@@ -416,7 +413,9 @@ async function main(): Promise<void> {
   }
 
   if (!metadataPath) {
-    console.error('Usage: publish-to-instagram.ts --video <file> --metadata <file> [--url <public_url>]');
+    console.error(
+      'Usage: publish-to-instagram.ts --video <file> --metadata <file> [--url <public_url>]'
+    );
     console.error('  --topic <slug> --session <N> [--part <N>] [--additional <file1,file2>]');
     process.exit(1);
   }
@@ -500,7 +499,12 @@ async function main(): Promise<void> {
           `instagram_permalink=${primary.permalink || ''}`,
         ];
         if (allResults.length > 1) {
-          lines.push(`instagram_additional_ids=${allResults.slice(1).map(r => r.mediaId).join(',')}`);
+          lines.push(
+            `instagram_additional_ids=${allResults
+              .slice(1)
+              .map((r) => r.mediaId)
+              .join(',')}`
+          );
         }
         fs.appendFileSync(outputFile, lines.join('\n') + '\n');
       }
@@ -511,12 +515,13 @@ async function main(): Promise<void> {
       }
 
       // Save result file
-      const resultPath = (videoPath ? path.resolve(videoPath) : resolvedMetadata)
-        .replace(/\.[^.]+$/, '.instagram-result.json');
+      const resultPath = (videoPath ? path.resolve(videoPath) : resolvedMetadata).replace(
+        /\.[^.]+$/,
+        '.instagram-result.json'
+      );
       fs.writeFileSync(resultPath, JSON.stringify(allResults, null, 2));
       console.log(`Result saved to: ${resultPath}`);
     }
-
   } finally {
     // Cleanup R2 temp files
     for (const url of r2Urls) {

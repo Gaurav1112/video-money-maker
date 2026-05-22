@@ -35,17 +35,22 @@ const QUEUE_PATH = path.resolve(__dirname, '../config/topic-queue.json');
 function main() {
   const args = process.argv.slice(2);
 
-  const topicArg = args.find(a => a.startsWith('--topic='))?.split('=')[1]
-    || (args.indexOf('--topic') >= 0 ? args[args.indexOf('--topic') + 1] : undefined);
+  const topicArg =
+    args.find((a) => a.startsWith('--topic='))?.split('=')[1] ||
+    (args.indexOf('--topic') >= 0 ? args[args.indexOf('--topic') + 1] : undefined);
 
-  const sessionArg = args.find(a => a.startsWith('--session='))?.split('=')[1]
-    || (args.indexOf('--session') >= 0 ? args[args.indexOf('--session') + 1] : undefined);
+  const sessionArg =
+    args.find((a) => a.startsWith('--session='))?.split('=')[1] ||
+    (args.indexOf('--session') >= 0 ? args[args.indexOf('--session') + 1] : undefined);
 
-  const statusArg = args.find(a => a.startsWith('--status='))?.split('=')[1]
-    || (args.indexOf('--status') >= 0 ? args[args.indexOf('--status') + 1] : undefined);
+  const statusArg =
+    args.find((a) => a.startsWith('--status='))?.split('=')[1] ||
+    (args.indexOf('--status') >= 0 ? args[args.indexOf('--status') + 1] : undefined);
 
   if (!topicArg || !sessionArg || !statusArg) {
-    console.error('Usage: update-queue-status.ts --topic <slug> --session <number> --status <rendered|published>');
+    console.error(
+      'Usage: update-queue-status.ts --topic <slug> --session <number> --status <rendered|published>'
+    );
     process.exit(1);
   }
 
@@ -66,7 +71,7 @@ function main() {
   }
 
   const queue: TopicQueue = JSON.parse(fs.readFileSync(QUEUE_PATH, 'utf-8'));
-  const topic = queue.topics.find(t => t.slug === topicArg);
+  const topic = queue.topics.find((t) => t.slug === topicArg);
 
   if (!topic) {
     console.error(`Topic "${topicArg}" not found in queue.`);
@@ -74,7 +79,9 @@ function main() {
   }
 
   if (sessionNum > topic.sessions) {
-    console.error(`Session ${sessionNum} exceeds total sessions (${topic.sessions}) for "${topicArg}".`);
+    console.error(
+      `Session ${sessionNum} exceeds total sessions (${topic.sessions}) for "${topicArg}".`
+    );
     process.exit(1);
   }
 
@@ -101,7 +108,9 @@ function main() {
   const totalSessions = queue.topics.reduce((sum, t) => sum + t.sessions, 0);
   const totalRendered = queue.topics.reduce((sum, t) => sum + t.rendered.length, 0);
   const totalPublished = queue.topics.reduce((sum, t) => sum + t.published.length, 0);
-  console.log(`Progress: ${totalRendered}/${totalSessions} rendered, ${totalPublished}/${totalSessions} published`);
+  console.log(
+    `Progress: ${totalRendered}/${totalSessions} rendered, ${totalPublished}/${totalSessions} published`
+  );
 }
 
 main();

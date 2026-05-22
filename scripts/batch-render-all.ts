@@ -157,7 +157,7 @@ function buildRenderQueue(
     category?: string;
     priority?: string;
     resumeFrom?: { topic: string; session: number } | null;
-  },
+  }
 ): RenderJob[] {
   const jobs: RenderJob[] = [];
 
@@ -186,7 +186,7 @@ function buildRenderQueue(
   // If resuming, skip jobs before the resume point
   if (opts.resumeFrom) {
     const idx = jobs.findIndex(
-      j => j.topic.slug === opts.resumeFrom!.topic && j.session === opts.resumeFrom!.session,
+      (j) => j.topic.slug === opts.resumeFrom!.topic && j.session === opts.resumeFrom!.session
     );
     if (idx > 0) {
       return jobs.slice(idx);
@@ -223,8 +223,12 @@ function showStatus(): void {
   console.log('');
   console.log(`  Topics:     ${queue.topics.length}`);
   console.log(`  Sessions:   ${totalSessions}`);
-  console.log(`  Rendered:   ${rendered}/${totalSessions} (${((rendered / totalSessions) * 100).toFixed(1)}%)`);
-  console.log(`  Uploaded:   ${uploaded}/${totalSessions} (${((uploaded / totalSessions) * 100).toFixed(1)}%)`);
+  console.log(
+    `  Rendered:   ${rendered}/${totalSessions} (${((rendered / totalSessions) * 100).toFixed(1)}%)`
+  );
+  console.log(
+    `  Uploaded:   ${uploaded}/${totalSessions} (${((uploaded / totalSessions) * 100).toFixed(1)}%)`
+  );
   console.log(`  Failed:     ${failed}`);
   console.log(`  Remaining:  ${remaining}`);
   console.log('');
@@ -247,7 +251,7 @@ function showStatus(): void {
   console.log('  By category:');
   categories.forEach((data, cat) => {
     const pct = ((data.rendered / data.total) * 100).toFixed(0);
-    const bar = '#'.repeat(Math.round(data.rendered / data.total * 20)).padEnd(20, '.');
+    const bar = '#'.repeat(Math.round((data.rendered / data.total) * 20)).padEnd(20, '.');
     console.log(`    ${cat.padEnd(25)} [${bar}] ${data.rendered}/${data.total} (${pct}%)`);
   });
 
@@ -317,9 +321,8 @@ async function main() {
   const state = loadBatchState();
 
   // Build render queue
-  const resumeFrom = resumeFlag && state.lastTopic
-    ? { topic: state.lastTopic, session: state.lastSession }
-    : null;
+  const resumeFrom =
+    resumeFlag && state.lastTopic ? { topic: state.lastTopic, session: state.lastSession } : null;
 
   let jobs = buildRenderQueue(queue, manifest, {
     topic: topicFilter,
@@ -370,27 +373,25 @@ async function main() {
     const avgPerJob = completed > 0 ? elapsed / completed : state.avgSessionMs;
     const remaining = (totalJobs - i) * avgPerJob;
 
-    log(`Rendering ${job.topic.slug} S${job.session}... ${progress}, ~${formatDuration(remaining)} remaining]`);
+    log(
+      `Rendering ${job.topic.slug} S${job.session}... ${progress}, ~${formatDuration(remaining)} remaining]`
+    );
 
     const sessionStart = Date.now();
 
     try {
-      execSync(
-        `npx tsx scripts/render-and-stage.ts ${job.topic.slug} ${job.session}`,
-        {
-          stdio: 'inherit',
-          cwd: PROJECT_ROOT,
-          timeout: 60 * 60 * 1000, // 1 hour max per session
-        },
-      );
+      execSync(`npx tsx scripts/render-and-stage.ts ${job.topic.slug} ${job.session}`, {
+        stdio: 'inherit',
+        cwd: PROJECT_ROOT,
+        timeout: 60 * 60 * 1000, // 1 hour max per session
+      });
 
       const sessionElapsed = Date.now() - sessionStart;
       completed++;
 
       // Update running average
       state.avgSessionMs = Math.round(
-        (state.avgSessionMs * state.completedCount + sessionElapsed) /
-        (state.completedCount + 1),
+        (state.avgSessionMs * state.completedCount + sessionElapsed) / (state.completedCount + 1)
       );
       state.completedCount++;
       state.lastTopic = job.topic.slug;
@@ -400,7 +401,7 @@ async function main() {
       saveBatchState(state);
 
       // Update topic queue rendered array
-      const topicEntry = queue.topics.find(t => t.slug === job.topic.slug);
+      const topicEntry = queue.topics.find((t) => t.slug === job.topic.slug);
       if (topicEntry && !topicEntry.rendered.includes(job.session)) {
         topicEntry.rendered.push(job.session);
         topicEntry.rendered.sort((a, b) => a - b);
@@ -409,7 +410,6 @@ async function main() {
       }
 
       log(`Completed ${job.topic.slug} S${job.session} in ${formatDuration(sessionElapsed)}`);
-
     } catch (err) {
       failed++;
       state.failedCount++;
@@ -456,7 +456,7 @@ async function main() {
   }
 }
 
-main().catch(err => {
+main().catch((err) => {
   console.error('Fatal error:', err);
   process.exit(1);
 });

@@ -14,15 +14,15 @@ export const LOADED_FONTS = {
 
 export const COLORS = {
   // Light educational theme (ByteByteGo style)
-  dark: '#F5F3EF',        // warm off-white background (was #0C0A15)
-  darkAlt: '#FFFFFF',     // card/surface white (was #1A1625)
-  saffron: '#2563EB',     // primary accent — ocean blue (was #E85D26)
-  gold: '#D97706',        // warning/highlight — amber (was #FFD700)
-  teal: '#059669',        // success/secondary — emerald (was #20C997)
-  indigo: '#7C3AED',      // special accent — violet (was #818CF8)
-  gray: '#64748B',        // secondary text — slate (was #A9ACB3)
-  white: '#1E293B',       // primary text — charcoal (was #FFFFFF)
-  red: '#DC2626',         // error states (was #EF4444)
+  dark: '#F5F3EF', // warm off-white background (was #0C0A15)
+  darkAlt: '#FFFFFF', // card/surface white (was #1A1625)
+  saffron: '#2563EB', // primary accent — ocean blue (was #E85D26)
+  gold: '#D97706', // warning/highlight — amber (was #FFD700)
+  teal: '#059669', // success/secondary — emerald (was #20C997)
+  indigo: '#7C3AED', // special accent — violet (was #818CF8)
+  gray: '#64748B', // secondary text — slate (was #A9ACB3)
+  white: '#1E293B', // primary text — charcoal (was #FFFFFF)
+  red: '#DC2626', // error states (was #EF4444)
   // New colors for the light theme
   cardBg: '#FFFFFF',
   cardBorder: '#E2E0DC',
@@ -30,8 +30,8 @@ export const COLORS = {
   warmBg: '#F5F3EF',
   warmBgAlt: '#EDE9E3',
   // Explicit colors for dark-background contexts (intros, overlays, badges)
-  textOnDark: '#FFFFFF',    // actual white for dark backgrounds
-  textOnLight: '#1E293B',   // charcoal for light backgrounds
+  textOnDark: '#FFFFFF', // actual white for dark backgrounds
+  textOnLight: '#1E293B', // charcoal for light backgrounds
   // Aliases for component-side compatibility (light theme primary text/bg)
   textPrimary: '#1E293B',
   bgBase: '#F5F3EF',

@@ -19,32 +19,26 @@
  */
 
 import React from 'react';
-import {
-  useCurrentFrame,
-  useVideoConfig,
-  AbsoluteFill,
-  Sequence,
-  staticFile,
-} from 'remotion';
+import { useCurrentFrame, useVideoConfig, AbsoluteFill, Sequence, staticFile } from 'remotion';
 import { orchestrateBroll, autoSegmentScript, validateBrollPlan } from '../lib/broll-orchestrator';
 import { COMPONENT_DURATION, DEFAULT_COMPONENT_PROPS } from '../lib/broll-templates';
 
 // B-roll component registry
-import { KenBurns }        from '../components/broll/KenBurns';
-import { StatBomb }        from '../components/broll/StatBomb';
-import { CodeTyper }       from '../components/broll/CodeTyper';
-import { TerminalStream }  from '../components/broll/TerminalStream';
-import { CompareSplit }    from '../components/broll/CompareSplit';
-import { ConceptBox }      from '../components/broll/ConceptBox';
-import { ArrowFlow }       from '../components/broll/ArrowFlow';
-import { LoadingBar }      from '../components/broll/LoadingBar';
-import { EmojiSlam }       from '../components/broll/EmojiSlam';
-import { MetricCard }      from '../components/broll/MetricCard';
-import { BeforeAfter }     from '../components/broll/BeforeAfter';
-import { WhiteboardDraw }  from '../components/broll/WhiteboardDraw';
-import { LiveLog }         from '../components/broll/LiveLog';
-import { CharacterCam }    from '../components/broll/CharacterCam';
-import { Diagram }         from '../components/broll/Diagram';
+import { KenBurns } from '../components/broll/KenBurns';
+import { StatBomb } from '../components/broll/StatBomb';
+import { CodeTyper } from '../components/broll/CodeTyper';
+import { TerminalStream } from '../components/broll/TerminalStream';
+import { CompareSplit } from '../components/broll/CompareSplit';
+import { ConceptBox } from '../components/broll/ConceptBox';
+import { ArrowFlow } from '../components/broll/ArrowFlow';
+import { LoadingBar } from '../components/broll/LoadingBar';
+import { EmojiSlam } from '../components/broll/EmojiSlam';
+import { MetricCard } from '../components/broll/MetricCard';
+import { BeforeAfter } from '../components/broll/BeforeAfter';
+import { WhiteboardDraw } from '../components/broll/WhiteboardDraw';
+import { LiveLog } from '../components/broll/LiveLog';
+import { CharacterCam } from '../components/broll/CharacterCam';
+import { Diagram } from '../components/broll/Diagram';
 import type { BrollComponentId } from '../lib/broll-templates';
 
 // ---------------------------------------------------------------------------

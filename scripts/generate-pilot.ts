@@ -1,13 +1,23 @@
-import { getDemoSession, listDemoTopics, extractSession, loadTopicContent, listAvailableTopics } from '../src/pipeline/content-loader';
+import {
+  getDemoSession,
+  listDemoTopics,
+  extractSession,
+  loadTopicContent,
+  listAvailableTopics,
+} from '../src/pipeline/content-loader';
 import { generateScript } from '../src/pipeline/script-generator';
 import { generateSceneAudios } from '../src/pipeline/tts-engine';
-import { generateStoryboard, getStoryboardDuration, validateStoryboard } from '../src/pipeline/storyboard';
+import {
+  generateStoryboard,
+  getStoryboardDuration,
+  validateStoryboard,
+} from '../src/pipeline/storyboard';
 
 async function generatePilot() {
   console.log('=== AI Video Pipeline — Pilot Video Generator ===\n');
 
   // Check for --demo flag or --demo=<topic> argument
-  const demoArg = process.argv.find(a => a.startsWith('--demo'));
+  const demoArg = process.argv.find((a) => a.startsWith('--demo'));
   const useDemo = !!demoArg;
   const demoTopic = demoArg?.includes('=') ? demoArg.split('=')[1] : undefined;
 
@@ -52,10 +62,12 @@ async function generatePilot() {
     // 3. Generate TTS audio (or estimate if Kokoro unavailable)
     console.log('\nStep 3: Generating TTS audio...');
     const audioResults = await generateSceneAudios(
-      script.map(s => ({ narration: s.narration, type: s.type }))
+      script.map((s) => ({ narration: s.narration, type: s.type }))
     );
     const totalAudioDuration = audioResults.reduce((sum, a) => sum + a.duration, 0);
-    console.log(`  Total audio duration: ${totalAudioDuration.toFixed(1)}s (${(totalAudioDuration / 60).toFixed(1)} min)`);
+    console.log(
+      `  Total audio duration: ${totalAudioDuration.toFixed(1)}s (${(totalAudioDuration / 60).toFixed(1)} min)`
+    );
 
     // 4. Generate storyboard
     console.log('\nStep 4: Generating storyboard...');
@@ -71,7 +83,8 @@ async function generatePilot() {
       'audio/bgm/warm-ambient.mp3',
     ];
     const bgmSeed = (session.topic + session.sessionNumber + language)
-      .split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+      .split('')
+      .reduce((a, c) => a + c.charCodeAt(0), 0);
     storyboard.bgmFile = BGM_FILES[bgmSeed % BGM_FILES.length];
 
     const duration = getStoryboardDuration(storyboard);
@@ -83,7 +96,7 @@ async function generatePilot() {
       console.log('  Validation: PASSED');
     } else {
       console.log('  Validation ISSUES:');
-      validation.issues.forEach(issue => console.log(`    - ${issue}`));
+      validation.issues.forEach((issue) => console.log(`    - ${issue}`));
     }
 
     // 6. Print summary

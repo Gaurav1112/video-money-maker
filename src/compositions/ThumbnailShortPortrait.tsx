@@ -6,7 +6,10 @@ export interface ThumbnailShortPortraitProps {
   subtitle?: string;
 }
 
-export const ThumbnailShortPortrait: React.FC<ThumbnailShortPortraitProps> = ({ topic, subtitle }) => {
+export const ThumbnailShortPortrait: React.FC<ThumbnailShortPortraitProps> = ({
+  topic,
+  subtitle,
+}) => {
   return (
     <AbsoluteFill
       style={{

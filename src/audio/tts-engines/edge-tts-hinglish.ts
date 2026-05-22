@@ -15,24 +15,24 @@
  *   4. Deterministic: same text → same audio bytes given same voice + rate.
  */
 
-import * as fs from "fs";
-import * as path from "path";
-import * as crypto from "crypto";
-import { spawn } from "child_process";
+import * as fs from 'fs';
+import * as path from 'path';
+import * as crypto from 'crypto';
+import { spawn } from 'child_process';
 
 // ---------------------------------------------------------------------------
 // Voice configuration
 // ---------------------------------------------------------------------------
 
-export type HinglishVoice = "male" | "female";
+export type HinglishVoice = 'male' | 'female';
 
 const VOICE_MAP: Record<HinglishVoice, string> = {
-  male: "hi-IN-MadhurNeural", // warm, edu-style; primary
-  female: "hi-IN-SwaraNeural", // natural code-switching; alternate
+  male: 'hi-IN-MadhurNeural', // warm, edu-style; primary
+  female: 'hi-IN-SwaraNeural', // natural code-switching; alternate
 };
 
 // Output format: 24 kHz mono MP3 — matches existing pipeline expectations
-const OUTPUT_FORMAT = "audio-24khz-48kbitrate-mono-mp3";
+const OUTPUT_FORMAT = 'audio-24khz-48kbitrate-mono-mp3';
 
 // ---------------------------------------------------------------------------
 // Tech-term phonetic protection
@@ -48,95 +48,95 @@ const OUTPUT_FORMAT = "audio-24khz-48kbitrate-mono-mp3";
  */
 export const TECH_TERMS: readonly string[] = [
   // Distributed systems
-  "Kafka",
-  "Zookeeper",
-  "Flink",
-  "Spark",
-  "Hadoop",
-  "Cassandra",
-  "DynamoDB",
-  "Redis",
-  "RabbitMQ",
-  "ActiveMQ",
-  "Pulsar",
+  'Kafka',
+  'Zookeeper',
+  'Flink',
+  'Spark',
+  'Hadoop',
+  'Cassandra',
+  'DynamoDB',
+  'Redis',
+  'RabbitMQ',
+  'ActiveMQ',
+  'Pulsar',
   // APIs & protocols
-  "API",
-  "REST",
-  "gRPC",
-  "GraphQL",
-  "WebSocket",
-  "HTTP",
-  "HTTPS",
-  "TCP",
-  "UDP",
-  "DNS",
-  "CDN",
+  'API',
+  'REST',
+  'gRPC',
+  'GraphQL',
+  'WebSocket',
+  'HTTP',
+  'HTTPS',
+  'TCP',
+  'UDP',
+  'DNS',
+  'CDN',
   // Architecture patterns
-  "microservices",
-  "Microservices",
-  "Docker",
-  "Kubernetes",
-  "Helm",
-  "Istio",
-  "Nginx",
-  "HAProxy",
-  "load balancer",
-  "Load Balancer",
+  'microservices',
+  'Microservices',
+  'Docker',
+  'Kubernetes',
+  'Helm',
+  'Istio',
+  'Nginx',
+  'HAProxy',
+  'load balancer',
+  'Load Balancer',
   // Cloud & infra
-  "AWS",
-  "GCP",
-  "Azure",
-  "S3",
-  "EC2",
-  "Lambda",
-  "DynamoDB",
-  "Terraform",
-  "CI/CD",
-  "GitHub",
-  "GitLab",
+  'AWS',
+  'GCP',
+  'Azure',
+  'S3',
+  'EC2',
+  'Lambda',
+  'DynamoDB',
+  'Terraform',
+  'CI/CD',
+  'GitHub',
+  'GitLab',
   // Databases
-  "PostgreSQL",
-  "MySQL",
-  "MongoDB",
-  "Elasticsearch",
-  "Solr",
-  "Snowflake",
+  'PostgreSQL',
+  'MySQL',
+  'MongoDB',
+  'Elasticsearch',
+  'Solr',
+  'Snowflake',
   // Algorithms & CS
-  "LRU",
-  "LFU",
-  "B-Tree",
-  "B+Tree",
-  "CAP theorem",
-  "ACID",
-  "BASE",
-  "consistent hashing",
-  "Consistent Hashing",
-  "sharding",
-  "Sharding",
-  "replication",
-  "Replication",
+  'LRU',
+  'LFU',
+  'B-Tree',
+  'B+Tree',
+  'CAP theorem',
+  'ACID',
+  'BASE',
+  'consistent hashing',
+  'Consistent Hashing',
+  'sharding',
+  'Sharding',
+  'replication',
+  'Replication',
   // Company names (keep pronunciation English)
-  "Google",
-  "Meta",
-  "Amazon",
-  "Netflix",
-  "Flipkart",
-  "Swiggy",
-  "Zomato",
-  "IRCTC",
-  "Paytm",
+  'Google',
+  'Meta',
+  'Amazon',
+  'Netflix',
+  'Flipkart',
+  'Swiggy',
+  'Zomato',
+  'IRCTC',
+  'Paytm',
   // FAANG prep terms
-  "LeetCode",
-  "HackerRank",
-  "FAANG",
-  "MAANG",
-  "DSA",
-  "OOPs",
-  "SOLID",
-  "design pattern",
-  "Design Pattern",
-  "system design",
-  "System Design",
+  'LeetCode',
+  'HackerRank',
+  'FAANG',
+  'MAANG',
+  'DSA',
+  'OOPs',
+  'SOLID',
+  'design pattern',
+  'Design Pattern',
+  'system design',
+  'System Design',
 ];
 
 // Pre-build a Set for O(1) lookup during preprocessing
@@ -170,23 +170,23 @@ function runPythonEdgeTTS(args: {
   const ratePercent = args.ratePercent ?? 0;
   const rate = ratePercent >= 0 ? `+${ratePercent}%` : `${ratePercent}%`;
   const pitch = pitchPercentToHz(args.pitchPercent ?? 0);
-  const helper = path.resolve(__dirname, "../../../scripts/edge-tts-synth.py");
+  const helper = path.resolve(__dirname, '../../../scripts/edge-tts-synth.py');
   return new Promise((resolve, reject) => {
     const proc = spawn(
-      "python3",
-      [helper, "--voice", args.voice, "--rate", rate, "--pitch", pitch, "--out", args.outPath],
-      { stdio: ["pipe", "pipe", "pipe"] },
+      'python3',
+      [helper, '--voice', args.voice, '--rate', rate, '--pitch', pitch, '--out', args.outPath],
+      { stdio: ['pipe', 'pipe', 'pipe'] }
     );
-    let stderr = "";
-    proc.stderr.on("data", (d) => {
+    let stderr = '';
+    proc.stderr.on('data', (d) => {
       stderr += d.toString();
     });
-    proc.on("error", reject);
-    proc.on("close", (code) => {
+    proc.on('error', reject);
+    proc.on('close', (code) => {
       if (code === 0) resolve();
       else reject(new Error(`edge-tts-synth.py exited ${code}: ${stderr}`));
     });
-    proc.stdin.write(args.ssml, "utf8");
+    proc.stdin.write(args.ssml, 'utf8');
     proc.stdin.end();
   });
 }
@@ -242,12 +242,9 @@ export function protectTechTerms(text: string): string {
   for (const term of sortedTerms) {
     // Case-insensitive, word-boundary aware replacement
     // Avoid double-wrapping if already inside a lang tag
-    const escaped = term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-    const pattern = new RegExp(`(?<!<lang[^>]*>)\\b(${escaped})\\b(?![^<]*</lang>)`, "gi");
-    result = result.replace(
-      pattern,
-      `<lang xml:lang="en-IN">$1</lang>`
-    );
+    const escaped = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const pattern = new RegExp(`(?<!<lang[^>]*>)\\b(${escaped})\\b(?![^<]*</lang>)`, 'gi');
+    result = result.replace(pattern, `<lang xml:lang="en-IN">$1</lang>`);
   }
   return result;
 }
@@ -296,9 +293,9 @@ export async function synthesizeHinglish(
   options: HinglishTTSOptions = {}
 ): Promise<HinglishTTSResult> {
   const {
-    voice = "male",
-    outputDir = "output/hinglish-audio",
-    cacheDir = path.join(outputDir, ".tts-cache"),
+    voice = 'male',
+    outputDir = 'output/hinglish-audio',
+    cacheDir = path.join(outputDir, '.tts-cache'),
     ratePercent = -5,
     pitchPercent = 0,
   } = options;
@@ -309,9 +306,9 @@ export async function synthesizeHinglish(
   // Cache key includes voice, rate, pitch, and text so a scene with +5% pitch
   // gets a different cached file than one with +0% (same voice/rate/text).
   const textHash = crypto
-    .createHash("sha256")
+    .createHash('sha256')
     .update(`${resolvedVoice}::${rate}::${pitch}::${text}`)
-    .digest("hex")
+    .digest('hex')
     .slice(0, 16);
 
   // Check cache first
@@ -404,9 +401,7 @@ export async function synthesizeScenes(
           ? pitchPerScene[i]
           : undefined;
       const sceneOptions: HinglishTTSOptions =
-        scenePitch !== undefined
-          ? { ...baseOptions, pitchPercent: scenePitch }
-          : baseOptions;
+        scenePitch !== undefined ? { ...baseOptions, pitchPercent: scenePitch } : baseOptions;
       const result = await synthesizeHinglish(scene.narration, sceneOptions);
       return {
         sceneIndex: i,

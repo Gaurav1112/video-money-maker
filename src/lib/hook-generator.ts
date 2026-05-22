@@ -38,8 +38,7 @@ export interface HookResult {
 const CTA_URL = 'guru-sishya.in';
 
 /** CTA injected at the 40–60% timestamp of every script. */
-const MID_VIDEO_CTA =
-  `Want the full roadmap? Visit ${CTA_URL} — link in bio.`;
+const MID_VIDEO_CTA = `Want the full roadmap? Visit ${CTA_URL} — link in bio.`;
 
 // ─── Internal helpers ─────────────────────────────────────────────────────────
 
@@ -48,11 +47,7 @@ function getKeyConcept(scenes: Scene[], sessionTitle?: string): string {
   return textScene?.heading ?? sessionTitle ?? 'this concept';
 }
 
-type HookFormula = (
-  topic: string,
-  scenes: Scene[],
-  sessionTitle?: string,
-) => HookResult;
+type HookFormula = (topic: string, scenes: Scene[], sessionTitle?: string) => HookResult;
 
 // ─── Shock-hook formula registry ─────────────────────────────────────────────
 //
@@ -260,7 +255,7 @@ export function generateShockHook(
   topic: string,
   shortIndex: number,
   scenes: Scene[],
-  sessionTitle?: string,
+  sessionTitle?: string
 ): HookResult {
   // shortIndex === 0 is always the lead Short for a session.
   // Pin it to formula 0 ("90% Engineers Get {topic} WRONG") — the channel's
@@ -292,7 +287,7 @@ export function generateDualHook(
   topic: string,
   sessionNumber: number,
   scenes: Scene[],
-  sessionTitle?: string,
+  sessionTitle?: string
 ): HookResult {
   return generateShockHook(topic, 0, scenes, sessionTitle);
 }

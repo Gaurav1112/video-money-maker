@@ -3,7 +3,7 @@
 /**
  * RETENTION 9/10 TEST RENDER
  * Renders a single test video with all 7 retention levers applied
- * 
+ *
  * Usage:
  *   npx tsx scripts/render-retention-test.ts --topic "Database Indexing"
  */
@@ -97,7 +97,7 @@ Expected finish rate: 90%+
 
 async function main() {
   const topic = process.argv[3] || 'Database Indexing';
-  
+
   const config: RetentionConfig = {
     topic,
     duration: 180,
@@ -107,7 +107,7 @@ async function main() {
     includeBroll: true,
     includeStoryArc: true,
     includePacing: true,
-    includeStrongEnding: true
+    includeStrongEnding: true,
   };
 
   console.log('🎯 RETENTION 9/10 TEST RENDER');
@@ -118,10 +118,10 @@ async function main() {
   // Generate test script
   const script = await generateRetentionScript(config);
   const scriptPath = path.join('tmp', 'retention-test.md');
-  
+
   fs.mkdirSync('tmp', { recursive: true });
   fs.writeFileSync(scriptPath, script);
-  
+
   console.log('✅ Test script created:');
   console.log(script);
   console.log('');
@@ -133,7 +133,7 @@ async function main() {
   console.log('3. Manual test: Upload to YouTube');
   console.log('4. Measure: Track retention curves at 3s, 30s, 60s, 120s, 180s');
   console.log('');
-  
+
   console.log('🔥 Levers enabled:');
   console.log(`✅ Hook (0-3s): ${config.includeHook}`);
   console.log(`✅ Shock Opener: ${config.includeShockOpener}`);
@@ -144,7 +144,7 @@ async function main() {
   console.log(`✅ Strong Ending (recap + bonus + CTA): ${config.includeStrongEnding}`);
 }
 
-main().catch(err => {
+main().catch((err) => {
   console.error('❌ Error:', err);
   process.exit(1);
 });

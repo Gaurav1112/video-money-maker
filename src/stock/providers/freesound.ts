@@ -27,7 +27,11 @@ export class FreesoundProvider {
       if (!res.ok) return [];
       const data = (await res.json()) as FreesoundResponse;
       return (data.results ?? [])
-        .filter((r) => r.license?.toLowerCase().includes('creative commons 0') || r.license?.toLowerCase().includes('cc0'))
+        .filter(
+          (r) =>
+            r.license?.toLowerCase().includes('creative commons 0') ||
+            r.license?.toLowerCase().includes('cc0')
+        )
         .map((r) => ({
           id: `freesound-${r.id}`,
           name: r.name,

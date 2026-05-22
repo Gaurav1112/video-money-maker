@@ -41,7 +41,7 @@ const ProblemVisualization: React.FC<ProblemVisualizationProps> = ({
     frame,
     [startFrame + durationInFrames * 0.25, startFrame + durationInFrames * 0.5],
     [0, 1],
-    { extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: Easing.out(Easing.cubic) },
+    { extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: Easing.out(Easing.cubic) }
   );
 
   // Labels
@@ -49,39 +49,29 @@ const ProblemVisualization: React.FC<ProblemVisualizationProps> = ({
   const solutionLabelOpacity = fadeIn(frame, solutionStart + 15, 15);
 
   // Problem server pulse (stressed)
-  const stressPulse = interpolate(
-    Math.sin(frame * 0.15),
-    [-1, 1],
-    [0.85, 1.1],
-  );
+  const stressPulse = interpolate(Math.sin(frame * 0.15), [-1, 1], [0.85, 1.1]);
 
   // Problem dots — requests hitting a single server
   const DOT_COUNT = 8;
   const SOLUTION_NODES = 3;
 
   // Overall progress: 0 = full problem, 1 = full solution
-  const overallProgress = interpolate(
-    frame,
-    [problemPhaseEnd, transitionPhaseEnd],
-    [0, 1],
-    { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
-  );
+  const overallProgress = interpolate(frame, [problemPhaseEnd, transitionPhaseEnd], [0, 1], {
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
+  });
 
   // Problem glow intensity (red, fading as solution takes over)
-  const problemGlow = interpolate(
-    overallProgress,
-    [0, 0.5, 1],
-    [0.6, 0.3, 0.1],
-    { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
-  );
+  const problemGlow = interpolate(overallProgress, [0, 0.5, 1], [0.6, 0.3, 0.1], {
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
+  });
 
   // Solution glow intensity (green, growing)
-  const solutionGlow = interpolate(
-    overallProgress,
-    [0, 0.5, 1],
-    [0, 0.3, 0.6],
-    { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
-  );
+  const solutionGlow = interpolate(overallProgress, [0, 0.5, 1], [0, 0.3, 0.6], {
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
+  });
 
   return (
     <AbsoluteFill
@@ -175,9 +165,13 @@ const ProblemVisualization: React.FC<ProblemVisualizationProps> = ({
                 width: 80,
                 height: 80,
                 borderRadius: 12,
-                backgroundColor: interpolate(overallProgress, [0, 0.5, 1], [0, 0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }) > 0.5
-                  ? `${COLORS.red}88`
-                  : `${COLORS.red}CC`,
+                backgroundColor:
+                  interpolate(overallProgress, [0, 0.5, 1], [0, 0, 1], {
+                    extrapolateLeft: 'clamp',
+                    extrapolateRight: 'clamp',
+                  }) > 0.5
+                    ? `${COLORS.red}88`
+                    : `${COLORS.red}CC`,
                 border: `2px solid ${COLORS.red}`,
                 display: 'flex',
                 alignItems: 'center',
@@ -185,7 +179,14 @@ const ProblemVisualization: React.FC<ProblemVisualizationProps> = ({
                 boxShadow: `0 0 ${30 * (1 - overallProgress)}px ${COLORS.red}66`,
               }}
             >
-              <div style={{ fontSize: 28, color: COLORS.textOnDark, fontWeight: 800, fontFamily: FONTS.code }}>
+              <div
+                style={{
+                  fontSize: 28,
+                  color: COLORS.textOnDark,
+                  fontWeight: 800,
+                  fontFamily: FONTS.code,
+                }}
+              >
                 &#9646;
               </div>
             </div>
@@ -200,7 +201,7 @@ const ProblemVisualization: React.FC<ProblemVisualizationProps> = ({
                 overallProgress,
                 [0, 0.3, 0.7, 1],
                 [0.9, 0.8, 0.3, 0],
-                { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
+                { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }
               );
 
               return (
@@ -283,11 +284,7 @@ const ProblemVisualization: React.FC<ProblemVisualizationProps> = ({
 
             {/* Traveling dots along arrow */}
             {[0, 1, 2].map((i) => {
-              const dotProgress = interpolate(
-                (frame + i * 15) % 45,
-                [0, 45],
-                [0, 1],
-              );
+              const dotProgress = interpolate((frame + i * 15) % 45, [0, 45], [0, 1]);
               const dotX = dotProgress * 100;
               const dotColor = interpolate(dotProgress, [0, 0.5, 1], [0, 0.5, 1], {
                 extrapolateLeft: 'clamp',
@@ -374,7 +371,14 @@ const ProblemVisualization: React.FC<ProblemVisualizationProps> = ({
                       boxShadow: `0 0 20px ${COLORS.teal}22`,
                     }}
                   >
-                    <div style={{ fontSize: 20, color: COLORS.teal, fontWeight: 800, fontFamily: FONTS.code }}>
+                    <div
+                      style={{
+                        fontSize: 20,
+                        color: COLORS.teal,
+                        fontWeight: 800,
+                        fontFamily: FONTS.code,
+                      }}
+                    >
                       &#9646;
                     </div>
                   </div>
@@ -385,12 +389,10 @@ const ProblemVisualization: React.FC<ProblemVisualizationProps> = ({
                     const dotRadius = 38 + Math.sin(frame * 0.05 + j) * 5;
                     const dx = Math.cos(dotAngle) * dotRadius;
                     const dy = Math.sin(dotAngle) * dotRadius;
-                    const dotFade = interpolate(
-                      overallProgress,
-                      [0.3, 0.6, 1],
-                      [0, 0.5, 0.9],
-                      { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
-                    );
+                    const dotFade = interpolate(overallProgress, [0.3, 0.6, 1], [0, 0.5, 0.9], {
+                      extrapolateLeft: 'clamp',
+                      extrapolateRight: 'clamp',
+                    });
 
                     return (
                       <div

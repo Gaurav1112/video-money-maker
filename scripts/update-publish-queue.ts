@@ -66,7 +66,11 @@ function main() {
   const args = process.argv.slice(2);
 
   function getArg(name: string): string | undefined {
-    const eqForm = args.find(a => a.startsWith(`--${name}=`))?.split('=').slice(1).join('=');
+    const eqForm = args
+      .find((a) => a.startsWith(`--${name}=`))
+      ?.split('=')
+      .slice(1)
+      .join('=');
     if (eqForm) return eqForm;
     const idx = args.indexOf(`--${name}`);
     if (idx >= 0 && args[idx + 1] && !args[idx + 1].startsWith('--')) {
@@ -82,7 +86,9 @@ function main() {
   const errorMsg = getArg('error');
 
   if (!entryId || !status) {
-    console.error('Usage: update-publish-queue.ts --id <entry-id> --status <published|failed|skipped>');
+    console.error(
+      'Usage: update-publish-queue.ts --id <entry-id> --status <published|failed|skipped>'
+    );
     console.error('  Optional: --youtube-id <id> --instagram-id <id> --error "message"');
     process.exit(1);
   }
@@ -99,11 +105,16 @@ function main() {
   }
 
   const queue: PublishQueue = JSON.parse(fs.readFileSync(PUBLISH_QUEUE_PATH, 'utf-8'));
-  const entryIndex = queue.entries.findIndex(e => e.id === entryId);
+  const entryIndex = queue.entries.findIndex((e) => e.id === entryId);
 
   if (entryIndex === -1) {
     console.error(`Entry not found: ${entryId}`);
-    console.error(`Available IDs (first 10): ${queue.entries.slice(0, 10).map(e => e.id).join(', ')}`);
+    console.error(
+      `Available IDs (first 10): ${queue.entries
+        .slice(0, 10)
+        .map((e) => e.id)
+        .join(', ')}`
+    );
     process.exit(1);
   }
 
@@ -131,11 +142,23 @@ function main() {
 
   // Also update publish-history.json
   if (status === 'published') {
-    let history: { version: number; lastPublished: string | null; lastCategoryIndex: number; totalPublished: number; entries: Array<unknown> };
+    let history: {
+      version: number;
+      lastPublished: string | null;
+      lastCategoryIndex: number;
+      totalPublished: number;
+      entries: Array<unknown>;
+    };
     if (fs.existsSync(PUBLISH_HISTORY_PATH)) {
       history = JSON.parse(fs.readFileSync(PUBLISH_HISTORY_PATH, 'utf-8'));
     } else {
-      history = { version: 1, lastPublished: null, lastCategoryIndex: -1, totalPublished: 0, entries: [] };
+      history = {
+        version: 1,
+        lastPublished: null,
+        lastCategoryIndex: -1,
+        totalPublished: 0,
+        entries: [],
+      };
     }
 
     history.lastPublished = new Date().toISOString();
@@ -166,7 +189,9 @@ function main() {
         }
         topicQueue.lastUpdated = new Date().toISOString().split('T')[0];
         fs.writeFileSync(topicQueuePath, JSON.stringify(topicQueue, null, 2) + '\n');
-        console.log(`Updated topic-queue.json: ${entry.topic} session ${entry.session} marked published`);
+        console.log(
+          `Updated topic-queue.json: ${entry.topic} session ${entry.session} marked published`
+        );
       }
     }
   }
@@ -184,7 +209,9 @@ function main() {
   for (const e of queue.entries) {
     counts[e.status]++;
   }
-  console.log(`\nQueue: ${counts.published} published, ${counts.pending} pending, ${counts.failed} failed, ${counts.skipped} skipped`);
+  console.log(
+    `\nQueue: ${counts.published} published, ${counts.pending} pending, ${counts.failed} failed, ${counts.skipped} skipped`
+  );
 }
 
 main();

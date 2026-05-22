@@ -17,17 +17,17 @@ export function generateStrongEnding(topic: string): StrongEnding {
     bonusTip: `🎁 Bonus tip: Most engineers don't know that...`,
     cta: `👉 Watch next: [Link to advanced video]`,
     cliffhanger: `🤯 But here's the crazy part...`,
-    expectedFinishRate: 0.90
+    expectedFinishRate: 0.9,
   };
 }
 
 export function createEndingSequence(duration: number = 180000) {
   const endingStart = duration - 30000; // Last 30 seconds
-  
+
   return {
     recap: { start: endingStart, duration: 5000 },
     bonusTip: { start: endingStart + 5000, duration: 8000 },
     cliffhanger: { start: endingStart + 13000, duration: 5000 },
-    cta: { start: endingStart + 18000, duration: 12000 }
+    cta: { start: endingStart + 18000, duration: 12000 },
   };
 }

@@ -153,7 +153,7 @@ export interface SceneLike {
 export function sceneToSegment(
   scene: SceneLike,
   index: number,
-  avgSceneDurationSeconds = 30,
+  avgSceneDurationSeconds = 30
 ): ScriptSegment {
   const typeMap: Record<string, ScriptSegment['type']> = {
     title: 'hook',
@@ -178,9 +178,7 @@ export function sceneToSegment(
     endSeconds,
     text: scene.heading ?? scene.narration ?? '',
     isHardConcept:
-      scene.isHardConcept === true ||
-      scene.type === 'diagram' ||
-      scene.type === 'code',
+      scene.isHardConcept === true || scene.type === 'diagram' || scene.type === 'code',
   };
 }
 
@@ -207,11 +205,9 @@ export function segmentToScene(seg: ScriptSegment): SceneLike {
 export function injectRetentionBeatsIntoScript(
   scenes: SceneLike[],
   topic: string,
-  avgSceneDurationSeconds = 30,
+  avgSceneDurationSeconds = 30
 ): SceneLike[] {
-  const segments = scenes.map((s, i) =>
-    sceneToSegment(s, i, avgSceneDurationSeconds),
-  );
+  const segments = scenes.map((s, i) => sceneToSegment(s, i, avgSceneDurationSeconds));
 
   const output: RetentionEngineOutput = insertRetentionBeats(segments, topic);
 
@@ -222,7 +218,7 @@ export function injectRetentionBeatsIntoScript(
     console.warn(
       `[retention-engine] ⚠️ ${output.openLoopBalance.opened} open loops opened, ` +
         `${output.openLoopBalance.closed} closed. ` +
-        `Karen X. Cheng: unclosed loops = viewer feels cheated.`,
+        `Karen X. Cheng: unclosed loops = viewer feels cheated.`
     );
   }
 

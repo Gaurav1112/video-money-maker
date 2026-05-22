@@ -110,7 +110,7 @@ function prepareTags(tags: string[]): string[] {
 async function uploadVideo(
   videoPath: string,
   metadata: MetadataFile,
-  options: { shorts: boolean; private: boolean },
+  options: { shorts: boolean; private: boolean }
 ): Promise<UploadResult> {
   const auth = getAuthClient();
   const youtube = google.youtube({ version: 'v3', auth });
@@ -185,7 +185,9 @@ async function uploadVideo(
     localizations: {
       hi: {
         title: `${title.replace(/—/g, '-').replace(/'/g, "'")}`,
-        description: description.slice(0, 200) + '\n\n[Hindi localization — same content, better discovery for Hindi-browsing users]',
+        description:
+          description.slice(0, 200) +
+          '\n\n[Hindi localization — same content, better discovery for Hindi-browsing users]',
       },
     },
   };
@@ -244,7 +246,7 @@ const _playlistCache: Record<string, string> = {};
 async function findOrCreatePlaylist(
   youtube: youtube_v3.Youtube,
   title: string,
-  tags: string[],
+  tags: string[]
 ): Promise<string> {
   // Check cache first
   if (_playlistCache[title]) return _playlistCache[title];
@@ -256,9 +258,7 @@ async function findOrCreatePlaylist(
     maxResults: 50,
   });
 
-  const found = existing.data.items?.find(
-    (p) => p.snippet?.title === title,
-  );
+  const found = existing.data.items?.find((p) => p.snippet?.title === title);
 
   if (found?.id) {
     _playlistCache[title] = found.id;
@@ -289,7 +289,7 @@ async function findOrCreatePlaylist(
 async function addVideoToPlaylist(
   youtube: youtube_v3.Youtube,
   playlistId: string,
-  videoId: string,
+  videoId: string
 ): Promise<void> {
   await youtube.playlistItems.insert({
     part: ['snippet'],
@@ -326,11 +326,12 @@ async function main(): Promise<void> {
   // After upload we fill in videoId + uploadedAt and write the final record
   // to <dirname(partial)>/<videoId>.json so analytics can join by videoId.
   const variantRecordIdx = process.argv.indexOf('--variant-record');
-  const variantRecordPath =
-    variantRecordIdx > -1 ? process.argv[variantRecordIdx + 1] : undefined;
+  const variantRecordPath = variantRecordIdx > -1 ? process.argv[variantRecordIdx + 1] : undefined;
 
   if (positional.length < 2) {
-    console.error('Usage: npx tsx scripts/upload-youtube.ts <video.mp4> <metadata.json> [--shorts] [--private] [--thumbnail <path>] [--captions <srt-path>] [--first-comment <text>]');
+    console.error(
+      'Usage: npx tsx scripts/upload-youtube.ts <video.mp4> <metadata.json> [--shorts] [--private] [--thumbnail <path>] [--captions <srt-path>] [--first-comment <text>]'
+    );
     console.error('');
     console.error('Arguments:');
     console.error('  video.mp4       Path to the video file');
@@ -342,7 +343,9 @@ async function main(): Promise<void> {
     console.error('  --thumbnail       Path to a JPEG thumbnail to set after upload');
     console.error('  --captions        Path to an SRT caption file to upload');
     console.error('  --first-comment   Text to post as first (channel-owner) comment after upload');
-    console.error('  --variant-record  Path to partial variant JSON (A/B test); upload fills in videoId + uploadedAt');
+    console.error(
+      '  --variant-record  Path to partial variant JSON (A/B test); upload fills in videoId + uploadedAt'
+    );
     process.exit(1);
   }
 
@@ -373,7 +376,9 @@ async function main(): Promise<void> {
   }
 
   if (!metadata.youtube) {
-    console.error('Error: Metadata JSON missing "youtube" key. Expected output from metadata-generator.');
+    console.error(
+      'Error: Metadata JSON missing "youtube" key. Expected output from metadata-generator.'
+    );
     process.exit(1);
   }
 
@@ -450,7 +455,9 @@ async function main(): Promise<void> {
     // analytics ingestor can join by videoId.
     if (variantRecordPath && fs.existsSync(variantRecordPath)) {
       try {
-        const partial = JSON.parse(fs.readFileSync(variantRecordPath, 'utf-8')) as Partial<VariantRecord>;
+        const partial = JSON.parse(
+          fs.readFileSync(variantRecordPath, 'utf-8')
+        ) as Partial<VariantRecord>;
         if (
           partial.quizIndex === undefined ||
           partial.variant === undefined ||
@@ -470,9 +477,7 @@ async function main(): Promise<void> {
         writeVariantRecord(dir, final);
         console.log(`   ✓ Variant record: ${path.join(dir, `${result.videoId}.json`)}`);
       } catch (err) {
-        console.warn(
-          `   [warn] variant record write failed: ${String(err).slice(0, 120)}`,
-        );
+        console.warn(`   [warn] variant record write failed: ${String(err).slice(0, 120)}`);
       }
     }
   } catch (err: unknown) {

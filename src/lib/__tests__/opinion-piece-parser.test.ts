@@ -1,11 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import * as fs from 'fs';
 import * as path from 'path';
-import {
-  parseOpinionPiece,
-  OpinionParserError,
-  buildNarrationPlan,
-} from '../opinion-piece-parser';
+import { parseOpinionPiece, OpinionParserError, buildNarrationPlan } from '../opinion-piece-parser';
 
 const EPISODE_001_PATH = path.resolve(
   __dirname,

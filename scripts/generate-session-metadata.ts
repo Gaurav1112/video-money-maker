@@ -37,16 +37,56 @@ const CORE_TOPICS: TopicConfig[] = [
     name: 'Load Balancing',
     category: 'system-design',
     sessions: [
-      { n: 1, title: 'What is Load Balancing & Why It Matters', focus: 'fundamentals, types, hardware vs software' },
-      { n: 2, title: 'Round Robin & Weighted Round Robin', focus: 'basic algorithms, implementation, when to use' },
-      { n: 3, title: 'Least Connections & IP Hash', focus: 'advanced algorithms, session persistence' },
-      { n: 4, title: 'Consistent Hashing for Load Balancers', focus: 'ring-based hashing, virtual nodes, minimal disruption' },
-      { n: 5, title: 'Health Checks & Failover Strategies', focus: 'passive, active, deep health checks, circuit breakers' },
-      { n: 6, title: 'Layer 4 vs Layer 7 Load Balancing', focus: 'transport vs application layer, tradeoffs, when to use each' },
-      { n: 7, title: 'SSL Termination & TLS Offloading', focus: 'encryption at scale, certificate management, performance' },
-      { n: 8, title: 'Global Server Load Balancing (GSLB)', focus: 'GeoDNS, multi-region, latency-based routing' },
-      { n: 9, title: 'Load Balancing at Netflix, Uber & Google', focus: 'real-world architectures, case studies, lessons' },
-      { n: 10, title: 'Complete Interview Masterclass', focus: 'model answers, common mistakes, cheat sheet' },
+      {
+        n: 1,
+        title: 'What is Load Balancing & Why It Matters',
+        focus: 'fundamentals, types, hardware vs software',
+      },
+      {
+        n: 2,
+        title: 'Round Robin & Weighted Round Robin',
+        focus: 'basic algorithms, implementation, when to use',
+      },
+      {
+        n: 3,
+        title: 'Least Connections & IP Hash',
+        focus: 'advanced algorithms, session persistence',
+      },
+      {
+        n: 4,
+        title: 'Consistent Hashing for Load Balancers',
+        focus: 'ring-based hashing, virtual nodes, minimal disruption',
+      },
+      {
+        n: 5,
+        title: 'Health Checks & Failover Strategies',
+        focus: 'passive, active, deep health checks, circuit breakers',
+      },
+      {
+        n: 6,
+        title: 'Layer 4 vs Layer 7 Load Balancing',
+        focus: 'transport vs application layer, tradeoffs, when to use each',
+      },
+      {
+        n: 7,
+        title: 'SSL Termination & TLS Offloading',
+        focus: 'encryption at scale, certificate management, performance',
+      },
+      {
+        n: 8,
+        title: 'Global Server Load Balancing (GSLB)',
+        focus: 'GeoDNS, multi-region, latency-based routing',
+      },
+      {
+        n: 9,
+        title: 'Load Balancing at Netflix, Uber & Google',
+        focus: 'real-world architectures, case studies, lessons',
+      },
+      {
+        n: 10,
+        title: 'Complete Interview Masterclass',
+        focus: 'model answers, common mistakes, cheat sheet',
+      },
     ],
   },
   {
@@ -54,16 +94,56 @@ const CORE_TOPICS: TopicConfig[] = [
     name: 'Caching',
     category: 'system-design',
     sessions: [
-      { n: 1, title: 'What is Caching & Why Every System Needs It', focus: 'fundamentals, latency reduction, cache hit/miss' },
-      { n: 2, title: 'Cache Eviction Policies (LRU, LFU, FIFO)', focus: 'algorithms, implementation, tradeoffs' },
-      { n: 3, title: 'Write-Through, Write-Behind & Cache-Aside', focus: 'write strategies, consistency patterns' },
-      { n: 4, title: 'Redis Deep Dive — Architecture & Data Types', focus: 'Redis internals, strings, hashes, sorted sets' },
-      { n: 5, title: 'Memcached vs Redis — The Real Difference', focus: 'comparison, when to use which, benchmarks' },
-      { n: 6, title: 'Cache Invalidation — The Hardest Problem', focus: 'TTL, event-driven, versioning, stampede prevention' },
-      { n: 7, title: 'CDN Caching & Edge Computing', focus: 'CloudFront, Cloudflare, edge caching strategies' },
-      { n: 8, title: 'Distributed Caching at Scale', focus: 'consistent hashing, replication, partition tolerance' },
-      { n: 9, title: 'Caching at Instagram, Twitter & Discord', focus: 'real-world case studies, architecture decisions' },
-      { n: 10, title: 'Complete Interview Masterclass', focus: 'model answers, cache design problems, cheat sheet' },
+      {
+        n: 1,
+        title: 'What is Caching & Why Every System Needs It',
+        focus: 'fundamentals, latency reduction, cache hit/miss',
+      },
+      {
+        n: 2,
+        title: 'Cache Eviction Policies (LRU, LFU, FIFO)',
+        focus: 'algorithms, implementation, tradeoffs',
+      },
+      {
+        n: 3,
+        title: 'Write-Through, Write-Behind & Cache-Aside',
+        focus: 'write strategies, consistency patterns',
+      },
+      {
+        n: 4,
+        title: 'Redis Deep Dive — Architecture & Data Types',
+        focus: 'Redis internals, strings, hashes, sorted sets',
+      },
+      {
+        n: 5,
+        title: 'Memcached vs Redis — The Real Difference',
+        focus: 'comparison, when to use which, benchmarks',
+      },
+      {
+        n: 6,
+        title: 'Cache Invalidation — The Hardest Problem',
+        focus: 'TTL, event-driven, versioning, stampede prevention',
+      },
+      {
+        n: 7,
+        title: 'CDN Caching & Edge Computing',
+        focus: 'CloudFront, Cloudflare, edge caching strategies',
+      },
+      {
+        n: 8,
+        title: 'Distributed Caching at Scale',
+        focus: 'consistent hashing, replication, partition tolerance',
+      },
+      {
+        n: 9,
+        title: 'Caching at Instagram, Twitter & Discord',
+        focus: 'real-world case studies, architecture decisions',
+      },
+      {
+        n: 10,
+        title: 'Complete Interview Masterclass',
+        focus: 'model answers, cache design problems, cheat sheet',
+      },
     ],
   },
   {
@@ -71,16 +151,56 @@ const CORE_TOPICS: TopicConfig[] = [
     name: 'Database Design',
     category: 'system-design',
     sessions: [
-      { n: 1, title: 'SQL vs NoSQL — The Decision Framework', focus: 'when to use each, ACID vs BASE, CAP theorem' },
-      { n: 2, title: 'Database Indexing Deep Dive', focus: 'B-tree, hash index, composite indexes, query optimization' },
-      { n: 3, title: 'Database Sharding Strategies', focus: 'horizontal partitioning, shard keys, range vs hash' },
-      { n: 4, title: 'Database Replication & High Availability', focus: 'master-slave, multi-master, consensus protocols' },
-      { n: 5, title: 'Schema Design for Scale', focus: 'normalization vs denormalization, embedding vs referencing' },
-      { n: 6, title: 'Transactions & Isolation Levels', focus: 'ACID deep dive, read phenomena, MVCC' },
-      { n: 7, title: 'NoSQL Deep Dive — MongoDB, Cassandra, DynamoDB', focus: 'document, wide-column, key-value stores' },
-      { n: 8, title: 'Database Connection Pooling & Performance', focus: 'connection management, query optimization, N+1' },
-      { n: 9, title: 'Database at Uber, Airbnb & Stripe', focus: 'real-world migrations, lessons learned' },
-      { n: 10, title: 'Complete Interview Masterclass', focus: 'model answers, design problems, cheat sheet' },
+      {
+        n: 1,
+        title: 'SQL vs NoSQL — The Decision Framework',
+        focus: 'when to use each, ACID vs BASE, CAP theorem',
+      },
+      {
+        n: 2,
+        title: 'Database Indexing Deep Dive',
+        focus: 'B-tree, hash index, composite indexes, query optimization',
+      },
+      {
+        n: 3,
+        title: 'Database Sharding Strategies',
+        focus: 'horizontal partitioning, shard keys, range vs hash',
+      },
+      {
+        n: 4,
+        title: 'Database Replication & High Availability',
+        focus: 'master-slave, multi-master, consensus protocols',
+      },
+      {
+        n: 5,
+        title: 'Schema Design for Scale',
+        focus: 'normalization vs denormalization, embedding vs referencing',
+      },
+      {
+        n: 6,
+        title: 'Transactions & Isolation Levels',
+        focus: 'ACID deep dive, read phenomena, MVCC',
+      },
+      {
+        n: 7,
+        title: 'NoSQL Deep Dive — MongoDB, Cassandra, DynamoDB',
+        focus: 'document, wide-column, key-value stores',
+      },
+      {
+        n: 8,
+        title: 'Database Connection Pooling & Performance',
+        focus: 'connection management, query optimization, N+1',
+      },
+      {
+        n: 9,
+        title: 'Database at Uber, Airbnb & Stripe',
+        focus: 'real-world migrations, lessons learned',
+      },
+      {
+        n: 10,
+        title: 'Complete Interview Masterclass',
+        focus: 'model answers, design problems, cheat sheet',
+      },
     ],
   },
   {
@@ -88,16 +208,56 @@ const CORE_TOPICS: TopicConfig[] = [
     name: 'API Gateway',
     category: 'system-design',
     sessions: [
-      { n: 1, title: 'What is an API Gateway & Why You Need One', focus: 'fundamentals, single entry point, microservices routing' },
-      { n: 2, title: 'Rate Limiting & Throttling', focus: 'token bucket, sliding window, distributed rate limiting' },
-      { n: 3, title: 'Authentication & Authorization at the Gateway', focus: 'JWT, OAuth2, API keys, zero-trust' },
-      { n: 4, title: 'Request Routing & Load Distribution', focus: 'path-based, header-based, canary deployments' },
-      { n: 5, title: 'API Versioning Strategies', focus: 'URL vs header versioning, backward compatibility' },
-      { n: 6, title: 'Circuit Breaker & Retry Patterns', focus: 'resilience patterns, fallbacks, bulkhead isolation' },
-      { n: 7, title: 'API Gateway Products — Kong, Nginx, AWS', focus: 'comparison, open-source vs managed, migration' },
-      { n: 8, title: 'GraphQL Gateway & BFF Pattern', focus: 'GraphQL federation, backend-for-frontend, aggregation' },
-      { n: 9, title: 'API Gateway at Netflix, Amazon & Spotify', focus: 'Zuul, API Gateway, real-world patterns' },
-      { n: 10, title: 'Complete Interview Masterclass', focus: 'model answers, design problems, cheat sheet' },
+      {
+        n: 1,
+        title: 'What is an API Gateway & Why You Need One',
+        focus: 'fundamentals, single entry point, microservices routing',
+      },
+      {
+        n: 2,
+        title: 'Rate Limiting & Throttling',
+        focus: 'token bucket, sliding window, distributed rate limiting',
+      },
+      {
+        n: 3,
+        title: 'Authentication & Authorization at the Gateway',
+        focus: 'JWT, OAuth2, API keys, zero-trust',
+      },
+      {
+        n: 4,
+        title: 'Request Routing & Load Distribution',
+        focus: 'path-based, header-based, canary deployments',
+      },
+      {
+        n: 5,
+        title: 'API Versioning Strategies',
+        focus: 'URL vs header versioning, backward compatibility',
+      },
+      {
+        n: 6,
+        title: 'Circuit Breaker & Retry Patterns',
+        focus: 'resilience patterns, fallbacks, bulkhead isolation',
+      },
+      {
+        n: 7,
+        title: 'API Gateway Products — Kong, Nginx, AWS',
+        focus: 'comparison, open-source vs managed, migration',
+      },
+      {
+        n: 8,
+        title: 'GraphQL Gateway & BFF Pattern',
+        focus: 'GraphQL federation, backend-for-frontend, aggregation',
+      },
+      {
+        n: 9,
+        title: 'API Gateway at Netflix, Amazon & Spotify',
+        focus: 'Zuul, API Gateway, real-world patterns',
+      },
+      {
+        n: 10,
+        title: 'Complete Interview Masterclass',
+        focus: 'model answers, design problems, cheat sheet',
+      },
     ],
   },
 ];
@@ -123,7 +283,7 @@ function seededIndex(topic: string, sessionNumber: number, salt: number, max: nu
   let hash = salt;
   const key = `${topic}:${sessionNumber}:${salt}`;
   for (let i = 0; i < key.length; i++) {
-    hash = ((hash << 5) - hash) + key.charCodeAt(i);
+    hash = (hash << 5) - hash + key.charCodeAt(i);
     hash |= 0;
   }
   return Math.abs(hash) % max;
@@ -178,18 +338,29 @@ const DESCRIPTION_HOOKS = [
     `You memorized the theory. But can you actually implement it?\nIn this video, we implement ${f} from scratch — and reveal the ${t} secrets that senior engineers know.`,
 ];
 
-function generateLongDescription(topic: TopicConfig, session: SessionConfig, title: string): string {
+function generateLongDescription(
+  topic: TopicConfig,
+  session: SessionConfig,
+  title: string
+): string {
   const hook = seededPick(DESCRIPTION_HOOKS, topic.name, session.n, 43);
   const hookText = hook(topic.name, session.focus);
   const topicSlug = topic.slug;
 
-  const sessionLabel = session.n <= 3 ? 'fundamentals' : session.n <= 7 ? 'deep dive with code' : 'advanced patterns & case studies';
+  const sessionLabel =
+    session.n <= 3
+      ? 'fundamentals'
+      : session.n <= 7
+        ? 'deep dive with code'
+        : 'advanced patterns & case studies';
 
-  const sessionNav = topic.sessions.map((s, i) => {
-    const marker = s.n === session.n ? '>> ' : '   ';
-    const suffix = s.n === session.n ? ' (You are here)' : '';
-    return `${marker}Session ${s.n}: ${s.title}${suffix}`;
-  }).join('\n');
+  const sessionNav = topic.sessions
+    .map((s, i) => {
+      const marker = s.n === session.n ? '>> ' : '   ';
+      const suffix = s.n === session.n ? ' (You are here)' : '';
+      return `${marker}Session ${s.n}: ${s.title}${suffix}`;
+    })
+    .join('\n');
 
   return `${topic.name} (${sessionLabel}) — master this for your FAANG interview. FREE practice with ${TOTAL_QUESTIONS} questions at ${BRAND_URL}/${topicSlug}
 
@@ -251,12 +422,14 @@ function generateTags(topic: TopicConfig, session: SessionConfig): string[] {
 
   // Deduplicate and limit to 20
   const seen = new Set<string>();
-  return tags.filter(tag => {
-    const lower = tag.toLowerCase();
-    if (seen.has(lower)) return false;
-    seen.add(lower);
-    return true;
-  }).slice(0, 20);
+  return tags
+    .filter((tag) => {
+      const lower = tag.toLowerCase();
+      if (seen.has(lower)) return false;
+      seen.add(lower);
+      return true;
+    })
+    .slice(0, 20);
 }
 
 // ─── YouTube Hashtags ───────────────────────────────────────────────────────
@@ -274,7 +447,7 @@ const THUMBNAIL_PROMPTS: Record<string, string[]> = {
     'Dark background, dramatic split view: overloaded single server (red glow) vs balanced server farm (teal glow), cyberpunk minimal style, no text, 1280x720',
     'Dark #0C0A15 background, glowing network topology with round-robin arrows in saffron (#E85D26), server nodes pulsing teal, futuristic holographic style, no text, 1280x720',
   ],
-  'caching': [
+  caching: [
     'Dark background #0C0A15, glowing Redis logo-inspired crystal with data streams flowing through it, teal (#1DD1A1) and gold (#FDB813) highlights, futuristic minimal, no text, 1280x720',
     'Dark background, dramatic speed comparison: slow database query (red clock) vs instant cache hit (teal lightning), cyberpunk style, no text, 1280x720',
     'Dark #0C0A15 background, layered caching architecture (L1/L2/L3) with glowing saffron nodes and teal connection lines, futuristic holographic, no text, 1280x720',
@@ -315,7 +488,7 @@ function generatePinnedComment(topic: TopicConfig, session: SessionConfig): stri
 // ─── Community Post (Poll Format) ───────────────────────────────────────────
 
 function generateCommunityPost(topic: TopicConfig, session: SessionConfig, title: string): string {
-  const nextSession = topic.sessions.find(s => s.n === session.n + 1);
+  const nextSession = topic.sessions.find((s) => s.n === session.n + 1);
   const pollOptions = [
     session.focus.split(',')[0]?.trim() || `${topic.name} Advanced`,
     nextSession ? nextSession.title : `${topic.name} Interview Questions`,
@@ -376,11 +549,13 @@ Full video on our channel!
 const INSTAGRAM_HOOKS = [
   (t: string, f: string) => `This ${t} mistake will crash your system at scale \ud83d\udea8`,
   (t: string, f: string) => `90% of developers can't explain ${t} under pressure \ud83d\udc40`,
-  (t: string, f: string) => `How Netflix actually handles ${t} (most tutorials get this wrong) \ud83e\udd2f`,
+  (t: string, f: string) =>
+    `How Netflix actually handles ${t} (most tutorials get this wrong) \ud83e\udd2f`,
   (t: string, f: string) => `The ${t} knowledge that gets you the SENIOR offer \ud83c\udfaf`,
   (t: string, f: string) => `I coded ${f} from scratch. Here's what I learned \ud83e\udde0`,
   (t: string, f: string) => `Stop memorizing ${t}. Understand THIS instead \ud83d\udd25`,
-  (t: string, f: string) => `${t} \u2014 the question that separates senior from junior \u2694\ufe0f`,
+  (t: string, f: string) =>
+    `${t} \u2014 the question that separates senior from junior \u2694\ufe0f`,
   (t: string, f: string) => `If you can't explain ${t} in 30 seconds, watch this \u26a1`,
 ];
 
@@ -437,7 +612,7 @@ const POSTING_TIMES = [
   { day: 'Sunday', time: '11:00 AM IST', reason: 'Sunday study marathon' },
 ];
 
-function getBestPostingTime(topic: TopicConfig, session: SessionConfig): typeof POSTING_TIMES[0] {
+function getBestPostingTime(topic: TopicConfig, session: SessionConfig): (typeof POSTING_TIMES)[0] {
   return POSTING_TIMES[(session.n - 1) % POSTING_TIMES.length];
 }
 
@@ -466,7 +641,7 @@ function generateHookScript(topic: TopicConfig, session: SessionConfig): string 
 // ─── Key Visual Moments ─────────────────────────────────────────────────────
 
 function generateKeyVisualMoments(topic: TopicConfig, session: SessionConfig): string {
-  const focusParts = session.focus.split(',').map(s => s.trim());
+  const focusParts = session.focus.split(',').map((s) => s.trim());
   const moments = [
     `0:00-0:05 \u2014 Hook text overlay: dramatic question about ${topic.name}`,
     `0:05-0:30 \u2014 Problem setup with animated architecture diagram`,
@@ -485,15 +660,18 @@ function generateKeyVisualMoments(topic: TopicConfig, session: SessionConfig): s
     `7:00-8:00 \u2014 Code implementation split-screen (Python left, Java right)`,
     `8:00-8:30 \u2014 Interview insight callout with golden border animation`,
     `8:30-9:00 \u2014 Common mistakes with red X / green check animation`,
-    `9:00-9:30 \u2014 Summary cheat sheet card + subscribe CTA`,
+    `9:00-9:30 \u2014 Summary cheat sheet card + subscribe CTA`
   );
 
-  return moments.map(m => `- ${m}`).join('\n');
+  return moments.map((m) => `- ${m}`).join('\n');
 }
 
 // ─── SEO Keywords ───────────────────────────────────────────────────────────
 
-function generateSEOKeywords(topic: TopicConfig, session: SessionConfig): { primary: string; secondary: string[]; longTail: string[] } {
+function generateSEOKeywords(
+  topic: TopicConfig,
+  session: SessionConfig
+): { primary: string; secondary: string[]; longTail: string[] } {
   const t = topic.name.toLowerCase();
 
   return {
@@ -527,7 +705,7 @@ const TREND_ALIGNMENTS: Record<string, string[]> = {
     'Edge computing and 5G push load balancing closer to users',
     'Serverless architectures change how we think about traffic distribution',
   ],
-  'caching': [
+  caching: [
     'AI inference caching (KV cache) is the hottest topic in LLM optimization',
     'Redis 8.0 and Dragonfly DB pushing in-memory caching boundaries',
     'Edge caching with Cloudflare Workers and Vercel Edge Functions',
@@ -588,7 +766,7 @@ function generateRedditSubreddits(topic: TopicConfig): string[] {
 
   const topicSpecific: Record<string, string[]> = {
     'load-balancing': ['r/devops', 'r/sysadmin', 'r/aws', 'r/kubernetes'],
-    'caching': ['r/redis', 'r/devops', 'r/aws', 'r/webdev'],
+    caching: ['r/redis', 'r/devops', 'r/aws', 'r/webdev'],
     'database-design': ['r/Database', 'r/PostgreSQL', 'r/mongodb', 'r/sql'],
     'api-gateway': ['r/webdev', 'r/microservices', 'r/aws', 'r/node'],
   };
@@ -749,13 +927,15 @@ function main() {
   let topicsToProcess = CORE_TOPICS;
   const topicsIdx = args.indexOf('--topics');
   if (topicsIdx !== -1 && args[topicsIdx + 1]) {
-    const requested = args[topicsIdx + 1].split(',').map(s => s.trim().toLowerCase());
-    topicsToProcess = CORE_TOPICS.filter(t => requested.includes(t.slug));
+    const requested = args[topicsIdx + 1].split(',').map((s) => s.trim().toLowerCase());
+    topicsToProcess = CORE_TOPICS.filter((t) => requested.includes(t.slug));
   }
 
   console.log('\n\ud83c\udfac Guru Sishya \u2014 Viral Metadata Generator');
-  console.log(`\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500`);
-  console.log(`Topics: ${topicsToProcess.map(t => t.name).join(', ')}`);
+  console.log(
+    `\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500`
+  );
+  console.log(`Topics: ${topicsToProcess.map((t) => t.name).join(', ')}`);
   console.log(`Sessions per topic: 10`);
   console.log(`Total files: ${topicsToProcess.length * 10}`);
   console.log(`Output: ${OUTPUT_BASE}/{topic-slug}/session-{n}/metadata.md`);
@@ -785,7 +965,9 @@ function main() {
     }
   }
 
-  console.log(`\n\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500`);
+  console.log(
+    `\n\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500`
+  );
   if (dryRun) {
     console.log(`Dry run complete. ${topicsToProcess.length * 10} files would be generated.`);
   } else {

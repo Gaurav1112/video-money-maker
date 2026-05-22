@@ -36,19 +36,21 @@ const accessSecret = process.env['X_ACCESS_SECRET'];
 if (!consumerKey || !consumerSecret || !accessToken || !accessSecret) {
   console.log(
     '[cross-post-x] OAuth 1.0a creds missing ' +
-      '(X_API_KEY / X_API_SECRET / X_ACCESS_TOKEN / X_ACCESS_SECRET) — skipping',
+      '(X_API_KEY / X_API_SECRET / X_ACCESS_TOKEN / X_ACCESS_SECRET) — skipping'
   );
   process.exit(0);
 }
 
-interface TweetResponse { data: { id: string; text: string } }
+interface TweetResponse {
+  data: { id: string; text: string };
+}
 export {};
 
 /** RFC-3986 percent-encode (stricter than encodeURIComponent). */
 function rfc3986(s: string): string {
   return encodeURIComponent(s).replace(
     /[!'()*]/g,
-    (c) => '%' + c.charCodeAt(0).toString(16).toUpperCase(),
+    (c) => '%' + c.charCodeAt(0).toString(16).toUpperCase()
   );
 }
 
@@ -73,11 +75,7 @@ function buildOAuth1Header(method: string, requestUrl: string): string {
     .map((k) => `${rfc3986(k)}=${rfc3986(oauthParams[k]!)}`)
     .join('&');
 
-  const baseString = [
-    method.toUpperCase(),
-    rfc3986(requestUrl),
-    rfc3986(paramString),
-  ].join('&');
+  const baseString = [method.toUpperCase(), rfc3986(requestUrl), rfc3986(paramString)].join('&');
 
   const signingKey = `${rfc3986(consumerSecret!)}&${rfc3986(accessSecret!)}`;
   const signature = createHmac('sha1', signingKey).update(baseString).digest('base64');
@@ -117,12 +115,19 @@ async function postTweet(text: string, replyToId?: string): Promise<string> {
 
 try {
   console.log(`[cross-post-x] Posting thread for "${topic}"...`);
-  const tweet1Body = explicitText && explicitText.trim().length > 0
-    ? explicitText.trim()
-    : `🧵 ${hook}\n\nThread 👇`;
+  const tweet1Body =
+    explicitText && explicitText.trim().length > 0
+      ? explicitText.trim()
+      : `🧵 ${hook}\n\nThread 👇`;
   const tweet1Id = await postTweet(tweet1Body);
-  const tweet2Id = await postTweet(`💡 Key insight: Understanding ${topic} is essential for building scalable systems.\n\nWatch the full 60-second explainer below 👇`, tweet1Id);
-  await postTweet(`${url}\n\n#${topic.replace(/\s+/g, '')} #TechShorts #SystemDesign #LearnInPublic`, tweet2Id);
+  const tweet2Id = await postTweet(
+    `💡 Key insight: Understanding ${topic} is essential for building scalable systems.\n\nWatch the full 60-second explainer below 👇`,
+    tweet1Id
+  );
+  await postTweet(
+    `${url}\n\n#${topic.replace(/\s+/g, '')} #TechShorts #SystemDesign #LearnInPublic`,
+    tweet2Id
+  );
   console.log(`[cross-post-x] Thread posted successfully (tweet1=${tweet1Id})`);
 } catch (err) {
   console.error(`[cross-post-x] Error: ${err}`);

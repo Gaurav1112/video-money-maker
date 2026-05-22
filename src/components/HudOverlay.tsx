@@ -19,9 +19,9 @@ export const HudOverlay: React.FC<HudOverlayProps> = ({
 }) => {
   const frame = useCurrentFrame();
 
-  const TEAL = '#CBD5E1';     // subtle gray for light theme
-  const SAFFRON = '#94A3B8';  // muted slate for light theme
-  const _GOLD = '#64748B';    // slate for light theme (reserved)
+  const TEAL = '#CBD5E1'; // subtle gray for light theme
+  const SAFFRON = '#94A3B8'; // muted slate for light theme
+  const _GOLD = '#64748B'; // slate for light theme (reserved)
 
   // --- Corner Brackets ---
   const bracketLength = 40;
@@ -30,10 +30,7 @@ export const HudOverlay: React.FC<HudOverlayProps> = ({
   const bracketOpacity = 0.25;
   const bracketOffset = 16; // distance from edge
 
-  const cornerStyle = (
-    top: boolean,
-    left: boolean,
-  ): React.CSSProperties => ({
+  const cornerStyle = (top: boolean, left: boolean): React.CSSProperties => ({
     position: 'absolute',
     top: top ? bracketOffset : undefined,
     bottom: !top ? bracketOffset : undefined,
@@ -123,12 +120,7 @@ export const HudOverlay: React.FC<HudOverlayProps> = ({
           height: 40,
         }}
       >
-        <svg
-          width={40}
-          height={40}
-          viewBox="0 0 40 40"
-          style={{ transform: 'rotate(-90deg)' }}
-        >
+        <svg width={40} height={40} viewBox="0 0 40 40" style={{ transform: 'rotate(-90deg)' }}>
           {/* Background ring */}
           <circle
             cx={20}

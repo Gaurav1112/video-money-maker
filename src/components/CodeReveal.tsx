@@ -53,27 +53,146 @@ const TOKEN_COLORS: Record<TokenType, string> = {
 };
 
 const KEYWORDS = new Set([
-  'const', 'let', 'var', 'function', 'return', 'if', 'else', 'for', 'while',
-  'class', 'import', 'export', 'from', 'async', 'await', 'new', 'try', 'catch',
-  'throw', 'switch', 'case', 'break', 'continue', 'default', 'typeof', 'instanceof',
-  'in', 'of', 'do', 'yield', 'delete', 'void', 'with', 'finally',
-  'extends', 'implements', 'super', 'this', 'interface', 'type', 'enum', 'namespace',
-  'abstract', 'declare', 'module', 'require', 'as', 'is',
-  'def', 'self', 'lambda', 'pass', 'raise', 'except', 'True', 'False',
-  'None', 'and', 'or', 'not', 'elif', 'global', 'nonlocal', 'assert', 'del', 'print',
-  'public', 'private', 'protected', 'static', 'final', 'int', 'String',
-  'boolean', 'double', 'float', 'long', 'char', 'byte', 'short', 'null',
-  'true', 'false', 'package', 'throws', 'synchronized',
+  'const',
+  'let',
+  'var',
+  'function',
+  'return',
+  'if',
+  'else',
+  'for',
+  'while',
+  'class',
+  'import',
+  'export',
+  'from',
+  'async',
+  'await',
+  'new',
+  'try',
+  'catch',
+  'throw',
+  'switch',
+  'case',
+  'break',
+  'continue',
+  'default',
+  'typeof',
+  'instanceof',
+  'in',
+  'of',
+  'do',
+  'yield',
+  'delete',
+  'void',
+  'with',
+  'finally',
+  'extends',
+  'implements',
+  'super',
+  'this',
+  'interface',
+  'type',
+  'enum',
+  'namespace',
+  'abstract',
+  'declare',
+  'module',
+  'require',
+  'as',
+  'is',
+  'def',
+  'self',
+  'lambda',
+  'pass',
+  'raise',
+  'except',
+  'True',
+  'False',
+  'None',
+  'and',
+  'or',
+  'not',
+  'elif',
+  'global',
+  'nonlocal',
+  'assert',
+  'del',
+  'print',
+  'public',
+  'private',
+  'protected',
+  'static',
+  'final',
+  'int',
+  'String',
+  'boolean',
+  'double',
+  'float',
+  'long',
+  'char',
+  'byte',
+  'short',
+  'null',
+  'true',
+  'false',
+  'package',
+  'throws',
+  'synchronized',
 ]);
 
 const TYPE_NAMES = new Set([
-  'Array', 'Map', 'Set', 'Promise', 'Object', 'Number', 'Boolean', 'Record',
-  'Partial', 'Required', 'Readonly', 'Pick', 'Omit', 'Exclude', 'Extract',
-  'string', 'number', 'boolean', 'any', 'unknown', 'never', 'void', 'null',
-  'undefined', 'List', 'Dict', 'Tuple', 'Optional', 'Union', 'Iterator',
-  'int', 'float', 'str', 'bool', 'dict', 'list', 'tuple', 'set',
-  'HashMap', 'ArrayList', 'LinkedList', 'TreeMap', 'HashSet', 'TreeSet',
-  'Integer', 'Long', 'Double', 'Float', 'Character', 'Byte', 'Short',
+  'Array',
+  'Map',
+  'Set',
+  'Promise',
+  'Object',
+  'Number',
+  'Boolean',
+  'Record',
+  'Partial',
+  'Required',
+  'Readonly',
+  'Pick',
+  'Omit',
+  'Exclude',
+  'Extract',
+  'string',
+  'number',
+  'boolean',
+  'any',
+  'unknown',
+  'never',
+  'void',
+  'null',
+  'undefined',
+  'List',
+  'Dict',
+  'Tuple',
+  'Optional',
+  'Union',
+  'Iterator',
+  'int',
+  'float',
+  'str',
+  'bool',
+  'dict',
+  'list',
+  'tuple',
+  'set',
+  'HashMap',
+  'ArrayList',
+  'LinkedList',
+  'TreeMap',
+  'HashSet',
+  'TreeSet',
+  'Integer',
+  'Long',
+  'Double',
+  'Float',
+  'Character',
+  'Byte',
+  'Short',
 ]);
 
 /**
@@ -96,13 +215,20 @@ function tokenizeLine(line: string, _language: string): Token[] {
     }
 
     // Line comments
-    if ((line[i] === '/' && line[i + 1] === '/') || (line[i] === '#' && (i === 0 || line.slice(0, i).trim() === ''))) {
+    if (
+      (line[i] === '/' && line[i + 1] === '/') ||
+      (line[i] === '#' && (i === 0 || line.slice(0, i).trim() === ''))
+    ) {
       tokens.push({ text: line.slice(i), type: 'comment' });
       break;
     }
 
     // Block comment markers
-    if ((line[i] === '/' && line[i + 1] === '*') || (line[i] === '*' && line[i + 1] === '/') || (i === line.search(/\S/) && line[i] === '*')) {
+    if (
+      (line[i] === '/' && line[i + 1] === '*') ||
+      (line[i] === '*' && line[i + 1] === '/') ||
+      (i === line.search(/\S/) && line[i] === '*')
+    ) {
       tokens.push({ text: line.slice(i), type: 'comment' });
       break;
     }
@@ -147,9 +273,16 @@ function tokenizeLine(line: string, _language: string): Token[] {
     }
 
     // Numbers
-    if (/[0-9]/.test(line[i]) || (line[i] === '.' && i + 1 < line.length && /[0-9]/.test(line[i + 1]))) {
+    if (
+      /[0-9]/.test(line[i]) ||
+      (line[i] === '.' && i + 1 < line.length && /[0-9]/.test(line[i + 1]))
+    ) {
       let num = '';
-      if (line[i] === '0' && i + 1 < line.length && (line[i + 1] === 'x' || line[i + 1] === 'X' || line[i + 1] === 'b' || line[i + 1] === 'o')) {
+      if (
+        line[i] === '0' &&
+        i + 1 < line.length &&
+        (line[i + 1] === 'x' || line[i + 1] === 'X' || line[i + 1] === 'b' || line[i + 1] === 'o')
+      ) {
         num += line[i] + line[i + 1];
         i += 2;
       }
@@ -186,7 +319,23 @@ function tokenizeLine(line: string, _language: string): Token[] {
     }
 
     // Operators
-    const OPERATORS = new Set(['=', '+', '-', '*', '/', '%', '<', '>', '!', '&', '|', '^', '~', '?', ':']);
+    const OPERATORS = new Set([
+      '=',
+      '+',
+      '-',
+      '*',
+      '/',
+      '%',
+      '<',
+      '>',
+      '!',
+      '&',
+      '|',
+      '^',
+      '~',
+      '?',
+      ':',
+    ]);
     const PUNCTUATION = new Set(['{', '}', '(', ')', '[', ']', ',', ';', '.']);
 
     if (OPERATORS.has(line[i])) {
@@ -250,8 +399,8 @@ const CodeReveal: React.FC<CodeRevealProps> = ({
   let currentRevealLine: number;
   const hasSyncData = sync.isNarrating || sync.wordsSpoken > 0;
   if (hasSyncData && animationCues && animationCues.length > 0) {
-    const typeLineCues = animationCues.filter(c => c.action === 'typeLine');
-    const reachedCues = typeLineCues.filter(c => sync.wordIndex >= c.wordIndex);
+    const typeLineCues = animationCues.filter((c) => c.action === 'typeLine');
+    const reachedCues = typeLineCues.filter((c) => sync.wordIndex >= c.wordIndex);
     if (reachedCues.length > 0) {
       const lastCue = reachedCues[reachedCues.length - 1];
       currentRevealLine = typeof lastCue.target === 'number' ? lastCue.target : totalLines;
@@ -261,10 +410,7 @@ const CodeReveal: React.FC<CodeRevealProps> = ({
   } else {
     // Time-based progressive reveal
     const elapsed = Math.max(0, frame - startFrame);
-    currentRevealLine = Math.min(
-      totalLines,
-      Math.floor(elapsed * linesPerSecond / fps),
-    );
+    currentRevealLine = Math.min(totalLines, Math.floor((elapsed * linesPerSecond) / fps));
   }
 
   const totalRevealed = Math.min(totalLines, currentRevealLine + 1);
@@ -288,24 +434,14 @@ const CodeReveal: React.FC<CodeRevealProps> = ({
     : 0;
 
   // ─── File name / icon color ─────────────────────────────────────
-  const fileName = language === 'python'
-    ? 'solution.py'
-    : language === 'java'
-    ? 'Solution.java'
-    : 'solution.ts';
+  const fileName =
+    language === 'python' ? 'solution.py' : language === 'java' ? 'Solution.java' : 'solution.ts';
 
-  const langIconColor = language === 'python'
-    ? '#3572A5'
-    : language === 'java'
-    ? '#B07219'
-    : '#3178C6';
+  const langIconColor =
+    language === 'python' ? '#3572A5' : language === 'java' ? '#B07219' : '#3178C6';
 
   // ─── Ambient glow ──────────────────────────────────────────────
-  const ambientGlow = interpolate(
-    Math.sin(frame * 0.02),
-    [-1, 1],
-    [0.3, 0.6],
-  );
+  const ambientGlow = interpolate(Math.sin(frame * 0.02), [-1, 1], [0.3, 0.6]);
 
   // ─── Minimap ───────────────────────────────────────────────────
   const minimapProgress = totalRevealed / Math.max(1, totalLines);
@@ -324,18 +460,24 @@ const CodeReveal: React.FC<CodeRevealProps> = ({
     >
       {/* Animated tech grid background — never plain black */}
       <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
-        <div style={{
-          position: 'absolute', inset: 0,
-          backgroundImage: `
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            backgroundImage: `
             linear-gradient(rgba(29,209,161,0.02) 1px, transparent 1px),
             linear-gradient(90deg, rgba(29,209,161,0.02) 1px, transparent 1px)
           `,
-          backgroundSize: '60px 60px',
-        }} />
-        <div style={{
-          position: 'absolute', inset: 0,
-          background: `radial-gradient(ellipse at 30% 50%, rgba(29,209,161,0.04) 0%, transparent 50%)`,
-        }} />
+            backgroundSize: '60px 60px',
+          }}
+        />
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            background: `radial-gradient(ellipse at 30% 50%, rgba(29,209,161,0.04) 0%, transparent 50%)`,
+          }}
+        />
       </div>
 
       {/* Ambient glow */}
@@ -434,9 +576,15 @@ const CodeReveal: React.FC<CodeRevealProps> = ({
         >
           {/* Window dots */}
           <div style={{ display: 'flex', gap: 8, marginRight: 20 }}>
-            <div style={{ width: 12, height: 12, borderRadius: '50%', backgroundColor: '#FF5F57' }} />
-            <div style={{ width: 12, height: 12, borderRadius: '50%', backgroundColor: '#FEBC2E' }} />
-            <div style={{ width: 12, height: 12, borderRadius: '50%', backgroundColor: '#28C840' }} />
+            <div
+              style={{ width: 12, height: 12, borderRadius: '50%', backgroundColor: '#FF5F57' }}
+            />
+            <div
+              style={{ width: 12, height: 12, borderRadius: '50%', backgroundColor: '#FEBC2E' }}
+            />
+            <div
+              style={{ width: 12, height: 12, borderRadius: '50%', backgroundColor: '#28C840' }}
+            />
           </div>
 
           {/* File tab */}
@@ -474,7 +622,6 @@ const CodeReveal: React.FC<CodeRevealProps> = ({
 
         {/* ─── Split panels: Code (left) + Output (right) ─── */}
         <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
-
           {/* LEFT PANEL — Code with typewriter */}
           <div
             style={{
@@ -523,7 +670,9 @@ const CodeReveal: React.FC<CodeRevealProps> = ({
             </div>
 
             {/* Main code area */}
-            <div style={{ padding: '24px 24px', flex: 1, position: 'relative', overflow: 'hidden' }}>
+            <div
+              style={{ padding: '24px 24px', flex: 1, position: 'relative', overflow: 'hidden' }}
+            >
               {/* Scan line glow on current line */}
               {currentRevealLine < totalLines && (
                 <div
@@ -557,7 +706,7 @@ const CodeReveal: React.FC<CodeRevealProps> = ({
                   const isHighlighted = highlightLines.includes(idx + 1);
 
                   // Per-line timing for character-level typewriter on the current line
-                  const lineStartFrame = startFrame + Math.floor(idx / linesPerSecond * fps);
+                  const lineStartFrame = startFrame + Math.floor((idx / linesPerSecond) * fps);
                   const lineOpacity = isVisible ? fadeIn(frame, lineStartFrame, 8) : 0;
                   const lineSlide = isVisible ? slideUp(frame, lineStartFrame, 10, 8) : 10;
 
@@ -565,10 +714,10 @@ const CodeReveal: React.FC<CodeRevealProps> = ({
                   const charsVisible = isCurrentLine
                     ? Math.min(line.length, Math.floor((frame - lineStartFrame) * charsPerFrame))
                     : isVisible
-                    ? line.length
-                    : 0;
+                      ? line.length
+                      : 0;
 
-                  const displayText = isCurrentLine ? line.slice(0, charsVisible) : (line || ' ');
+                  const displayText = isCurrentLine ? line.slice(0, charsVisible) : line || ' ';
                   const tokens = tokenizeLine(displayText, language);
 
                   // Spotlight: current line full opacity + saffron border, past lines dim
@@ -584,13 +733,13 @@ const CodeReveal: React.FC<CodeRevealProps> = ({
                         backgroundColor: isHighlighted
                           ? COLORS.gold + '10'
                           : isCurrentLine
-                          ? `${COLORS.saffron}0A`
-                          : 'transparent',
+                            ? `${COLORS.saffron}0A`
+                            : 'transparent',
                         borderLeft: isCurrentLine
                           ? `4px solid ${COLORS.saffron}`
                           : isHighlighted
-                          ? `4px solid ${COLORS.gold}`
-                          : '4px solid transparent',
+                            ? `4px solid ${COLORS.gold}`
+                            : '4px solid transparent',
                         paddingLeft: 12,
                         marginLeft: -16,
                         borderRadius: 2,
@@ -631,19 +780,22 @@ const CodeReveal: React.FC<CodeRevealProps> = ({
                       )}
 
                       {/* Idle cursor on last line after all revealed */}
-                      {!isCurrentLine && isVisible && idx === totalRevealed - 1 && currentRevealLine >= totalLines && (
-                        <span
-                          style={{
-                            display: 'inline-block',
-                            width: 2,
-                            height: SIZES.code,
-                            backgroundColor: COLORS.gray + '66',
-                            marginLeft: 1,
-                            verticalAlign: 'middle',
-                            opacity: cursorOpacity,
-                          }}
-                        />
-                      )}
+                      {!isCurrentLine &&
+                        isVisible &&
+                        idx === totalRevealed - 1 &&
+                        currentRevealLine >= totalLines && (
+                          <span
+                            style={{
+                              display: 'inline-block',
+                              width: 2,
+                              height: SIZES.code,
+                              backgroundColor: COLORS.gray + '66',
+                              marginLeft: 1,
+                              verticalAlign: 'middle',
+                              opacity: cursorOpacity,
+                            }}
+                          />
+                        )}
                     </div>
                   );
                 })}

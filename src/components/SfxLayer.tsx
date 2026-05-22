@@ -13,10 +13,7 @@ export const SfxLayer: React.FC<SfxLayerProps> = ({ triggers, syncTimeline }) =>
   return (
     <>
       {triggers.map((trigger, i) => {
-        const frame = syncTimeline.wordIndexToAbsoluteFrame(
-          trigger.sceneIndex,
-          trigger.wordIndex,
-        );
+        const frame = syncTimeline.wordIndexToAbsoluteFrame(trigger.sceneIndex, trigger.wordIndex);
         const duration = sfxDuration(trigger.effect);
 
         return (

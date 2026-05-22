@@ -7,7 +7,7 @@ import { isTechTerm } from './tech-terms';
  */
 export function computeVisualBeats(
   narration: string,
-  wordTimestamps: WordTimestamp[],
+  wordTimestamps: WordTimestamp[]
 ): VisualBeat[] {
   if (!narration || !wordTimestamps.length) return [];
 
@@ -38,11 +38,13 @@ export function computeVisualBeats(
     const endTime = endTs ? endTs.end : startTime + 2;
 
     // Extract keywords (tech terms, ALL CAPS, numbers)
-    const keywords = sentenceWords.filter(w => {
+    const keywords = sentenceWords.filter((w) => {
       const clean = w.replace(/[^a-zA-Z0-9]/g, '');
-      return isTechTerm(w) ||
+      return (
+        isTechTerm(w) ||
         (clean.length >= 2 && clean === clean.toUpperCase() && /[A-Z]/.test(clean)) ||
-        /\d{2,}/.test(w);
+        /\d{2,}/.test(w)
+      );
     });
 
     beats.push({
@@ -58,7 +60,9 @@ export function computeVisualBeats(
   });
 
   // Update totalBeats now that we know the count
-  beats.forEach(b => { b.totalBeats = beats.length; });
+  beats.forEach((b) => {
+    b.totalBeats = beats.length;
+  });
 
   return beats;
 }

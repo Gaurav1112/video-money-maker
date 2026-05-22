@@ -68,7 +68,7 @@ export function measureLufsAsync(filePath: string): Promise<LufsMeasurement> {
         } catch (e) {
           reject(e);
         }
-      },
+      }
     );
   });
 }
@@ -85,14 +85,8 @@ export function measureLufs(filePath: string): LufsMeasurement {
   //     LRA:         6.2 LU
   const result = spawnSync(
     'ffmpeg',
-    [
-      '-nostats',
-      '-i', filePath,
-      '-af', 'ebur128=peak=true',
-      '-f', 'null',
-      '-',
-    ],
-    { encoding: 'utf-8' },
+    ['-nostats', '-i', filePath, '-af', 'ebur128=peak=true', '-f', 'null', '-'],
+    { encoding: 'utf-8' }
   );
 
   const stderr = (result.stderr ?? '') + (result.stdout ?? '');
@@ -109,24 +103,24 @@ function parseEbur128(stderr: string, filePath: string): LufsMeasurement {
   // value of -70 LUFS for any non-trivial input — not the integrated
   // total. Use matchAll() and take the LAST occurrence so we always
   // read the post-EOF integrated summary regardless of file length.
-  const iMatches    = [...stderr.matchAll(/I:\s*([-\d.]+)\s*LUFS/g)];
+  const iMatches = [...stderr.matchAll(/I:\s*([-\d.]+)\s*LUFS/g)];
   const peakMatches = [...stderr.matchAll(/Peak:\s*([-\d.]+)\s*dBFS/g)];
-  const lraMatches  = [...stderr.matchAll(/LRA:\s*([-\d.]+)\s*LU/g)];
-  const iMatch    = iMatches[iMatches.length - 1];
+  const lraMatches = [...stderr.matchAll(/LRA:\s*([-\d.]+)\s*LU/g)];
+  const iMatch = iMatches[iMatches.length - 1];
   const peakMatch = peakMatches[peakMatches.length - 1];
-  const lraMatch  = lraMatches[lraMatches.length - 1];
+  const lraMatch = lraMatches[lraMatches.length - 1];
 
   if (!iMatch || !peakMatch) {
     throw new Error(
       `[lufs-verify] Could not parse ebur128 output for "${filePath}".\n` +
-      `stderr tail:\n${stderr.slice(-600)}`,
+        `stderr tail:\n${stderr.slice(-600)}`
     );
   }
 
   return {
-    integratedLufs:   parseFloat(iMatch[1]),
-    truePeakDbtp:     parseFloat(peakMatch[1]),
-    loudnessRangeLu:  lraMatch ? parseFloat(lraMatch[1]) : NaN,
+    integratedLufs: parseFloat(iMatch[1]),
+    truePeakDbtp: parseFloat(peakMatch[1]),
+    loudnessRangeLu: lraMatch ? parseFloat(lraMatch[1]) : NaN,
   };
 }
 
@@ -135,7 +129,7 @@ function parseEbur128(stderr: string, filePath: string): LufsMeasurement {
 // ---------------------------------------------------------------------------
 export async function verifyLufs(
   filePath: string,
-  opts: LufsVerifyOptions,
+  opts: LufsVerifyOptions
 ): Promise<LufsMeasurement> {
   const { targetLufs, targetTruePeak, toleranceLu = 0.5, toleranceTp = 0.2, minLra = 0 } = opts;
 
@@ -144,7 +138,7 @@ export async function verifyLufs(
   // 5-12s ebur128 measurement window.
   const m = await measureLufsAsync(filePath);
 
-  const lufsLow  = targetLufs - toleranceLu;
+  const lufsLow = targetLufs - toleranceLu;
   const lufsHigh = targetLufs + toleranceLu;
   const tpCeiling = targetTruePeak + toleranceTp;
 
@@ -153,18 +147,16 @@ export async function verifyLufs(
   if (m.integratedLufs < lufsLow || m.integratedLufs > lufsHigh) {
     errors.push(
       `Integrated loudness ${m.integratedLufs.toFixed(1)} LUFS ` +
-      `is outside target ${targetLufs} ± ${toleranceLu} LU ` +
-      `(allowed window: ${lufsLow} to ${lufsHigh} LUFS)`,
+        `is outside target ${targetLufs} ± ${toleranceLu} LU ` +
+        `(allowed window: ${lufsLow} to ${lufsHigh} LUFS)`
     );
   }
 
   if (m.truePeakDbtp > tpCeiling) {
     errors.push(
       `True peak ${m.truePeakDbtp.toFixed(1)} dBTP exceeds ceiling ${targetTruePeak} dBTP ` +
-      `(+${toleranceTp} dB AAC rounding margin allowed)` +
-      (m.truePeakDbtp > 0
-        ? ' — HARD CLIPPING: digital distortion will be audible'
-        : ''),
+        `(+${toleranceTp} dB AAC rounding margin allowed)` +
+        (m.truePeakDbtp > 0 ? ' — HARD CLIPPING: digital distortion will be audible' : '')
     );
   }
 
@@ -177,15 +169,15 @@ export async function verifyLufs(
   if (minLra > 0 && Number.isFinite(m.loudnessRangeLu) && m.loudnessRangeLu < minLra) {
     errors.push(
       `Loudness range ${m.loudnessRangeLu.toFixed(1)} LU is below floor ${minLra} LU ` +
-      `— mix is over-compressed (no inter-syllable variance, ` +
-      `EBU R128 narrative content target ≥6 LU)`,
+        `— mix is over-compressed (no inter-syllable variance, ` +
+        `EBU R128 narrative content target ≥6 LU)`
     );
   }
 
   if (errors.length > 0) {
     const summary = [
       `[lufs-verify] ❌ Audio loudness assertion FAILED for "${filePath}":`,
-      ...errors.map(e => `  • ${e}`),
+      ...errors.map((e) => `  • ${e}`),
       ``,
       `  Measured: ${m.integratedLufs.toFixed(1)} LUFS / ${m.truePeakDbtp.toFixed(1)} dBTP`,
       `  Target:   ${targetLufs} LUFS / ≤ ${targetTruePeak} dBTP`,
@@ -199,8 +191,8 @@ export async function verifyLufs(
 
   console.log(
     `[lufs-verify] ✅ ${filePath}: ` +
-    `${m.integratedLufs.toFixed(1)} LUFS / ${m.truePeakDbtp.toFixed(1)} dBTP ` +
-    `(target ${targetLufs} LUFS / ≤ ${targetTruePeak} dBTP)`,
+      `${m.integratedLufs.toFixed(1)} LUFS / ${m.truePeakDbtp.toFixed(1)} dBTP ` +
+      `(target ${targetLufs} LUFS / ≤ ${targetTruePeak} dBTP)`
   );
 
   return m;
@@ -224,19 +216,21 @@ const _isMain = (() => {
 if (_isMain) {
   const [, , filePath, lufsArg, peakArg] = process.argv;
   if (!filePath) {
-    console.error('Usage: npx ts-node src/audio/lufs-verify.ts <file> [targetLufs=-14] [targetTruePeak=-1.0]');
+    console.error(
+      'Usage: npx ts-node src/audio/lufs-verify.ts <file> [targetLufs=-14] [targetTruePeak=-1.0]'
+    );
     process.exit(1);
   }
 
-  const targetLufs      = parseFloat(lufsArg  ?? '-14');
-  const targetTruePeak  = parseFloat(peakArg  ?? '-1.0');
+  const targetLufs = parseFloat(lufsArg ?? '-14');
+  const targetTruePeak = parseFloat(peakArg ?? '-1.0');
 
   verifyLufs(filePath, { targetLufs, targetTruePeak, toleranceLu: 0.5 })
-    .then(m => {
+    .then((m) => {
       console.log(JSON.stringify(m, null, 2));
       process.exit(0);
     })
-    .catch(err => {
+    .catch((err) => {
       console.error(err.message);
       process.exit(1);
     });

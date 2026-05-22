@@ -88,11 +88,7 @@ export const FlowArrow: React.FC<FlowArrowProps> = ({
 
       {/* Arrowhead */}
       {entrance > 0.8 && (
-        <polygon
-          points={`${toX},${toY} ${ax1},${ay1} ${ax2},${ay2}`}
-          fill={color}
-          opacity={0.8}
-        />
+        <polygon points={`${toX},${toY} ${ax1},${ay1} ${ax2},${ay2}`} fill={color} opacity={0.8} />
       )}
 
       {/* Active flowing dot */}

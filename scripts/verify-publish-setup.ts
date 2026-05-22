@@ -44,26 +44,33 @@ function warn(label: string, condition: boolean, warnMsg?: string): void {
 console.log('\n=== Config Files ===');
 
 const configDir = path.resolve(__dirname, '../config');
-check('config/publish-queue.json exists',
+check(
+  'config/publish-queue.json exists',
   fs.existsSync(path.join(configDir, 'publish-queue.json')),
-  'Run: npx tsx scripts/generate-publish-queue.ts');
+  'Run: npx tsx scripts/generate-publish-queue.ts'
+);
 
-check('config/topic-queue.json exists',
-  fs.existsSync(path.join(configDir, 'topic-queue.json')));
+check('config/topic-queue.json exists', fs.existsSync(path.join(configDir, 'topic-queue.json')));
 
-check('config/publish-config.json exists',
-  fs.existsSync(path.join(configDir, 'publish-config.json')));
+check(
+  'config/publish-config.json exists',
+  fs.existsSync(path.join(configDir, 'publish-config.json'))
+);
 
-check('config/publish-history.json exists',
-  fs.existsSync(path.join(configDir, 'publish-history.json')));
+check(
+  'config/publish-history.json exists',
+  fs.existsSync(path.join(configDir, 'publish-history.json'))
+);
 
 // Check publish-queue has entries
 const queuePath = path.join(configDir, 'publish-queue.json');
 if (fs.existsSync(queuePath)) {
   const queue = JSON.parse(fs.readFileSync(queuePath, 'utf-8'));
-  check(`publish-queue.json has entries (${queue.entries?.length || 0})`,
+  check(
+    `publish-queue.json has entries (${queue.entries?.length || 0})`,
     (queue.entries?.length || 0) > 0,
-    'Run: npx tsx scripts/generate-publish-queue.ts');
+    'Run: npx tsx scripts/generate-publish-queue.ts'
+  );
 }
 
 // ─── Environment Variables ─────────────────────────────────────────────────
@@ -71,31 +78,31 @@ if (fs.existsSync(queuePath)) {
 console.log('\n=== Environment / Secrets ===');
 console.log('  (These should be set as GitHub Secrets for CI)');
 
-warn('YOUTUBE_CLIENT_ID',
-  !!process.env.YOUTUBE_CLIENT_ID,
-  'Set in GitHub Secrets');
+warn('YOUTUBE_CLIENT_ID', !!process.env.YOUTUBE_CLIENT_ID, 'Set in GitHub Secrets');
 
-warn('YOUTUBE_CLIENT_SECRET',
-  !!process.env.YOUTUBE_CLIENT_SECRET,
-  'Set in GitHub Secrets');
+warn('YOUTUBE_CLIENT_SECRET', !!process.env.YOUTUBE_CLIENT_SECRET, 'Set in GitHub Secrets');
 
-warn('YOUTUBE_REFRESH_TOKEN',
+warn(
+  'YOUTUBE_REFRESH_TOKEN',
   !!process.env.YOUTUBE_REFRESH_TOKEN,
-  'Run: npx tsx scripts/auth-youtube.ts to get token, then add to GitHub Secrets');
+  'Run: npx tsx scripts/auth-youtube.ts to get token, then add to GitHub Secrets'
+);
 
-warn('INSTAGRAM_ACCESS_TOKEN',
+warn(
+  'INSTAGRAM_ACCESS_TOKEN',
   !!process.env.INSTAGRAM_ACCESS_TOKEN,
-  'Get from Facebook Developer portal, then add to GitHub Secrets');
+  'Get from Facebook Developer portal, then add to GitHub Secrets'
+);
 
-warn('INSTAGRAM_BUSINESS_ID',
-  !!process.env.INSTAGRAM_BUSINESS_ID,
-  'Get from Graph API Explorer');
+warn('INSTAGRAM_BUSINESS_ID', !!process.env.INSTAGRAM_BUSINESS_ID, 'Get from Graph API Explorer');
 
 // Local token file (for local usage)
 const tokenPath = path.resolve(__dirname, '../.youtube-token.json');
-warn('.youtube-token.json exists (local auth)',
+warn(
+  '.youtube-token.json exists (local auth)',
   fs.existsSync(tokenPath),
-  'Run: npx tsx scripts/auth-youtube.ts');
+  'Run: npx tsx scripts/auth-youtube.ts'
+);
 
 // ─── Video Files (optional deep check) ─────────────────────────────────────
 
@@ -109,9 +116,9 @@ if (checkVideos) {
     console.log(`  ${CROSS_MARK} Base directory not found: ${base}`);
     errors++;
   } else {
-    const topics = fs.readdirSync(base).filter(f =>
-      fs.statSync(path.join(base, f)).isDirectory() && !f.startsWith('.'),
-    );
+    const topics = fs
+      .readdirSync(base)
+      .filter((f) => fs.statSync(path.join(base, f)).isDirectory() && !f.startsWith('.'));
     console.log(`  Found ${topics.length} topic directories in ${base}`);
 
     let totalLong = 0;
@@ -120,8 +127,11 @@ if (checkVideos) {
 
     for (const topic of topics) {
       const topicDir = path.join(base, topic);
-      const sessions = fs.readdirSync(topicDir)
-        .filter(f => f.startsWith('session-') && fs.statSync(path.join(topicDir, f)).isDirectory());
+      const sessions = fs
+        .readdirSync(topicDir)
+        .filter(
+          (f) => f.startsWith('session-') && fs.statSync(path.join(topicDir, f)).isDirectory()
+        );
 
       for (const session of sessions) {
         const sessionDir = path.join(topicDir, session);
@@ -131,13 +141,13 @@ if (checkVideos) {
         const metadataFile = path.join(sessionDir, 'metadata.json');
 
         if (fs.existsSync(longDir)) {
-          const longFiles = fs.readdirSync(longDir).filter(f => f.endsWith('.mp4'));
+          const longFiles = fs.readdirSync(longDir).filter((f) => f.endsWith('.mp4'));
           totalLong += longFiles.length;
         }
 
         if (fs.existsSync(verticalDir) || fs.existsSync(verticalPartsDir)) {
           const dir = fs.existsSync(verticalPartsDir) ? verticalPartsDir : verticalDir;
-          const vertFiles = fs.readdirSync(dir).filter(f => f.endsWith('.mp4'));
+          const vertFiles = fs.readdirSync(dir).filter((f) => f.endsWith('.mp4'));
           totalVertical += vertFiles.length;
         }
 
@@ -156,7 +166,9 @@ if (checkVideos) {
 console.log('\n=== Tools ===');
 
 try {
-  const ghVersion = execSync('gh --version 2>/dev/null', { encoding: 'utf-8' }).trim().split('\n')[0];
+  const ghVersion = execSync('gh --version 2>/dev/null', { encoding: 'utf-8' })
+    .trim()
+    .split('\n')[0];
   check(`GitHub CLI: ${ghVersion}`, true);
 } catch {
   warn('GitHub CLI (gh)', false, 'Install: brew install gh');
@@ -173,7 +185,11 @@ try {
   execSync('aws --version 2>/dev/null', { encoding: 'utf-8' });
   check('AWS CLI (for R2 uploads)', true);
 } catch {
-  warn('AWS CLI (for R2 uploads)', false, 'Install: brew install awscli (needed for Instagram uploads via R2)');
+  warn(
+    'AWS CLI (for R2 uploads)',
+    false,
+    'Install: brew install awscli (needed for Instagram uploads via R2)'
+  );
 }
 
 // ─── Workflow File ─────────────────────────────────────────────────────────
@@ -190,9 +206,13 @@ console.log('\n=== Summary ===');
 if (errors === 0 && warnings === 0) {
   console.log('  All checks passed! Pipeline is ready.');
 } else if (errors === 0) {
-  console.log(`  ${warnings} warning(s), no errors. Pipeline should work for configured platforms.`);
+  console.log(
+    `  ${warnings} warning(s), no errors. Pipeline should work for configured platforms.`
+  );
 } else {
-  console.log(`  ${errors} error(s), ${warnings} warning(s). Fix errors before enabling the pipeline.`);
+  console.log(
+    `  ${errors} error(s), ${warnings} warning(s). Fix errors before enabling the pipeline.`
+  );
 }
 
 console.log('\n=== Required GitHub Secrets ===');

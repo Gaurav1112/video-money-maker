@@ -58,9 +58,17 @@ const SHORTS_DIR = path.resolve('out', 'shorts');
 const SITE_URL = 'https://guru-sishya.in';
 
 const INSTAGRAM_HASHTAGS = [
-  '#coding', '#programming', '#interviewprep', '#faang', '#dsa',
-  '#systemdesign', '#softwareengineering', '#learntocode', '#gurusishya',
-  '#reels', '#techreels',
+  '#coding',
+  '#programming',
+  '#interviewprep',
+  '#faang',
+  '#dsa',
+  '#systemdesign',
+  '#softwareengineering',
+  '#learntocode',
+  '#gurusishya',
+  '#reels',
+  '#techreels',
 ];
 
 // ── Deterministic seed ─────────────────────────────────────────────────────────
@@ -79,9 +87,7 @@ function topicSeed(slug: string): number {
  * Only content scenes (not 'title' / 'summary') are counted.
  */
 function deterministicSceneIndex(storyboard: Storyboard, slug: string): number {
-  const content = storyboard.scenes.filter(
-    (s) => s.type !== 'title' && s.type !== 'summary',
-  );
+  const content = storyboard.scenes.filter((s) => s.type !== 'title' && s.type !== 'summary');
   if (content.length === 0) return 0;
   return topicSeed(slug) % content.length;
 }
@@ -89,7 +95,10 @@ function deterministicSceneIndex(storyboard: Storyboard, slug: string): number {
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
 function slugify(text: string): string {
-  return text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  return text
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
 }
 
 function ensureDir(dir: string): void {
@@ -98,9 +107,7 @@ function ensureDir(dir: string): void {
 
 function getArg(flag: string): string | undefined {
   const idx = process.argv.indexOf(flag);
-  return idx >= 0 && idx + 1 < process.argv.length
-    ? process.argv[idx + 1]
-    : undefined;
+  return idx >= 0 && idx + 1 < process.argv.length ? process.argv[idx + 1] : undefined;
 }
 
 function discoverStoryboards(): string[] {
@@ -133,7 +140,7 @@ function buildMetadata(
   storyboard: Storyboard,
   sceneIndex: number,
   durationFrames: number,
-  outPath: string,
+  outPath: string
 ) {
   return {
     slug,

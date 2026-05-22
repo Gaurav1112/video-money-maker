@@ -8,7 +8,10 @@ export interface OpenLoop {
   targetSceneIndex: number;
 }
 
-type ContradictionPattern = (concept: string, detail: string) => {
+type ContradictionPattern = (
+  concept: string,
+  detail: string
+) => {
   contradiction: string;
   resolution: string;
 };
@@ -62,7 +65,7 @@ const HIGH_VALUE_TYPES = new Set(['code', 'interview', 'review', 'summary']);
 export function generateOpenLoops(
   scenes: Scene[],
   topic: string,
-  sessionNumber: number,
+  sessionNumber: number
 ): OpenLoop[] {
   const loops: OpenLoop[] = [];
   const usedPatterns = new Set<number>();
@@ -76,9 +79,9 @@ export function generateOpenLoops(
     if (loops.length >= 3) break;
 
     // Plant 3-5 scenes before target
-    const plantIndex = Math.max(1, target.index - 3 - (loops.length)); // vary offset
+    const plantIndex = Math.max(1, target.index - 3 - loops.length); // vary offset
     if (plantIndex >= target.index) continue;
-    if (loops.some(l => l.plantSceneIndex === plantIndex)) continue; // don't double-plant
+    if (loops.some((l) => l.plantSceneIndex === plantIndex)) continue; // don't double-plant
 
     // Select pattern deterministically, ensuring no repeats
     const seed = (topic.length * 7 + sessionNumber * 13 + target.index * 3) % PATTERNS.length;
@@ -115,7 +118,7 @@ export function injectOpenLoops(scenes: Scene[], topic: string, sessionNumber: n
   const loops = generateOpenLoops(scenes, topic, sessionNumber);
   if (loops.length === 0) return scenes;
 
-  const modified = scenes.map(s => ({ ...s })); // shallow clone
+  const modified = scenes.map((s) => ({ ...s })); // shallow clone
 
   for (const loop of loops) {
     const plant = modified[loop.plantSceneIndex];
@@ -128,7 +131,10 @@ export function injectOpenLoops(scenes: Scene[], topic: string, sessionNumber: n
     if (target && target.narration && target.type === 'text') {
       // GUARD: Don't prepend if the narration already starts with a hype phrase
       // (from OPEN_LOOP_PHRASES injected in generateScript). Avoids double-stacking.
-      const startsWithHype = /^(Most people miss|This next idea|Here's the part|I saved the best|Wait for it|Don't skip|Keep watching)/i.test(target.narration);
+      const startsWithHype =
+        /^(Most people miss|This next idea|Here's the part|I saved the best|Wait for it|Don't skip|Keep watching)/i.test(
+          target.narration
+        );
       if (!startsWithHype) {
         target.narration = `${loop.resolutionLine} ${target.narration}`;
       } else {

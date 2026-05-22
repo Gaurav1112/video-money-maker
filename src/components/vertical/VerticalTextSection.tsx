@@ -1,11 +1,5 @@
 import React from 'react';
-import {
-  useCurrentFrame,
-  AbsoluteFill,
-  interpolate,
-  spring,
-  useVideoConfig,
-} from 'remotion';
+import { useCurrentFrame, AbsoluteFill, interpolate, spring, useVideoConfig } from 'remotion';
 import { FONTS } from '../../lib/theme';
 import { VERTICAL, SAFE_ZONE, COMPONENT_DIMS } from '../../lib/vertical-layouts';
 import { TemplateFactory } from '../templates/TemplateFactory';
@@ -89,7 +83,10 @@ function getEffectiveBullets(bullets?: string[], content?: string, narration?: s
     return bullets.slice(0, MAX_BULLETS);
   }
   if (content) {
-    const byLine = content.split('\n').map((l) => l.trim()).filter(Boolean);
+    const byLine = content
+      .split('\n')
+      .map((l) => l.trim())
+      .filter(Boolean);
     if (byLine.length >= 2) {
       return byLine.slice(0, MAX_BULLETS);
     }
@@ -136,7 +133,7 @@ function getActiveBulletIndex(
   sceneLocalFrame: number,
   bulletCount: number,
   sceneDurationFrames: number,
-  fps: number,
+  fps: number
 ): number {
   if (bulletCount <= 1) return 0;
   // Each bullet gets an equal share of the scene duration
@@ -158,12 +155,7 @@ interface HeadingRowProps {
   accentColor?: string;
 }
 
-const HeadingRow: React.FC<HeadingRowProps> = ({
-  heading,
-  frame,
-  fps,
-  accentColor,
-}) => {
+const HeadingRow: React.FC<HeadingRowProps> = ({ heading, frame, fps, accentColor }) => {
   const barScale = spring({
     frame,
     fps,
@@ -188,9 +180,7 @@ const HeadingRow: React.FC<HeadingRowProps> = ({
   const accent = accentColor ?? SAFFRON;
 
   // Ongoing: subtle heading glow pulse
-  const glowIntensity = frame > 15
-    ? 0.04 + deterministicSine(frame, 60, 0.03)
-    : 0;
+  const glowIntensity = frame > 15 ? 0.04 + deterministicSine(frame, 60, 0.03) : 0;
 
   return (
     <div
@@ -212,9 +202,12 @@ const HeadingRow: React.FC<HeadingRowProps> = ({
           transform: `scaleY(${barScale})`,
           transformOrigin: 'top center',
           flexShrink: 0,
-          boxShadow: glowIntensity > 0
-            ? `0 0 ${12 + glowIntensity * 100}px ${accent}${Math.round(glowIntensity * 255).toString(16).padStart(2, '0')}`
-            : 'none',
+          boxShadow:
+            glowIntensity > 0
+              ? `0 0 ${12 + glowIntensity * 100}px ${accent}${Math.round(glowIntensity * 255)
+                  .toString(16)
+                  .padStart(2, '0')}`
+              : 'none',
         }}
       />
 
@@ -339,9 +332,7 @@ export const VerticalTextSection: React.FC<VerticalTextSectionProps> = ({
   const hasTemplate = false; // Boolean(templateId) — will enable after per-template testing
 
   // Adjust bullets start y when there's no heading
-  const bulletsY = hasHeading
-    ? BULLETS_START_Y
-    : COMPONENT_DIMS.textSection.headingY + 20;
+  const bulletsY = hasHeading ? BULLETS_START_Y : COMPONENT_DIMS.textSection.headingY + 20;
 
   // Background fade-in — faster (4 frames, not 8)
   const bgOpacity = interpolate(sceneLocalFrame, [0, 4], [0, 1], {
@@ -354,7 +345,7 @@ export const VerticalTextSection: React.FC<VerticalTextSectionProps> = ({
     sceneLocalFrame,
     bulletCount,
     sceneDurationFrames,
-    fps,
+    fps
   );
 
   // ── Scene progress (0→1) for progress bar ──
@@ -382,8 +373,7 @@ export const VerticalTextSection: React.FC<VerticalTextSectionProps> = ({
           left: 0,
           right: 0,
           height: 300,
-          background:
-            `linear-gradient(180deg, rgba(232,93,38,${0.05 + deterministicSine(sceneLocalFrame, 90, 0.03)}) 0%, transparent 100%)`,
+          background: `linear-gradient(180deg, rgba(232,93,38,${0.05 + deterministicSine(sceneLocalFrame, 90, 0.03)}) 0%, transparent 100%)`,
           pointerEvents: 'none',
         }}
       />
@@ -465,29 +455,38 @@ export const VerticalTextSection: React.FC<VerticalTextSectionProps> = ({
 
             // Smooth opacity transition between active/inactive
             const targetOpacity = afterEntrance
-              ? (isActive ? ACTIVE_OPACITY : INACTIVE_OPACITY)
+              ? isActive
+                ? ACTIVE_OPACITY
+                : INACTIVE_OPACITY
               : 1.0;
             // Use interpolate for smooth transition over HIGHLIGHT_TRANSITION_FRAMES
             const bulletOpacity = fadeIn * targetOpacity;
 
             // ── ONGOING: active badge pulse ──
-            const badgePulse = isActive && afterEntrance
-              ? 1 + deterministicSine(sceneLocalFrame, 20, BADGE_PULSE_SCALE)
-              : 1;
+            const badgePulse =
+              isActive && afterEntrance
+                ? 1 + deterministicSine(sceneLocalFrame, 20, BADGE_PULSE_SCALE)
+                : 1;
 
             // ── ONGOING: progress fill on left accent bar ──
             // The active bullet's bar fills from 0% to 100% during its "turn"
-            const perBulletDuration = Math.max(1, (sceneDurationFrames - entranceDone) / bulletCount);
+            const perBulletDuration = Math.max(
+              1,
+              (sceneDurationFrames - entranceDone) / bulletCount
+            );
             const bulletStartFrame = entranceDone + i * perBulletDuration;
             const bulletProgress = afterEntrance
               ? Math.min(1, Math.max(0, (sceneLocalFrame - bulletStartFrame) / perBulletDuration))
               : 0;
-            const barFillHeight = isActive ? `${bulletProgress * 100}%` : (i < activeBulletIdx ? '100%' : '0%');
+            const barFillHeight = isActive
+              ? `${bulletProgress * 100}%`
+              : i < activeBulletIdx
+                ? '100%'
+                : '0%';
 
             // ── ONGOING: subtle scale on active bullet ──
-            const activeScale = isActive && afterEntrance
-              ? 1 + deterministicSine(sceneLocalFrame, 40, 0.008)
-              : 1;
+            const activeScale =
+              isActive && afterEntrance ? 1 + deterministicSine(sceneLocalFrame, 40, 0.008) : 1;
 
             const isFirst = i === 0;
 
@@ -499,9 +498,8 @@ export const VerticalTextSection: React.FC<VerticalTextSectionProps> = ({
                   alignItems: 'center',
                   gap: 20,
                   padding: '20px 24px',
-                  backgroundColor: isActive && afterEntrance
-                    ? `${bulletColor}18`
-                    : 'rgba(255,255,255,0.03)',
+                  backgroundColor:
+                    isActive && afterEntrance ? `${bulletColor}18` : 'rgba(255,255,255,0.03)',
                   borderRadius: 16,
                   // Left accent bar with progress fill via gradient
                   borderLeft: 'none',
@@ -513,66 +511,75 @@ export const VerticalTextSection: React.FC<VerticalTextSectionProps> = ({
                 }}
               >
                 {/* ── Progress accent bar (fills top→bottom as narration progresses) ── */}
-                <div style={{
-                  position: 'absolute',
-                  left: 0,
-                  top: 0,
-                  bottom: 0,
-                  width: PROGRESS_BAR_WIDTH,
-                  borderRadius: '16px 0 0 16px',
-                  overflow: 'hidden',
-                }}>
-                  {/* Background track */}
-                  <div style={{
+                <div
+                  style={{
                     position: 'absolute',
-                    inset: 0,
-                    backgroundColor: `${bulletColor}30`,
-                  }} />
-                  {/* Fill */}
-                  <div style={{
-                    position: 'absolute',
-                    top: 0,
                     left: 0,
-                    right: 0,
-                    height: barFillHeight,
-                    backgroundColor: bulletColor,
-                    borderRadius: '16px 0 0 0',
-                  }} />
+                    top: 0,
+                    bottom: 0,
+                    width: PROGRESS_BAR_WIDTH,
+                    borderRadius: '16px 0 0 16px',
+                    overflow: 'hidden',
+                  }}
+                >
+                  {/* Background track */}
+                  <div
+                    style={{
+                      position: 'absolute',
+                      inset: 0,
+                      backgroundColor: `${bulletColor}30`,
+                    }}
+                  />
+                  {/* Fill */}
+                  <div
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      height: barFillHeight,
+                      backgroundColor: bulletColor,
+                      borderRadius: '16px 0 0 0',
+                    }}
+                  />
                 </div>
 
                 {/* Number badge with pulse */}
-                <div style={{
-                  width: 44,
-                  height: 44,
-                  borderRadius: 12,
-                  backgroundColor: isActive && afterEntrance ? `${bulletColor}33` : `${bulletColor}22`,
-                  border: `1.5px solid ${isActive && afterEntrance ? bulletColor : `${bulletColor}55`}`,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  flexShrink: 0,
-                  fontFamily: FONTS.heading,
-                  fontSize: 22,
-                  fontWeight: 800,
-                  color: bulletColor,
-                  marginLeft: PROGRESS_BAR_WIDTH + 12,
-                  transform: `scale(${badgePulse})`,
-                  boxShadow: isActive && afterEntrance
-                    ? `0 0 12px ${bulletColor}40`
-                    : 'none',
-                }}>
+                <div
+                  style={{
+                    width: 44,
+                    height: 44,
+                    borderRadius: 12,
+                    backgroundColor:
+                      isActive && afterEntrance ? `${bulletColor}33` : `${bulletColor}22`,
+                    border: `1.5px solid ${isActive && afterEntrance ? bulletColor : `${bulletColor}55`}`,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                    fontFamily: FONTS.heading,
+                    fontSize: 22,
+                    fontWeight: 800,
+                    color: bulletColor,
+                    marginLeft: PROGRESS_BAR_WIDTH + 12,
+                    transform: `scale(${badgePulse})`,
+                    boxShadow: isActive && afterEntrance ? `0 0 12px ${bulletColor}40` : 'none',
+                  }}
+                >
                   {i + 1}
                 </div>
 
                 {/* Bullet text */}
-                <span style={{
-                  fontFamily: FONTS.text,
-                  fontSize: isFirst ? 44 : 38,
-                  fontWeight: isActive ? 700 : 500,
-                  color: isActive || !afterEntrance ? '#FFFFFF' : 'rgba(255,255,255,0.6)',
-                  lineHeight: 1.4,
-                  flex: 1,
-                }}>
+                <span
+                  style={{
+                    fontFamily: FONTS.text,
+                    fontSize: isFirst ? 44 : 38,
+                    fontWeight: isActive ? 700 : 500,
+                    color: isActive || !afterEntrance ? '#FFFFFF' : 'rgba(255,255,255,0.6)',
+                    lineHeight: 1.4,
+                    flex: 1,
+                  }}
+                >
                   {text}
                 </span>
               </div>
@@ -582,50 +589,50 @@ export const VerticalTextSection: React.FC<VerticalTextSectionProps> = ({
       )}
 
       {/* ── DIAGRAM AREA — D2 SVG or TemplateFactory animated diagrams ── */}
-      {hasDiagram && (
-        <DiagramArea
-          d2Svg={d2Svg}
-          frame={sceneLocalFrame}
-          fps={fps}
-        />
-      )}
+      {hasDiagram && <DiagramArea d2Svg={d2Svg} frame={sceneLocalFrame} fps={fps} />}
       {/* TemplateFactory diagram zone — renders 57 animated templates when templateId is set */}
-      {hasTemplate && !hasDiagram && (() => {
-        try {
-          return (
-            <div style={{
-              position: 'absolute',
-              top: 320,
-              left: 30,
-              width: 1020,
-              height: 560,
-              overflow: 'hidden',
-              borderRadius: 16,
-              border: '1px solid rgba(255,255,255,0.06)',
-            }}>
-              <div style={{
-                transform: 'scale(0.53)',
-                transformOrigin: 'top left',
-                width: 1920,
-                height: 1080,
-              }}>
-                <TemplateFactory
-                  templateId={templateId!}
-                  variant={templateVariant || 'overview'}
-                  beats={(visualBeats || []) as any}
-                  accentColor={accentColor || SAFFRON}
-                  fps={fps}
-                  sceneHeading={heading}
-                  bullets={effectiveBullets}
-                  content={content}
-                />
+      {hasTemplate &&
+        !hasDiagram &&
+        (() => {
+          try {
+            return (
+              <div
+                style={{
+                  position: 'absolute',
+                  top: 320,
+                  left: 30,
+                  width: 1020,
+                  height: 560,
+                  overflow: 'hidden',
+                  borderRadius: 16,
+                  border: '1px solid rgba(255,255,255,0.06)',
+                }}
+              >
+                <div
+                  style={{
+                    transform: 'scale(0.53)',
+                    transformOrigin: 'top left',
+                    width: 1920,
+                    height: 1080,
+                  }}
+                >
+                  <TemplateFactory
+                    templateId={templateId!}
+                    variant={templateVariant || 'overview'}
+                    beats={(visualBeats || []) as any}
+                    accentColor={accentColor || SAFFRON}
+                    fps={fps}
+                    sceneHeading={heading}
+                    bullets={effectiveBullets}
+                    content={content}
+                  />
+                </div>
               </div>
-            </div>
-          );
-        } catch {
-          return null; // graceful fallback if template render fails
-        }
-      })()}
+            );
+          } catch {
+            return null; // graceful fallback if template render fails
+          }
+        })()}
 
       {/* ── BOTTOM FADE (into caption zone) ── */}
       <div
@@ -635,8 +642,7 @@ export const VerticalTextSection: React.FC<VerticalTextSectionProps> = ({
           left: 0,
           right: 0,
           height: 80,
-          background:
-            'linear-gradient(180deg, transparent 0%, rgba(12,10,21,0.8) 100%)',
+          background: 'linear-gradient(180deg, transparent 0%, rgba(12,10,21,0.8) 100%)',
           pointerEvents: 'none',
         }}
       />

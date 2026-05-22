@@ -1,11 +1,5 @@
 import React from 'react';
-import {
-  useCurrentFrame,
-  useVideoConfig,
-  AbsoluteFill,
-  interpolate,
-  spring,
-} from 'remotion';
+import { useCurrentFrame, useVideoConfig, AbsoluteFill, interpolate, spring } from 'remotion';
 import { FONTS } from '../../lib/theme';
 import { VERTICAL, CODE_LIMITS, COMPONENT_DIMS } from '../../lib/vertical-layouts';
 import type { AnimationCue } from '../../types';
@@ -51,7 +45,17 @@ const C = {
 // ════════════════════════════════════════════════════════════════════════════════
 // SYNTAX HIGHLIGHTING
 // ════════════════════════════════════════════════════════════════════════════════
-type TokenType = 'keyword' | 'string' | 'number' | 'comment' | 'function' | 'operator' | 'type' | 'punctuation' | 'decorator' | 'plain';
+type TokenType =
+  | 'keyword'
+  | 'string'
+  | 'number'
+  | 'comment'
+  | 'function'
+  | 'operator'
+  | 'type'
+  | 'punctuation'
+  | 'decorator'
+  | 'plain';
 
 interface Token {
   text: string;
@@ -59,40 +63,158 @@ interface Token {
 }
 
 const TOKEN_COLORS: Record<TokenType, string> = {
-  keyword:    '#C792EA',
-  string:     '#C3E88D',
-  number:     '#FFCB6B',
-  comment:    '#6A8A9A', // was #546E7A — better contrast on dark bg for mobile
-  function:   '#82AAFF',
-  operator:   '#89DDFF',
-  type:       '#4EC9B0',
-  punctuation:'#BABED8',
-  decorator:  '#FFCB6B',
-  plain:      '#E2E0DC',
+  keyword: '#C792EA',
+  string: '#C3E88D',
+  number: '#FFCB6B',
+  comment: '#6A8A9A', // was #546E7A — better contrast on dark bg for mobile
+  function: '#82AAFF',
+  operator: '#89DDFF',
+  type: '#4EC9B0',
+  punctuation: '#BABED8',
+  decorator: '#FFCB6B',
+  plain: '#E2E0DC',
 };
 
 const KEYWORDS = new Set([
-  'const', 'let', 'var', 'function', 'return', 'if', 'else', 'for', 'while',
-  'class', 'import', 'export', 'from', 'async', 'await', 'new', 'try', 'catch',
-  'throw', 'switch', 'case', 'break', 'continue', 'default', 'typeof', 'instanceof',
-  'in', 'of', 'do', 'yield', 'delete', 'void', 'with', 'finally',
-  'extends', 'implements', 'super', 'this', 'interface', 'type', 'enum', 'namespace',
-  'abstract', 'declare', 'module', 'require', 'as', 'is',
-  'def', 'self', 'lambda', 'pass', 'raise', 'except', 'True', 'False',
-  'None', 'and', 'or', 'not', 'elif', 'global', 'nonlocal', 'assert', 'del', 'print',
-  'public', 'private', 'protected', 'static', 'final', 'int', 'String',
-  'boolean', 'double', 'float', 'long', 'char', 'byte', 'short', 'null',
-  'true', 'false', 'package', 'throws', 'synchronized',
+  'const',
+  'let',
+  'var',
+  'function',
+  'return',
+  'if',
+  'else',
+  'for',
+  'while',
+  'class',
+  'import',
+  'export',
+  'from',
+  'async',
+  'await',
+  'new',
+  'try',
+  'catch',
+  'throw',
+  'switch',
+  'case',
+  'break',
+  'continue',
+  'default',
+  'typeof',
+  'instanceof',
+  'in',
+  'of',
+  'do',
+  'yield',
+  'delete',
+  'void',
+  'with',
+  'finally',
+  'extends',
+  'implements',
+  'super',
+  'this',
+  'interface',
+  'type',
+  'enum',
+  'namespace',
+  'abstract',
+  'declare',
+  'module',
+  'require',
+  'as',
+  'is',
+  'def',
+  'self',
+  'lambda',
+  'pass',
+  'raise',
+  'except',
+  'True',
+  'False',
+  'None',
+  'and',
+  'or',
+  'not',
+  'elif',
+  'global',
+  'nonlocal',
+  'assert',
+  'del',
+  'print',
+  'public',
+  'private',
+  'protected',
+  'static',
+  'final',
+  'int',
+  'String',
+  'boolean',
+  'double',
+  'float',
+  'long',
+  'char',
+  'byte',
+  'short',
+  'null',
+  'true',
+  'false',
+  'package',
+  'throws',
+  'synchronized',
 ]);
 
 const TYPE_NAMES = new Set([
-  'Array', 'Map', 'Set', 'Promise', 'Object', 'Number', 'Boolean', 'Record',
-  'Partial', 'Required', 'Readonly', 'Pick', 'Omit', 'Exclude', 'Extract',
-  'string', 'number', 'boolean', 'any', 'unknown', 'never', 'void',
-  'undefined', 'List', 'Dict', 'Tuple', 'Optional', 'Union', 'Iterator',
-  'int', 'float', 'str', 'bool', 'dict', 'list', 'tuple', 'set',
-  'HashMap', 'ArrayList', 'LinkedList', 'TreeMap', 'HashSet', 'TreeSet',
-  'Integer', 'Long', 'Double', 'Float', 'Character', 'Byte', 'Short',
+  'Array',
+  'Map',
+  'Set',
+  'Promise',
+  'Object',
+  'Number',
+  'Boolean',
+  'Record',
+  'Partial',
+  'Required',
+  'Readonly',
+  'Pick',
+  'Omit',
+  'Exclude',
+  'Extract',
+  'string',
+  'number',
+  'boolean',
+  'any',
+  'unknown',
+  'never',
+  'void',
+  'undefined',
+  'List',
+  'Dict',
+  'Tuple',
+  'Optional',
+  'Union',
+  'Iterator',
+  'int',
+  'float',
+  'str',
+  'bool',
+  'dict',
+  'list',
+  'tuple',
+  'set',
+  'HashMap',
+  'ArrayList',
+  'LinkedList',
+  'TreeMap',
+  'HashSet',
+  'TreeSet',
+  'Integer',
+  'Long',
+  'Double',
+  'Float',
+  'Character',
+  'Byte',
+  'Short',
 ]);
 
 function tokenizeLine(line: string, _language: string): Token[] {
@@ -167,7 +289,10 @@ function tokenizeLine(line: string, _language: string): Token[] {
     }
 
     // Numbers
-    if (/[0-9]/.test(line[i]) || (line[i] === '.' && i + 1 < line.length && /[0-9]/.test(line[i + 1]))) {
+    if (
+      /[0-9]/.test(line[i]) ||
+      (line[i] === '.' && i + 1 < line.length && /[0-9]/.test(line[i + 1]))
+    ) {
       let num = '';
       if (line[i] === '0' && i + 1 < line.length && /[xXbBoO]/.test(line[i + 1])) {
         num += line[i] + line[i + 1];
@@ -204,7 +329,23 @@ function tokenizeLine(line: string, _language: string): Token[] {
     }
 
     // Operators
-    const OPERATORS = new Set(['=', '+', '-', '*', '/', '%', '<', '>', '!', '&', '|', '^', '~', '?', ':']);
+    const OPERATORS = new Set([
+      '=',
+      '+',
+      '-',
+      '*',
+      '/',
+      '%',
+      '<',
+      '>',
+      '!',
+      '&',
+      '|',
+      '^',
+      '~',
+      '?',
+      ':',
+    ]);
     const PUNCTUATION = new Set(['{', '}', '(', ')', '[', ']', ',', ';', '.']);
 
     if (OPERATORS.has(line[i])) {
@@ -228,15 +369,15 @@ function tokenizeLine(line: string, _language: string): Token[] {
 // ════════════════════════════════════════════════════════════════════════════════
 // LAYOUT CONSTANTS
 // ════════════════════════════════════════════════════════════════════════════════
-const MARGIN_LEFT  = 60;          // matches SAFE_ZONE.left
-const MARGIN_RIGHT = 140;         // matches SAFE_ZONE.right (platform buttons)
-const MARGIN_H     = MARGIN_LEFT; // backward compat for positioning
-const CODE_WIDTH = VERTICAL.width - MARGIN_LEFT - MARGIN_RIGHT;  // 880px
-const FONT_SIZE  = CODE_LIMITS.fontSize;            // 28px
+const MARGIN_LEFT = 60; // matches SAFE_ZONE.left
+const MARGIN_RIGHT = 140; // matches SAFE_ZONE.right (platform buttons)
+const MARGIN_H = MARGIN_LEFT; // backward compat for positioning
+const CODE_WIDTH = VERTICAL.width - MARGIN_LEFT - MARGIN_RIGHT; // 880px
+const FONT_SIZE = CODE_LIMITS.fontSize; // 28px
 const LINE_H_MULT = 1.6;
-const LINE_HEIGHT  = FONT_SIZE * LINE_H_MULT;       // ~44.8px
-const LINE_NUM_W   = 56;
-const TAB_Y        = 220; // was 70 — must be below SAFE_ZONE.top (200)
+const LINE_HEIGHT = FONT_SIZE * LINE_H_MULT; // ~44.8px
+const LINE_NUM_W = 56;
+const TAB_Y = 220; // was 70 — must be below SAFE_ZONE.top (200)
 const CODE_BLOCK_Y = 270; // was 120
 const CODE_BLOCK_TOP_BORDER = 2;
 const CODE_PADDING_V = 20;
@@ -286,7 +427,7 @@ const VerticalCodeReveal: React.FC<VerticalCodeRevealProps> = ({
     // don't wire useSync in this self-contained component. If there are
     // typeLine cues with numeric targets, use the stagger count as a hint;
     // otherwise fall back to time-based.
-    const typeLineCues = animationCues!.filter(c => c.action === 'typeLine');
+    const typeLineCues = animationCues!.filter((c) => c.action === 'typeLine');
     if (typeLineCues.length > 0) {
       // Each cue represents one line being revealed. Use the elapsed-frame
       // stagger (same 6-frame cadence) so the timing is predictable.
@@ -296,7 +437,7 @@ const VerticalCodeReveal: React.FC<VerticalCodeRevealProps> = ({
       const revealWindow = effectiveDuration * 0.85;
       currentRevealLine = Math.min(
         totalLines - 1,
-        Math.floor(elapsed / (revealWindow / Math.max(1, totalLines))),
+        Math.floor(elapsed / (revealWindow / Math.max(1, totalLines)))
       );
     }
   } else {
@@ -320,16 +461,17 @@ const VerticalCodeReveal: React.FC<VerticalCodeRevealProps> = ({
 
   // ── File tab slides down from top ─────────────────────────────────────────
   const tabSlide = interpolate(
-    spring({ frame: Math.max(0, frame - startFrame), fps, config: { damping: 14, stiffness: 120, mass: 0.7 } }),
+    spring({
+      frame: Math.max(0, frame - startFrame),
+      fps,
+      config: { damping: 14, stiffness: 120, mass: 0.7 },
+    }),
     [0, 1],
-    [-60, 0],
+    [-60, 0]
   );
-  const tabOpacity = interpolate(
-    Math.max(0, frame - startFrame),
-    [0, 12],
-    [0, 1],
-    { extrapolateRight: 'clamp' },
-  );
+  const tabOpacity = interpolate(Math.max(0, frame - startFrame), [0, 12], [0, 1], {
+    extrapolateRight: 'clamp',
+  });
 
   // ── Output panel springs in at 75% reveal (not after 100%+30f) ───────────
   const showOutput = !!output && revealProgress >= 0.75;
@@ -348,24 +490,36 @@ const VerticalCodeReveal: React.FC<VerticalCodeRevealProps> = ({
 
   // ── File name from language ────────────────────────────────────────────────
   const fileName =
-    language === 'python' ? 'solution.py' :
-    language === 'java'   ? 'Solution.java' :
-    language === 'go'     ? 'solution.go' :
-    language === 'rust'   ? 'solution.rs' :
-    language === 'cpp'    ? 'solution.cpp' :
-    language === 'c'      ? 'solution.c' :
-                            'solution.ts';
+    language === 'python'
+      ? 'solution.py'
+      : language === 'java'
+        ? 'Solution.java'
+        : language === 'go'
+          ? 'solution.go'
+          : language === 'rust'
+            ? 'solution.rs'
+            : language === 'cpp'
+              ? 'solution.cpp'
+              : language === 'c'
+                ? 'solution.c'
+                : 'solution.ts';
 
   const langColor =
-    language === 'python' ? '#3572A5' :
-    language === 'java'   ? '#B07219' :
-    language === 'go'     ? '#00ACD7' :
-    language === 'rust'   ? '#DEA584' :
-    language === 'cpp'    ? '#F34B7D' :
-                            '#3178C6';
+    language === 'python'
+      ? '#3572A5'
+      : language === 'java'
+        ? '#B07219'
+        : language === 'go'
+          ? '#00ACD7'
+          : language === 'rust'
+            ? '#DEA584'
+            : language === 'cpp'
+              ? '#F34B7D'
+              : '#3178C6';
 
   // ── Code block height (content area) ──────────────────────────────────────
-  const codeContentHeight = Math.min(totalLines, MAX_VISIBLE_LINES) * LINE_HEIGHT + CODE_PADDING_V * 2;
+  const codeContentHeight =
+    Math.min(totalLines, MAX_VISIBLE_LINES) * LINE_HEIGHT + CODE_PADDING_V * 2;
 
   // ── Output panel Y position ────────────────────────────────────────────────
   const TAB_HEADER_H = 50;
@@ -373,34 +527,39 @@ const VerticalCodeReveal: React.FC<VerticalCodeRevealProps> = ({
 
   return (
     <AbsoluteFill style={{ backgroundColor: C.bg }}>
-
       {/* ── Subtle radial bg glow ──────────────────────────────────────────── */}
-      <div style={{
-        position: 'absolute',
-        inset: 0,
-        background: `radial-gradient(ellipse at 50% 40%, rgba(232,93,38,0.05) 0%, transparent 65%)`,
-        pointerEvents: 'none',
-      }} />
+      <div
+        style={{
+          position: 'absolute',
+          inset: 0,
+          background: `radial-gradient(ellipse at 50% 40%, rgba(232,93,38,0.05) 0%, transparent 65%)`,
+          pointerEvents: 'none',
+        }}
+      />
 
       {/* ── Scene heading ─────────────────────────────────────────────────── */}
       {title && (
-        <div style={{
-          position: 'absolute',
-          top: TAB_Y - 58,
-          left: MARGIN_H,
-          right: MARGIN_H,
-          opacity: tabOpacity,
-          transform: `translateY(${tabSlide * 0.5}px)`,
-        }}>
-          <div style={{
-            fontFamily: FONTS.heading,
-            fontSize: 28,
-            fontWeight: 700,
-            color: C.saffron,
-            display: 'flex',
-            alignItems: 'center',
-            gap: 10,
-          }}>
+        <div
+          style={{
+            position: 'absolute',
+            top: TAB_Y - 58,
+            left: MARGIN_H,
+            right: MARGIN_H,
+            opacity: tabOpacity,
+            transform: `translateY(${tabSlide * 0.5}px)`,
+          }}
+        >
+          <div
+            style={{
+              fontFamily: FONTS.heading,
+              fontSize: 28,
+              fontWeight: 700,
+              color: C.saffron,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 10,
+            }}
+          >
             <span style={{ opacity: 0.6, fontSize: 22 }}>{'</>'}</span>
             {title}
           </div>
@@ -408,106 +567,125 @@ const VerticalCodeReveal: React.FC<VerticalCodeRevealProps> = ({
       )}
 
       {/* ── File tab header ───────────────────────────────────────────────── */}
-      <div style={{
-        position: 'absolute',
-        top: CODE_BLOCK_Y,
-        left: MARGIN_H,
-        width: CODE_WIDTH,
-        height: TAB_HEADER_H,
-        backgroundColor: C.tabBg,
-        borderRadius: '16px 16px 0 0',
-        display: 'flex',
-        alignItems: 'center',
-        paddingLeft: 18,
-        paddingRight: 18,
-        gap: 14,
-        opacity: tabOpacity,
-        transform: `translateY(${tabSlide}px)`,
-      }}>
+      <div
+        style={{
+          position: 'absolute',
+          top: CODE_BLOCK_Y,
+          left: MARGIN_H,
+          width: CODE_WIDTH,
+          height: TAB_HEADER_H,
+          backgroundColor: C.tabBg,
+          borderRadius: '16px 16px 0 0',
+          display: 'flex',
+          alignItems: 'center',
+          paddingLeft: 18,
+          paddingRight: 18,
+          gap: 14,
+          opacity: tabOpacity,
+          transform: `translateY(${tabSlide}px)`,
+        }}
+      >
         {/* macOS dots */}
         <div style={{ display: 'flex', gap: 7, flexShrink: 0 }}>
           <div style={{ width: 13, height: 13, borderRadius: '50%', backgroundColor: C.dotRed }} />
-          <div style={{ width: 13, height: 13, borderRadius: '50%', backgroundColor: C.dotYellow }} />
-          <div style={{ width: 13, height: 13, borderRadius: '50%', backgroundColor: C.dotGreen }} />
+          <div
+            style={{ width: 13, height: 13, borderRadius: '50%', backgroundColor: C.dotYellow }}
+          />
+          <div
+            style={{ width: 13, height: 13, borderRadius: '50%', backgroundColor: C.dotGreen }}
+          />
         </div>
 
         {/* File tab chip */}
-        <div style={{
-          backgroundColor: C.codeBg,
-          padding: '5px 16px',
-          borderRadius: '6px 6px 0 0',
-          display: 'flex',
-          alignItems: 'center',
-          gap: 7,
-          borderTop: `2px solid ${langColor}`,
-        }}>
+        <div
+          style={{
+            backgroundColor: C.codeBg,
+            padding: '5px 16px',
+            borderRadius: '6px 6px 0 0',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 7,
+            borderTop: `2px solid ${langColor}`,
+          }}
+        >
           <span style={{ color: langColor, fontSize: 11 }}>●</span>
-          <span style={{
-            fontFamily: FONTS.code,
-            fontSize: 22,
-            color: C.plainText,
-            fontWeight: 500,
-            letterSpacing: 0.2,
-          }}>
+          <span
+            style={{
+              fontFamily: FONTS.code,
+              fontSize: 22,
+              color: C.plainText,
+              fontWeight: 500,
+              letterSpacing: 0.2,
+            }}
+          >
             {fileName}
           </span>
         </div>
 
         {/* Language badge */}
         <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8 }}>
-          <div style={{
-            backgroundColor: `${langColor}22`,
-            color: langColor,
-            padding: '3px 12px',
-            borderRadius: 5,
-            fontFamily: FONTS.code,
-            fontSize: 20,
-            fontWeight: 600,
-            textTransform: 'uppercase',
-            letterSpacing: 0.8,
-          }}>
+          <div
+            style={{
+              backgroundColor: `${langColor}22`,
+              color: langColor,
+              padding: '3px 12px',
+              borderRadius: 5,
+              fontFamily: FONTS.code,
+              fontSize: 20,
+              fontWeight: 600,
+              textTransform: 'uppercase',
+              letterSpacing: 0.8,
+            }}
+          >
             {language}
           </div>
-          <div style={{
-            fontFamily: FONTS.code,
-            fontSize: 20,
-            color: 'rgba(255,255,255,0.22)',
-          }}>
+          <div
+            style={{
+              fontFamily: FONTS.code,
+              fontSize: 20,
+              color: 'rgba(255,255,255,0.22)',
+            }}
+          >
             {totalRevealed}/{totalLines}
           </div>
         </div>
       </div>
 
       {/* ── Code block ────────────────────────────────────────────────────── */}
-      <div style={{
-        position: 'absolute',
-        top: CODE_BLOCK_Y + TAB_HEADER_H,
-        left: MARGIN_H,
-        width: CODE_WIDTH,
-        backgroundColor: C.codeBg,
-        borderRadius: '0 0 16px 16px',
-        borderTop: `${CODE_BLOCK_TOP_BORDER}px solid ${C.saffron}`,
-        overflow: 'hidden',
-        // Subtle drop shadow
-        boxShadow: `0 12px 48px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.04)`,
-        opacity: tabOpacity,
-        transform: `translateY(${tabSlide * 0.6}px)`,
-      }}>
-        <div style={{
-          display: 'flex',
-          paddingTop: CODE_PADDING_V,
-          paddingBottom: CODE_PADDING_V,
-        }}>
-
+      <div
+        style={{
+          position: 'absolute',
+          top: CODE_BLOCK_Y + TAB_HEADER_H,
+          left: MARGIN_H,
+          width: CODE_WIDTH,
+          backgroundColor: C.codeBg,
+          borderRadius: '0 0 16px 16px',
+          borderTop: `${CODE_BLOCK_TOP_BORDER}px solid ${C.saffron}`,
+          overflow: 'hidden',
+          // Subtle drop shadow
+          boxShadow: `0 12px 48px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.04)`,
+          opacity: tabOpacity,
+          transform: `translateY(${tabSlide * 0.6}px)`,
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            paddingTop: CODE_PADDING_V,
+            paddingBottom: CODE_PADDING_V,
+          }}
+        >
           {/* Line number gutter */}
-          <div style={{
-            width: LINE_NUM_W,
-            flexShrink: 0,
-            borderRight: '1px solid rgba(255,255,255,0.06)',
-          }}>
+          <div
+            style={{
+              width: LINE_NUM_W,
+              flexShrink: 0,
+              borderRight: '1px solid rgba(255,255,255,0.06)',
+            }}
+          >
             {lines.map((_, idx) => {
               const isVisible = idx < totalRevealed;
-              const isActive  = idx === currentRevealLine && isVisible;
+              const isActive = idx === currentRevealLine && isVisible;
 
               return (
                 <div
@@ -534,32 +712,36 @@ const VerticalCodeReveal: React.FC<VerticalCodeRevealProps> = ({
           </div>
 
           {/* Code lines */}
-          <div style={{
-            flex: 1,
-            paddingLeft: CODE_PADDING_H,
-            paddingRight: CODE_PADDING_H,
-            fontFamily: FONTS.code,
-            fontSize: FONT_SIZE,
-            lineHeight: `${LINE_HEIGHT}px`,
-            position: 'relative',
-          }}>
+          <div
+            style={{
+              flex: 1,
+              paddingLeft: CODE_PADDING_H,
+              paddingRight: CODE_PADDING_H,
+              fontFamily: FONTS.code,
+              fontSize: FONT_SIZE,
+              lineHeight: `${LINE_HEIGHT}px`,
+              position: 'relative',
+            }}
+          >
             {/* Scan-line spotlight — glowing gradient follows active line */}
             {currentRevealLine < totalLines && (
-              <div style={{
-                position: 'absolute',
-                left: 0,
-                right: 0,
-                top: currentRevealLine * LINE_HEIGHT - 4,
-                height: LINE_HEIGHT + 8,
-                background: `linear-gradient(180deg, transparent, rgba(232,93,38,0.06), rgba(232,93,38,0.04), transparent)`,
-                pointerEvents: 'none',
-                zIndex: 2,
-              }} />
+              <div
+                style={{
+                  position: 'absolute',
+                  left: 0,
+                  right: 0,
+                  top: currentRevealLine * LINE_HEIGHT - 4,
+                  height: LINE_HEIGHT + 8,
+                  background: `linear-gradient(180deg, transparent, rgba(232,93,38,0.06), rgba(232,93,38,0.04), transparent)`,
+                  pointerEvents: 'none',
+                  zIndex: 2,
+                }}
+              />
             )}
             {lines.map((line, idx) => {
               const isVisible = idx < totalRevealed;
-              const isActive   = idx === currentRevealLine && isVisible;
-              const isPast     = idx < currentRevealLine && isVisible;
+              const isActive = idx === currentRevealLine && isVisible;
+              const isPast = idx < currentRevealLine && isVisible;
               const isHighlighted = (highlightLines ?? []).includes(idx + 1);
 
               // Per-line staggered entrance
@@ -567,7 +749,8 @@ const VerticalCodeReveal: React.FC<VerticalCodeRevealProps> = ({
               const lineAge = Math.max(0, frame - lineStartFrame);
 
               const lineOpacity = isVisible
-                ? interpolate(lineAge, [0, 8], [0, 1], { extrapolateRight: 'clamp' }) * (isPast ? 0.78 : 1)
+                ? interpolate(lineAge, [0, 8], [0, 1], { extrapolateRight: 'clamp' }) *
+                  (isPast ? 0.78 : 1)
                 : 0; // was 0.45 — past code must stay readable on mobile
               const lineSlide = isVisible
                 ? interpolate(lineAge, [0, 10], [-18, 0], {
@@ -581,9 +764,9 @@ const VerticalCodeReveal: React.FC<VerticalCodeRevealProps> = ({
               const charsVisible = isActive
                 ? Math.min(line.length, Math.floor(lineAge * 5))
                 : isVisible
-                ? line.length
-                : 0;
-              const displayText = isActive ? line.slice(0, charsVisible) : (line || ' ');
+                  ? line.length
+                  : 0;
+              const displayText = isActive ? line.slice(0, charsVisible) : line || ' ';
               const tokens = tokenizeLine(displayText, language);
 
               return (
@@ -598,13 +781,13 @@ const VerticalCodeReveal: React.FC<VerticalCodeRevealProps> = ({
                     backgroundColor: isHighlighted
                       ? 'rgba(253,184,19,0.08)'
                       : isActive
-                      ? C.activeLineBg
-                      : 'transparent',
+                        ? C.activeLineBg
+                        : 'transparent',
                     borderLeft: isActive
                       ? `3px solid ${C.activeLineBorder}`
                       : isHighlighted
-                      ? '3px solid rgba(253,184,19,0.7)'
-                      : '3px solid transparent',
+                        ? '3px solid rgba(253,184,19,0.7)'
+                        : '3px solid transparent',
                     paddingLeft: 8,
                     marginLeft: -8,
                     borderRadius: 2,
@@ -627,29 +810,33 @@ const VerticalCodeReveal: React.FC<VerticalCodeRevealProps> = ({
 
                   {/* Blinking cursor on active line */}
                   {isActive && (
-                    <span style={{
-                      display: 'inline-block',
-                      width: 2,
-                      height: FONT_SIZE * 1.1,
-                      backgroundColor: C.saffron,
-                      marginLeft: 2,
-                      verticalAlign: 'middle',
-                      opacity: cursorOpacity,
-                      boxShadow: `0 0 6px ${C.saffron}, 0 0 14px ${C.saffron}77`,
-                    }} />
+                    <span
+                      style={{
+                        display: 'inline-block',
+                        width: 2,
+                        height: FONT_SIZE * 1.1,
+                        backgroundColor: C.saffron,
+                        marginLeft: 2,
+                        verticalAlign: 'middle',
+                        opacity: cursorOpacity,
+                        boxShadow: `0 0 6px ${C.saffron}, 0 0 14px ${C.saffron}77`,
+                      }}
+                    />
                   )}
 
                   {/* Idle cursor after full reveal */}
                   {!isActive && isVisible && allRevealed && idx === totalLines - 1 && (
-                    <span style={{
-                      display: 'inline-block',
-                      width: 2,
-                      height: FONT_SIZE,
-                      backgroundColor: 'rgba(255,255,255,0.3)',
-                      marginLeft: 1,
-                      verticalAlign: 'middle',
-                      opacity: cursorOpacity,
-                    }} />
+                    <span
+                      style={{
+                        display: 'inline-block',
+                        width: 2,
+                        height: FONT_SIZE,
+                        backgroundColor: 'rgba(255,255,255,0.3)',
+                        marginLeft: 1,
+                        verticalAlign: 'middle',
+                        opacity: cursorOpacity,
+                      }}
+                    />
                   )}
                 </div>
               );
@@ -660,61 +847,70 @@ const VerticalCodeReveal: React.FC<VerticalCodeRevealProps> = ({
 
       {/* ── Output panel ──────────────────────────────────────────────────── */}
       {output && (
-        <div style={{
-          position: 'absolute',
-          top: outputY,
-          left: MARGIN_H,
-          width: CODE_WIDTH,
-          backgroundColor: C.outputBg,
-          borderRadius: 14,
-          overflow: 'hidden',
-          opacity: outputOpacity,
-          transform: `translateY(${interpolate(outputScale, [0, 1], [30, 0])}px)`,
-          border: `1px solid rgba(29,209,161,0.18)`,
-          boxShadow: `0 6px 24px rgba(0,0,0,0.35), 0 0 0 1px rgba(29,209,161,0.06)`,
-        }}>
+        <div
+          style={{
+            position: 'absolute',
+            top: outputY,
+            left: MARGIN_H,
+            width: CODE_WIDTH,
+            backgroundColor: C.outputBg,
+            borderRadius: 14,
+            overflow: 'hidden',
+            opacity: outputOpacity,
+            transform: `translateY(${interpolate(outputScale, [0, 1], [30, 0])}px)`,
+            border: `1px solid rgba(29,209,161,0.18)`,
+            boxShadow: `0 6px 24px rgba(0,0,0,0.35), 0 0 0 1px rgba(29,209,161,0.06)`,
+          }}
+        >
           {/* Output header bar */}
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 10,
-            padding: '14px 20px 10px 20px',
-            borderBottom: '1px solid rgba(29,209,161,0.12)',
-          }}>
-            <div style={{
-              width: 9,
-              height: 9,
-              borderRadius: '50%',
-              backgroundColor: C.teal,
-              boxShadow: `0 0 7px ${C.teal}`,
-            }} />
-            <span style={{
-              fontFamily: FONTS.code,
-              fontSize: 22,
-              color: C.teal,
-              fontWeight: 700,
-              textTransform: 'uppercase' as const,
-              letterSpacing: 1.2,
-            }}>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 10,
+              padding: '14px 20px 10px 20px',
+              borderBottom: '1px solid rgba(29,209,161,0.12)',
+            }}
+          >
+            <div
+              style={{
+                width: 9,
+                height: 9,
+                borderRadius: '50%',
+                backgroundColor: C.teal,
+                boxShadow: `0 0 7px ${C.teal}`,
+              }}
+            />
+            <span
+              style={{
+                fontFamily: FONTS.code,
+                fontSize: 22,
+                color: C.teal,
+                fontWeight: 700,
+                textTransform: 'uppercase' as const,
+                letterSpacing: 1.2,
+              }}
+            >
               {outputLabel ?? 'Output'}
             </span>
           </div>
 
           {/* Output text */}
-          <div style={{
-            padding: '16px 20px 18px 20px',
-            fontFamily: FONTS.code,
-            fontSize: 26,
-            color: C.outputText,
-            lineHeight: 1.55,
-            whiteSpace: 'pre-wrap' as const,
-            wordBreak: 'break-word' as const,
-          }}>
+          <div
+            style={{
+              padding: '16px 20px 18px 20px',
+              fontFamily: FONTS.code,
+              fontSize: 26,
+              color: C.outputText,
+              lineHeight: 1.55,
+              whiteSpace: 'pre-wrap' as const,
+              wordBreak: 'break-word' as const,
+            }}
+          >
             {output}
           </div>
         </div>
       )}
-
     </AbsoluteFill>
   );
 };

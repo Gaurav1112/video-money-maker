@@ -26,32 +26,32 @@ const SLUG_VIZ_MAP: Record<string, React.FC<VizProps>> = {
   // ── Traffic/Network (TrafficFlow) ──
   'load-balancing': TrafficFlow,
   'api-gateway': TrafficFlow,
-  'cdn': TrafficFlow,
-  'networking': TrafficFlow,
+  cdn: TrafficFlow,
+  networking: TrafficFlow,
   'rate-limiting': TrafficFlow,
-  'proxy': TrafficFlow,
+  proxy: TrafficFlow,
   'reverse-proxy': TrafficFlow,
-  'nginx': TrafficFlow,
-  'haproxy': TrafficFlow,
-  'dns': TrafficFlow,
-  'http': TrafficFlow,
+  nginx: TrafficFlow,
+  haproxy: TrafficFlow,
+  dns: TrafficFlow,
+  http: TrafficFlow,
   'rest-api': TrafficFlow,
-  'grpc': TrafficFlow,
-  'websockets': TrafficFlow,
+  grpc: TrafficFlow,
+  websockets: TrafficFlow,
   'tcp-udp': TrafficFlow,
 
   // ── Database (DatabaseViz) ──
   'database-design': DatabaseViz,
   'database-scaling': DatabaseViz,
   'rdbms-sql': DatabaseViz,
-  'nosql': DatabaseViz,
+  nosql: DatabaseViz,
   'distributed-key-value': DatabaseViz,
-  'sql': DatabaseViz,
-  'postgres': DatabaseViz,
-  'mysql': DatabaseViz,
-  'mongodb': DatabaseViz,
-  'cassandra': DatabaseViz,
-  'dynamodb': DatabaseViz,
+  sql: DatabaseViz,
+  postgres: DatabaseViz,
+  mysql: DatabaseViz,
+  mongodb: DatabaseViz,
+  cassandra: DatabaseViz,
+  dynamodb: DatabaseViz,
   'database-replication': DatabaseViz,
   'database-sharding': DatabaseViz,
   'database-indexing': DatabaseViz,
@@ -59,46 +59,46 @@ const SLUG_VIZ_MAP: Record<string, React.FC<VizProps>> = {
   'cap-theorem': DatabaseViz,
 
   // ── Cache (CacheViz) ──
-  'caching': CacheViz,
-  'redis': CacheViz,
-  'memcached': CacheViz,
+  caching: CacheViz,
+  redis: CacheViz,
+  memcached: CacheViz,
   'content-delivery': CacheViz,
   'cache-strategies': CacheViz,
 
   // ── Queue/Messaging (QueueViz) ──
   'message-queues': QueueViz,
-  'kafka': QueueViz,
-  'rabbitmq': QueueViz,
+  kafka: QueueViz,
+  rabbitmq: QueueViz,
   'notification-system': QueueViz,
   'task-scheduler': QueueViz,
   'pub-sub': QueueViz,
   'event-driven': QueueViz,
-  'sqs': QueueViz,
-  'sns': QueueViz,
+  sqs: QueueViz,
+  sns: QueueViz,
   'async-processing': QueueViz,
 
   // ── Graph (GraphViz) ──
-  'graphs': GraphViz,
+  graphs: GraphViz,
   'distributed-systems': GraphViz,
-  'consensus': GraphViz,
-  'raft': GraphViz,
-  'paxos': GraphViz,
+  consensus: GraphViz,
+  raft: GraphViz,
+  paxos: GraphViz,
   'network-flow': GraphViz,
 
   // ── Tree (TreeViz) ──
   'trees-bst': TreeViz,
-  'trie': TreeViz,
+  trie: TreeViz,
   'binary-tree': TreeViz,
   'avl-tree': TreeViz,
   'red-black-tree': TreeViz,
   'segment-tree': TreeViz,
-  'heap': TreeViz,
+  heap: TreeViz,
   'priority-queue': TreeViz,
 
   // ── Hash Table (HashTableViz) ──
   'hash-tables': HashTableViz,
   'hash-map': HashTableViz,
-  'hashing': HashTableViz,
+  hashing: HashTableViz,
   'consistent-hashing': HashTableViz,
 
   // ── Sorting/Arrays (SortingViz) ──
@@ -111,17 +111,17 @@ const SLUG_VIZ_MAP: Record<string, React.FC<VizProps>> = {
   'quick-sort': SortingViz,
 
   // ── System Architecture (SystemArchViz) ──
-  'microservices': SystemArchViz,
-  'scalability': SystemArchViz,
+  microservices: SystemArchViz,
+  scalability: SystemArchViz,
   'scalability-patterns': SystemArchViz,
-  'monitoring': SystemArchViz,
-  'observability': SystemArchViz,
-  'authentication': SystemArchViz,
-  'authorization': SystemArchViz,
-  'oauth': SystemArchViz,
-  'security': SystemArchViz,
+  monitoring: SystemArchViz,
+  observability: SystemArchViz,
+  authentication: SystemArchViz,
+  authorization: SystemArchViz,
+  oauth: SystemArchViz,
+  security: SystemArchViz,
   'ci-cd': SystemArchViz,
-  'devops': SystemArchViz,
+  devops: SystemArchViz,
   // System design case studies
   'design-url-shortener': SystemArchViz,
   'design-twitter': SystemArchViz,
@@ -155,39 +155,39 @@ const SLUG_VIZ_MAP: Record<string, React.FC<VizProps>> = {
   'design-patterns': KeywordCloud,
   'dsa-patterns': KeywordCloud,
   'interview-framework': KeywordCloud,
-  'estimation': KeywordCloud,
+  estimation: KeywordCloud,
   'java-core': KeywordCloud,
-  'javascript': KeywordCloud,
-  'typescript': KeywordCloud,
+  javascript: KeywordCloud,
+  typescript: KeywordCloud,
   'spring-boot': KeywordCloud,
   'react-nextjs': KeywordCloud,
-  'react': KeywordCloud,
-  'nextjs': KeywordCloud,
-  'nodejs': KeywordCloud,
+  react: KeywordCloud,
+  nextjs: KeywordCloud,
+  nodejs: KeywordCloud,
   'node-js': KeywordCloud,
   'html-css': KeywordCloud,
   'k8s-docker': KeywordCloud,
-  'kubernetes': KeywordCloud,
-  'docker': KeywordCloud,
-  'aws': KeywordCloud,
-  'gcp': KeywordCloud,
-  'azure': KeywordCloud,
+  kubernetes: KeywordCloud,
+  docker: KeywordCloud,
+  aws: KeywordCloud,
+  gcp: KeywordCloud,
+  azure: KeywordCloud,
   'linked-list': KeywordCloud,
-  'stack': KeywordCloud,
+  stack: KeywordCloud,
   'stacks-queues': KeywordCloud,
-  'recursion': KeywordCloud,
-  'backtracking': KeywordCloud,
+  recursion: KeywordCloud,
+  backtracking: KeywordCloud,
   'dynamic-programming': KeywordCloud,
   'bit-manipulation': KeywordCloud,
   'union-find': KeywordCloud,
-  'greedy': KeywordCloud,
-  'math': KeywordCloud,
-  'oop': KeywordCloud,
+  greedy: KeywordCloud,
+  math: KeywordCloud,
+  oop: KeywordCloud,
   'solid-principles': KeywordCloud,
-  'multithreading': KeywordCloud,
-  'concurrency': KeywordCloud,
-  'testing': KeywordCloud,
-  'git': KeywordCloud,
+  multithreading: KeywordCloud,
+  concurrency: KeywordCloud,
+  testing: KeywordCloud,
+  git: KeywordCloud,
   'behavioral-interview': KeywordCloud,
 };
 
@@ -198,42 +198,194 @@ const SLUG_VIZ_MAP: Record<string, React.FC<VizProps>> = {
 // ---------------------------------------------------------------------------
 const KEYWORD_VIZ_RULES: Array<{ keywords: string[]; component: React.FC<VizProps> }> = [
   // Hash table (before 'cache' to catch 'hash' first)
-  { keywords: ['hash-table', 'hash-map', 'hashmap', 'hashing', 'collision'], component: HashTableViz },
+  {
+    keywords: ['hash-table', 'hash-map', 'hashmap', 'hashing', 'collision'],
+    component: HashTableViz,
+  },
 
   // Tree (before generic terms)
-  { keywords: ['tree', 'bst', 'heap', 'trie', 'prefix-tree', 'avl', 'red-black', 'segment-tree'], component: TreeViz },
+  {
+    keywords: ['tree', 'bst', 'heap', 'trie', 'prefix-tree', 'avl', 'red-black', 'segment-tree'],
+    component: TreeViz,
+  },
 
   // Sorting / Arrays
-  { keywords: ['sort', 'merge-sort', 'quick-sort', 'binary-search', 'two-pointer', 'sliding-window', 'array', 'string'], component: SortingViz },
+  {
+    keywords: [
+      'sort',
+      'merge-sort',
+      'quick-sort',
+      'binary-search',
+      'two-pointer',
+      'sliding-window',
+      'array',
+      'string',
+    ],
+    component: SortingViz,
+  },
 
   // Traffic / Network
-  { keywords: ['load-balanc', 'api-gateway', 'gateway', 'rate-limit', 'throttl', 'network', 'proxy', 'nginx', 'haproxy', 'dns', 'http', 'grpc', 'websocket', 'tcp', 'udp'], component: TrafficFlow },
+  {
+    keywords: [
+      'load-balanc',
+      'api-gateway',
+      'gateway',
+      'rate-limit',
+      'throttl',
+      'network',
+      'proxy',
+      'nginx',
+      'haproxy',
+      'dns',
+      'http',
+      'grpc',
+      'websocket',
+      'tcp',
+      'udp',
+    ],
+    component: TrafficFlow,
+  },
 
   // Database
-  { keywords: ['database', 'rdbms', 'sql', 'nosql', 'mongo', 'postgres', 'mysql', 'dynamo', 'cassandra', 'replicat', 'sharding', 'storage', 'acid', 'cap-theorem'], component: DatabaseViz },
+  {
+    keywords: [
+      'database',
+      'rdbms',
+      'sql',
+      'nosql',
+      'mongo',
+      'postgres',
+      'mysql',
+      'dynamo',
+      'cassandra',
+      'replicat',
+      'sharding',
+      'storage',
+      'acid',
+      'cap-theorem',
+    ],
+    component: DatabaseViz,
+  },
 
   // Cache
-  { keywords: ['cache', 'caching', 'redis', 'memcache', 'cdn', 'content-delivery'], component: CacheViz },
+  {
+    keywords: ['cache', 'caching', 'redis', 'memcache', 'cdn', 'content-delivery'],
+    component: CacheViz,
+  },
 
   // Queue / Messaging
-  { keywords: ['queue', 'kafka', 'rabbitmq', 'message', 'pub-sub', 'event-driven', 'notification', 'scheduler', 'task-scheduler', 'sqs', 'sns'], component: QueueViz },
+  {
+    keywords: [
+      'queue',
+      'kafka',
+      'rabbitmq',
+      'message',
+      'pub-sub',
+      'event-driven',
+      'notification',
+      'scheduler',
+      'task-scheduler',
+      'sqs',
+      'sns',
+    ],
+    component: QueueViz,
+  },
 
   // Graph
-  { keywords: ['graph', 'bfs', 'dfs', 'dijkstra', 'shortest-path', 'distributed-system', 'consensus', 'raft', 'paxos'], component: GraphViz },
+  {
+    keywords: [
+      'graph',
+      'bfs',
+      'dfs',
+      'dijkstra',
+      'shortest-path',
+      'distributed-system',
+      'consensus',
+      'raft',
+      'paxos',
+    ],
+    component: GraphViz,
+  },
 
   // Metric Dashboard
-  { keywords: ['monitoring', 'observ', 'metric', 'dashboard', 'alerting', 'logging', 'tracing'], component: MetricDashboard },
+  {
+    keywords: ['monitoring', 'observ', 'metric', 'dashboard', 'alerting', 'logging', 'tracing'],
+    component: MetricDashboard,
+  },
 
   // System Architecture (broadest — catch-all for design topics)
-  { keywords: ['microservice', 'architecture', 'design-', 'system-design', 'scalab', 'auth', 'payment', 'e-commerce', 'social-media', 'chat', 'video-stream', 'ride-shar', 'file-storage', 'web-crawler', 'news-feed', 'url-shortener', 'search-auto', 'ci-cd', 'devops', 'security'], component: SystemArchViz },
+  {
+    keywords: [
+      'microservice',
+      'architecture',
+      'design-',
+      'system-design',
+      'scalab',
+      'auth',
+      'payment',
+      'e-commerce',
+      'social-media',
+      'chat',
+      'video-stream',
+      'ride-shar',
+      'file-storage',
+      'web-crawler',
+      'news-feed',
+      'url-shortener',
+      'search-auto',
+      'ci-cd',
+      'devops',
+      'security',
+    ],
+    component: SystemArchViz,
+  },
 
   // Keyword Cloud (programming languages/frameworks — broadest fallback)
-  { keywords: ['java', 'javascript', 'typescript', 'react', 'next', 'spring', 'node', 'html', 'css', 'aws', 'kubernetes', 'docker', 'k8s', 'design-pattern', 'dsa-pattern', 'interview', 'estimation', 'linked-list', 'stack', 'recursion', 'backtrack', 'dynamic-programming', 'bit-manipul', 'union-find', 'greedy', 'oop', 'solid', 'concurren', 'multithread', 'testing', 'behavioral'], component: KeywordCloud },
+  {
+    keywords: [
+      'java',
+      'javascript',
+      'typescript',
+      'react',
+      'next',
+      'spring',
+      'node',
+      'html',
+      'css',
+      'aws',
+      'kubernetes',
+      'docker',
+      'k8s',
+      'design-pattern',
+      'dsa-pattern',
+      'interview',
+      'estimation',
+      'linked-list',
+      'stack',
+      'recursion',
+      'backtrack',
+      'dynamic-programming',
+      'bit-manipul',
+      'union-find',
+      'greedy',
+      'oop',
+      'solid',
+      'concurren',
+      'multithread',
+      'testing',
+      'behavioral',
+    ],
+    component: KeywordCloud,
+  },
 ];
 
 function getVisualization(topic: string): React.FC<VizProps> {
   // Step 1: Normalize the topic slug
-  const slug = topic.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+  const slug = topic
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
 
   // Step 2: Exact slug match (primary — fastest and most accurate)
   if (SLUG_VIZ_MAP[slug]) return SLUG_VIZ_MAP[slug];
@@ -295,13 +447,15 @@ export const ConceptViz: React.FC<ConceptVizProps> = ({
       };
 
   return (
-    <div style={{
-      width: '100%',
-      height: '100%',
-      position: 'relative',
-      // Ensure the viz container is always visible — prevent zero-height collapse
-      minHeight: '100%',
-    }}>
+    <div
+      style={{
+        width: '100%',
+        height: '100%',
+        position: 'relative',
+        // Ensure the viz container is always visible — prevent zero-height collapse
+        minHeight: '100%',
+      }}
+    >
       <Viz sync={sync} frame={frame} keywords={keywords} variant={vizVariant} />
     </div>
   );

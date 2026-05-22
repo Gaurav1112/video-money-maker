@@ -27,10 +27,14 @@ async function main(): Promise<void> {
   const clientSecret = process.env.YOUTUBE_CLIENT_SECRET;
 
   if (!clientId || !clientSecret) {
-    console.error('Error: YOUTUBE_CLIENT_ID and YOUTUBE_CLIENT_SECRET environment variables are required.');
+    console.error(
+      'Error: YOUTUBE_CLIENT_ID and YOUTUBE_CLIENT_SECRET environment variables are required.'
+    );
     console.error('');
     console.error('Usage:');
-    console.error('  YOUTUBE_CLIENT_ID=xxx YOUTUBE_CLIENT_SECRET=yyy npx tsx scripts/auth-youtube.ts');
+    console.error(
+      '  YOUTUBE_CLIENT_ID=xxx YOUTUBE_CLIENT_SECRET=yyy npx tsx scripts/auth-youtube.ts'
+    );
     console.error('');
     console.error('Get credentials from: https://console.cloud.google.com/apis/credentials');
     process.exit(1);
@@ -55,7 +59,8 @@ async function main(): Promise<void> {
 
   // Open browser
   const { exec } = await import('child_process');
-  const openCmd = process.platform === 'darwin' ? 'open' : process.platform === 'win32' ? 'start' : 'xdg-open';
+  const openCmd =
+    process.platform === 'darwin' ? 'open' : process.platform === 'win32' ? 'start' : 'xdg-open';
   exec(`${openCmd} "${authUrl}"`);
 
   // Start local server to capture the OAuth callback
@@ -105,7 +110,9 @@ async function main(): Promise<void> {
   const { tokens } = await oauth2Client.getToken(code);
 
   if (!tokens.refresh_token) {
-    console.error('Warning: No refresh_token received. Try revoking access at https://myaccount.google.com/permissions and re-running this script.');
+    console.error(
+      'Warning: No refresh_token received. Try revoking access at https://myaccount.google.com/permissions and re-running this script.'
+    );
   }
 
   const tokenData = {

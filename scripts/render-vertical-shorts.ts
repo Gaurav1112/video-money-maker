@@ -64,12 +64,18 @@ function selectBestClips(scenes: Scene[]): Clip[] {
   {
     const { end, dur } = greedyClip(0, 3);
     if (dur > 0) {
-      clips.push({ startScene: 0, endScene: end, estimatedDuration: dur, type: 'hook', label: 'hook' });
+      clips.push({
+        startScene: 0,
+        endScene: end,
+        estimatedDuration: dur,
+        type: 'hook',
+        label: 'hook',
+      });
     }
   }
 
   // Clip 2: Best code scene (single scene, capped at 60s)
-  const codeIdx = scenes.findIndex(s => s.type === 'code');
+  const codeIdx = scenes.findIndex((s) => s.type === 'code');
   if (codeIdx >= 0) {
     const dur = Math.min(sceneDur(codeIdx), MAX_SHORT_SECONDS);
     clips.push({
@@ -82,9 +88,7 @@ function selectBestClips(scenes: Scene[]): Clip[] {
   }
 
   // Clip 3: Interview / review scene
-  const interviewIdx = scenes.findIndex(s =>
-    s.type === 'interview' || s.type === 'review',
-  );
+  const interviewIdx = scenes.findIndex((s) => s.type === 'interview' || s.type === 'review');
   if (interviewIdx >= 0) {
     const { end, dur } = greedyClip(interviewIdx, 2);
     if (dur > 0) {
@@ -102,7 +106,7 @@ function selectBestClips(scenes: Scene[]): Clip[] {
   if (clips.length < 2) {
     for (let i = 2; i < scenes.length && clips.length < 3; i++) {
       if (scenes[i].type === 'text' && sceneDur(i) <= MAX_SHORT_SECONDS) {
-        const used = clips.some(c => i >= c.startScene && i <= c.endScene);
+        const used = clips.some((c) => i >= c.startScene && i <= c.endScene);
         if (!used) {
           clips.push({
             startScene: i,
@@ -123,10 +127,7 @@ function selectBestClips(scenes: Scene[]): Clip[] {
 // Build a mini storyboard for the ShortVideo composition
 // ---------------------------------------------------------------------------
 
-function buildMiniStoryboard(
-  original: Storyboard,
-  clip: Clip,
-): Storyboard {
+function buildMiniStoryboard(original: Storyboard, clip: Clip): Storyboard {
   const selectedScenes = original.scenes.slice(clip.startScene, clip.endScene + 1);
 
   // Re-index scene frames sequentially so ShortVideo can render them
@@ -154,14 +155,14 @@ function buildMiniStoryboard(
   // Calculate audio start offset — the first selected scene's audio offset
   // in the master track, so the short plays the RIGHT section of audio
   const firstOrigScene = selectedScenes[0];
-  const audioStartOffset = firstOrigScene?.audioOffsetSeconds ??
-    (original.sceneOffsets?.[clip.startScene] ?? 0);
+  const audioStartOffset =
+    firstOrigScene?.audioOffsetSeconds ?? original.sceneOffsets?.[clip.startScene] ?? 0;
 
   // Re-map scene offsets relative to the clip's audio start
   const clipSceneOffsets = reindexed.map((_, i) => {
     const origIdx = clip.startScene + i;
-    const origOffset = original.sceneOffsets?.[origIdx] ??
-      (original.scenes[origIdx]?.audioOffsetSeconds ?? 0);
+    const origOffset =
+      original.sceneOffsets?.[origIdx] ?? original.scenes[origIdx]?.audioOffsetSeconds ?? 0;
     return origOffset - audioStartOffset;
   });
 
@@ -241,9 +242,9 @@ async function main() {
 
     console.log(
       `  \uD83D\uDCF1 Short #${i + 1} (${clip.label}): ` +
-      `scenes ${clip.startScene}-${clip.endScene}, ` +
-      `${miniStoryboard.scenes.length} scenes, ` +
-      `${miniStoryboard.durationInFrames} frames (~${clip.estimatedDuration}s)`,
+        `scenes ${clip.startScene}-${clip.endScene}, ` +
+        `${miniStoryboard.scenes.length} scenes, ` +
+        `${miniStoryboard.durationInFrames} frames (~${clip.estimatedDuration}s)`
     );
 
     try {
@@ -264,9 +265,7 @@ async function main() {
         inputProps: { storyboard: miniStoryboard },
         concurrency: 6,
         onProgress: ({ progress }) => {
-          process.stdout.write(
-            `\r    Rendering short-${i + 1}: ${(progress * 100).toFixed(0)}%`,
-          );
+          process.stdout.write(`\r    Rendering short-${i + 1}: ${(progress * 100).toFixed(0)}%`);
         },
       });
 
@@ -286,9 +285,7 @@ async function main() {
 
       successCount++;
     } catch (err: any) {
-      console.error(
-        `\n    \u274C Short #${i + 1} failed: ${err.message?.slice(0, 200)}`,
-      );
+      console.error(`\n    \u274C Short #${i + 1} failed: ${err.message?.slice(0, 200)}`);
     }
   }
 
@@ -308,9 +305,7 @@ async function main() {
       instagramReel: `reels/reel-${i + 1}.mp4`,
     })),
   };
-  const metadataPath = path.join(
-    path.resolve('output'), 'shorts', 'metadata.json',
-  );
+  const metadataPath = path.join(path.resolve('output'), 'shorts', 'metadata.json');
   fs.writeFileSync(metadataPath, JSON.stringify(metadata, null, 2));
 
   console.log(`\n\u2705 Done! ${successCount}/${clips.length} shorts + reels rendered`);

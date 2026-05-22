@@ -17,7 +17,14 @@
  *   />
  */
 import React from 'react';
-import { useCurrentFrame, useVideoConfig, interpolate, spring, Easing, AbsoluteFill } from 'remotion';
+import {
+  useCurrentFrame,
+  useVideoConfig,
+  interpolate,
+  spring,
+  Easing,
+  AbsoluteFill,
+} from 'remotion';
 import { createNoise } from './seeded-noise';
 
 interface CompareSplitProps {
@@ -131,7 +138,15 @@ export const CompareSplit: React.FC<CompareSplitProps> = ({
         </div>
 
         {/* Content */}
-        <div style={{ width: '90%', height: '70%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div
+          style={{
+            width: '90%',
+            height: '70%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
           {left}
         </div>
       </div>
@@ -183,7 +198,15 @@ export const CompareSplit: React.FC<CompareSplitProps> = ({
         </div>
 
         {/* Content */}
-        <div style={{ width: '90%', height: '70%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div
+          style={{
+            width: '90%',
+            height: '70%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
           {right}
         </div>
       </div>

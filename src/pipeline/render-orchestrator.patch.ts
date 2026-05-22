@@ -17,11 +17,7 @@ import { spawnSync } from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
 
-import {
-  type VideoMetrics,
-  scoreRetention,
-  formatRetentionComment,
-} from '../lib/retention-proxy';
+import { type VideoMetrics, scoreRetention, formatRetentionComment } from '../lib/retention-proxy';
 
 // ─── Retention threshold ──────────────────────────────────────────────────────
 
@@ -49,12 +45,10 @@ export interface RetentionCheckResult {
 export async function runRetentionCheck(
   videoPath: string,
   topic: string,
-  title: string,
+  title: string
 ): Promise<RetentionCheckResult> {
   if (!fs.existsSync(videoPath)) {
-    throw new Error(
-      `[retention-gate] Rendered video not found at: ${videoPath}`,
-    );
+    throw new Error(`[retention-gate] Rendered video not found at: ${videoPath}`);
   }
 
   console.log(`\n[retention-gate] Checking retention for: ${path.basename(videoPath)}`);
@@ -65,7 +59,9 @@ export async function runRetentionCheck(
   // Score
   const result = scoreRetention(metrics);
 
-  console.log(`[retention-gate] Score: ${result.totalScore}/100 (threshold: ${RETENTION_GATE_THRESHOLD})`);
+  console.log(
+    `[retention-gate] Score: ${result.totalScore}/100 (threshold: ${RETENTION_GATE_THRESHOLD})`
+  );
   for (const section of result.sections) {
     const icon = section.score >= 70 ? '✅' : section.score >= 50 ? '⚠️' : '❌';
     console.log(`  ${icon} ${section.section}: ${section.score}/100`);
@@ -96,9 +92,9 @@ export async function runRetentionCheck(
         prComment: formatRetentionComment(result),
       },
       null,
-      2,
+      2
     ),
-    'utf8',
+    'utf8'
   );
 
   console.log(`[retention-gate] Report written to: ${reportPath}`);
@@ -107,7 +103,7 @@ export async function runRetentionCheck(
     throw new Error(
       `[retention-gate] FAIL: Score ${result.totalScore}/100 < ${RETENTION_GATE_THRESHOLD}. ` +
         `Video will NOT be uploaded. Fix the following:\n` +
-        result.recommendations.slice(0, 3).join('\n'),
+        result.recommendations.slice(0, 3).join('\n')
     );
   }
 
@@ -126,7 +122,7 @@ function extractMetricsFromVideo(videoPath: string, title: string): VideoMetrics
   const probeResult = spawnSync(
     'ffprobe',
     ['-v', 'quiet', '-print_format', 'json', '-show_streams', '-show_format', videoPath],
-    { encoding: 'utf8' },
+    { encoding: 'utf8' }
   );
 
   let durationSeconds = 60; // safe default
@@ -140,7 +136,7 @@ function extractMetricsFromVideo(videoPath: string, title: string): VideoMetrics
       };
       durationSeconds = parseFloat(probe.format.duration) || 60;
       captionPresence = probe.streams.some(
-        (s) => s.codec_type === 'subtitle' || s.codec_type === 'data',
+        (s) => s.codec_type === 'subtitle' || s.codec_type === 'data'
       );
     } catch {
       // Use defaults
@@ -152,7 +148,7 @@ function extractMetricsFromVideo(videoPath: string, title: string): VideoMetrics
   const loudnormResult = spawnSync(
     'ffmpeg',
     ['-i', videoPath, '-af', 'loudnorm=I=-16:TP=-1.5:LRA=11:print_format=json', '-f', 'null', '-'],
-    { encoding: 'utf8' },
+    { encoding: 'utf8' }
   );
   if (loudnormResult.status === 0 || loudnormResult.stderr) {
     const jsonMatch = (loudnormResult.stderr ?? '').match(/\{[\s\S]*"input_lra"[\s\S]*?\}/);
@@ -170,12 +166,24 @@ function extractMetricsFromVideo(videoPath: string, title: string): VideoMetrics
   const sceneResult = spawnSync(
     'ffprobe',
     [
-      '-v', 'quiet', '-select_streams', 'v', '-show_frames',
-      '-read_intervals', `%+${Math.min(durationSeconds, 120)}`,
-      '-f', 'lavfi', '-i', `movie=${videoPath},select=gt(scene\\,0.3)`,
-      '-show_entries', 'frame=pts_time', '-of', 'csv=p=0', videoPath,
+      '-v',
+      'quiet',
+      '-select_streams',
+      'v',
+      '-show_frames',
+      '-read_intervals',
+      `%+${Math.min(durationSeconds, 120)}`,
+      '-f',
+      'lavfi',
+      '-i',
+      `movie=${videoPath},select=gt(scene\\,0.3)`,
+      '-show_entries',
+      'frame=pts_time',
+      '-of',
+      'csv=p=0',
+      videoPath,
     ],
-    { encoding: 'utf8' },
+    { encoding: 'utf8' }
   );
   const sceneCuts = (sceneResult.stdout ?? '').split('\n').filter(Boolean).length;
   const cutsPerMinute = (sceneCuts / durationSeconds) * 60;

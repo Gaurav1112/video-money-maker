@@ -1,14 +1,7 @@
 import React from 'react';
 import { useCurrentFrame, AbsoluteFill, useVideoConfig, spring, interpolate } from 'remotion';
 import { COLORS, FONTS } from '../lib/theme';
-import {
-  fadeIn,
-  slideUp,
-  springIn,
-  springScale,
-  pulseGlow,
-  stagger,
-} from '../lib/animations';
+import { fadeIn, slideUp, springIn, springScale, pulseGlow, stagger } from '../lib/animations';
 
 interface OutroSlideProps {
   topic?: string;
@@ -27,7 +20,7 @@ interface OutroSlideProps {
 const DEFAULT_TAKEAWAYS = [
   'You can explain this concept clearly',
   'You know the key trade-offs and edge cases',
-  'You\'re ready for interview questions on this topic',
+  "You're ready for interview questions on this topic",
 ];
 
 const FEATURES = [
@@ -51,35 +44,30 @@ const OutroSlide: React.FC<OutroSlideProps> = ({
   const glowPulse = pulseGlow(frame, 0.1, 0.4, 1.0);
 
   // Subscribe icon pulse (starts at frame 90)
-  const subscribePulse = frame >= 90
-    ? pulseGlow(frame, 0.15, 0.7, 1.0)
-    : 0;
+  const subscribePulse = frame >= 90 ? pulseGlow(frame, 0.15, 0.7, 1.0) : 0;
 
   // ── Bell RING animation (oscillating rotation) ────────────────────────────
   const bellRingFrame = Math.max(0, frame - 90);
-  const bellRotation = frame >= 90
-    ? Math.sin(bellRingFrame * 0.8) * Math.max(0, 25 - bellRingFrame * 0.5)
-    : 0;
+  const bellRotation =
+    frame >= 90 ? Math.sin(bellRingFrame * 0.8) * Math.max(0, 25 - bellRingFrame * 0.5) : 0;
 
   // Scale for subscribe bell icon
-  const subscribeScale = frame >= 90
-    ? 0.9 + springIn(frame, 90, fps) * 0.1
-    : 0.9;
+  const subscribeScale = frame >= 90 ? 0.9 + springIn(frame, 90, fps) * 0.1 : 0.9;
 
   // ── Progress bar: "You learned X% of {topic}" ────────────────────────────
   const progressBarWidth = interpolate(frame, [5, 40], [0, learnedPercent], {
-    extrapolateLeft: 'clamp', extrapolateRight: 'clamp',
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
   });
 
   // ── Shimmer sweep on CTA button ───────────────────────────────────────────
   const shimmerX = interpolate(frame % 60, [0, 60], [-100, 400], {
-    extrapolateLeft: 'clamp', extrapolateRight: 'clamp',
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
   });
 
   // ── Animated arrow for "Next Episode" card ────────────────────────────────
-  const arrowBounce = frame >= 100
-    ? Math.sin((frame - 100) * 0.15) * 6
-    : 0;
+  const arrowBounce = frame >= 100 ? Math.sin((frame - 100) * 0.15) * 6 : 0;
 
   return (
     <AbsoluteFill
@@ -124,29 +112,48 @@ const OutroSlide: React.FC<OutroSlideProps> = ({
       />
 
       {/* ── Progress bar: "You learned X% of {topic}" ── */}
-      <div style={{
-        width: '100%',
-        opacity: fadeIn(frame, 0, 15),
-        transform: `translateY(${slideUp(frame, 0, 15, 30)}px)`,
-        marginBottom: 20,
-      }}>
-        <div style={{
-          fontSize: 15, fontFamily: FONTS.text, fontWeight: 600,
-          color: COLORS.gray, marginBottom: 8,
-        }}>
-          You learned <span style={{ color: COLORS.teal, fontWeight: 800 }}>{Math.round(progressBarWidth)}%</span>
+      <div
+        style={{
+          width: '100%',
+          opacity: fadeIn(frame, 0, 15),
+          transform: `translateY(${slideUp(frame, 0, 15, 30)}px)`,
+          marginBottom: 20,
+        }}
+      >
+        <div
+          style={{
+            fontSize: 15,
+            fontFamily: FONTS.text,
+            fontWeight: 600,
+            color: COLORS.gray,
+            marginBottom: 8,
+          }}
+        >
+          You learned{' '}
+          <span style={{ color: COLORS.teal, fontWeight: 800 }}>
+            {Math.round(progressBarWidth)}%
+          </span>
           {topic ? ` of ${topic}` : ''}
         </div>
-        <div style={{
-          width: '100%', height: 8, borderRadius: 4,
-          background: `${COLORS.darkAlt}`, overflow: 'hidden',
-          border: `1px solid ${COLORS.indigo}30`,
-        }}>
-          <div style={{
-            width: `${progressBarWidth}%`, height: '100%', borderRadius: 4,
-            background: `linear-gradient(90deg, ${COLORS.teal}, ${COLORS.gold})`,
-            boxShadow: `0 0 12px ${COLORS.teal}60`,
-          }} />
+        <div
+          style={{
+            width: '100%',
+            height: 8,
+            borderRadius: 4,
+            background: `${COLORS.darkAlt}`,
+            overflow: 'hidden',
+            border: `1px solid ${COLORS.indigo}30`,
+          }}
+        >
+          <div
+            style={{
+              width: `${progressBarWidth}%`,
+              height: '100%',
+              borderRadius: 4,
+              background: `linear-gradient(90deg, ${COLORS.teal}, ${COLORS.gold})`,
+              boxShadow: `0 0 12px ${COLORS.teal}60`,
+            }}
+          />
         </div>
       </div>
 
@@ -186,9 +193,7 @@ const OutroSlide: React.FC<OutroSlideProps> = ({
                   alignItems: 'center',
                   gap: 14,
                   opacity: fadeIn(frame, delay, 18),
-                  transform: `translateX(${
-                    -30 + springIn(frame, delay, fps) * 30
-                  }px)`,
+                  transform: `translateX(${-30 + springIn(frame, delay, fps) * 30}px)`,
                 }}
               >
                 {/* Checkmark badge — spring bounce */}
@@ -316,9 +321,9 @@ const OutroSlide: React.FC<OutroSlideProps> = ({
             fontFamily: FONTS.heading,
             fontWeight: 900,
             color: COLORS.textPrimary,
-            textShadow: `0 0 ${20 + glowPulse * 30}px ${COLORS.teal}${
-              Math.round(glowPulse * 200).toString(16).padStart(2, '0')
-            }, 0 0 60px ${COLORS.teal}30`,
+            textShadow: `0 0 ${20 + glowPulse * 30}px ${COLORS.teal}${Math.round(glowPulse * 200)
+              .toString(16)
+              .padStart(2, '0')}, 0 0 60px ${COLORS.teal}30`,
             letterSpacing: -0.5,
             marginBottom: 16,
           }}
@@ -346,15 +351,18 @@ const OutroSlide: React.FC<OutroSlideProps> = ({
           }}
         >
           {/* Shimmer sweep — bright line moving across */}
-          <div style={{
-            position: 'absolute',
-            top: 0, bottom: 0,
-            left: shimmerX,
-            width: 60,
-            background: `linear-gradient(90deg, transparent, ${COLORS.textPrimary}50, ${COLORS.textPrimary}80, ${COLORS.textPrimary}50, transparent)`,
-            transform: 'skewX(-20deg)',
-            pointerEvents: 'none',
-          }} />
+          <div
+            style={{
+              position: 'absolute',
+              top: 0,
+              bottom: 0,
+              left: shimmerX,
+              width: 60,
+              background: `linear-gradient(90deg, transparent, ${COLORS.textPrimary}50, ${COLORS.textPrimary}80, ${COLORS.textPrimary}50, transparent)`,
+              transform: 'skewX(-20deg)',
+              pointerEvents: 'none',
+            }}
+          />
           <span style={{ fontSize: 22 }}>🚀</span>
           <span
             style={{
@@ -452,9 +460,7 @@ const OutroSlide: React.FC<OutroSlideProps> = ({
                   marginTop: 2,
                 }}
               >
-                {topic
-                  ? `Get the complete ${topic} series`
-                  : 'Daily interview prep lessons'}
+                {topic ? `Get the complete ${topic} series` : 'Daily interview prep lessons'}
               </div>
             </div>
           </div>
@@ -473,61 +479,97 @@ const OutroSlide: React.FC<OutroSlideProps> = ({
               paddingLeft: 20,
               paddingRight: 20,
               opacity: fadeIn(frame, 100, 20),
-              transform: `translateX(${
-                40 - springIn(frame, 100, fps) * 40
-              }px)`,
+              transform: `translateX(${40 - springIn(frame, 100, fps) * 40}px)`,
               boxShadow: `0 2px 24px ${COLORS.gold}15`,
               position: 'relative' as const,
             }}
           >
             {/* "NEXT EPISODE" label */}
-            <div style={{
-              fontSize: 11, fontFamily: FONTS.text, fontWeight: 700,
-              letterSpacing: 3, color: COLORS.gold, textTransform: 'uppercase',
-              marginBottom: 6,
-            }}>
+            <div
+              style={{
+                fontSize: 11,
+                fontFamily: FONTS.text,
+                fontWeight: 700,
+                letterSpacing: 3,
+                color: COLORS.gold,
+                textTransform: 'uppercase',
+                marginBottom: 6,
+              }}
+            >
               ▶ Next Episode
             </div>
 
             {/* Next topic title */}
-            <div style={{
-              fontSize: 20, fontFamily: FONTS.heading, fontWeight: 700,
-              color: COLORS.textPrimary, lineHeight: 1.3, marginBottom: 8,
-            }}>
+            <div
+              style={{
+                fontSize: 20,
+                fontFamily: FONTS.heading,
+                fontWeight: 700,
+                color: COLORS.textPrimary,
+                lineHeight: 1.3,
+                marginBottom: 8,
+              }}
+            >
               {nextTopic}
             </div>
 
             {/* Mini preview blurb */}
-            <div style={{
-              fontSize: 13, fontFamily: FONTS.text, color: COLORS.gray, lineHeight: 1.4,
-            }}>
+            <div
+              style={{
+                fontSize: 13,
+                fontFamily: FONTS.text,
+                color: COLORS.gray,
+                lineHeight: 1.4,
+              }}
+            >
               Concepts · Patterns · Interview Questions
             </div>
 
             {/* Play arrow with bounce animation */}
-            <div style={{
-              marginTop: 10, display: 'flex', alignItems: 'center', gap: 6,
-              transform: `translateX(${arrowBounce}px)`,
-            }}>
-              <div style={{
-                width: 28, height: 28, borderRadius: '50%',
-                background: `linear-gradient(135deg, ${COLORS.gold}, ${COLORS.saffron})`,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: 12, boxShadow: `0 0 12px ${COLORS.gold}40`,
-              }}>
+            <div
+              style={{
+                marginTop: 10,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+                transform: `translateX(${arrowBounce}px)`,
+              }}
+            >
+              <div
+                style={{
+                  width: 28,
+                  height: 28,
+                  borderRadius: '50%',
+                  background: `linear-gradient(135deg, ${COLORS.gold}, ${COLORS.saffron})`,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: 12,
+                  boxShadow: `0 0 12px ${COLORS.gold}40`,
+                }}
+              >
                 ▶
               </div>
-              <span style={{
-                fontSize: 13, fontFamily: FONTS.text, color: COLORS.gold, fontWeight: 600,
-              }}>
+              <span
+                style={{
+                  fontSize: 13,
+                  fontFamily: FONTS.text,
+                  color: COLORS.gold,
+                  fontWeight: 600,
+                }}
+              >
                 Watch next
               </span>
               {/* Animated arrow pointing right */}
-              <span style={{
-                fontSize: 18, color: COLORS.gold, marginLeft: 4,
-                transform: `translateX(${arrowBounce * 0.5}px)`,
-                display: 'inline-block',
-              }}>
+              <span
+                style={{
+                  fontSize: 18,
+                  color: COLORS.gold,
+                  marginLeft: 4,
+                  transform: `translateX(${arrowBounce * 0.5}px)`,
+                  display: 'inline-block',
+                }}
+              >
                 →
               </span>
             </div>
@@ -535,56 +577,98 @@ const OutroSlide: React.FC<OutroSlideProps> = ({
         )}
 
         {/* ── QR Code placeholder — "Scan to practice" ── */}
-        <div style={{
-          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
-          opacity: fadeIn(frame, 105, 20),
-          transform: `scale(${springScale(frame, 105, fps)})`,
-        }}>
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 8,
+            opacity: fadeIn(frame, 105, 20),
+            transform: `scale(${springScale(frame, 105, fps)})`,
+          }}
+        >
           {/* Stylized QR square */}
-          <div style={{
-            width: 72, height: 72, borderRadius: 8,
-            border: `3px solid ${COLORS.teal}`,
-            background: COLORS.darkAlt,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            position: 'relative' as const, overflow: 'hidden',
-            boxShadow: `0 0 16px ${COLORS.teal}30`,
-          }}>
+          <div
+            style={{
+              width: 72,
+              height: 72,
+              borderRadius: 8,
+              border: `3px solid ${COLORS.teal}`,
+              background: COLORS.darkAlt,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              position: 'relative' as const,
+              overflow: 'hidden',
+              boxShadow: `0 0 16px ${COLORS.teal}30`,
+            }}
+          >
             {/* Inner QR pattern squares */}
             {[
               { top: 6, left: 6, size: 16 },
               { top: 6, left: 50, size: 16 },
               { top: 50, left: 6, size: 16 },
             ].map((sq, i) => (
-              <div key={`qr-${i}`} style={{
-                position: 'absolute', top: sq.top, left: sq.left,
-                width: sq.size, height: sq.size, borderRadius: 2,
-                border: `2px solid ${COLORS.teal}`,
-                background: `${COLORS.teal}20`,
-              }}>
-                <div style={{
-                  position: 'absolute', top: 3, left: 3,
-                  width: 6, height: 6, borderRadius: 1,
-                  background: COLORS.teal,
-                }} />
+              <div
+                key={`qr-${i}`}
+                style={{
+                  position: 'absolute',
+                  top: sq.top,
+                  left: sq.left,
+                  width: sq.size,
+                  height: sq.size,
+                  borderRadius: 2,
+                  border: `2px solid ${COLORS.teal}`,
+                  background: `${COLORS.teal}20`,
+                }}
+              >
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: 3,
+                    left: 3,
+                    width: 6,
+                    height: 6,
+                    borderRadius: 1,
+                    background: COLORS.teal,
+                  }}
+                />
               </div>
             ))}
             {/* Center dots pattern */}
             {[
-              { top: 28, left: 28 }, { top: 28, left: 38 },
-              { top: 38, left: 28 }, { top: 38, left: 38 },
-              { top: 33, left: 48 }, { top: 48, left: 33 },
+              { top: 28, left: 28 },
+              { top: 28, left: 38 },
+              { top: 38, left: 28 },
+              { top: 38, left: 38 },
+              { top: 33, left: 48 },
+              { top: 48, left: 33 },
             ].map((dot, i) => (
-              <div key={`qrd-${i}`} style={{
-                position: 'absolute', top: dot.top, left: dot.left,
-                width: 4, height: 4, borderRadius: 1,
-                background: COLORS.teal, opacity: 0.7,
-              }} />
+              <div
+                key={`qrd-${i}`}
+                style={{
+                  position: 'absolute',
+                  top: dot.top,
+                  left: dot.left,
+                  width: 4,
+                  height: 4,
+                  borderRadius: 1,
+                  background: COLORS.teal,
+                  opacity: 0.7,
+                }}
+              />
             ))}
           </div>
-          <div style={{
-            fontSize: 10, fontFamily: FONTS.text, fontWeight: 600,
-            color: COLORS.gray, letterSpacing: 1, textTransform: 'uppercase',
-          }}>
+          <div
+            style={{
+              fontSize: 10,
+              fontFamily: FONTS.text,
+              fontWeight: 600,
+              color: COLORS.gray,
+              letterSpacing: 1,
+              textTransform: 'uppercase',
+            }}
+          >
             Scan to practice
           </div>
         </div>

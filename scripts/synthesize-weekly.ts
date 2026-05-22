@@ -51,7 +51,7 @@ export function isoWeekOf(d: Date): string {
   // Thursday of current week determines the year.
   t.setUTCDate(t.getUTCDate() + 4 - (t.getUTCDay() || 7));
   const yearStart = new Date(Date.UTC(t.getUTCFullYear(), 0, 1));
-  const weekNo = Math.ceil((((t.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
+  const weekNo = Math.ceil(((t.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
   return `${t.getUTCFullYear()}-W${String(weekNo).padStart(2, '0')}`;
 }
 
@@ -73,7 +73,8 @@ function readShortsForWeek(isoWeek: string): Short[] {
       out.push({
         id: raw.videoId || raw.id || f.replace('.json', ''),
         title: raw.title || raw.hook || 'Untitled Short',
-        youtubeUrl: raw.youtubeUrl || (raw.videoId ? `https://youtube.com/shorts/${raw.videoId}` : ''),
+        youtubeUrl:
+          raw.youtubeUrl || (raw.videoId ? `https://youtube.com/shorts/${raw.videoId}` : ''),
         publishedAt: raw.publishedAt,
         topic: raw.topic || 'tech',
       });
@@ -151,7 +152,9 @@ async function main() {
   if (hashnodeResult) {
     console.log(`[weekly-article] hashnode already posted: ${hashnodeResult.url}`);
   } else if (!hashnodeKey || !hashnodePubId) {
-    console.log(`[weekly-article] HASHNODE_API_KEY or HASHNODE_PUBLICATION_ID missing — skipping Hashnode`);
+    console.log(
+      `[weekly-article] HASHNODE_API_KEY or HASHNODE_PUBLICATION_ID missing — skipping Hashnode`
+    );
   } else {
     try {
       hashnodeResult = await publishToHashnode(article, hashnodeKey, hashnodePubId);

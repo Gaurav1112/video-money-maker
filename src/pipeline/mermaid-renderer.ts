@@ -21,9 +21,13 @@ export function renderMermaidToSvg(mermaidCode: string): string {
   fs.writeFileSync(inputPath, mermaidCode);
 
   try {
-    execFileSync('npx', ['mmdc', '-i', inputPath, '-o', outputPath, '-t', 'dark', '-b', 'transparent'], {
-      timeout: 30000,
-    });
+    execFileSync(
+      'npx',
+      ['mmdc', '-i', inputPath, '-o', outputPath, '-t', 'dark', '-b', 'transparent'],
+      {
+        timeout: 30000,
+      }
+    );
     const svg = fs.readFileSync(outputPath, 'utf-8');
     fs.unlinkSync(inputPath); // cleanup
     return svg;

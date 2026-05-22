@@ -32,9 +32,7 @@ export const ZoomPulse: React.FC<ZoomPulseProps> = ({
   // Progress through the current cycle: 0 -> 1 -> 0 (ping-pong)
   const rawProgress = ((frame + phaseOffset * fps) % cycleFrames) / cycleFrames;
   // Convert to 0->1->0 triangle wave
-  const triangleWave = rawProgress <= 0.5
-    ? rawProgress * 2
-    : 2 - rawProgress * 2;
+  const triangleWave = rawProgress <= 0.5 ? rawProgress * 2 : 2 - rawProgress * 2;
 
   // Apply easeInOut for smooth motion
   const eased = Easing.inOut(Easing.ease)(triangleWave);

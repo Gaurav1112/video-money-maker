@@ -45,10 +45,13 @@ export const DataFlowParticles: React.FC<DataFlowParticlesProps> = ({
 
   // Variant colors
   const particleColor =
-    variant === 'error' ? '#EF4444' :
-    variant === 'slow' ? '#F59E0B' :
-    variant === 'fast' ? '#22C55E' :
-    color;
+    variant === 'error'
+      ? '#EF4444'
+      : variant === 'slow'
+        ? '#F59E0B'
+        : variant === 'fast'
+          ? '#22C55E'
+          : color;
 
   // Calculate bezier midpoint (slightly curved)
   const dx = toX - fromX;
@@ -91,9 +94,7 @@ export const DataFlowParticles: React.FC<DataFlowParticlesProps> = ({
         const y = (1 - t) * (1 - t) * fromY + 2 * (1 - t) * t * midY + t * t * toY;
 
         // Error variant: wiggle perpendicular to path
-        const wiggle = variant === 'error'
-          ? Math.sin(frame * 0.5 + i * 2) * 4
-          : 0;
+        const wiggle = variant === 'error' ? Math.sin(frame * 0.5 + i * 2) * 4 : 0;
 
         // Normal perpendicular
         const pathDx = 2 * (1 - t) * (midX - fromX) + 2 * t * (toX - midX);
@@ -111,10 +112,16 @@ export const DataFlowParticles: React.FC<DataFlowParticlesProps> = ({
             {trail &&
               Array.from({ length: trailLength }).map((_, ti) => {
                 const trailT = Math.max(0, t - (ti + 1) * 0.02);
-                const tx = (1 - trailT) * (1 - trailT) * fromX + 2 * (1 - trailT) * trailT * midX + trailT * trailT * toX;
-                const ty = (1 - trailT) * (1 - trailT) * fromY + 2 * (1 - trailT) * trailT * midY + trailT * trailT * toY;
+                const tx =
+                  (1 - trailT) * (1 - trailT) * fromX +
+                  2 * (1 - trailT) * trailT * midX +
+                  trailT * trailT * toX;
+                const ty =
+                  (1 - trailT) * (1 - trailT) * fromY +
+                  2 * (1 - trailT) * trailT * midY +
+                  trailT * trailT * toY;
                 const trailOpacity = (1 - (ti + 1) / (trailLength + 1)) * 0.5;
-                const trailSize = particleSize * (1 - (ti + 1) / (trailLength + 1) * 0.5);
+                const trailSize = particleSize * (1 - ((ti + 1) / (trailLength + 1)) * 0.5);
                 return (
                   <circle
                     key={ti}
@@ -128,13 +135,7 @@ export const DataFlowParticles: React.FC<DataFlowParticlesProps> = ({
               })}
 
             {/* Main particle */}
-            <circle
-              cx={finalX}
-              cy={finalY}
-              r={particleSize}
-              fill={particleColor}
-              opacity={0.9}
-            />
+            <circle cx={finalX} cy={finalY} r={particleSize} fill={particleColor} opacity={0.9} />
 
             {/* Glow */}
             <circle

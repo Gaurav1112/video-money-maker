@@ -45,15 +45,18 @@ function loadQueue(): TopicQueue {
   return JSON.parse(fs.readFileSync(QUEUE_PATH, 'utf-8'));
 }
 
-function getNextUnrendered(queue: TopicQueue, filters: {
-  priority?: string;
-  category?: string;
-}): { slug: string; session: number } | null {
+function getNextUnrendered(
+  queue: TopicQueue,
+  filters: {
+    priority?: string;
+    category?: string;
+  }
+): { slug: string; session: number } | null {
   // Priority order: high > medium > low
   const priorityOrder: Record<string, number> = { high: 0, medium: 1, low: 2 };
 
   const candidates = queue.topics
-    .filter(t => {
+    .filter((t) => {
       if (filters.priority && t.priority !== filters.priority) return false;
       if (filters.category && t.category !== filters.category) return false;
       return true;
@@ -81,11 +84,13 @@ function getNextUnrendered(queue: TopicQueue, filters: {
 function main() {
   const args = process.argv.slice(2);
 
-  const priorityArg = args.find(a => a.startsWith('--priority='))?.split('=')[1]
-    || (args.indexOf('--priority') >= 0 ? args[args.indexOf('--priority') + 1] : undefined);
+  const priorityArg =
+    args.find((a) => a.startsWith('--priority='))?.split('=')[1] ||
+    (args.indexOf('--priority') >= 0 ? args[args.indexOf('--priority') + 1] : undefined);
 
-  const categoryArg = args.find(a => a.startsWith('--category='))?.split('=')[1]
-    || (args.indexOf('--category') >= 0 ? args[args.indexOf('--category') + 1] : undefined);
+  const categoryArg =
+    args.find((a) => a.startsWith('--category='))?.split('=')[1] ||
+    (args.indexOf('--category') >= 0 ? args[args.indexOf('--category') + 1] : undefined);
 
   const listMode = args.includes('--list');
 
@@ -103,11 +108,15 @@ function main() {
       totalPublished += t.published.length;
       const remaining = t.sessions - t.rendered.length;
       if (remaining > 0) {
-        console.log(`  [${t.priority.toUpperCase().padEnd(6)}] ${t.slug}: ${t.rendered.length}/${t.sessions} rendered, ${remaining} remaining`);
+        console.log(
+          `  [${t.priority.toUpperCase().padEnd(6)}] ${t.slug}: ${t.rendered.length}/${t.sessions} rendered, ${remaining} remaining`
+        );
       }
     }
 
-    console.log(`\nTotal: ${totalRendered}/${totalSessions} sessions rendered, ${totalPublished} published`);
+    console.log(
+      `\nTotal: ${totalRendered}/${totalSessions} sessions rendered, ${totalPublished} published`
+    );
     console.log(`Remaining: ${totalSessions - totalRendered} sessions`);
     return;
   }

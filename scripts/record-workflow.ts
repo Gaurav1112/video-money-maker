@@ -117,7 +117,7 @@ async function renderWithVoice(
   quiz: QuizQuestion,
   quizIndex: number,
   audioPath: string,
-  dryRun: boolean,
+  dryRun: boolean
 ): Promise<string> {
   const episodeId = `${quiz.topic}-quiz-${quizIndex}`;
 
@@ -163,7 +163,9 @@ async function renderWithVoice(
   const outputPath = path.join(OUTPUT_DIR, `${episodeId}.mp4`);
 
   const renderCmd = [
-    'npx', 'remotion', 'render',
+    'npx',
+    'remotion',
+    'render',
     'src/compositions/index.tsx',
     'QuizShort',
     outputPath,
@@ -247,14 +249,18 @@ async function main() {
     console.log(`\n--- Next steps ---`);
     console.log(`1. Record the script above`);
     console.log(`2. Save as: public/audio/voice-recording.mp3`);
-    console.log(`3. Run: npx tsx scripts/record-workflow.ts --short ${shortNumber} --render --audio public/audio/voice-recording.mp3`);
+    console.log(
+      `3. Run: npx tsx scripts/record-workflow.ts --short ${shortNumber} --render --audio public/audio/voice-recording.mp3`
+    );
     return;
   }
 
   // ── Render mode: build video with creator's voice ──
   if (!audioPath) {
     console.error('ERROR: --render requires --audio <path-to-recording>');
-    console.error('Example: npx tsx scripts/record-workflow.ts --short 0 --render --audio public/audio/voice-recording.mp3');
+    console.error(
+      'Example: npx tsx scripts/record-workflow.ts --short 0 --render --audio public/audio/voice-recording.mp3'
+    );
     process.exit(1);
   }
 
@@ -272,7 +278,9 @@ async function main() {
   if (upload) {
     uploadToYouTube(videoPath, quiz, quizIndex);
   } else {
-    console.log(`\nTo upload: npx tsx scripts/record-workflow.ts --short ${shortNumber} --render --audio ${audioPath} --upload`);
+    console.log(
+      `\nTo upload: npx tsx scripts/record-workflow.ts --short ${shortNumber} --render --audio ${audioPath} --upload`
+    );
   }
 
   console.log(`\n========================================`);

@@ -139,7 +139,9 @@ function addDays(d: Date, days: number): Date {
  * Cycles through categories, picking one topic per category per round,
  * advancing the session counter for each topic.
  */
-function buildRotation(topics: TopicEntry[]): Array<{ slug: string; name: string; session: number }> {
+function buildRotation(
+  topics: TopicEntry[]
+): Array<{ slug: string; name: string; session: number }> {
   // Group topics by category, sorted by priority within each category
   const byCategory = new Map<string, TopicEntry[]>();
   for (const cat of CATEGORY_ORDER) {
@@ -202,7 +204,7 @@ function buildRotation(topics: TopicEntry[]): Array<{ slug: string; name: string
 function resolveFiles(
   topicSlug: string,
   session: number,
-  slotType: PublishSlotType,
+  slotType: PublishSlotType
 ): PublishEntry['files'] {
   const sessionDir = `${topicSlug}/session-${session}`;
   const longVideo = `${sessionDir}/long/${topicSlug}-s${session}.mp4`;
@@ -237,8 +239,9 @@ function main() {
   const dryRun = args.includes('--dry-run');
 
   // Parse start date
-  const startDateArg = args.find(a => a.startsWith('--start-date='))?.split('=')[1]
-    || (args.indexOf('--start-date') >= 0 ? args[args.indexOf('--start-date') + 1] : undefined);
+  const startDateArg =
+    args.find((a) => a.startsWith('--start-date='))?.split('=')[1] ||
+    (args.indexOf('--start-date') >= 0 ? args[args.indexOf('--start-date') + 1] : undefined);
 
   // Default start date: next Tuesday from today
   let startDate: Date;
@@ -280,7 +283,11 @@ function main() {
       currentDate = getNextPublishDay(currentDate, 'Tuesday');
     }
 
-    const slotTypes: Array<{ type: PublishSlotType; day: 'Tuesday' | 'Thursday' | 'Saturday'; offset: number }> = [
+    const slotTypes: Array<{
+      type: PublishSlotType;
+      day: 'Tuesday' | 'Thursday' | 'Saturday';
+      offset: number;
+    }> = [
       { type: 'long', day: 'Tuesday', offset: 0 },
       { type: 'vertical-1', day: 'Thursday', offset: 2 },
       { type: 'vertical-23', day: 'Saturday', offset: 4 },
@@ -332,7 +339,9 @@ function main() {
   console.log(`First 9 entries (3 sessions):`);
 
   for (const entry of entries.slice(0, 9)) {
-    console.log(`  ${entry.scheduledDate} (${entry.dayOfWeek.padEnd(8)}) ${entry.topic} S${entry.session} [${entry.slotType}]`);
+    console.log(
+      `  ${entry.scheduledDate} (${entry.dayOfWeek.padEnd(8)}) ${entry.topic} S${entry.session} [${entry.slotType}]`
+    );
   }
 
   if (dryRun) {

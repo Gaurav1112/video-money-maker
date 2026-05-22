@@ -45,12 +45,11 @@ const AnimatedDiagram: React.FC<AnimatedDiagramProps> = ({
 
   // Title animation
   const titleOpacity = fadeIn(frame, startFrame, 20);
-  const titleY = interpolate(
-    frame,
-    [startFrame, startFrame + 30],
-    [40, 0],
-    { extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: Easing.out(Easing.cubic) },
-  );
+  const titleY = interpolate(frame, [startFrame, startFrame + 30], [40, 0], {
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
+    easing: Easing.out(Easing.cubic),
+  });
 
   // Edges start after all nodes are in
   const edgesStartFrame = startFrame + 20 + nodes.length * NODE_STAGGER;
@@ -140,11 +139,7 @@ const AnimatedDiagram: React.FC<AnimatedDiagramProps> = ({
               refY="3.5"
               orient="auto"
             >
-              <polygon
-                points="0 0, 10 3.5, 0 7"
-                fill={COLORS.gray}
-                opacity={0.7}
-              />
+              <polygon points="0 0, 10 3.5, 0 7" fill={COLORS.gray} opacity={0.7} />
             </marker>
           </defs>
 
@@ -160,7 +155,11 @@ const AnimatedDiagram: React.FC<AnimatedDiagramProps> = ({
               frame,
               [edgeStart, edgeStart + EDGE_DRAW_DURATION],
               [0, 1],
-              { extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: Easing.out(Easing.cubic) },
+              {
+                extrapolateLeft: 'clamp',
+                extrapolateRight: 'clamp',
+                easing: Easing.out(Easing.cubic),
+              }
             );
 
             // Calculate edge positions as percentages
@@ -195,7 +194,7 @@ const AnimatedDiagram: React.FC<AnimatedDiagramProps> = ({
               frame,
               [edgeStart + EDGE_DRAW_DURATION, edgeStart + EDGE_DRAW_DURATION + 10],
               [0, 1],
-              { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
+              { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }
             );
 
             return (
@@ -255,11 +254,7 @@ const AnimatedDiagram: React.FC<AnimatedDiagramProps> = ({
           const nodeColor = node.color || COLORS.indigo;
 
           // Subtle hover effect
-          const breathe = interpolate(
-            Math.sin(frame * 0.04 + i * 1.5),
-            [-1, 1],
-            [0.97, 1.03],
-          );
+          const breathe = interpolate(Math.sin(frame * 0.04 + i * 1.5), [-1, 1], [0.97, 1.03]);
 
           return (
             <div

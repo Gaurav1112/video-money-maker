@@ -46,7 +46,7 @@ const KEYWORD_TO_COMPONENT: Record<string, string> = {
   vertex: 'node',
   stack: 'stack',
   heap: 'heap',
-  'cdn': 'cdn',
+  cdn: 'cdn',
   'api gateway': 'gateway',
   gateway: 'gateway',
   producer: 'producer',
@@ -62,7 +62,7 @@ export interface PulseState {
 
 export function usePulseOnMention(
   wordTimestamps: Array<{ word: string; start: number; end: number }> | undefined,
-  sceneStartFrame: number,
+  sceneStartFrame: number
 ): PulseState {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
@@ -115,12 +115,9 @@ export function usePulseOnMention(
 export function getPulseStyle(
   componentId: string,
   pulseState: PulseState,
-  baseColor: string,
+  baseColor: string
 ): CSSProperties {
-  if (
-    pulseState.activeComponent !== componentId ||
-    pulseState.pulseIntensity <= 0
-  ) {
+  if (pulseState.activeComponent !== componentId || pulseState.pulseIntensity <= 0) {
     return {};
   }
   const i = pulseState.pulseIntensity;

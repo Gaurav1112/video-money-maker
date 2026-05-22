@@ -4,7 +4,7 @@ import { getYouTubeAuthClient } from './youtube-oauth.js';
 
 export interface VideoMetrics {
   videoId: string;
-  fetchedAt: string;           // ISO datetime
+  fetchedAt: string; // ISO datetime
   views: number;
   likes: number;
   comments: number;
@@ -43,13 +43,16 @@ export async function fetchVideoMetrics(videoIds: string[], days = 30): Promise<
   for (const videoId of videoIds) {
     const resp = await analytics.reports.query({
       ids: 'channel==MINE',
-      startDate, endDate,
+      startDate,
+      endDate,
       metrics: METRIC_NAMES.join(','),
       filters: `video==${videoId}`,
     });
     const row = resp.data.rows?.[0];
     if (!row) {
-      console.warn(`[youtube-analytics] no rows for videoId=${videoId} (${startDate}→${endDate}), skipping`);
+      console.warn(
+        `[youtube-analytics] no rows for videoId=${videoId} (${startDate}→${endDate}), skipping`
+      );
       continue;
     }
     out.push({

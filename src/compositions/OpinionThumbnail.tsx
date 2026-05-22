@@ -63,8 +63,7 @@ export const OpinionThumbnail: React.FC<OpinionThumbnailProps> = ({ title, slug 
     <AbsoluteFill
       style={{
         // Deep editorial gradient — newspaper-meets-cinema palette
-        background:
-          'radial-gradient(ellipse at 30% 30%, #1F2937 0%, #0B1220 60%, #050810 100%)',
+        background: 'radial-gradient(ellipse at 30% 30%, #1F2937 0%, #0B1220 60%, #050810 100%)',
         width: 1280,
         height: 720,
       }}
@@ -160,8 +159,7 @@ export const OpinionThumbnail: React.FC<OpinionThumbnailProps> = ({ title, slug 
               color: i === 1 ? '#FBBF24' : '#FFFFFF',
               lineHeight: 1.05,
               letterSpacing: -2,
-              textShadow:
-                '0 4px 24px rgba(0,0,0,0.85), 0 0 60px rgba(37,99,235,0.25)',
+              textShadow: '0 4px 24px rgba(0,0,0,0.85), 0 0 60px rgba(37,99,235,0.25)',
             }}
           >
             {line}
@@ -183,10 +181,7 @@ export const OpinionThumbnail: React.FC<OpinionThumbnailProps> = ({ title, slug 
           boxShadow: '0 0 40px rgba(37,99,235,0.5)',
         }}
       >
-        <Img
-          src={avatarSrc}
-          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-        />
+        <Img src={avatarSrc} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
       </div>
 
       {/* Bottom brand strip */}

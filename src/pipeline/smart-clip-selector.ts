@@ -9,10 +9,10 @@ import type { Scene, Storyboard } from '../types';
 
 export interface SubtopicClip {
   startScene: number;
-  endScene: number;       // inclusive
+  endScene: number; // inclusive
   heading: string;
   archetype: 'interview' | 'code' | 'problem' | 'subtopic';
-  duration: number;       // seconds
+  duration: number; // seconds
   score: number;
   hookText: string;
 }
@@ -21,10 +21,10 @@ export interface SubtopicClip {
 
 interface SceneGroup {
   heading: string;
-  startScene: number;   // index into the original scenes array
-  endScene: number;     // inclusive
+  startScene: number; // index into the original scenes array
+  endScene: number; // inclusive
   archetype: 'interview' | 'code' | 'problem' | 'subtopic';
-  duration: number;     // seconds
+  duration: number; // seconds
   sceneCount: number;
 }
 
@@ -36,7 +36,10 @@ function detectArchetype(scenes: Scene[]): SceneGroup['archetype'] {
   if (types.includes('code')) return 'code';
 
   // Check narration/content for problem-like keywords
-  const text = scenes.map((s) => `${s.narration ?? ''} ${s.content ?? ''}`).join(' ').toLowerCase();
+  const text = scenes
+    .map((s) => `${s.narration ?? ''} ${s.content ?? ''}`)
+    .join(' ')
+    .toLowerCase();
   if (/problem|challenge|edge.?case|tricky|pitfall|mistake|wrong|fail|bug/.test(text)) {
     return 'problem';
   }
@@ -46,11 +49,7 @@ function detectArchetype(scenes: Scene[]): SceneGroup['archetype'] {
 
 // ── selectSubtopicClips ──────────────────────────────────────────────────────
 
-export function selectSubtopicClips(
-  scenes: Scene[],
-  topic: string,
-  fps: number,
-): SubtopicClip[] {
+export function selectSubtopicClips(scenes: Scene[], topic: string, fps: number): SubtopicClip[] {
   // 1. Filter out title scenes (keep everything else)
   const indexedScenes = scenes
     .map((s, i) => ({ scene: s, originalIndex: i }))
@@ -64,15 +63,13 @@ export function selectSubtopicClips(
   let groupStart = 0;
 
   for (let i = 1; i <= indexedScenes.length; i++) {
-    const heading = i < indexedScenes.length
-      ? (indexedScenes[i].scene.heading ?? '')
-      : '__END__';
+    const heading = i < indexedScenes.length ? (indexedScenes[i].scene.heading ?? '') : '__END__';
 
     if (heading !== currentHeading || i === indexedScenes.length) {
       const groupScenes = indexedScenes.slice(groupStart, i);
       const duration = groupScenes.reduce(
         (sum, { scene }) => sum + (scene.endFrame - scene.startFrame) / fps,
-        0,
+        0
       );
 
       groups.push({
@@ -96,10 +93,18 @@ export function selectSubtopicClips(
     // Base score by archetype
     let score = 0;
     switch (group.archetype) {
-      case 'interview': score = 100; break;
-      case 'code':      score = 80;  break;
-      case 'problem':   score = 90;  break;
-      case 'subtopic':  score = 50;  break;
+      case 'interview':
+        score = 100;
+        break;
+      case 'code':
+        score = 80;
+        break;
+      case 'problem':
+        score = 90;
+        break;
+      case 'subtopic':
+        score = 50;
+        break;
     }
 
     // Bonus for sweet-spot duration (30-50 seconds)
@@ -118,7 +123,7 @@ export function selectSubtopicClips(
   // 4. Build ONE best reel (~2:55 / 175 seconds) by merging top-scoring adjacent groups
   //    Instagram Reels can be up to 3 minutes. We target 2:55 for safety.
   const MAX_REEL_DURATION = 175; // 2 minutes 55 seconds
-  const MIN_REEL_DURATION = 60;  // at least 1 minute
+  const MIN_REEL_DURATION = 60; // at least 1 minute
 
   // Sort by score to find best starting group
   scored.sort((a, b) => b.score - a.score);
@@ -135,20 +140,28 @@ export function selectSubtopicClips(
     let clipEnd = seedGroup.endScene;
     let clipDuration = seedGroup.duration;
     let clipHeading = seedGroup.heading;
-    let clipArchetype = seedGroup.archetype;
+    const clipArchetype = seedGroup.archetype;
 
     // Expand forward: merge subsequent groups
-    for (const { group: nextGroup } of scored.filter(g => g.group.startScene > clipEnd)) {
+    for (const { group: nextGroup } of scored.filter((g) => g.group.startScene > clipEnd)) {
       // Only merge if adjacent (next group starts right after current ends)
-      if (nextGroup.startScene <= clipEnd + 2 && clipDuration + nextGroup.duration <= MAX_REEL_DURATION) {
+      if (
+        nextGroup.startScene <= clipEnd + 2 &&
+        clipDuration + nextGroup.duration <= MAX_REEL_DURATION
+      ) {
         clipEnd = nextGroup.endScene;
         clipDuration += nextGroup.duration;
       }
     }
 
     // Expand backward: merge preceding groups
-    for (const { group: prevGroup } of scored.filter(g => g.group.endScene < clipStart).reverse()) {
-      if (prevGroup.endScene >= clipStart - 2 && clipDuration + prevGroup.duration <= MAX_REEL_DURATION) {
+    for (const { group: prevGroup } of scored
+      .filter((g) => g.group.endScene < clipStart)
+      .reverse()) {
+      if (
+        prevGroup.endScene >= clipStart - 2 &&
+        clipDuration + prevGroup.duration <= MAX_REEL_DURATION
+      ) {
         clipStart = prevGroup.startScene;
         clipDuration += prevGroup.duration;
         clipHeading = prevGroup.heading; // use earlier heading
@@ -171,7 +184,9 @@ export function selectSubtopicClips(
 
   // Fallback: if no merged clip worked, just take the longest single group under 175s
   if (!bestClip) {
-    const fallback = scored.find(({ group }) => group.duration >= MIN_REEL_DURATION && group.duration <= MAX_REEL_DURATION);
+    const fallback = scored.find(
+      ({ group }) => group.duration >= MIN_REEL_DURATION && group.duration <= MAX_REEL_DURATION
+    );
     if (fallback) {
       bestClip = {
         startScene: fallback.group.startScene,
@@ -216,7 +231,7 @@ export function selectSubtopicClips(
 export function buildMiniStoryboard(
   original: Storyboard,
   clipStartScene: number,
-  clipEndScene: number,
+  clipEndScene: number
 ): Storyboard {
   // 1. Slice scenes (clipEndScene is inclusive)
   const selectedScenes = original.scenes.slice(clipStartScene, clipEndScene + 1);
@@ -238,14 +253,14 @@ export function buildMiniStoryboard(
 
   // 3. Calculate _audioStartOffset from first scene's audio position
   const firstScene = selectedScenes[0];
-  const audioStartOffset = firstScene?.audioOffsetSeconds ??
-    (original.sceneOffsets?.[clipStartScene] ?? 0);
+  const audioStartOffset =
+    firstScene?.audioOffsetSeconds ?? original.sceneOffsets?.[clipStartScene] ?? 0;
 
   // 4. Re-map sceneOffsets relative to clip start
   const clipSceneOffsets = reindexed.map((_, i) => {
     const origIdx = clipStartScene + i;
-    const origOffset = original.sceneOffsets?.[origIdx] ??
-      (original.scenes[origIdx]?.audioOffsetSeconds ?? 0);
+    const origOffset =
+      original.sceneOffsets?.[origIdx] ?? original.scenes[origIdx]?.audioOffsetSeconds ?? 0;
     return origOffset - audioStartOffset;
   });
 
@@ -268,21 +283,32 @@ export function buildMiniStoryboard(
 
 export function generateHookText(
   group: { heading: string; archetype: string },
-  topic: string,
+  topic: string
 ): string {
   const heading = group.heading || topic;
   const lower = heading.toLowerCase();
   const topicUpper = topic.toUpperCase();
 
   // Loss-aversion patterns — "you are losing something right now"
-  if (lower.includes('drop') || lower.includes('los') || lower.includes('miss') ||
-      lower.includes('silent') || lower.includes('fail') || lower.includes('break')) {
+  if (
+    lower.includes('drop') ||
+    lower.includes('los') ||
+    lower.includes('miss') ||
+    lower.includes('silent') ||
+    lower.includes('fail') ||
+    lower.includes('break')
+  ) {
     return `YOUR ${topicUpper} IS SILENTLY FAILING`;
   }
 
   // Cognitive dissonance — "what you believe is wrong"
-  if (lower.includes('myth') || lower.includes('wrong') || lower.includes('mistake') ||
-      lower.includes('misconception') || lower.includes('actually')) {
+  if (
+    lower.includes('myth') ||
+    lower.includes('wrong') ||
+    lower.includes('mistake') ||
+    lower.includes('misconception') ||
+    lower.includes('actually')
+  ) {
     return `EVERYTHING YOU KNOW ABOUT ${topicUpper} IS WRONG`;
   }
 
@@ -302,8 +328,13 @@ export function generateHookText(
   }
 
   // Curiosity gap — the "nobody tells you" pattern
-  if (lower.includes('secret') || lower.includes('hidden') || lower.includes('nobody') ||
-      lower.includes('nobody') || lower.includes('dangerous')) {
+  if (
+    lower.includes('secret') ||
+    lower.includes('hidden') ||
+    lower.includes('nobody') ||
+    lower.includes('nobody') ||
+    lower.includes('dangerous')
+  ) {
     return `THE HIDDEN COST OF ${topicUpper} NO ONE MENTIONS`;
   }
 

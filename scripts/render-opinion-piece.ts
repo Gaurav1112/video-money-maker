@@ -53,7 +53,9 @@ function parseArgs(argv: string[]): CliArgs {
   }
   const flags = new Set(argv.filter((a) => a.startsWith('--')));
   if (!slug) {
-    console.error('Usage: render-opinion-piece.ts <slug>|--episode <slug> [--skip-render] [--no-preview]');
+    console.error(
+      'Usage: render-opinion-piece.ts <slug>|--episode <slug> [--skip-render] [--no-preview]'
+    );
     process.exit(2);
   }
   return {
@@ -70,7 +72,10 @@ function toPublicRelative(absPath: string): string {
   if (!absPath) return '';
   const norm = path.resolve(absPath);
   if (norm.startsWith(PUBLIC_DIR + path.sep)) {
-    return norm.slice(PUBLIC_DIR.length + 1).split(path.sep).join('/');
+    return norm
+      .slice(PUBLIC_DIR.length + 1)
+      .split(path.sep)
+      .join('/');
   }
   return absPath;
 }
@@ -92,10 +97,7 @@ function buildLongProps(
   };
 }
 
-function buildShortProps(
-  opinion: OpinionPiece,
-  hookAudio: TTSResult
-): OpinionShortProps {
+function buildShortProps(opinion: OpinionPiece, hookAudio: TTSResult): OpinionShortProps {
   const firstNowLine = opinion.thenNow.nowLines[0] || opinion.thenNow.thenLines[0] || '';
   return {
     hookText: opinion.hook,
@@ -244,7 +246,10 @@ function deriveTags(opinion: OpinionPiece): string[] {
     .toLowerCase()
     .replace(/[^a-z0-9\s-]/g, ' ')
     .split(/\s+/)
-    .filter((w) => w.length >= 4 && !['that', 'this', 'with', 'from', 'your', 'are', 'and', 'the'].includes(w));
+    .filter(
+      (w) =>
+        w.length >= 4 && !['that', 'this', 'with', 'from', 'your', 'are', 'and', 'the'].includes(w)
+    );
   const merged = Array.from(new Set([...base, ...titleWords]));
   return merged.slice(0, 20);
 }
@@ -300,16 +305,9 @@ function buildLongYoutubeMetadata(
   const cta =
     'Subscribe for weekly opinion pieces on software engineering and leadership.\n' +
     'New episode every Sunday.';
-  const description = [
-    opinion.hook,
-    '',
-    essaySnippet,
-    '',
-    'Chapters:',
-    chaptersText,
-    '',
-    cta,
-  ].join('\n');
+  const description = [opinion.hook, '', essaySnippet, '', 'Chapters:', chaptersText, '', cta].join(
+    '\n'
+  );
 
   return {
     youtube: {
@@ -362,18 +360,24 @@ async function main(): Promise<void> {
   const md = fs.readFileSync(mdPath, 'utf-8');
   const opinion = parseOpinionPiece(md, args.slug);
   console.log(`  title : ${opinion.title}`);
-  console.log(`  sections: hook + then-now + ${opinion.pros.length} pros + ${opinion.cons.length} cons + pivot + lesson${opinion.question ? ' + question' : ''}`);
+  console.log(
+    `  sections: hook + then-now + ${opinion.pros.length} pros + ${opinion.cons.length} cons + pivot + lesson${opinion.question ? ' + question' : ''}`
+  );
 
   // Step 2 — narration plan + TTS
   const plan = buildNarrationPlan(opinion);
-  console.log(`\n[opinion-piece] Generating TTS for ${plan.length} sections (en-IN-PrabhatNeural)...`);
+  console.log(
+    `\n[opinion-piece] Generating TTS for ${plan.length} sections (en-IN-PrabhatNeural)...`
+  );
   const audios = await generateSceneAudios(
     plan.map((p) => ({ narration: p.narration, type: p.type })),
     'en-IN-PrabhatNeural',
     'indian-english'
   );
   const totalLongSec = audios.reduce((s, a) => s + (a.duration || 0), 0);
-  console.log(`  long-form narration total : ${totalLongSec.toFixed(1)}s (${(totalLongSec / 60).toFixed(1)} min)`);
+  console.log(
+    `  long-form narration total : ${totalLongSec.toFixed(1)}s (${(totalLongSec / 60).toFixed(1)} min)`
+  );
 
   // Strip frontmatter once to get the body essay text used in description.
   const essayBody = md.replace(/^---[\s\S]*?\n---\s*\n/, '').trim();

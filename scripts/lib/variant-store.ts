@@ -32,15 +32,12 @@ export interface PairedComparison {
 
 export function writeVariantRecord(dir: string, rec: VariantRecord): void {
   fs.mkdirSync(dir, { recursive: true });
-  fs.writeFileSync(
-    path.join(dir, `${rec.videoId}.json`),
-    JSON.stringify(rec, null, 2),
-  );
+  fs.writeFileSync(path.join(dir, `${rec.videoId}.json`), JSON.stringify(rec, null, 2));
 }
 
 export function readPairedComparisons(
   variantDir: string,
-  analyticsDir: string,
+  analyticsDir: string
 ): PairedComparison[] {
   if (!fs.existsSync(variantDir) || !fs.existsSync(analyticsDir)) return [];
 
@@ -48,9 +45,7 @@ export function readPairedComparisons(
   for (const f of fs.readdirSync(variantDir)) {
     if (!f.endsWith('.json')) continue;
     try {
-      const r = JSON.parse(
-        fs.readFileSync(path.join(variantDir, f), 'utf8'),
-      ) as VariantRecord;
+      const r = JSON.parse(fs.readFileSync(path.join(variantDir, f), 'utf8')) as VariantRecord;
       if (r.videoId) variants[r.videoId] = r;
     } catch {
       /* skip malformed */
@@ -61,9 +56,7 @@ export function readPairedComparisons(
   for (const f of fs.readdirSync(analyticsDir)) {
     if (!f.endsWith('.json')) continue;
     try {
-      const r = JSON.parse(
-        fs.readFileSync(path.join(analyticsDir, f), 'utf8'),
-      ) as AnalyticsRecord;
+      const r = JSON.parse(fs.readFileSync(path.join(analyticsDir, f), 'utf8')) as AnalyticsRecord;
       if (r.videoId) analytics[r.videoId] = r;
     } catch {
       /* skip malformed */
@@ -108,9 +101,7 @@ export interface FormulaSummary {
   medianCompletion: number;
 }
 
-export function summarizeByFormula(
-  pairs: PairedComparison[],
-): FormulaSummary[] {
+export function summarizeByFormula(pairs: PairedComparison[]): FormulaSummary[] {
   const byFormula: Record<string, number[]> = {};
   for (const p of pairs) {
     (byFormula[p.a.formula] ??= []).push(p.a.completion);
@@ -125,9 +116,7 @@ export function summarizeByFormula(
     .sort((x, y) => y.medianCompletion - x.medianCompletion);
 }
 
-export function pickWinningFormula(
-  pairs: PairedComparison[],
-): HookFormula | null {
+export function pickWinningFormula(pairs: PairedComparison[]): HookFormula | null {
   if (pairs.length < MIN_PAIRS) return null;
   const medians = summarizeByFormula(pairs);
   if (medians.length < 2) return null;

@@ -25,14 +25,15 @@ import type { SketchNode, SketchEdge } from './viz/SketchDiagram';
 // ---------------------------------------------------------------------------
 function getSketchDiagramData(
   templateId: string,
-  variant: string,
+  variant: string
 ): { nodes: SketchNode[]; edges: SketchEdge[]; title?: string } | null {
   try {
     // Check architecture configs
     const { ARCHITECTURE_CONFIGS } = require('./templates/architecture-configs');
     const archConfigMap = ARCHITECTURE_CONFIGS[templateId];
     if (archConfigMap) {
-      const config = archConfigMap[variant] ?? archConfigMap.overview ?? Object.values(archConfigMap)[0];
+      const config =
+        archConfigMap[variant] ?? archConfigMap.overview ?? Object.values(archConfigMap)[0];
       if (config) {
         const nodes: SketchNode[] = config.nodes.map((n: any) => ({
           id: n.id,
@@ -114,15 +115,54 @@ interface TextSectionProps {
 // ---------------------------------------------------------------------------
 // Scene type auto-detection keywords
 // ---------------------------------------------------------------------------
-const TERMINAL_KEYWORDS = ['terminal', 'command', 'docker', 'deploy', 'install', 'run', 'kubectl', 'bash', 'npm', 'pip', 'shell', 'cli', 'ssh', 'git'];
-const BROWSER_KEYWORDS = ['api', 'response', 'endpoint', 'url', 'http', 'request', 'json', 'rest', 'graphql', 'webhook', 'browser'];
-const DASHBOARD_KEYWORDS = ['monitor', 'metric', 'performance', 'latency', 'throughput', 'health', 'dashboard', 'alert', 'observability', 'grafana', 'prometheus'];
+const TERMINAL_KEYWORDS = [
+  'terminal',
+  'command',
+  'docker',
+  'deploy',
+  'install',
+  'run',
+  'kubectl',
+  'bash',
+  'npm',
+  'pip',
+  'shell',
+  'cli',
+  'ssh',
+  'git',
+];
+const BROWSER_KEYWORDS = [
+  'api',
+  'response',
+  'endpoint',
+  'url',
+  'http',
+  'request',
+  'json',
+  'rest',
+  'graphql',
+  'webhook',
+  'browser',
+];
+const DASHBOARD_KEYWORDS = [
+  'monitor',
+  'metric',
+  'performance',
+  'latency',
+  'throughput',
+  'health',
+  'dashboard',
+  'alert',
+  'observability',
+  'grafana',
+  'prometheus',
+];
 
 function detectSceneStyle(heading: string): 'terminal' | 'browser' | 'dashboard' | null {
   const h = heading.toLowerCase();
-  if (TERMINAL_KEYWORDS.some(k => h.includes(k))) return 'terminal';
-  if (BROWSER_KEYWORDS.some(k => h.includes(k))) return 'browser';
-  if (DASHBOARD_KEYWORDS.some(k => h.includes(k))) return 'dashboard';
+  if (TERMINAL_KEYWORDS.some((k) => h.includes(k))) return 'terminal';
+  if (BROWSER_KEYWORDS.some((k) => h.includes(k))) return 'browser';
+  if (DASHBOARD_KEYWORDS.some((k) => h.includes(k))) return 'dashboard';
   return null;
 }
 
@@ -132,7 +172,7 @@ function detectSceneStyle(heading: string): 'terminal' | 'browser' | 'dashboard'
 function generateTerminalCommands(
   heading: string,
   bullets: string[],
-  narration: string,
+  narration: string
 ): Array<{ cmd: string; output: string }> {
   const commands: Array<{ cmd: string; output: string }> = [];
   const h = heading.toLowerCase();
@@ -151,30 +191,51 @@ function generateTerminalCommands(
   // Generate context-appropriate commands
   if (h.includes('docker')) {
     commands.push(
-      { cmd: 'docker ps', output: 'CONTAINER ID   IMAGE          STATUS\na1b2c3d4       nginx:latest   Up 3 hours\ne5f6g7h8       redis:alpine   Up 3 hours' },
-      { cmd: 'docker logs a1b2c3d4', output: '[notice] nginx started successfully' },
+      {
+        cmd: 'docker ps',
+        output:
+          'CONTAINER ID   IMAGE          STATUS\na1b2c3d4       nginx:latest   Up 3 hours\ne5f6g7h8       redis:alpine   Up 3 hours',
+      },
+      { cmd: 'docker logs a1b2c3d4', output: '[notice] nginx started successfully' }
     );
   } else if (h.includes('kubectl') || h.includes('kubernetes')) {
     commands.push(
-      { cmd: 'kubectl get pods', output: 'NAME                  READY   STATUS    RESTARTS   AGE\napp-6d4f5b8-x7z9k    1/1     Running   0          2h\ndb-8c3e2a1-m4n6p     1/1     Running   0          2h' },
-      { cmd: 'kubectl get services', output: 'NAME         TYPE        CLUSTER-IP     PORT(S)\napp-svc      ClusterIP   10.0.0.42      8080/TCP\ndb-svc       ClusterIP   10.0.0.88      5432/TCP' },
+      {
+        cmd: 'kubectl get pods',
+        output:
+          'NAME                  READY   STATUS    RESTARTS   AGE\napp-6d4f5b8-x7z9k    1/1     Running   0          2h\ndb-8c3e2a1-m4n6p     1/1     Running   0          2h',
+      },
+      {
+        cmd: 'kubectl get services',
+        output:
+          'NAME         TYPE        CLUSTER-IP     PORT(S)\napp-svc      ClusterIP   10.0.0.42      8080/TCP\ndb-svc       ClusterIP   10.0.0.88      5432/TCP',
+      }
     );
   } else if (h.includes('npm') || h.includes('install')) {
     commands.push(
-      { cmd: 'npm install', output: 'added 847 packages in 12s\n\n142 packages are looking for funding' },
-      { cmd: 'npm run build', output: '✓ Compiled successfully in 3.2s\n✓ Build output: dist/' },
+      {
+        cmd: 'npm install',
+        output: 'added 847 packages in 12s\n\n142 packages are looking for funding',
+      },
+      { cmd: 'npm run build', output: '✓ Compiled successfully in 3.2s\n✓ Build output: dist/' }
     );
   } else if (h.includes('git')) {
     commands.push(
-      { cmd: 'git status', output: 'On branch main\nYour branch is up to date.\n\nChanges to be committed:\n  modified:   src/app.ts' },
-      { cmd: 'git log --oneline -3', output: 'a1b2c3d feat: add load balancer\ne4f5g6h fix: connection pool\ni7j8k9l refactor: cache layer' },
+      {
+        cmd: 'git status',
+        output:
+          'On branch main\nYour branch is up to date.\n\nChanges to be committed:\n  modified:   src/app.ts',
+      },
+      {
+        cmd: 'git log --oneline -3',
+        output:
+          'a1b2c3d feat: add load balancer\ne4f5g6h fix: connection pool\ni7j8k9l refactor: cache layer',
+      }
     );
   } else {
     // Generic: use first sentence of narration
     const firstSentence = narration.split(/[.!?]/)[0]?.trim() || heading;
-    commands.push(
-      { cmd: `# ${heading}`, output: firstSentence },
-    );
+    commands.push({ cmd: `# ${heading}`, output: firstSentence });
   }
 
   return commands;
@@ -186,12 +247,12 @@ function generateTerminalCommands(
 function generateBrowserContent(
   heading: string,
   bullets: string[],
-  narration: string,
+  narration: string
 ): { url: string; content: string; title: string } {
   const h = heading.toLowerCase();
 
   let url = 'https://api.example.com';
-  let title = heading;
+  const title = heading;
 
   if (h.includes('api') || h.includes('endpoint') || h.includes('rest')) {
     url = 'https://api.guru-sishya.in/v1/health';
@@ -205,7 +266,13 @@ function generateBrowserContent(
   if (bullets.length > 0) {
     const jsonObj: Record<string, string> = { status: 'success' };
     bullets.slice(0, 4).forEach((b, i) => {
-      const key = b.split(/[:\-—]/)[0]?.trim().toLowerCase().replace(/\s+/g, '_').slice(0, 20) || `field_${i}`;
+      const key =
+        b
+          .split(/[:\-—]/)[0]
+          ?.trim()
+          .toLowerCase()
+          .replace(/\s+/g, '_')
+          .slice(0, 20) || `field_${i}`;
       const val = b.split(/[:\-—]/)[1]?.trim() || b;
       jsonObj[key] = val;
     });
@@ -219,11 +286,15 @@ function generateBrowserContent(
   return {
     url,
     title,
-    content: JSON.stringify({
-      status: 'ok',
-      message: narration.split(/[.!?]/)[0]?.trim() || heading,
-      timestamp: '2026-04-02T10:30:00Z',
-    }, null, 2),
+    content: JSON.stringify(
+      {
+        status: 'ok',
+        message: narration.split(/[.!?]/)[0]?.trim() || heading,
+        timestamp: '2026-04-02T10:30:00Z',
+      },
+      null,
+      2
+    ),
   };
 }
 
@@ -232,8 +303,14 @@ function generateBrowserContent(
  */
 function generateDashboardMetrics(
   heading: string,
-  bullets: string[],
-): Array<{ label: string; value: number; unit?: string; color?: string; trend?: 'up' | 'down' | 'stable' }> {
+  bullets: string[]
+): Array<{
+  label: string;
+  value: number;
+  unit?: string;
+  color?: string;
+  trend?: 'up' | 'down' | 'stable';
+}> {
   const h = heading.toLowerCase();
 
   // Try to extract numbers from bullets
@@ -304,12 +381,7 @@ const TextSection: React.FC<TextSectionProps> = ({
 
   if (!templateId) {
     // Auto-select template from heading + topic keywords
-    const auto = getVisualTemplate(
-      topic,
-      sceneIndex ?? 0,
-      heading,
-      'text',
-    );
+    const auto = getVisualTemplate(topic, sceneIndex ?? 0, heading, 'text');
     templateId = auto.templateId;
     templateVariant = auto.variant;
     accentColor = auto.accentColor;
@@ -430,14 +502,17 @@ const TextSection: React.FC<TextSectionProps> = ({
     >
       {/* Subtle light background grid */}
       <div style={{ position: 'absolute', inset: 0 }}>
-        <div style={{
-          position: 'absolute', inset: 0,
-          backgroundImage: `
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            backgroundImage: `
             linear-gradient(rgba(0,0,0,0.03) 1px, transparent 1px),
             linear-gradient(90deg, rgba(0,0,0,0.03) 1px, transparent 1px)
           `,
-          backgroundSize: '80px 80px',
-        }} />
+            backgroundSize: '80px 80px',
+          }}
+        />
       </div>
 
       {/* ===== BACKGROUND IMAGE — 8% opacity ===== */}
@@ -479,100 +554,106 @@ const TextSection: React.FC<TextSectionProps> = ({
             overflow: 'hidden',
           }}
         >
-        {/* Scene heading overlay — below TopicHeader (44px marquee + 36px header = 80px) */}
-        {heading && (
-          <div style={{
-            position: 'absolute',
-            top: 56,
-            left: 24,
-            right: 24,
-            zIndex: 10,
-            display: 'flex',
-            alignItems: 'center',
-            gap: 12,
-          }}>
-            <div style={{
-              width: 4,
-              height: 28,
-              backgroundColor: accentColor,
-              borderRadius: 2,
-            }} />
-            <span style={{
-              fontSize: 22,
-              fontWeight: 700,
-              color: '#1E293B',
-              fontFamily: 'Space Grotesk, Inter, sans-serif',
-              letterSpacing: '-0.3px',
-            }}>
-              {heading}
-            </span>
-          </div>
-        )}
-
-        {(() => {
-          // Priority 1: Pre-rendered D2 SVG diagram (professional, deterministic)
-          if (d2Svg) {
-            const revealPercent = interpolate(
-              frame,
-              [0, Math.max(1, sceneDuration * 0.6)],
-              [0, 100],
-              { extrapolateRight: 'clamp' },
-            );
-            return (
+          {/* Scene heading overlay — below TopicHeader (44px marquee + 36px header = 80px) */}
+          {heading && (
+            <div
+              style={{
+                position: 'absolute',
+                top: 56,
+                left: 24,
+                right: 24,
+                zIndex: 10,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 12,
+              }}
+            >
               <div
                 style={{
-                  position: 'absolute',
-                  top: 240,
-                  left: 40,
-                  right: 40,
-                  bottom: 400,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
+                  width: 4,
+                  height: 28,
+                  backgroundColor: accentColor,
+                  borderRadius: 2,
+                }}
+              />
+              <span
+                style={{
+                  fontSize: 22,
+                  fontWeight: 700,
+                  color: '#1E293B',
+                  fontFamily: 'Space Grotesk, Inter, sans-serif',
+                  letterSpacing: '-0.3px',
                 }}
               >
-                <div
-                  dangerouslySetInnerHTML={{ __html: d2Svg }}
-                  style={{
-                    maxWidth: '90%',
-                    maxHeight: '100%',
-                    clipPath: `inset(0 ${100 - revealPercent}% 0 0)`,
-                    transition: 'clip-path 0.5s ease-out',
-                  }}
-                />
-              </div>
-            );
-          }
+                {heading}
+              </span>
+            </div>
+          )}
 
-          // Priority 2: SketchDiagram from architecture/flow configs
-          const sketchData = getSketchDiagramData(templateId, templateVariant);
-          if (sketchData) {
+          {(() => {
+            // Priority 1: Pre-rendered D2 SVG diagram (professional, deterministic)
+            if (d2Svg) {
+              const revealPercent = interpolate(
+                frame,
+                [0, Math.max(1, sceneDuration * 0.6)],
+                [0, 100],
+                { extrapolateRight: 'clamp' }
+              );
+              return (
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: 240,
+                    left: 40,
+                    right: 40,
+                    bottom: 400,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <div
+                    dangerouslySetInnerHTML={{ __html: d2Svg }}
+                    style={{
+                      maxWidth: '90%',
+                      maxHeight: '100%',
+                      clipPath: `inset(0 ${100 - revealPercent}% 0 0)`,
+                      transition: 'clip-path 0.5s ease-out',
+                    }}
+                  />
+                </div>
+              );
+            }
+
+            // Priority 2: SketchDiagram from architecture/flow configs
+            const sketchData = getSketchDiagramData(templateId, templateVariant);
+            if (sketchData) {
+              return (
+                <SketchDiagram
+                  nodes={sketchData.nodes}
+                  edges={sketchData.edges}
+                  beats={beats}
+                  fps={fps}
+                  accentColor={accentColor}
+                  title={sketchData.title}
+                />
+              );
+            }
+
+            // Priority 3: TemplateFactory (57 CSS-based templates)
             return (
-              <SketchDiagram
-                nodes={sketchData.nodes}
-                edges={sketchData.edges}
+              <TemplateFactory
+                templateId={templateId}
+                variant={templateVariant}
                 beats={beats}
-                fps={fps}
                 accentColor={accentColor}
-                title={sketchData.title}
+                fps={fps}
+                sceneHeading={heading}
+                bullets={bullets.length > 0 ? bullets : undefined}
+                content={content || undefined}
               />
             );
-          }
-
-          // Priority 3: TemplateFactory (57 CSS-based templates)
-          return (
-            <TemplateFactory
-              templateId={templateId}
-              variant={templateVariant}
-              beats={beats}
-              accentColor={accentColor}
-              fps={fps}
-              sceneHeading={heading}
-              bullets={bullets.length > 0 ? bullets : undefined}
-              content={content || undefined}
-            />
-          );
-        })()}
+          })()}
         </div>
       </div>
 

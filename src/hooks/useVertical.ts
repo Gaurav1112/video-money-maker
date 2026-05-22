@@ -1,5 +1,12 @@
 import { useVideoConfig } from 'remotion';
-import { VERTICAL, SAFE_ZONE, VERTICAL_SIZES, CODE_LIMITS, COMPONENT_DIMS, REGIONS } from '../lib/vertical-layouts';
+import {
+  VERTICAL,
+  SAFE_ZONE,
+  VERTICAL_SIZES,
+  CODE_LIMITS,
+  COMPONENT_DIMS,
+  REGIONS,
+} from '../lib/vertical-layouts';
 
 export interface VerticalState {
   isVertical: boolean;

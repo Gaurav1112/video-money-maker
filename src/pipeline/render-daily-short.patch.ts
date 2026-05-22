@@ -91,15 +91,15 @@ function parseArgs(): ParsedArgs {
       // Hard-fail in CI so non-deterministic runs are caught immediately.
       console.error(
         '[fix-15] ERROR: --date is required in CI for deterministic renders.\n' +
-        'Pass --date YYYY-MM-DD to render a specific day, or --short N for a specific short.\n' +
-        'Example: npx tsx scripts/render-daily-short.ts --date 2026-05-03',
+          'Pass --date YYYY-MM-DD to render a specific day, or --short N for a specific short.\n' +
+          'Example: npx tsx scripts/render-daily-short.ts --date 2026-05-03'
       );
       process.exit(1);
     }
     console.warn(
       '[fix-15] WARNING: --date not provided; defaulting to today (' +
-      date.toISOString().slice(0, 10) +
-      '). Pass --date YYYY-MM-DD for a reproducible render.',
+        date.toISOString().slice(0, 10) +
+        '). Pass --date YYYY-MM-DD for a reproducible render.'
     );
   }
 

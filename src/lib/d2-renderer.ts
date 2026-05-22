@@ -7,8 +7,8 @@ export interface D2Node {
   id: string;
   label: string;
   shape?: 'rectangle' | 'cylinder' | 'oval' | 'hexagon' | 'diamond';
-  color?: string;     // fill color
-  stroke?: string;    // border color
+  color?: string; // fill color
+  stroke?: string; // border color
 }
 
 export interface D2Edge {
@@ -30,7 +30,7 @@ export interface D2Edge {
 export function renderD2Diagram(
   nodes: D2Node[],
   edges: D2Edge[],
-  options: { direction?: 'right' | 'down'; theme?: number; pad?: number } = {},
+  options: { direction?: 'right' | 'down'; theme?: number; pad?: number } = {}
 ): string {
   const { direction = 'right', theme = 200, pad = 40 } = options;
 
@@ -80,7 +80,7 @@ export function renderD2Diagram(
   try {
     execSync(
       `d2 "${d2Path}" "${svgPath}" --theme ${theme} --dark-theme ${theme} -l dagre --pad ${pad}`,
-      { timeout: 10000 },
+      { timeout: 10000 }
     );
     return fs.readFileSync(svgPath, 'utf-8');
   } catch (err) {

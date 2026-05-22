@@ -100,7 +100,15 @@ export const Diagram: React.FC<DiagramProps> = ({
   }
 
   return (
-    <div style={{ width: '100%', height: '100%', position: 'relative', overflow: 'hidden', background: '#0F172A' }}>
+    <div
+      style={{
+        width: '100%',
+        height: '100%',
+        position: 'relative',
+        overflow: 'hidden',
+        background: '#0F172A',
+      }}
+    >
       <KenBurns seed={seed} duration={kbDuration}>
         <div style={{ width: '100%', height: '100%', ...zoomStyle }}>
           <Img
@@ -139,7 +147,17 @@ export const Diagram: React.FC<DiagramProps> = ({
         const pulseScale = 1 + 0.3 * Math.sin(frame * 0.1);
 
         return (
-          <div key={i} style={{ position: 'absolute', left: 0, top: 0, width: '100%', height: '100%', pointerEvents: 'none' }}>
+          <div
+            key={i}
+            style={{
+              position: 'absolute',
+              left: 0,
+              top: 0,
+              width: '100%',
+              height: '100%',
+              pointerEvents: 'none',
+            }}
+          >
             {/* Pulsing ring */}
             <div
               style={{

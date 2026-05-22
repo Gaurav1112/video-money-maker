@@ -17,10 +17,7 @@ interface PlatformPreviewProps {
   topicName: string;
 }
 
-export const PlatformPreview: React.FC<PlatformPreviewProps> = ({
-  topicSlug,
-  topicName,
-}) => {
+export const PlatformPreview: React.FC<PlatformPreviewProps> = ({ topicSlug, topicName }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
@@ -40,11 +37,7 @@ export const PlatformPreview: React.FC<PlatformPreviewProps> = ({
   const questionCount = Math.floor(countProgress * 1988);
 
   // Pulsing glow on FREE badge
-  const pulseGlow = interpolate(
-    Math.sin(frame * 0.08),
-    [-1, 1],
-    [0.4, 1],
-  );
+  const pulseGlow = interpolate(Math.sin(frame * 0.08), [-1, 1], [0.4, 1]);
 
   const optionLabels = ['A. Round Robin', 'B. Least Connections', 'C. IP Hash', 'D. Random'];
 
@@ -92,7 +85,7 @@ export const PlatformPreview: React.FC<PlatformPreviewProps> = ({
         {/* Question */}
         <div
           style={{
-            color: "#FFFFFF",
+            color: '#FFFFFF',
             fontSize: 14,
             fontWeight: 600,
             marginBottom: 12,
@@ -113,8 +106,8 @@ export const PlatformPreview: React.FC<PlatformPreviewProps> = ({
                 padding: '8px 12px',
                 marginBottom: 6,
                 borderRadius: 8,
-                background: showAnswer && isCorrect ? `${COLORS.teal}22` : `${"#FFFFFF"}08`,
-                border: `1px solid ${showAnswer && isCorrect ? COLORS.teal : `${"#FFFFFF"}15`}`,
+                background: showAnswer && isCorrect ? `${COLORS.teal}22` : `${'#FFFFFF'}08`,
+                border: `1px solid ${showAnswer && isCorrect ? COLORS.teal : `${'#FFFFFF'}15`}`,
                 color: showAnswer && isCorrect ? COLORS.teal : COLORS.gray,
                 fontSize: 12,
                 fontWeight: isCorrect && showAnswer ? 600 : 400,
@@ -131,7 +124,7 @@ export const PlatformPreview: React.FC<PlatformPreviewProps> = ({
             marginTop: 12,
             height: 4,
             borderRadius: 2,
-            background: `${"#FFFFFF"}10`,
+            background: `${'#FFFFFF'}10`,
             overflow: 'hidden',
           }}
         >
@@ -150,7 +143,7 @@ export const PlatformPreview: React.FC<PlatformPreviewProps> = ({
       <div
         style={{
           padding: '10px 16px',
-          borderTop: `1px solid ${"#FFFFFF"}10`,
+          borderTop: `1px solid ${'#FFFFFF'}10`,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
@@ -160,9 +153,7 @@ export const PlatformPreview: React.FC<PlatformPreviewProps> = ({
           <span style={{ color: COLORS.gold, fontSize: 20, fontWeight: 700 }}>
             {questionCount.toLocaleString()}
           </span>
-          <span style={{ color: COLORS.gray, fontSize: 11 }}>
-            Practice Questions
-          </span>
+          <span style={{ color: COLORS.gray, fontSize: 11 }}>Practice Questions</span>
         </div>
         <div
           style={{

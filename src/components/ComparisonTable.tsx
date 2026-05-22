@@ -9,8 +9,10 @@ import type { ComparisonConfig, ComparisonRow } from './templates/ComparisonRend
 
 /* ─── Winner auto-detection ────────────────────────────────────────────────── */
 
-const WINNER_KEYWORDS = /\b(faster|better|yes|lower|higher throughput|more scalable|built-in|native|optimal|efficient|unlimited|redundancy|strong)\b/i;
-const LOSER_KEYWORDS = /\b(slower|worse|no|higher latency|single point|limited|manual|complex|exponential|ceiling)\b/i;
+const WINNER_KEYWORDS =
+  /\b(faster|better|yes|lower|higher throughput|more scalable|built-in|native|optimal|efficient|unlimited|redundancy|strong)\b/i;
+const LOSER_KEYWORDS =
+  /\b(slower|worse|no|higher latency|single point|limited|manual|complex|exponential|ceiling)\b/i;
 
 function autoDetectWinner(optionA: string, optionB: string): 'A' | 'B' | 'tie' {
   const aWinScore = (optionA.match(WINNER_KEYWORDS) || []).length;
@@ -32,14 +34,14 @@ function buildConfigFromTable(
   headers: string[],
   rows: string[][],
   title: string,
-  winnerCol: number,
+  winnerCol: number
 ): ComparisonConfig {
   // For a 3-column table: [Attribute, OptionA, OptionB]
   const optionAName = headers.length >= 2 ? headers[1] : 'Option A';
   const optionBName = headers.length >= 3 ? headers[2] : 'Option B';
 
   const comparisonRows: ComparisonRow[] = rows
-    .filter(row => !row.every(cell => /^[-:]+$/.test(cell) || cell.trim() === ''))
+    .filter((row) => !row.every((cell) => /^[-:]+$/.test(cell) || cell.trim() === ''))
     .map((row, index) => {
       const attribute = row[0] || '';
       const optionA = row[1] || '—';
@@ -114,10 +116,10 @@ const ComparisonTable: React.FC<ComparisonTableProps> = ({
 
   // Sanitise rows
   const cleanRows = rows.filter(
-    row => !row.every(cell => /^[-:]+$/.test(cell) || cell.trim() === ''),
+    (row) => !row.every((cell) => /^[-:]+$/.test(cell) || cell.trim() === '')
   );
   const colCount = headers.length;
-  const paddedRows = cleanRows.map(row => {
+  const paddedRows = cleanRows.map((row) => {
     if (row.length >= colCount) return row;
     return [...row, ...Array(colCount - row.length).fill('—')];
   });
@@ -150,9 +152,9 @@ const ComparisonTable: React.FC<ComparisonTableProps> = ({
 
   const getVisibleRows = (totalRows: number): number => {
     if (hasSyncData && animationCues && animationCues.length > 0) {
-      const rowCues = animationCues.filter(c => c.action === 'revealRow');
+      const rowCues = animationCues.filter((c) => c.action === 'revealRow');
       if (rowCues.length > 0) {
-        const reached = rowCues.filter(c => sync.wordIndex >= c.wordIndex);
+        const reached = rowCues.filter((c) => sync.wordIndex >= c.wordIndex);
         return Math.max(1, reached.length);
       }
     }
@@ -164,7 +166,7 @@ const ComparisonTable: React.FC<ComparisonTableProps> = ({
       return Math.min(visible, totalRows);
     }
     // Time-based stagger
-    const sceneDuration = (endFrame ?? (startFrame + totalRows * 30 + 60)) - startFrame;
+    const sceneDuration = (endFrame ?? startFrame + totalRows * 30 + 60) - startFrame;
     const rowInterval = Math.max(3, Math.floor((sceneDuration * 0.45) / Math.max(1, totalRows)));
     return Math.min(totalRows, Math.floor(Math.max(0, frame - startFrame - 10) / rowInterval) + 1);
   };
@@ -200,18 +202,24 @@ const ComparisonTable: React.FC<ComparisonTableProps> = ({
     >
       {/* Animated background — never plain black */}
       <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
-        <div style={{
-          position: 'absolute', inset: 0,
-          backgroundImage: `
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            backgroundImage: `
             linear-gradient(rgba(29,209,161,0.02) 1px, transparent 1px),
             linear-gradient(90deg, rgba(29,209,161,0.02) 1px, transparent 1px)
           `,
-          backgroundSize: '80px 80px',
-        }} />
-        <div style={{
-          position: 'absolute', inset: 0,
-          background: `radial-gradient(ellipse at 50% 40%, rgba(232,93,38,0.04) 0%, transparent 50%)`,
-        }} />
+            backgroundSize: '80px 80px',
+          }}
+        />
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            background: `radial-gradient(ellipse at 50% 40%, rgba(232,93,38,0.04) 0%, transparent 50%)`,
+          }}
+        />
       </div>
 
       {/* ── Title ─────────────────────────────────────────────────────────── */}
@@ -299,10 +307,7 @@ const ComparisonTable: React.FC<ComparisonTableProps> = ({
                   textAlign: i === 0 ? 'left' : 'center',
                   textTransform: 'uppercase',
                   letterSpacing: '1.2px',
-                  borderRight:
-                    i < headers.length - 1
-                      ? `1.5px solid ${COLORS.indigo}33`
-                      : 'none',
+                  borderRight: i < headers.length - 1 ? `1.5px solid ${COLORS.indigo}33` : 'none',
                   textShadow: `0 0 12px ${isWinnerHeader ? COLORS.teal : COLORS.saffron}44`,
                 }}
               >
@@ -345,7 +350,9 @@ const ComparisonTable: React.FC<ComparisonTableProps> = ({
                 borderTop: `1px solid ${COLORS.indigo}22`,
                 ...(isHighlightedRow
                   ? {
-                      boxShadow: `0 0 24px 6px ${COLORS.gold}${Math.round(glowAlpha * 99).toString(16).padStart(2, '0')}, inset 0 0 40px ${COLORS.gold}10`,
+                      boxShadow: `0 0 24px 6px ${COLORS.gold}${Math.round(glowAlpha * 99)
+                        .toString(16)
+                        .padStart(2, '0')}, inset 0 0 40px ${COLORS.gold}10`,
                       borderTop: `1.5px solid ${COLORS.gold}88`,
                     }
                   : {}),
@@ -384,9 +391,7 @@ const ComparisonTable: React.FC<ComparisonTableProps> = ({
                       textAlign: isLabelCol ? 'left' : 'center',
                       fontWeight: isLabelCol || isWinnerCell || isHighlightedRow ? 700 : 400,
                       borderRight:
-                        cellIndex < row.length - 1
-                          ? `1.5px solid ${COLORS.indigo}22`
-                          : 'none',
+                        cellIndex < row.length - 1 ? `1.5px solid ${COLORS.indigo}22` : 'none',
                       lineHeight: 1.4,
                       position: 'relative',
                     }}

@@ -53,7 +53,7 @@ export function findNextHinglishEntry(queue: PublishQueue): PublishEntry | undef
       e.youtubeVideoId !== null &&
       e.youtubeVideoId !== undefined &&
       e.youtubeVideoId !== '' &&
-      e.hinglishPublished !== true,
+      e.hinglishPublished !== true
   );
 }
 
@@ -78,12 +78,16 @@ function main(): void {
   const entry = findNextHinglishEntry(queue);
 
   if (!entry) {
-    console.error('[get-next-hinglish-session] all sessions already Hinglish-published (or none have English upload yet)');
+    console.error(
+      '[get-next-hinglish-session] all sessions already Hinglish-published (or none have English upload yet)'
+    );
     console.log('NO_SESSION');
     process.exit(0);
   }
 
-  console.error(`[get-next-hinglish-session] found: topic=${entry.topic} session=${entry.session} youtubeVideoId=${entry.youtubeVideoId}`);
+  console.error(
+    `[get-next-hinglish-session] found: topic=${entry.topic} session=${entry.session} youtubeVideoId=${entry.youtubeVideoId}`
+  );
   // Machine-readable output on stdout
   console.log(`topic=${entry.topic}`);
   console.log(`session=${entry.session}`);
@@ -91,6 +95,9 @@ function main(): void {
 
 // Only run when executed as the entry-point script (not when imported by tests)
 const _argv1 = process.argv[1] ?? '';
-if (_argv1.endsWith('get-next-hinglish-session.ts') || _argv1.endsWith('get-next-hinglish-session.js')) {
+if (
+  _argv1.endsWith('get-next-hinglish-session.ts') ||
+  _argv1.endsWith('get-next-hinglish-session.js')
+) {
   main();
 }

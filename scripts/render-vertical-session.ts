@@ -26,7 +26,7 @@ if (!existsSync(propsFile)) {
 
 const outputDir = path.resolve(
   process.env.HOME || '~',
-  `Documents/guru-sishya/${topic}/session-${session}/vertical`,
+  `Documents/guru-sishya/${topic}/session-${session}/vertical`
 );
 mkdirSync(outputDir, { recursive: true });
 

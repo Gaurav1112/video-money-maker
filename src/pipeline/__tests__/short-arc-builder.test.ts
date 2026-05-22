@@ -129,7 +129,11 @@ describe('generateStatusThreatHook', () => {
 
   describe('misconception override', () => {
     it('selects misconception formula when misconception provided and subtopic has no matching keyword', () => {
-      const hook = generateStatusThreatHook('kafka', 'partitions', 'Kafka guarantees order globally');
+      const hook = generateStatusThreatHook(
+        'kafka',
+        'partitions',
+        'Kafka guarantees order globally'
+      );
       expect(hook.hookType).toBe('misconception');
     });
 
@@ -194,7 +198,13 @@ describe('generateStatusThreatHook', () => {
 
     it.each(SUBTOPICS)('hookType matches the returned formula for subtopic "%s"', (sub) => {
       const hook = generateStatusThreatHook('topic', sub);
-      const validTypes = ['lossAversion', 'statusThreat', 'cognitiveDissonance', 'curiosityGap', 'misconception'];
+      const validTypes = [
+        'lossAversion',
+        'statusThreat',
+        'cognitiveDissonance',
+        'curiosityGap',
+        'misconception',
+      ];
       expect(validTypes).toContain(hook.hookType);
     });
 
@@ -212,7 +222,7 @@ describe('validateTERarc', () => {
     it('empty scenes array → valid=false with error rule "minLength"', () => {
       const result = validateTERarc([]);
       expect(result.valid).toBe(false);
-      expect(result.errors.some(e => e.rule === 'minLength')).toBe(true);
+      expect(result.errors.some((e) => e.rule === 'minLength')).toBe(true);
     });
 
     it('empty scenes array → arcScores is empty array', () => {
@@ -225,42 +235,74 @@ describe('validateTERarc', () => {
     it('scene 0 tensionScore=0.6 → valid=false with hookTension error', () => {
       const scenes = [
         makeWorldClassScene({ tensionScore: 0.6, arcPosition: 'hook' }),
-        makeWorldClassScene({ tensionScore: 0.9, emotionalBeat: 'escalation', arcPosition: 'escalation' }),
-        makeWorldClassScene({ tensionScore: 0.2, emotionalBeat: 'resolution', arcPosition: 'resolution' }),
+        makeWorldClassScene({
+          tensionScore: 0.9,
+          emotionalBeat: 'escalation',
+          arcPosition: 'escalation',
+        }),
+        makeWorldClassScene({
+          tensionScore: 0.2,
+          emotionalBeat: 'resolution',
+          arcPosition: 'resolution',
+        }),
       ];
       const result = validateTERarc(scenes);
       expect(result.valid).toBe(false);
-      expect(result.errors.some(e => e.rule === 'hookTension')).toBe(true);
+      expect(result.errors.some((e) => e.rule === 'hookTension')).toBe(true);
     });
 
     it('scene 0 tensionScore=0.7 (< 0.8) → hookTension error', () => {
       const scenes = [
         makeWorldClassScene({ tensionScore: 0.7, arcPosition: 'hook' }),
-        makeWorldClassScene({ tensionScore: 0.9, emotionalBeat: 'escalation', arcPosition: 'escalation' }),
-        makeWorldClassScene({ tensionScore: 0.2, emotionalBeat: 'resolution', arcPosition: 'resolution' }),
+        makeWorldClassScene({
+          tensionScore: 0.9,
+          emotionalBeat: 'escalation',
+          arcPosition: 'escalation',
+        }),
+        makeWorldClassScene({
+          tensionScore: 0.2,
+          emotionalBeat: 'resolution',
+          arcPosition: 'resolution',
+        }),
       ];
       const result = validateTERarc(scenes);
-      expect(result.errors.some(e => e.rule === 'hookTension')).toBe(true);
+      expect(result.errors.some((e) => e.rule === 'hookTension')).toBe(true);
     });
 
     it('scene 0 tensionScore=0.8 (boundary) → no hookTension error', () => {
       const scenes = [
         makeWorldClassScene({ tensionScore: 0.8, arcPosition: 'hook' }),
-        makeWorldClassScene({ tensionScore: 0.85, emotionalBeat: 'escalation', arcPosition: 'escalation' }),
-        makeWorldClassScene({ tensionScore: 0.2, emotionalBeat: 'resolution', arcPosition: 'resolution' }),
+        makeWorldClassScene({
+          tensionScore: 0.85,
+          emotionalBeat: 'escalation',
+          arcPosition: 'escalation',
+        }),
+        makeWorldClassScene({
+          tensionScore: 0.2,
+          emotionalBeat: 'resolution',
+          arcPosition: 'resolution',
+        }),
       ];
       const result = validateTERarc(scenes);
-      expect(result.errors.some(e => e.rule === 'hookTension')).toBe(false);
+      expect(result.errors.some((e) => e.rule === 'hookTension')).toBe(false);
     });
 
     it('scene 0 tensionScore=0.9 → no hookTension error', () => {
       const scenes = [
         makeWorldClassScene({ tensionScore: 0.9, arcPosition: 'hook' }),
-        makeWorldClassScene({ tensionScore: 0.95, emotionalBeat: 'escalation', arcPosition: 'escalation' }),
-        makeWorldClassScene({ tensionScore: 0.2, emotionalBeat: 'resolution', arcPosition: 'resolution' }),
+        makeWorldClassScene({
+          tensionScore: 0.95,
+          emotionalBeat: 'escalation',
+          arcPosition: 'escalation',
+        }),
+        makeWorldClassScene({
+          tensionScore: 0.2,
+          emotionalBeat: 'resolution',
+          arcPosition: 'resolution',
+        }),
       ];
       const result = validateTERarc(scenes);
-      expect(result.errors.some(e => e.rule === 'hookTension')).toBe(false);
+      expect(result.errors.some((e) => e.rule === 'hookTension')).toBe(false);
     });
   });
 
@@ -268,32 +310,56 @@ describe('validateTERarc', () => {
     it('resolution scene with tensionScore >= peak → error resolutionTension', () => {
       const scenes = [
         makeWorldClassScene({ tensionScore: 0.9, arcPosition: 'hook' }),
-        makeWorldClassScene({ tensionScore: 0.95, emotionalBeat: 'escalation', arcPosition: 'escalation' }),
+        makeWorldClassScene({
+          tensionScore: 0.95,
+          emotionalBeat: 'escalation',
+          arcPosition: 'escalation',
+        }),
         // Resolution at 0.95 == peak → should error
-        makeWorldClassScene({ tensionScore: 0.95, emotionalBeat: 'resolution', arcPosition: 'resolution' }),
+        makeWorldClassScene({
+          tensionScore: 0.95,
+          emotionalBeat: 'resolution',
+          arcPosition: 'resolution',
+        }),
       ];
       const result = validateTERarc(scenes);
-      expect(result.errors.some(e => e.rule === 'resolutionTension')).toBe(true);
+      expect(result.errors.some((e) => e.rule === 'resolutionTension')).toBe(true);
     });
 
     it('resolution scene with tensionScore > peak → error resolutionTension', () => {
       const scenes = [
         makeWorldClassScene({ tensionScore: 0.9, arcPosition: 'hook' }),
-        makeWorldClassScene({ tensionScore: 0.85, emotionalBeat: 'escalation', arcPosition: 'escalation' }),
-        makeWorldClassScene({ tensionScore: 0.95, emotionalBeat: 'resolution', arcPosition: 'resolution' }),
+        makeWorldClassScene({
+          tensionScore: 0.85,
+          emotionalBeat: 'escalation',
+          arcPosition: 'escalation',
+        }),
+        makeWorldClassScene({
+          tensionScore: 0.95,
+          emotionalBeat: 'resolution',
+          arcPosition: 'resolution',
+        }),
       ];
       const result = validateTERarc(scenes);
-      expect(result.errors.some(e => e.rule === 'resolutionTension')).toBe(true);
+      expect(result.errors.some((e) => e.rule === 'resolutionTension')).toBe(true);
     });
 
     it('resolution scene with tensionScore well below peak → no resolutionTension error', () => {
       const scenes = [
         makeWorldClassScene({ tensionScore: 0.9, arcPosition: 'hook' }),
-        makeWorldClassScene({ tensionScore: 0.95, emotionalBeat: 'escalation', arcPosition: 'escalation' }),
-        makeWorldClassScene({ tensionScore: 0.3, emotionalBeat: 'resolution', arcPosition: 'resolution' }),
+        makeWorldClassScene({
+          tensionScore: 0.95,
+          emotionalBeat: 'escalation',
+          arcPosition: 'escalation',
+        }),
+        makeWorldClassScene({
+          tensionScore: 0.3,
+          emotionalBeat: 'resolution',
+          arcPosition: 'resolution',
+        }),
       ];
       const result = validateTERarc(scenes);
-      expect(result.errors.some(e => e.rule === 'resolutionTension')).toBe(false);
+      expect(result.errors.some((e) => e.rule === 'resolutionTension')).toBe(false);
     });
   });
 
@@ -301,17 +367,29 @@ describe('validateTERarc', () => {
     it('open loop not closed on a non-last scene → warning "openLoop"', () => {
       const scenes = [
         makeWorldClassScene({ tensionScore: 0.9, arcPosition: 'hook', loopId: 'loop-1' }),
-        makeWorldClassScene({ tensionScore: 0.85, emotionalBeat: 'escalation', arcPosition: 'escalation' }),
-        makeWorldClassScene({ tensionScore: 0.3, emotionalBeat: 'resolution', arcPosition: 'resolution' }),
+        makeWorldClassScene({
+          tensionScore: 0.85,
+          emotionalBeat: 'escalation',
+          arcPosition: 'escalation',
+        }),
+        makeWorldClassScene({
+          tensionScore: 0.3,
+          emotionalBeat: 'resolution',
+          arcPosition: 'resolution',
+        }),
       ];
       const result = validateTERarc(scenes);
-      expect(result.warnings.some(w => w.rule === 'openLoop')).toBe(true);
+      expect(result.warnings.some((w) => w.rule === 'openLoop')).toBe(true);
     });
 
     it('open loop on last scene with zeigarnik_loop beat → NO openLoop warning', () => {
       const scenes = [
         makeWorldClassScene({ tensionScore: 0.9, arcPosition: 'hook' }),
-        makeWorldClassScene({ tensionScore: 0.85, emotionalBeat: 'escalation', arcPosition: 'escalation' }),
+        makeWorldClassScene({
+          tensionScore: 0.85,
+          emotionalBeat: 'escalation',
+          arcPosition: 'escalation',
+        }),
         makeWorldClassScene({
           tensionScore: 0.6,
           emotionalBeat: 'zeigarnik_loop',
@@ -320,13 +398,17 @@ describe('validateTERarc', () => {
         }),
       ];
       const result = validateTERarc(scenes);
-      expect(result.warnings.some(w => w.rule === 'openLoop')).toBe(false);
+      expect(result.warnings.some((w) => w.rule === 'openLoop')).toBe(false);
     });
 
     it('closed loop → no openLoop warning', () => {
       const scenes = [
         makeWorldClassScene({ tensionScore: 0.9, arcPosition: 'hook', loopId: 'loop-main' }),
-        makeWorldClassScene({ tensionScore: 0.85, emotionalBeat: 'escalation', arcPosition: 'escalation' }),
+        makeWorldClassScene({
+          tensionScore: 0.85,
+          emotionalBeat: 'escalation',
+          arcPosition: 'escalation',
+        }),
         makeWorldClassScene({
           tensionScore: 0.3,
           emotionalBeat: 'resolution',
@@ -335,7 +417,7 @@ describe('validateTERarc', () => {
         }),
       ];
       const result = validateTERarc(scenes);
-      expect(result.warnings.some(w => w.rule === 'openLoop')).toBe(false);
+      expect(result.warnings.some((w) => w.rule === 'openLoop')).toBe(false);
     });
   });
 
@@ -349,16 +431,24 @@ describe('validateTERarc', () => {
           arcPosition: 'escalation',
           btConnector: 'therefore',
         }),
-        makeWorldClassScene({ tensionScore: 0.3, emotionalBeat: 'resolution', arcPosition: 'resolution' }),
+        makeWorldClassScene({
+          tensionScore: 0.3,
+          emotionalBeat: 'resolution',
+          arcPosition: 'resolution',
+        }),
       ];
       const result = validateTERarc(scenes);
-      expect(result.warnings.some(w => w.rule === 'btCoherence')).toBe(true);
+      expect(result.warnings.some((w) => w.rule === 'btCoherence')).toBe(true);
     });
 
     it('"but" connector after "resolution" beat → btCoherence warning', () => {
       const scenes = [
         makeWorldClassScene({ tensionScore: 0.9, arcPosition: 'hook' }),
-        makeWorldClassScene({ tensionScore: 0.3, emotionalBeat: 'resolution', arcPosition: 'resolution' }),
+        makeWorldClassScene({
+          tensionScore: 0.3,
+          emotionalBeat: 'resolution',
+          arcPosition: 'resolution',
+        }),
         makeWorldClassScene({
           tensionScore: 0.85,
           emotionalBeat: 'escalation',
@@ -367,7 +457,7 @@ describe('validateTERarc', () => {
         }),
       ];
       const result = validateTERarc(scenes);
-      expect(result.warnings.some(w => w.rule === 'btCoherence')).toBe(true);
+      expect(result.warnings.some((w) => w.rule === 'btCoherence')).toBe(true);
     });
 
     it('"but" after "tension" → no btCoherence warning', () => {
@@ -379,10 +469,14 @@ describe('validateTERarc', () => {
           arcPosition: 'escalation',
           btConnector: 'but',
         }),
-        makeWorldClassScene({ tensionScore: 0.3, emotionalBeat: 'resolution', arcPosition: 'resolution' }),
+        makeWorldClassScene({
+          tensionScore: 0.3,
+          emotionalBeat: 'resolution',
+          arcPosition: 'resolution',
+        }),
       ];
       const result = validateTERarc(scenes);
-      expect(result.warnings.some(w => w.rule === 'btCoherence')).toBe(false);
+      expect(result.warnings.some((w) => w.rule === 'btCoherence')).toBe(false);
     });
   });
 
@@ -417,8 +511,16 @@ describe('validateTERarc', () => {
     it('arcScores length matches scenes length', () => {
       const scenes = [
         makeWorldClassScene({ tensionScore: 0.9, arcPosition: 'hook' }),
-        makeWorldClassScene({ tensionScore: 0.95, emotionalBeat: 'escalation', arcPosition: 'escalation' }),
-        makeWorldClassScene({ tensionScore: 0.3, emotionalBeat: 'resolution', arcPosition: 'resolution' }),
+        makeWorldClassScene({
+          tensionScore: 0.95,
+          emotionalBeat: 'escalation',
+          arcPosition: 'escalation',
+        }),
+        makeWorldClassScene({
+          tensionScore: 0.3,
+          emotionalBeat: 'resolution',
+          arcPosition: 'resolution',
+        }),
       ];
       const result = validateTERarc(scenes);
       expect(result.arcScores).toHaveLength(3);
@@ -427,11 +529,19 @@ describe('validateTERarc', () => {
     it('arcScores contains correct tensionScore and beat per scene', () => {
       const scenes = [
         makeWorldClassScene({ tensionScore: 0.9, arcPosition: 'hook' }),
-        makeWorldClassScene({ tensionScore: 0.3, emotionalBeat: 'resolution', arcPosition: 'resolution' }),
+        makeWorldClassScene({
+          tensionScore: 0.3,
+          emotionalBeat: 'resolution',
+          arcPosition: 'resolution',
+        }),
       ];
       const result = validateTERarc(scenes);
       expect(result.arcScores[0]).toMatchObject({ scene: 0, tensionScore: 0.9, beat: 'tension' });
-      expect(result.arcScores[1]).toMatchObject({ scene: 1, tensionScore: 0.3, beat: 'resolution' });
+      expect(result.arcScores[1]).toMatchObject({
+        scene: 1,
+        tensionScore: 0.3,
+        beat: 'resolution',
+      });
     });
   });
 });
@@ -567,7 +677,7 @@ describe('buildTERarcFromScenes', () => {
 
   describe('5 scenes', () => {
     const fiveScenes = Array.from({ length: 5 }, (_, i) =>
-      makeScene({ duration: 10, heading: `Scene ${i}` }),
+      makeScene({ duration: 10, heading: `Scene ${i}` })
     );
 
     it('first scene is hook', () => {
@@ -616,7 +726,7 @@ describe('buildTERarcFromScenes', () => {
 
     it('escalation scenes → btConnector is "but"', () => {
       const result = buildTERarcFromScenes(fiveScenes, TOPIC, SUBTOPIC);
-      const escalationScenes = result.filter(s => s.emotionalBeat === 'escalation');
+      const escalationScenes = result.filter((s) => s.emotionalBeat === 'escalation');
       for (const scene of escalationScenes) {
         expect(scene.btConnector).toBe('but');
       }
@@ -624,7 +734,7 @@ describe('buildTERarcFromScenes', () => {
 
     it('resolution scenes → btConnector is "therefore"', () => {
       const result = buildTERarcFromScenes(fiveScenes, TOPIC, SUBTOPIC);
-      const resolutionScenes = result.filter(s => s.emotionalBeat === 'resolution');
+      const resolutionScenes = result.filter((s) => s.emotionalBeat === 'resolution');
       for (const scene of resolutionScenes) {
         expect(scene.btConnector).toBe('therefore');
       }
@@ -661,7 +771,10 @@ describe('buildTERarcFromScenes', () => {
     });
 
     it('non-hook scenes get their original heading as displayText', () => {
-      const twoScenes = [makeScene({ duration: 10 }), makeScene({ duration: 10, heading: 'My Heading' })];
+      const twoScenes = [
+        makeScene({ duration: 10 }),
+        makeScene({ duration: 10, heading: 'My Heading' }),
+      ];
       const result = buildTERarcFromScenes(twoScenes, TOPIC, SUBTOPIC);
       expect(result[1].displayText).toBe('My Heading');
     });
@@ -672,7 +785,7 @@ describe('buildTERarcFromScenes', () => {
       const scenes = Array.from({ length: 3 }, () => makeScene({ duration: 10 }));
       const result = buildTERarcFromScenes(scenes, TOPIC, SUBTOPIC);
       // With 10s scenes and 6s interval: scene 0 gets reward at t=6, scene 1 at t=2 (12-10)
-      const withRewards = result.filter(s => s.microRewards && s.microRewards.length > 0);
+      const withRewards = result.filter((s) => s.microRewards && s.microRewards.length > 0);
       expect(withRewards.length).toBeGreaterThan(0);
     });
   });

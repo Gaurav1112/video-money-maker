@@ -81,10 +81,7 @@ export const LiveLog: React.FC<LiveLogProps> = ({
   const elapsed = Math.max(0, frame - startFrame);
   const n = createNoise(seed);
 
-  const visibleCount = Math.min(
-    Math.floor(elapsed / framesPerEntry) + 1,
-    entries.length,
-  );
+  const visibleCount = Math.min(Math.floor(elapsed / framesPerEntry) + 1, entries.length);
 
   // Scroll: show only last maxVisible entries
   const startIdx = Math.max(0, visibleCount - maxVisible);
@@ -193,7 +190,9 @@ export const LiveLog: React.FC<LiveLogProps> = ({
 
               {/* Latency */}
               {entry.ms !== undefined && (
-                <span style={{ color: isHighLatency ? '#F97316' : '#64748B', minWidth: fontSize * 3 }}>
+                <span
+                  style={{ color: isHighLatency ? '#F97316' : '#64748B', minWidth: fontSize * 3 }}
+                >
                   {entry.ms}ms
                 </span>
               )}

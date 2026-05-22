@@ -14,8 +14,7 @@ import * as os from 'os';
 import * as path from 'path';
 
 export const DB_PATH: string =
-  process.env['QUEUE_DB_PATH'] ??
-  path.join(os.homedir(), 'video-money-maker-data', 'queue.db');
+  process.env['QUEUE_DB_PATH'] ?? path.join(os.homedir(), 'video-money-maker-data', 'queue.db');
 
 export function openDb(): Database.Database {
   const dir = path.dirname(DB_PATH);
@@ -24,9 +23,9 @@ export function openDb(): Database.Database {
   }
 
   const db = new Database(DB_PATH);
-  db.pragma('journal_mode = WAL');   // concurrent reads
+  db.pragma('journal_mode = WAL'); // concurrent reads
   db.pragma('foreign_keys = ON');
-  db.pragma('busy_timeout = 5000');  // 5 s wait on locked DB
+  db.pragma('busy_timeout = 5000'); // 5 s wait on locked DB
 
   initSchema(db);
   return db;

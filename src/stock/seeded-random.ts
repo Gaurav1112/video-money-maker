@@ -16,7 +16,7 @@ export class SeededRandom {
     let hash = 0;
     for (let i = 0; i < seedStr.length; i++) {
       const char = seedStr.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
+      hash = (hash << 5) - hash + char;
       hash = hash & hash; // 32-bit integer
     }
     this.seed = Math.abs(hash);

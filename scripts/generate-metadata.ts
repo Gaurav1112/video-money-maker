@@ -17,7 +17,10 @@
 
 import { readFileSync, writeFileSync, mkdirSync } from 'fs';
 import { resolve, basename, dirname } from 'path';
-import { generateMetadata, generateShortsMetadataFromStoryboard } from '../src/pipeline/metadata-generator';
+import {
+  generateMetadata,
+  generateShortsMetadataFromStoryboard,
+} from '../src/pipeline/metadata-generator';
 
 // ─── CLI Args ─────────────────────────────────────────────────────────────────
 
@@ -42,18 +45,23 @@ if (outdirIdx !== -1 && args[outdirIdx + 1]) {
 }
 
 // Filter out flags to get prop file paths
-const propFiles = args.filter(a => !a.startsWith('--') && (
-  !args.includes('--language') || a !== flags.language
-) && (
-  !args.includes('--outdir') || a !== flags.outdir
-));
+const propFiles = args.filter(
+  (a) =>
+    !a.startsWith('--') &&
+    (!args.includes('--language') || a !== flags.language) &&
+    (!args.includes('--outdir') || a !== flags.outdir)
+);
 
 if (propFiles.length === 0) {
-  console.error('Usage: npx tsx scripts/generate-metadata.ts <props-file> [props-file-2] [--shorts] [--language python]');
+  console.error(
+    'Usage: npx tsx scripts/generate-metadata.ts <props-file> [props-file-2] [--shorts] [--language python]'
+  );
   console.error('');
   console.error('Examples:');
   console.error('  npx tsx scripts/generate-metadata.ts output/test-props.json');
-  console.error('  npx tsx scripts/generate-metadata.ts output/test-props.json output/test-props-s2.json --shorts');
+  console.error(
+    '  npx tsx scripts/generate-metadata.ts output/test-props.json output/test-props-s2.json --shorts'
+  );
   process.exit(1);
 }
 

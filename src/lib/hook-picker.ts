@@ -34,9 +34,9 @@ let cachedLibrary: HookLibrary | null = null;
 function deterministicHash(str: string): number {
   let hash = 5381;
   for (let i = 0; i < str.length; i++) {
-    hash = ((hash << 5) + hash) + str.charCodeAt(i);
+    hash = (hash << 5) + hash + str.charCodeAt(i);
   }
-  return Math.abs(hash) & 0x7FFFFFFF;
+  return Math.abs(hash) & 0x7fffffff;
 }
 
 /**
@@ -44,15 +44,15 @@ function deterministicHash(str: string): number {
  */
 function loadLibrary(): HookLibrary {
   if (cachedLibrary) return cachedLibrary;
-  
+
   // In production, this would load from file or HTTP
   // For now, return a minimal library structure
   cachedLibrary = {
     version: '1.0.0',
     generated: new Date().toISOString(),
-    patterns: []
+    patterns: [],
   };
-  
+
   return cachedLibrary;
 }
 
@@ -62,55 +62,59 @@ function loadLibrary(): HookLibrary {
  */
 export function pickBestHook(topic: string, minStrength: number = 8.0): HookTemplate | null {
   const library = loadLibrary();
-  
+
   if (!library.patterns || library.patterns.length === 0) {
     return null;
   }
-  
+
   // Collect all templates meeting strength threshold
   const candidates: HookTemplate[] = [];
-  library.patterns.forEach(pattern => {
-    pattern.templates.forEach(template => {
+  library.patterns.forEach((pattern) => {
+    pattern.templates.forEach((template) => {
       if (template.topic === topic && template.strength >= minStrength) {
         candidates.push(template);
       }
     });
   });
-  
+
   if (candidates.length === 0) {
     return null;
   }
-  
+
   // Use deterministic hash to pick one
   const seed = deterministicHash(topic);
   const index = seed % candidates.length;
-  
+
   return candidates[index];
 }
 
 /**
  * Get multiple hooks for a topic (e.g., for fallbacks or A/B testing).
  */
-export function pickMultipleHooks(topic: string, count: number = 3, minStrength: number = 8.0): HookTemplate[] {
+export function pickMultipleHooks(
+  topic: string,
+  count: number = 3,
+  minStrength: number = 8.0
+): HookTemplate[] {
   const library = loadLibrary();
-  
+
   const candidates: HookTemplate[] = [];
-  library.patterns.forEach(pattern => {
-    pattern.templates.forEach(template => {
+  library.patterns.forEach((pattern) => {
+    pattern.templates.forEach((template) => {
       if (template.topic === topic && template.strength >= minStrength) {
         candidates.push(template);
       }
     });
   });
-  
+
   if (candidates.length === 0) {
     return [];
   }
-  
+
   const seed = deterministicHash(topic);
   const results: HookTemplate[] = [];
   const used = new Set<number>();
-  
+
   for (let i = 0; i < Math.min(count, candidates.length); i++) {
     let index = (seed + i * 7) % candidates.length;
     while (used.has(index)) {
@@ -119,7 +123,7 @@ export function pickMultipleHooks(topic: string, count: number = 3, minStrength:
     used.add(index);
     results.push(candidates[index]);
   }
-  
+
   return results;
 }
 
@@ -128,11 +132,11 @@ export function pickMultipleHooks(topic: string, count: number = 3, minStrength:
  */
 export function formatTextHook(hook: HookTemplate): string {
   const words = hook.claim.split(/\s+/);
-  
+
   if (words.length <= 8) {
     return hook.claim;
   }
-  
+
   // Truncate to first 8 words
   return words.slice(0, 8).join(' ') + '...';
 }
@@ -143,7 +147,7 @@ export function formatTextHook(hook: HookTemplate): string {
 export function formatSpokenHook(hook: HookTemplate, ctaUrl: string = 'guru-sishya.in'): string {
   const claim = hook.claim;
   const cta = `Get more at ${ctaUrl} — link in bio.`;
-  
+
   return `${claim} ${cta}`;
 }
 

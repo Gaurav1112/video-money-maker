@@ -49,7 +49,7 @@ function parseArgs(): { dbPath: string; jsonPath: string } {
 // ─── Map legacy status → canonical status ────────────────────────────────────
 
 function mapStatus(
-  legacy: LegacyQueueEntry['status'],
+  legacy: LegacyQueueEntry['status']
 ): 'pending' | 'claimed' | 'published' | 'failed' {
   if (legacy === 'uploading') return 'claimed'; // in-flight at crash time → treat as claimed
   return legacy;
@@ -104,9 +104,7 @@ export function migrate(dbPath: string, jsonPath: string): { inserted: number; s
       // This uses the internal DB via a raw prepare; acceptable for a migration script.
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (db as any).db
-        .prepare(
-          `UPDATE jobs SET status = @status, updated_at = @now WHERE id = @id`,
-        )
+        .prepare(`UPDATE jobs SET status = @status, updated_at = @now WHERE id = @id`)
         .run({
           status: targetStatus,
           now: new Date().toISOString(),

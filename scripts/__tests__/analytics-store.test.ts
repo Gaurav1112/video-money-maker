@@ -19,8 +19,17 @@ describe('persistMetrics', () => {
   it('writes one JSON per video keyed by videoId', () => {
     const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'ingest-out-'));
     persistMetrics(tmp, [
-      { videoId: 'xyz', fetchedAt: '2026-05-20T00:00:00Z', views: 100, likes: 5, comments: 1,
-        averageViewDuration: 12, averageViewPercentage: 60, shares: 0, estimatedMinutesWatched: 20 },
+      {
+        videoId: 'xyz',
+        fetchedAt: '2026-05-20T00:00:00Z',
+        views: 100,
+        likes: 5,
+        comments: 1,
+        averageViewDuration: 12,
+        averageViewPercentage: 60,
+        shares: 0,
+        estimatedMinutesWatched: 20,
+      },
     ]);
     const written = fs.readFileSync(path.join(tmp, 'xyz.json'), 'utf8');
     expect(JSON.parse(written).views).toBe(100);

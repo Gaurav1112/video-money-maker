@@ -48,7 +48,9 @@ router.get('/:topic/:session', (req, res) => {
         result.duration = `${Math.round((sb.durationInFrames || 0) / 30)}s`;
         result.scenes = sb.scenes?.length || 0;
       }
-    } catch { /* skip */ }
+    } catch {
+      /* skip */
+    }
   }
 
   // Shorts — check per-topic/session first, then global
@@ -62,25 +64,35 @@ router.get('/:topic/:session', (req, res) => {
       const shortsData = JSON.parse(fs.readFileSync(sessionShortsMetadata, 'utf-8'));
       result.shorts = shortsData;
       result.shortsGenerated = true;
-    } catch { /* skip */ }
+    } catch {
+      /* skip */
+    }
   } else if (fs.existsSync(globalShortsMetadata)) {
     try {
       const allShorts = JSON.parse(fs.readFileSync(globalShortsMetadata, 'utf-8'));
       // Filter to this topic/session if the global file has structured data
       if (Array.isArray(allShorts)) {
-        result.shorts = allShorts.filter((s: any) => s.topic === topic && s.session === parseInt(session));
+        result.shorts = allShorts.filter(
+          (s: any) => s.topic === topic && s.session === parseInt(session)
+        );
       } else {
         result.shorts = allShorts;
       }
-      result.shortsGenerated = (result.shorts?.clips?.length > 0) || (Array.isArray(result.shorts) && result.shorts.length > 0);
-    } catch { /* skip */ }
+      result.shortsGenerated =
+        result.shorts?.clips?.length > 0 ||
+        (Array.isArray(result.shorts) && result.shorts.length > 0);
+    } catch {
+      /* skip */
+    }
   } else {
     result.shortsGenerated = false;
   }
 
   // Also check for short clip video files
   if (fs.existsSync(topicShortsDir)) {
-    const clipFiles = fs.readdirSync(topicShortsDir).filter(f => f.startsWith(`s${session}-short-`) && f.endsWith('.mp4'));
+    const clipFiles = fs
+      .readdirSync(topicShortsDir)
+      .filter((f) => f.startsWith(`s${session}-short-`) && f.endsWith('.mp4'));
     result.shortsClipCount = clipFiles.length;
   }
 

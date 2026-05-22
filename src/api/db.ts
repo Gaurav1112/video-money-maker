@@ -9,8 +9,26 @@ db.pragma('journal_mode = WAL');
 db.pragma('foreign_keys = OFF');
 
 // Whitelists to prevent SQL injection via dynamic column names
-const ALLOWED_QUEUE_COLUMNS = new Set(['status', 'youtube_id', 'instagram_id', 'published_at', 'long_path', 'short_path', 'thumb_path', 'updated_at']);
-const ALLOWED_JOB_COLUMNS = new Set(['status', 'progress', 'long_path', 'short_path', 'thumb_path', 'error', 'started_at', 'completed_at']);
+const ALLOWED_QUEUE_COLUMNS = new Set([
+  'status',
+  'youtube_id',
+  'instagram_id',
+  'published_at',
+  'long_path',
+  'short_path',
+  'thumb_path',
+  'updated_at',
+]);
+const ALLOWED_JOB_COLUMNS = new Set([
+  'status',
+  'progress',
+  'long_path',
+  'short_path',
+  'thumb_path',
+  'error',
+  'started_at',
+  'completed_at',
+]);
 
 export function initDatabase() {
   db.exec(`
@@ -48,9 +66,7 @@ export function initDatabase() {
 }
 
 export function getNextPending() {
-  return db.prepare(
-    'SELECT * FROM queue WHERE status = ? ORDER BY id ASC LIMIT 1'
-  ).get('pending');
+  return db.prepare('SELECT * FROM queue WHERE status = ? ORDER BY id ASC LIMIT 1').get('pending');
 }
 
 export function updateQueueStatus(id: number, status: string, extra?: Record<string, any>) {
@@ -70,9 +86,11 @@ export function updateQueueStatus(id: number, status: string, extra?: Record<str
 }
 
 export function createRenderJob(id: string, queueId?: number | null) {
-  db.prepare(
-    'INSERT INTO render_jobs (id, queue_id, status) VALUES (?, ?, ?)'
-  ).run(id, queueId || null, 'queued');
+  db.prepare('INSERT INTO render_jobs (id, queue_id, status) VALUES (?, ?, ?)').run(
+    id,
+    queueId || null,
+    'queued'
+  );
 }
 
 export function updateRenderJob(id: string, updates: Record<string, any>) {
@@ -89,20 +107,22 @@ export function getRenderJob(id: string) {
 }
 
 export function getQueueStats() {
-  return db.prepare(
-    'SELECT status, COUNT(*) as count FROM queue GROUP BY status'
-  ).all();
+  return db.prepare('SELECT status, COUNT(*) as count FROM queue GROUP BY status').all();
 }
 
-export function seedQueue(items: Array<{ topic: string; session_number: number; language: string; title: string }>) {
+export function seedQueue(
+  items: Array<{ topic: string; session_number: number; language: string; title: string }>
+) {
   const insert = db.prepare(
     'INSERT INTO queue (topic, session_number, language, title) VALUES (?, ?, ?, ?)'
   );
-  const insertMany = db.transaction((items: Array<{ topic: string; session_number: number; language: string; title: string }>) => {
-    for (const item of items) {
-      insert.run(item.topic, item.session_number, item.language, item.title);
+  const insertMany = db.transaction(
+    (items: Array<{ topic: string; session_number: number; language: string; title: string }>) => {
+      for (const item of items) {
+        insert.run(item.topic, item.session_number, item.language, item.title);
+      }
     }
-  });
+  );
   insertMany(items);
 }
 

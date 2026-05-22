@@ -43,9 +43,7 @@ const topic = topicFlagIdx >= 0 ? args[topicFlagIdx + 1] : 'system design';
 const titleArg = titleFlagIdx >= 0 ? args[titleFlagIdx + 1] : undefined;
 
 if (!videoPath) {
-  console.error(
-    'Usage: npm run retention:check <video.mp4> [--topic <topic>] [--title <title>]',
-  );
+  console.error('Usage: npm run retention:check <video.mp4> [--topic <topic>] [--title <title>]');
   process.exit(1);
 }
 
@@ -77,19 +75,13 @@ interface FfprobeResult {
 function runFfprobe(file: string): FfprobeResult {
   const result = spawnSync(
     'ffprobe',
-    [
-      '-v', 'quiet',
-      '-print_format', 'json',
-      '-show_streams',
-      '-show_format',
-      file,
-    ],
-    { encoding: 'utf8' },
+    ['-v', 'quiet', '-print_format', 'json', '-show_streams', '-show_format', file],
+    { encoding: 'utf8' }
   );
 
   if (result.status !== 0) {
     throw new Error(
-      `ffprobe failed: ${result.stderr ?? 'unknown error'}. Is ffprobe installed? (brew install ffmpeg)`,
+      `ffprobe failed: ${result.stderr ?? 'unknown error'}. Is ffprobe installed? (brew install ffmpeg)`
     );
   }
 
@@ -102,17 +94,24 @@ function countSceneCuts(file: string, durationSeconds: number): number {
     const result = spawnSync(
       'ffprobe',
       [
-        '-v', 'quiet',
-        '-select_streams', 'v',
+        '-v',
+        'quiet',
+        '-select_streams',
+        'v',
         '-show_frames',
-        '-read_intervals', `%+${Math.min(durationSeconds, 120)}`,
-        '-f', 'lavfi',
-        '-i', `movie=${file},select=gt(scene\\,0.3)`,
-        '-show_entries', 'frame=pts_time',
-        '-of', 'csv=p=0',
+        '-read_intervals',
+        `%+${Math.min(durationSeconds, 120)}`,
+        '-f',
+        'lavfi',
+        '-i',
+        `movie=${file},select=gt(scene\\,0.3)`,
+        '-show_entries',
+        'frame=pts_time',
+        '-of',
+        'csv=p=0',
         file,
       ],
-      { encoding: 'utf8' },
+      { encoding: 'utf8' }
     );
     // Count non-empty lines = number of scene cuts
     const lines = (result.stdout ?? '').split('\n').filter(Boolean);
@@ -128,13 +127,8 @@ function getAudioDynamicRange(file: string): number {
   try {
     const result = spawnSync(
       'ffmpeg',
-      [
-        '-i', file,
-        '-af', 'loudnorm=I=-16:TP=-1.5:LRA=11:print_format=json',
-        '-f', 'null',
-        '-',
-      ],
-      { encoding: 'utf8' },
+      ['-i', file, '-af', 'loudnorm=I=-16:TP=-1.5:LRA=11:print_format=json', '-f', 'null', '-'],
+      { encoding: 'utf8' }
     );
     // loudnorm outputs JSON to stderr
     const stderr = result.stderr ?? '';
@@ -154,9 +148,7 @@ function getAudioDynamicRange(file: string): number {
 
 /** Check if video has subtitle/caption streams */
 function hasCaptions(probe: FfprobeResult): boolean {
-  return probe.streams.some(
-    (s) => s.codec_type === 'subtitle' || s.codec_type === 'data',
-  );
+  return probe.streams.some((s) => s.codec_type === 'subtitle' || s.codec_type === 'data');
 }
 
 /** Extract title from video metadata tags or CLI arg */
@@ -174,16 +166,23 @@ function estimateHookDuration(file: string): number {
     const result = spawnSync(
       'ffprobe',
       [
-        '-v', 'quiet',
-        '-select_streams', 'v',
+        '-v',
+        'quiet',
+        '-select_streams',
+        'v',
         '-show_frames',
-        '-read_intervals', '%+10',
-        '-f', 'lavfi',
-        '-i', `movie=${file},select=gt(scene\\,0.4)`,
-        '-show_entries', 'frame=pts_time',
-        '-of', 'csv=p=0',
+        '-read_intervals',
+        '%+10',
+        '-f',
+        'lavfi',
+        '-i',
+        `movie=${file},select=gt(scene\\,0.4)`,
+        '-show_entries',
+        'frame=pts_time',
+        '-of',
+        'csv=p=0',
       ],
-      { encoding: 'utf8' },
+      { encoding: 'utf8' }
     );
     const firstLine = (result.stdout ?? '').split('\n')[0];
     const firstCut = parseFloat(firstLine);
@@ -204,27 +203,49 @@ function checkLoopBack(file: string, durationSeconds: number): boolean {
     const lastFramePath = `${file}.frame_last.png`;
 
     spawnSync('ffmpeg', [
-      '-y', '-ss', '0.1', '-i', file, '-frames:v', '1', '-q:v', '2', firstFramePath,
+      '-y',
+      '-ss',
+      '0.1',
+      '-i',
+      file,
+      '-frames:v',
+      '1',
+      '-q:v',
+      '2',
+      firstFramePath,
     ]);
     spawnSync('ffmpeg', [
-      '-y', '-ss', String(Math.max(0, durationSeconds - 0.5)),
-      '-i', file, '-frames:v', '1', '-q:v', '2', lastFramePath,
+      '-y',
+      '-ss',
+      String(Math.max(0, durationSeconds - 0.5)),
+      '-i',
+      file,
+      '-frames:v',
+      '1',
+      '-q:v',
+      '2',
+      lastFramePath,
     ]);
 
     // Use ffmpeg SSIM to compare (score > 0.8 = visually similar = loop-back)
-    const result = spawnSync('ffmpeg', [
-      '-i', firstFramePath, '-i', lastFramePath,
-      '-lavfi', 'ssim', '-f', 'null', '-',
-    ], { encoding: 'utf8' });
+    const result = spawnSync(
+      'ffmpeg',
+      ['-i', firstFramePath, '-i', lastFramePath, '-lavfi', 'ssim', '-f', 'null', '-'],
+      { encoding: 'utf8' }
+    );
 
     // Clean up temp frames
     [firstFramePath, lastFramePath].forEach((f) => {
-      try { fs.unlinkSync(f); } catch { /* ok */ }
+      try {
+        fs.unlinkSync(f);
+      } catch {
+        /* ok */
+      }
     });
 
     const ssimMatch = result.stderr?.match(/All:(\d+\.\d+)/);
     if (ssimMatch) {
-      return parseFloat(ssimMatch[1]) > 0.80;
+      return parseFloat(ssimMatch[1]) > 0.8;
     }
     return false;
   } catch {
@@ -295,7 +316,7 @@ async function main(): Promise<void> {
     captionPresence,
     ctaTimingFraction: 0.55, // heuristic default
     videoLengthSeconds: durationSeconds,
-    openLoopCount: 1,         // heuristic
+    openLoopCount: 1, // heuristic
     patternInterruptCount: Math.max(0, sceneCuts - 2),
     loopBackMatch,
     retentionBeatCount: Math.max(0, sceneCuts - 4),
@@ -310,9 +331,24 @@ async function main(): Promise<void> {
   // 4. Dropoff prediction (using heuristic segments)
   const heuristicSegments: ScriptSegmentInput[] = [
     { id: 'hook', type: 'hook', startSeconds: 0, endSeconds: hookDurationSeconds },
-    { id: 'content', type: 'content', startSeconds: hookDurationSeconds, endSeconds: durationSeconds * 0.7 },
-    { id: 'cta', type: 'cta', startSeconds: durationSeconds * 0.55, endSeconds: durationSeconds * 0.6 },
-    { id: 'summary', type: 'summary', startSeconds: durationSeconds * 0.7, endSeconds: durationSeconds },
+    {
+      id: 'content',
+      type: 'content',
+      startSeconds: hookDurationSeconds,
+      endSeconds: durationSeconds * 0.7,
+    },
+    {
+      id: 'cta',
+      type: 'cta',
+      startSeconds: durationSeconds * 0.55,
+      endSeconds: durationSeconds * 0.6,
+    },
+    {
+      id: 'summary',
+      type: 'summary',
+      startSeconds: durationSeconds * 0.7,
+      endSeconds: durationSeconds,
+    },
   ];
   const dropoffPrediction = predictDropoffs(heuristicSegments, topic);
 
@@ -324,7 +360,7 @@ async function main(): Promise<void> {
   for (const section of result.sections) {
     const icon = section.score >= 70 ? '✅' : section.score >= 50 ? '⚠️' : '❌';
     console.log(
-      `  ${icon} ${section.section.padEnd(28)} ${String(section.score).padStart(3)}/100  (${section.contribution}pts)`,
+      `  ${icon} ${section.section.padEnd(28)} ${String(section.score).padStart(3)}/100  (${section.contribution}pts)`
     );
   }
 
@@ -357,7 +393,7 @@ async function main(): Promise<void> {
   // 7. Exit code
   if (!result.passed) {
     console.error(
-      `\n❌ CI GATE FAILED: Retention score ${result.totalScore}/100 < 70. Fix the above issues before uploading.`,
+      `\n❌ CI GATE FAILED: Retention score ${result.totalScore}/100 < 70. Fix the above issues before uploading.`
     );
     process.exit(1);
   }

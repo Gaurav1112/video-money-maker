@@ -12,15 +12,31 @@
 import { execSync } from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
-import { getDemoSession, listDemoTopics, listAvailableTopics, loadTopicContent, extractSession } from '../src/pipeline/content-loader';
+import {
+  getDemoSession,
+  listDemoTopics,
+  listAvailableTopics,
+  loadTopicContent,
+  extractSession,
+} from '../src/pipeline/content-loader';
 import { generateScript } from '../src/pipeline/script-generator';
 import { generateSceneAudios } from '../src/pipeline/tts-engine';
-import { generateStoryboard, getStoryboardDuration, validateStoryboard } from '../src/pipeline/storyboard';
+import {
+  generateStoryboard,
+  getStoryboardDuration,
+  validateStoryboard,
+} from '../src/pipeline/storyboard';
 import { generateMetadata } from '../src/pipeline/metadata-generator';
 
 const OUTPUT_BASE = path.join(process.env.HOME || '~', 'Documents', 'GuruSishya-Videos');
 const LANGUAGES = ['python', 'java'];
-const CLIP_TYPES = ['hook', 'code-highlight', 'aha-moment', 'comparison', 'review-challenge'] as const;
+const CLIP_TYPES = [
+  'hook',
+  'code-highlight',
+  'aha-moment',
+  'comparison',
+  'review-challenge',
+] as const;
 const BGM_FILES = [
   'audio/bgm/gentle-drone.mp3',
   'audio/bgm/study-pad.mp3',
@@ -28,7 +44,10 @@ const BGM_FILES = [
 ];
 
 function slugify(text: string): string {
-  return text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  return text
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
 }
 
 function ensureDir(dir: string) {
@@ -37,9 +56,10 @@ function ensureDir(dir: string) {
 
 async function renderTopic() {
   const args = process.argv.slice(2);
-  const topicArg = args.find(a => a.startsWith('--topic='))?.split('=')[1]
-    || (args.indexOf('--topic') >= 0 ? args[args.indexOf('--topic') + 1] : null);
-  const langArg = args.find(a => a.startsWith('--language='))?.split('=')[1];
+  const topicArg =
+    args.find((a) => a.startsWith('--topic='))?.split('=')[1] ||
+    (args.indexOf('--topic') >= 0 ? args[args.indexOf('--topic') + 1] : null);
+  const langArg = args.find((a) => a.startsWith('--language='))?.split('=')[1];
   const useDemo = args.includes('--demo');
   const skipRender = args.includes('--storyboard-only');
   const languages = langArg ? [langArg] : LANGUAGES;
@@ -54,7 +74,7 @@ async function renderTopic() {
     sessions = [getDemoSession(topicArg || undefined)];
   } else if (topicArg) {
     const topics = listAvailableTopics();
-    const match = topics.find(t => t.toLowerCase().includes(topicArg.toLowerCase()));
+    const match = topics.find((t) => t.toLowerCase().includes(topicArg.toLowerCase()));
     if (match) {
       const content = loadTopicContent(match);
       const allSessions = content.sessions || [content];
@@ -96,7 +116,9 @@ async function renderTopic() {
       ensureDir(path.join(sessionDir, 'shorts'));
 
       console.log(`\n${'═'.repeat(60)}`);
-      console.log(`📖 ${session.title} [${language.toUpperCase()}] — Session ${session.sessionNumber}`);
+      console.log(
+        `📖 ${session.title} [${language.toUpperCase()}] — Session ${session.sessionNumber}`
+      );
       console.log('═'.repeat(60));
 
       try {
@@ -111,7 +133,7 @@ async function renderTopic() {
         // 2. Generate TTS
         console.log('  🎙️ TTS audio...');
         const audioResults = await generateSceneAudios(
-          script.map(s => ({ narration: s.narration, type: s.type }))
+          script.map((s) => ({ narration: s.narration, type: s.type }))
         );
         const audioTotal = audioResults.reduce((sum, a) => sum + a.duration, 0);
         console.log(`     ${audioTotal.toFixed(0)}s audio`);
@@ -125,13 +147,16 @@ async function renderTopic() {
 
         // BGM
         const bgmSeed = (session.topic + session.sessionNumber + language)
-          .split('').reduce((a: number, c: string) => a + c.charCodeAt(0), 0);
+          .split('')
+          .reduce((a: number, c: string) => a + c.charCodeAt(0), 0);
         storyboard.bgmFile = BGM_FILES[bgmSeed % BGM_FILES.length];
 
         const duration = getStoryboardDuration(storyboard);
         const validation = validateStoryboard(storyboard);
 
-        console.log(`     ${duration.minutes} | ${storyboard.scenes.length} scenes | ${validation.valid ? '✅' : '⚠️ ' + validation.issues[0]}`);
+        console.log(
+          `     ${duration.minutes} | ${storyboard.scenes.length} scenes | ${validation.valid ? '✅' : '⚠️ ' + validation.issues[0]}`
+        );
 
         // 4. Generate metadata
         const metadata = generateMetadata(storyboard, language);
@@ -153,23 +178,33 @@ async function renderTopic() {
         }
 
         // 6. Long-form render
-        const longPath = path.join(sessionDir, `${topicSlug}-s${session.sessionNumber}-${language}-long.mp4`);
+        const longPath = path.join(
+          sessionDir,
+          `${topicSlug}-s${session.sessionNumber}-${language}-long.mp4`
+        );
         console.log(`  🎥 Rendering long-form → ${path.basename(longPath)}...`);
 
         // Note: Actual Remotion render requires the composition to read from the storyboard.
         // For now, save the storyboard JSON — actual rendering done via:
         //   npx remotion render src/compositions/index.tsx LongVideo <output> --props=<storyboard.json>
-        console.log(`     ℹ️  To render: npx remotion render src/compositions/index.tsx LongVideo "${longPath}" --props="${storyboardPath}"`);
+        console.log(
+          `     ℹ️  To render: npx remotion render src/compositions/index.tsx LongVideo "${longPath}" --props="${storyboardPath}"`
+        );
         rendered++;
 
         // 7. Shorts
         for (const clipType of CLIP_TYPES) {
-          const shortPath = path.join(sessionDir, 'shorts', `${topicSlug}-s${session.sessionNumber}-${language}-${clipType}.mp4`);
+          const shortPath = path.join(
+            sessionDir,
+            'shorts',
+            `${topicSlug}-s${session.sessionNumber}-${language}-${clipType}.mp4`
+          );
           console.log(`  📱 Short [${clipType}] → ${path.basename(shortPath)}`);
-          console.log(`     ℹ️  To render: npx remotion render src/compositions/index.tsx MultiShort-${clipType} "${shortPath}" --props="${storyboardPath}"`);
+          console.log(
+            `     ℹ️  To render: npx remotion render src/compositions/index.tsx MultiShort-${clipType} "${shortPath}" --props="${storyboardPath}"`
+          );
           rendered++;
         }
-
       } catch (err: any) {
         console.error(`  ❌ Error: ${err.message || err}`);
         failed++;

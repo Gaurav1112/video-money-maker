@@ -96,10 +96,15 @@ export const BeforeAfterSplit: React.FC<BeforeAfterSplitProps> = ({
         </div>
         {beforeBullets.map((bullet, i) => {
           const bulletDelay = 0.05 + i * 0.06;
-          const bulletOpacity = interpolate(sceneProgress, [bulletDelay, bulletDelay + 0.1], [0, 1], {
-            extrapolateLeft: 'clamp',
-            extrapolateRight: 'clamp',
-          });
+          const bulletOpacity = interpolate(
+            sceneProgress,
+            [bulletDelay, bulletDelay + 0.1],
+            [0, 1],
+            {
+              extrapolateLeft: 'clamp',
+              extrapolateRight: 'clamp',
+            }
+          );
           return (
             <div
               key={i}
@@ -173,10 +178,15 @@ export const BeforeAfterSplit: React.FC<BeforeAfterSplitProps> = ({
         </div>
         {afterBullets.map((bullet, i) => {
           const bulletDelay = 0.55 + i * 0.06;
-          const bulletOpacity = interpolate(sceneProgress, [bulletDelay, bulletDelay + 0.1], [0, 1], {
-            extrapolateLeft: 'clamp',
-            extrapolateRight: 'clamp',
-          });
+          const bulletOpacity = interpolate(
+            sceneProgress,
+            [bulletDelay, bulletDelay + 0.1],
+            [0, 1],
+            {
+              extrapolateLeft: 'clamp',
+              extrapolateRight: 'clamp',
+            }
+          );
           return (
             <div
               key={i}

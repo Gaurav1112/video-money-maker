@@ -12,10 +12,7 @@ import * as path from 'path';
 import { bundle } from '@remotion/bundler';
 import { renderMedia, selectComposition } from '@remotion/renderer';
 import type { Storyboard } from '../src/types';
-import {
-  selectSubtopicClips,
-  buildMiniStoryboard,
-} from '../src/pipeline/smart-clip-selector';
+import { selectSubtopicClips, buildMiniStoryboard } from '../src/pipeline/smart-clip-selector';
 import { buildTERarcFromScenes, generateStatusThreatHook } from '../src/pipeline/short-arc-builder';
 
 const args = process.argv.slice(2);
@@ -79,7 +76,7 @@ async function main() {
   for (const clip of clips) {
     console.log(
       `    [${clip.archetype}] scenes ${clip.startScene}-${clip.endScene} ` +
-      `(${clip.duration}s, score=${clip.score}) "${clip.heading}"`,
+        `(${clip.duration}s, score=${clip.score}) "${clip.heading}"`
     );
   }
   console.log('');
@@ -127,25 +124,20 @@ async function main() {
 
     // b. Apply TER arc — transforms flat scenes into tension→escalation→resolution structure
     const hookScript = generateStatusThreatHook(topic, clip.heading);
-    miniStoryboard.scenes = buildTERarcFromScenes(
-      miniStoryboard.scenes,
-      topic,
-      clip.heading,
-      { forceOpenLoop: true },
-    );
+    miniStoryboard.scenes = buildTERarcFromScenes(miniStoryboard.scenes, topic, clip.heading, {
+      forceOpenLoop: true,
+    });
 
     // Write temp props JSON for debugging
-    const tempPropsPath = path.join(
-      path.resolve('output'), 'shorts', `viral-props-${i + 1}.json`,
-    );
+    const tempPropsPath = path.join(path.resolve('output'), 'shorts', `viral-props-${i + 1}.json`);
     fs.mkdirSync(path.dirname(tempPropsPath), { recursive: true });
     fs.writeFileSync(tempPropsPath, JSON.stringify({ storyboard: miniStoryboard }, null, 2));
 
     console.log(
       `  \uD83D\uDCF1 Short #${i + 1} (${clip.archetype}): ` +
-      `scenes ${clip.startScene}-${clip.endScene}, ` +
-      `${miniStoryboard.scenes.length} scenes, ` +
-      `${miniStoryboard.durationInFrames} frames (~${clip.duration}s)`,
+        `scenes ${clip.startScene}-${clip.endScene}, ` +
+        `${miniStoryboard.scenes.length} scenes, ` +
+        `${miniStoryboard.durationInFrames} frames (~${clip.duration}s)`
     );
     console.log(`     Hook: "${clip.hookText}"`);
 
@@ -167,9 +159,7 @@ async function main() {
         inputProps: { storyboard: miniStoryboard },
         concurrency: 6,
         onProgress: ({ progress }) => {
-          process.stdout.write(
-            `\r    Rendering short-${i + 1}: ${(progress * 100).toFixed(0)}%`,
-          );
+          process.stdout.write(`\r    Rendering short-${i + 1}: ${(progress * 100).toFixed(0)}%`);
         },
       });
 
@@ -214,9 +204,7 @@ async function main() {
 
       successCount++;
     } catch (err: any) {
-      console.error(
-        `\n    \u274C Short #${i + 1} failed: ${err.message?.slice(0, 200)}`,
-      );
+      console.error(`\n    \u274C Short #${i + 1} failed: ${err.message?.slice(0, 200)}`);
     }
   }
 

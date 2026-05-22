@@ -1,11 +1,5 @@
 import React from 'react';
-import {
-  useCurrentFrame,
-  AbsoluteFill,
-  interpolate,
-  spring,
-  useVideoConfig,
-} from 'remotion';
+import { useCurrentFrame, AbsoluteFill, interpolate, spring, useVideoConfig } from 'remotion';
 import { COLORS, FONTS } from '../lib/theme';
 import { CAPTION_SAFE_BOTTOM } from '../lib/safe-zones';
 
@@ -37,8 +31,19 @@ const isBreakPoint = (word: string): boolean => {
   if (/[,.:;!?]$/.test(word)) return true;
   const lower = word.toLowerCase().replace(/[^a-z]/g, '');
   return [
-    'and', 'but', 'or', 'so', 'then', 'when', 'while',
-    'because', 'which', 'that', 'where', 'since', 'after',
+    'and',
+    'but',
+    'or',
+    'so',
+    'then',
+    'when',
+    'while',
+    'because',
+    'which',
+    'that',
+    'where',
+    'since',
+    'after',
   ].includes(lower);
 };
 
@@ -50,7 +55,7 @@ const isBreakPoint = (word: string): boolean => {
  */
 const buildSentenceGroups = (
   words: string[],
-  maxWords: number = 14,
+  maxWords: number = 14
 ): Array<{ start: number; end: number }> => {
   const MAX_WORDS = maxWords;
   const MIN_WORDS = Math.min(4, maxWords);
@@ -65,11 +70,7 @@ const buildSentenceGroups = (
     }
 
     let bestBreak = -1;
-    for (
-      let i = cursor + MIN_WORDS - 1;
-      i < cursor + MAX_WORDS && i < words.length;
-      i++
-    ) {
+    for (let i = cursor + MIN_WORDS - 1; i < cursor + MAX_WORDS && i < words.length; i++) {
       if (isBreakPoint(words[i])) {
         bestBreak = i + 1;
       }
@@ -94,11 +95,7 @@ const splitIntoLines = (groupWords: string[]): string[][] => {
   let bestSplit = mid;
   let bestDist = Infinity;
 
-  for (
-    let i = Math.max(2, mid - 3);
-    i <= Math.min(groupWords.length - 2, mid + 3);
-    i++
-  ) {
+  for (let i = Math.max(2, mid - 3); i <= Math.min(groupWords.length - 2, mid + 3); i++) {
     if (isBreakPoint(groupWords[i])) {
       const dist = Math.abs(i - mid);
       if (dist < bestDist) {
@@ -154,8 +151,7 @@ const CaptionOverlay: React.FC<CaptionOverlayProps> = ({
   const words = text.split(/\s+/).filter(Boolean);
   const totalWords = words.length;
   const totalNarrationFrames =
-    durationInFrames ||
-    Math.round((totalWords / wordsPerMinute) * 60 * fps);
+    durationInFrames || Math.round((totalWords / wordsPerMinute) * 60 * fps);
   const framesPerWord = totalNarrationFrames / totalWords;
 
   // ── Current word index ──
@@ -200,7 +196,7 @@ const CaptionOverlay: React.FC<CaptionOverlayProps> = ({
       startFrame + totalNarrationFrames,
     ],
     [0, 1, 1, 0],
-    { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
+    { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }
   );
 
   if (containerOpacity <= 0) return null;
@@ -208,9 +204,7 @@ const CaptionOverlay: React.FC<CaptionOverlayProps> = ({
   // ── Slide-up transition on group change ──
   const groupStartWordIdx = activeGroup.start;
   const groupEntryFrame =
-    wordTimestamps &&
-    wordTimestamps.length > 0 &&
-    groupStartWordIdx < wordTimestamps.length
+    wordTimestamps && wordTimestamps.length > 0 && groupStartWordIdx < wordTimestamps.length
       ? startFrame + wordTimestamps[groupStartWordIdx].start * fps
       : startFrame + groupStartWordIdx * framesPerWord;
 
@@ -225,11 +219,7 @@ const CaptionOverlay: React.FC<CaptionOverlayProps> = ({
 
   // ── Helper: get word start frame (relative to scene start) ──
   const getWordStartFrame = (globalIdx: number): number => {
-    if (
-      wordTimestamps &&
-      wordTimestamps.length > 0 &&
-      globalIdx < wordTimestamps.length
-    ) {
+    if (wordTimestamps && wordTimestamps.length > 0 && globalIdx < wordTimestamps.length) {
       return wordTimestamps[globalIdx].start * fps;
     }
     return globalIdx * framesPerWord;
@@ -293,9 +283,7 @@ const CaptionOverlay: React.FC<CaptionOverlayProps> = ({
                     config: { damping: 8, stiffness: 250, mass: 0.4 },
                   })
                 : 0;
-              let wordScale = isCurrent
-                ? interpolate(wordSpring, [0, 1], [1.0, 1.3])
-                : 1.0;
+              let wordScale = isCurrent ? interpolate(wordSpring, [0, 1], [1.0, 1.3]) : 1.0;
 
               // ── Feature P2: per-word emphasis pop ──
               // If the CURRENT word is also ALL-CAPS emphasis, give it an
@@ -303,12 +291,10 @@ const CaptionOverlay: React.FC<CaptionOverlayProps> = ({
               // peaking at frames 0-5 around when the word becomes current.
               if (isCurrent && emphasis) {
                 const emphasisAge = elapsed - wordStartF;
-                const boost = interpolate(
-                  emphasisAge,
-                  [0, 5, 10],
-                  [1.3, 1.3, 1.0],
-                  { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
-                );
+                const boost = interpolate(emphasisAge, [0, 5, 10], [1.3, 1.3, 1.0], {
+                  extrapolateLeft: 'clamp',
+                  extrapolateRight: 'clamp',
+                });
                 wordScale *= boost;
               }
 
@@ -321,8 +307,12 @@ const CaptionOverlay: React.FC<CaptionOverlayProps> = ({
                     fontSize: isCurrent ? 44 : 38,
                     fontWeight: 800,
                     color: isCurrent
-                      ? (emphasis ? COLORS.saffron : '#FFFFFF')
-                      : (emphasis ? COLORS.gold : '#FFFFFFdd'),
+                      ? emphasis
+                        ? COLORS.saffron
+                        : '#FFFFFF'
+                      : emphasis
+                        ? COLORS.gold
+                        : '#FFFFFFdd',
                     textTransform: 'uppercase',
                     transform: `scale(${wordScale})`,
                     transformOrigin: 'center bottom',
@@ -428,9 +418,7 @@ const CaptionOverlay: React.FC<CaptionOverlayProps> = ({
                         config: { damping: 15, stiffness: 200, mass: 0.8 },
                       })
                     : 0;
-                  const wordScale = isCurrent
-                    ? interpolate(scaleSpring, [0, 1], [1.0, 1.15])
-                    : 1.0;
+                  const wordScale = isCurrent ? interpolate(scaleSpring, [0, 1], [1.0, 1.15]) : 1.0;
 
                   // ── Fade-in for newly revealed words ──
                   const wordAge = elapsed - getWordStartFrame(globalIdx);
@@ -440,7 +428,7 @@ const CaptionOverlay: React.FC<CaptionOverlayProps> = ({
                         wordAge,
                         [0, 4], // ~4 frames fade-in (~130ms at 30fps)
                         [0, 1],
-                        { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
+                        { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }
                       );
 
                   // ── Determine color (white text on dark bg) ──

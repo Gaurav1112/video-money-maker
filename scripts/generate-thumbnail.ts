@@ -20,16 +20,49 @@ import type { Storyboard } from '../src/types';
 
 function inferCategory(storyboard: Storyboard): string {
   const topic = storyboard.topic.toLowerCase();
-  if (['system design', 'load balanc', 'caching', 'cdn', 'microservice', 'database', 'rate limit', 'message queue']
-    .some(k => topic.includes(k))) return 'System Design';
-  if (['array', 'tree', 'graph', 'linked list', 'stack', 'queue', 'sort', 'search', 'dynamic', 'dp', 'recursion', 'heap', 'trie', 'bfs', 'dfs']
-    .some(k => topic.includes(k))) return 'DSA';
-  if (['react', 'css', 'html', 'javascript', 'typescript', 'frontend', 'next']
-    .some(k => topic.includes(k))) return 'Frontend';
-  if (['java', 'python', 'go', 'rust', 'c++', 'spring']
-    .some(k => topic.includes(k))) return 'Backend';
-  if (['docker', 'kubernetes', 'ci/cd', 'deploy', 'aws', 'cloud']
-    .some(k => topic.includes(k))) return 'DevOps';
+  if (
+    [
+      'system design',
+      'load balanc',
+      'caching',
+      'cdn',
+      'microservice',
+      'database',
+      'rate limit',
+      'message queue',
+    ].some((k) => topic.includes(k))
+  )
+    return 'System Design';
+  if (
+    [
+      'array',
+      'tree',
+      'graph',
+      'linked list',
+      'stack',
+      'queue',
+      'sort',
+      'search',
+      'dynamic',
+      'dp',
+      'recursion',
+      'heap',
+      'trie',
+      'bfs',
+      'dfs',
+    ].some((k) => topic.includes(k))
+  )
+    return 'DSA';
+  if (
+    ['react', 'css', 'html', 'javascript', 'typescript', 'frontend', 'next'].some((k) =>
+      topic.includes(k)
+    )
+  )
+    return 'Frontend';
+  if (['java', 'python', 'go', 'rust', 'c++', 'spring'].some((k) => topic.includes(k)))
+    return 'Backend';
+  if (['docker', 'kubernetes', 'ci/cd', 'deploy', 'aws', 'cloud'].some((k) => topic.includes(k)))
+    return 'DevOps';
   return 'Interview Prep';
 }
 

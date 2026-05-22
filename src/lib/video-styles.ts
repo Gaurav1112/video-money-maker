@@ -3,7 +3,17 @@ import type { SceneType, VideoFormat } from '../types';
 
 export type CaptionMode = 'fireship' | 'hormozi';
 export type SfxDensity = 'sparse' | 'dense';
-export type TransitionType = 'fade' | 'slide-right' | 'slide-left' | 'slide-bottom' | 'slide-top' | 'wipe-left' | 'wipe-right' | 'clockWipe' | 'iris' | 'flip';
+export type TransitionType =
+  | 'fade'
+  | 'slide-right'
+  | 'slide-left'
+  | 'slide-bottom'
+  | 'slide-top'
+  | 'wipe-left'
+  | 'wipe-right'
+  | 'clockWipe'
+  | 'iris'
+  | 'flip';
 
 export interface VideoStyle {
   id: 'educational' | 'viral' | 'vertical';
@@ -41,7 +51,16 @@ const EDUCATIONAL: VideoStyle = {
   captionMode: 'fireship',
   zoomInterval: [3, 5],
   zoomScale: 1.15,
-  transitionPool: ['fade', 'slide-right', 'wipe-left', 'slide-bottom', 'fade', 'slide-left', 'wipe-right', 'slide-top'],
+  transitionPool: [
+    'fade',
+    'slide-right',
+    'wipe-left',
+    'slide-bottom',
+    'fade',
+    'slide-left',
+    'wipe-right',
+    'slide-top',
+  ],
   bgmVolume: 0.12,
   bgmChangeInterval: 120,
   sfxDensity: 'sparse',
@@ -81,27 +100,27 @@ const VIRAL: VideoStyle = {
 const VERTICAL: VideoStyle = {
   id: 'vertical',
   ttsRate: {
-    title: '+50%',      // was +40% — grab attention instantly
-    text: '+42%',       // was +38% — Fireship pace: ~200 WPM effective
-    code: '+25%',       // was +22% — still needs comprehension time
-    diagram: '+35%',    // was +32%
-    table: '+38%',      // was +35%
-    interview: '+45%',  // was +42%
-    review: '+42%',     // was +38%
-    summary: '+48%',    // was +45% — rapid recap
+    title: '+50%', // was +40% — grab attention instantly
+    text: '+42%', // was +38% — Fireship pace: ~200 WPM effective
+    code: '+25%', // was +22% — still needs comprehension time
+    diagram: '+35%', // was +32%
+    table: '+38%', // was +35%
+    interview: '+45%', // was +42%
+    review: '+42%', // was +38%
+    summary: '+48%', // was +45% — rapid recap
   },
   captionMode: 'hormozi',
-  zoomInterval: [1, 2.5],  // was [1.5,3] — more frequent stimulus
+  zoomInterval: [1, 2.5], // was [1.5,3] — more frequent stimulus
   zoomScale: 1.12,
   transitionPool: ['fade', 'slide-bottom', 'wipe-left', 'fade'],
-  bgmVolume: 0.18,         // was 0.10 — audible on phone speakers
-  bgmChangeInterval: 45,   // was 90 — rotate tracks faster
-  sfxDensity: 'dense',     // was 'sparse' — 3 SFX per scene, not 1
-  transitionDuration: 3,   // was 4 — Fireship uses ~2-3 frame cuts
+  bgmVolume: 0.18, // was 0.10 — audible on phone speakers
+  bgmChangeInterval: 45, // was 90 — rotate tracks faster
+  sfxDensity: 'dense', // was 'sparse' — 3 SFX per scene, not 1
+  transitionDuration: 3, // was 4 — Fireship uses ~2-3 frame cuts
   dramaticTransitionDuration: 6, // was 8 — still snappy
   maxTextSceneDurationSeconds: 6, // HARD LIMIT: split any text scene >6s
-  maxBulletsPerScene: 2,          // ONE concept per scene, max 2 bullets
-  minCutsPerMinute: 18,           // Fireship target: 18-25 cuts/min
+  maxBulletsPerScene: 2, // ONE concept per scene, max 2 bullets
+  minCutsPerMinute: 18, // Fireship target: 18-25 cuts/min
 };
 
 const DRAMATIC_PAIRS: Array<[string | null, string]> = [
@@ -113,7 +132,7 @@ const DRAMATIC_PAIRS: Array<[string | null, string]> = [
 export function getTransitionDuration(
   prevSceneType: SceneType | null,
   currSceneType: SceneType,
-  style: VideoStyle,
+  style: VideoStyle
 ): number {
   for (const [prev, curr] of DRAMATIC_PAIRS) {
     if ((prev === null || prev === prevSceneType) && (curr === '*' || curr === currSceneType)) {

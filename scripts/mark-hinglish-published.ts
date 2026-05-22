@@ -69,16 +69,14 @@ export interface MarkOptions {
 
 export function markHinglishPublished(
   queue: PublishQueue,
-  opts: MarkOptions,
+  opts: MarkOptions
 ): { queue: PublishQueue; changed: boolean } {
   const entry = queue.entries.find(
-    (e) => e.topic === opts.topic && Number(e.session) === opts.session,
+    (e) => e.topic === opts.topic && Number(e.session) === opts.session
   );
 
   if (!entry) {
-    throw new Error(
-      `Entry not found in queue: topic=${opts.topic} session=${opts.session}`,
-    );
+    throw new Error(`Entry not found in queue: topic=${opts.topic} session=${opts.session}`);
   }
 
   if (entry.hinglishPublished === true) {
@@ -111,7 +109,9 @@ function parseArgs(): MarkOptions {
   const videoId = getArg('video-id');
 
   if (!topic || !sessionStr) {
-    console.error('Usage: mark-hinglish-published.ts --topic <slug> --session <N> [--video-id <id>]');
+    console.error(
+      'Usage: mark-hinglish-published.ts --topic <slug> --session <N> [--video-id <id>]'
+    );
     process.exit(1);
   }
 
@@ -149,17 +149,24 @@ function main(): void {
   }
 
   if (!result.changed) {
-    console.log(`[mark-hinglish-published] already marked — no-op (topic=${opts.topic} session=${opts.session})`);
+    console.log(
+      `[mark-hinglish-published] already marked — no-op (topic=${opts.topic} session=${opts.session})`
+    );
     process.exit(0);
   }
 
   atomicWrite(QUEUE_PATH, JSON.stringify(result.queue, null, 2) + '\n');
 
-  console.log(`[mark-hinglish-published] ✅ marked topic=${opts.topic} session=${opts.session}${opts.videoId ? ` videoId=${opts.videoId}` : ''}`);
+  console.log(
+    `[mark-hinglish-published] ✅ marked topic=${opts.topic} session=${opts.session}${opts.videoId ? ` videoId=${opts.videoId}` : ''}`
+  );
 }
 
 // Only run when executed as the entry-point script (not when imported by tests)
 const _argv1 = process.argv[1] ?? '';
-if (_argv1.endsWith('mark-hinglish-published.ts') || _argv1.endsWith('mark-hinglish-published.js')) {
+if (
+  _argv1.endsWith('mark-hinglish-published.ts') ||
+  _argv1.endsWith('mark-hinglish-published.js')
+) {
   main();
 }

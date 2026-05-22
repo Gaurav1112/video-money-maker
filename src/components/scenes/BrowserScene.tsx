@@ -86,10 +86,24 @@ export const BrowserScene: React.FC<BrowserSceneProps> = ({
           }}
         >
           {/* Traffic dots */}
-          <div style={{ display: 'flex', gap: 7, alignItems: 'center', padding: '0 8px', height: '100%' }}>
-            <div style={{ width: 12, height: 12, borderRadius: '50%', backgroundColor: '#FF5F57' }} />
-            <div style={{ width: 12, height: 12, borderRadius: '50%', backgroundColor: '#FFBD2E' }} />
-            <div style={{ width: 12, height: 12, borderRadius: '50%', backgroundColor: '#28CA41' }} />
+          <div
+            style={{
+              display: 'flex',
+              gap: 7,
+              alignItems: 'center',
+              padding: '0 8px',
+              height: '100%',
+            }}
+          >
+            <div
+              style={{ width: 12, height: 12, borderRadius: '50%', backgroundColor: '#FF5F57' }}
+            />
+            <div
+              style={{ width: 12, height: 12, borderRadius: '50%', backgroundColor: '#FFBD2E' }}
+            />
+            <div
+              style={{ width: 12, height: 12, borderRadius: '50%', backgroundColor: '#28CA41' }}
+            />
           </div>
 
           {/* Tab */}
@@ -159,11 +173,23 @@ export const BrowserScene: React.FC<BrowserSceneProps> = ({
           <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
             {/* Back arrow */}
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <path d="M12 15L7 10L12 5" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              <path
+                d="M12 15L7 10L12 5"
+                stroke="#9CA3AF"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
             </svg>
             {/* Forward arrow */}
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <path d="M8 5L13 10L8 15" stroke="#DADCE0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              <path
+                d="M8 5L13 10L8 15"
+                stroke="#DADCE0"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
             </svg>
             {/* Reload */}
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
@@ -173,7 +199,13 @@ export const BrowserScene: React.FC<BrowserSceneProps> = ({
                 strokeWidth="1.5"
                 strokeLinecap="round"
               />
-              <path d="M14.5 3v3.5H11" stroke="#9CA3AF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              <path
+                d="M14.5 3v3.5H11"
+                stroke="#9CA3AF"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
             </svg>
           </div>
 
@@ -193,7 +225,12 @@ export const BrowserScene: React.FC<BrowserSceneProps> = ({
             {/* Lock icon */}
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
               <rect x="3" y="6" width="8" height="6" rx="1" stroke="#5F6368" strokeWidth="1.2" />
-              <path d="M5 6V4a2 2 0 014 0v2" stroke="#5F6368" strokeWidth="1.2" strokeLinecap="round" />
+              <path
+                d="M5 6V4a2 2 0 014 0v2"
+                stroke="#5F6368"
+                strokeWidth="1.2"
+                strokeLinecap="round"
+              />
             </svg>
             <span
               style={{

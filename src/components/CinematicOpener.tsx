@@ -105,10 +105,7 @@ export const CinematicOpener: React.FC<CinematicOpenerProps> = ({
   const { fps } = useVideoConfig();
 
   // Clamp duration — defence-in-depth so callers can't accidentally pass 150+
-  const dur = Math.min(
-    Math.max(durationInFrames, MIN_OPENER_FRAMES),
-    MAX_OPENER_FRAMES
-  );
+  const dur = Math.min(Math.max(durationInFrames, MIN_OPENER_FRAMES), MAX_OPENER_FRAMES);
 
   // Hash-based style selection: same topic → always same style
   const styleIndex = selectStyle(topic);

@@ -31,9 +31,9 @@ export function fnv1a32(input: string): number {
   for (let i = 0; i < input.length; i++) {
     const code = input.charCodeAt(i);
     // Handle characters > U+00FF by processing both bytes.
-    hash = (((hash ^ (code & 0xff)) * FNV_PRIME) % MOD_32 + MOD_32) % MOD_32;
+    hash = ((((hash ^ (code & 0xff)) * FNV_PRIME) % MOD_32) + MOD_32) % MOD_32;
     if (code > 0xff) {
-      hash = (((hash ^ ((code >> 8) & 0xff)) * FNV_PRIME) % MOD_32 + MOD_32) % MOD_32;
+      hash = ((((hash ^ ((code >> 8) & 0xff)) * FNV_PRIME) % MOD_32) + MOD_32) % MOD_32;
     }
   }
   return hash >>> 0;

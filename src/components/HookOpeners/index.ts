@@ -19,5 +19,5 @@ export const HOOK_STYLE_NAMES = [
   'urgencyCountdown',
 ] as const;
 
-export type HookStyleName = typeof HOOK_STYLE_NAMES[number];
+export type HookStyleName = (typeof HOOK_STYLE_NAMES)[number];
 export const HOOK_STYLE_COUNT = HOOK_STYLE_NAMES.length; // 6

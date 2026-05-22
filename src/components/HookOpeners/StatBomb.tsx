@@ -25,7 +25,10 @@ function extractStat(hookText: string): { display: string; suffix: string; label
     const raw = match[1].replace(/,/g, '');
     const num = parseFloat(raw);
     const suffix = match[2]?.trim() ?? '';
-    const label = hookText.replace(match[0], '').replace(/^[^a-zA-Z]+/, '').slice(0, 60);
+    const label = hookText
+      .replace(match[0], '')
+      .replace(/^[^a-zA-Z]+/, '')
+      .slice(0, 60);
     return { display: isNaN(num) ? raw : raw, suffix, label: label || hookText.slice(0, 60) };
   }
   return { display: '99.9', suffix: '%', label: hookText.slice(0, 60) };
@@ -35,10 +38,20 @@ export const StatBomb: React.FC<HookOpenerProps> = ({ frame, fps, topic, hookTex
   const stat = extractStat(hookText);
 
   // ── fade in ──────────────────────────────────────────────────────────────────
-  const bgOp = interpolate(frame, [0, 10], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
+  const bgOp = interpolate(frame, [0, 10], [0, 1], {
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
+  });
 
   // ── number scale-in ──────────────────────────────────────────────────────────
-  const numScale = spring({ frame: Math.max(0, frame - 10), fps, from: 4, to: 1, durationInFrames: 24, config: { damping: 12, stiffness: 120 } });
+  const numScale = spring({
+    frame: Math.max(0, frame - 10),
+    fps,
+    from: 4,
+    to: 1,
+    durationInFrames: 24,
+    config: { damping: 12, stiffness: 120 },
+  });
   const numOp = interpolate(frame, [10, 16, 72, 80], [0, 1, 1, 0], {
     extrapolateLeft: 'clamp',
     extrapolateRight: 'clamp',
@@ -48,7 +61,12 @@ export const StatBomb: React.FC<HookOpenerProps> = ({ frame, fps, topic, hookTex
   const rawNum = parseFloat(stat.display.replace(/,/g, ''));
   const isNumeric = !isNaN(rawNum);
   const countedNum = isNumeric
-    ? Math.round(interpolate(frame, [10, 50], [0, rawNum], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }))
+    ? Math.round(
+        interpolate(frame, [10, 50], [0, rawNum], {
+          extrapolateLeft: 'clamp',
+          extrapolateRight: 'clamp',
+        })
+      )
     : stat.display;
   const displayStr = isNumeric ? countedNum.toLocaleString() : stat.display;
 
@@ -75,7 +93,7 @@ export const StatBomb: React.FC<HookOpenerProps> = ({ frame, fps, topic, hookTex
     extrapolateRight: 'clamp',
   });
 
-  const accentColor = `hsl(${(interpolate(frame, [10, 50], [200, 30], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }))}, 90%, 60%)`;
+  const accentColor = `hsl(${interpolate(frame, [10, 50], [200, 30], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' })}, 90%, 60%)`;
 
   return (
     <AbsoluteFill
@@ -89,60 +107,72 @@ export const StatBomb: React.FC<HookOpenerProps> = ({ frame, fps, topic, hookTex
       }}
     >
       {/* Radial glow behind number */}
-      <div style={{
-        position: 'absolute',
-        inset: 0,
-        background: `radial-gradient(ellipse at 50% 45%, ${COLORS.saffron}${Math.round(flashBright * 25).toString(16).padStart(2, '0')} 0%, transparent 55%)`,
-      }} />
+      <div
+        style={{
+          position: 'absolute',
+          inset: 0,
+          background: `radial-gradient(ellipse at 50% 45%, ${COLORS.saffron}${Math.round(
+            flashBright * 25
+          )
+            .toString(16)
+            .padStart(2, '0')} 0%, transparent 55%)`,
+        }}
+      />
 
       {/* Topic label — small, top-center */}
-      <div style={{
-        position: 'absolute',
-        top: 60,
-        left: 0,
-        right: 0,
-        textAlign: 'center',
-        fontFamily: FONTS.text,
-        fontSize: 24,
-        fontWeight: 600,
-        color: COLORS.textOnDark,
-        opacity: numOp * 0.6,
-        letterSpacing: 4,
-        textTransform: 'uppercase',
-      }}>
+      <div
+        style={{
+          position: 'absolute',
+          top: 60,
+          left: 0,
+          right: 0,
+          textAlign: 'center',
+          fontFamily: FONTS.text,
+          fontSize: 24,
+          fontWeight: 600,
+          color: COLORS.textOnDark,
+          opacity: numOp * 0.6,
+          letterSpacing: 4,
+          textTransform: 'uppercase',
+        }}
+      >
         {topic}
       </div>
 
       {/* Giant stat */}
-      <div style={{
-        fontFamily: FONTS.heading,
-        fontSize: 160,
-        fontWeight: 900,
-        color: frame >= 48 && frame <= 55 ? accentColor : COLORS.textOnDark,
-        transform: `scale(${numScale})`,
-        opacity: numOp,
-        lineHeight: 1,
-        letterSpacing: -4,
-        textShadow: flashBright > 0.1 ? `0 0 80px ${COLORS.saffron}90` : 'none',
-      }}>
+      <div
+        style={{
+          fontFamily: FONTS.heading,
+          fontSize: 160,
+          fontWeight: 900,
+          color: frame >= 48 && frame <= 55 ? accentColor : COLORS.textOnDark,
+          transform: `scale(${numScale})`,
+          opacity: numOp,
+          lineHeight: 1,
+          letterSpacing: -4,
+          textShadow: flashBright > 0.1 ? `0 0 80px ${COLORS.saffron}90` : 'none',
+        }}
+      >
         {displayStr}
         <span style={{ fontSize: 72, color: COLORS.saffron }}>{stat.suffix}</span>
       </div>
 
       {/* Context label */}
-      <div style={{
-        fontFamily: FONTS.text,
-        fontSize: 32,
-        color: COLORS.textOnDark,
-        opacity: labelOp,
-        transform: `translateY(${labelY}px)`,
-        textAlign: 'center',
-        paddingLeft: 80,
-        paddingRight: 80,
-        marginTop: 16,
-        maxWidth: 900,
-        lineHeight: 1.3,
-      }}>
+      <div
+        style={{
+          fontFamily: FONTS.text,
+          fontSize: 32,
+          color: COLORS.textOnDark,
+          opacity: labelOp,
+          transform: `translateY(${labelY}px)`,
+          textAlign: 'center',
+          paddingLeft: 80,
+          paddingRight: 80,
+          marginTop: 16,
+          maxWidth: 900,
+          lineHeight: 1.3,
+        }}
+      >
         {stat.label}
       </div>
     </AbsoluteFill>

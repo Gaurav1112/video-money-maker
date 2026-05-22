@@ -43,12 +43,7 @@ const DESC_OFFSET_Y = STAGE_H / 2 + 22;
 
 // ── Component ───────────────────────────────────────────────────────
 
-export const FlowRenderer: React.FC<FlowRendererProps> = ({
-  config,
-  beats,
-  accentColor,
-  fps,
-}) => {
+export const FlowRenderer: React.FC<FlowRendererProps> = ({ config, beats, accentColor, fps }) => {
   const frame = useCurrentFrame();
   const { stages, packetColor, title } = config;
   const stageCount = stages.length;

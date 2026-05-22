@@ -1,11 +1,5 @@
 import React from 'react';
-import {
-  useCurrentFrame,
-  useVideoConfig,
-  AbsoluteFill,
-  interpolate,
-  spring,
-} from 'remotion';
+import { useCurrentFrame, useVideoConfig, AbsoluteFill, interpolate, spring } from 'remotion';
 import { FONTS } from '../../lib/theme';
 
 // ════════════════════════════════════════════════════════════════════════════════
@@ -54,7 +48,7 @@ const TOPIC_INTRO_CONTENT: Record<string, TopicIntroContent> = {
     ],
     accentColor: '#E85D26',
   },
-  'caching': {
+  caching: {
     statNumber: '230,000,000',
     statLabel: 'users served globally',
     statContext: 'Every single request hits the cache first.',
@@ -82,7 +76,7 @@ const TOPIC_INTRO_CONTENT: Record<string, TopicIntroContent> = {
     ],
     accentColor: '#E85D26',
   },
-  'database': {
+  database: {
     statNumber: '2,500,000,000',
     statLabel: 'rows in a single table',
     statContext: "Razorpay's transaction table looks like this.",
@@ -96,7 +90,7 @@ const TOPIC_INTRO_CONTENT: Record<string, TopicIntroContent> = {
     ],
     accentColor: '#A78BFA',
   },
-  'microservices': {
+  microservices: {
     statNumber: '2,000',
     statLabel: 'microservices at PhonePe',
     statContext: 'Every UPI payment flows through independent services.',
@@ -155,7 +149,7 @@ const TOPIC_INTRO_CONTENT: Record<string, TopicIntroContent> = {
   'circuit breaker': {
     statNumber: '3',
     statLabel: 'seconds to detect a cascade failure',
-    statContext: "PhonePe catches payment failures before users notice.",
+    statContext: 'PhonePe catches payment failures before users notice.',
     questionLine1: 'What happens...',
     questionLine2: '...when one service brings down everything?',
     questionHook: 'Most candidates cannot explain this clearly.',
@@ -166,12 +160,12 @@ const TOPIC_INTRO_CONTENT: Record<string, TopicIntroContent> = {
     ],
     accentColor: '#1DD1A1',
   },
-  'docker': {
+  docker: {
     statNumber: '13,000,000',
     statLabel: 'developers using Docker',
     statContext: 'Flipkart deploys 1000+ containers with this.',
     questionLine1: 'What happens...',
-    questionLine2: "...when your app works on your machine but not in production?",
+    questionLine2: '...when your app works on your machine but not in production?',
     questionHook: 'The answer that gets you past the DevOps round.',
     teaserPoints: [
       'Containers vs VMs — the fundamental difference',
@@ -180,7 +174,7 @@ const TOPIC_INTRO_CONTENT: Record<string, TopicIntroContent> = {
     ],
     accentColor: '#2496ED',
   },
-  'kubernetes': {
+  kubernetes: {
     statNumber: '5,600,000',
     statLabel: 'clusters running worldwide',
     statContext: 'Flipkart runs 10,000+ pods during Big Billion Days.',
@@ -194,7 +188,7 @@ const TOPIC_INTRO_CONTENT: Record<string, TopicIntroContent> = {
     ],
     accentColor: '#326CE5',
   },
-  'cdn': {
+  cdn: {
     statNumber: '300',
     statLabel: 'milliseconds saved per request',
     statContext: 'Hotstar delivers IPL streams to 25M concurrent viewers.',
@@ -208,7 +202,7 @@ const TOPIC_INTRO_CONTENT: Record<string, TopicIntroContent> = {
     ],
     accentColor: '#1DD1A1',
   },
-  'kafka': {
+  kafka: {
     statNumber: '7,000,000,000',
     statLabel: 'messages per day at Uber',
     statContext: 'Every Uber ride, every Swiggy order — all through Kafka.',
@@ -222,10 +216,10 @@ const TOPIC_INTRO_CONTENT: Record<string, TopicIntroContent> = {
     ],
     accentColor: '#1DD1A1',
   },
-  'authentication': {
+  authentication: {
     statNumber: '81',
     statLabel: 'percent of breaches caused by weak auth',
-    statContext: "Paytm secures 300M wallets with this.",
+    statContext: 'Paytm secures 300M wallets with this.',
     questionLine1: 'What happens...',
     questionLine2: '...when your auth system has a single flaw?',
     questionHook: 'Get this wrong and you fail the security round.',
@@ -236,7 +230,7 @@ const TOPIC_INTRO_CONTENT: Record<string, TopicIntroContent> = {
     ],
     accentColor: '#27AE60',
   },
-  'distributed': {
+  distributed: {
     statNumber: '99.999',
     statLabel: 'percent uptime — five nines',
     statContext: "That's only 5 minutes of downtime per year.",
@@ -342,12 +336,10 @@ export const VerticalTitleSlide: React.FC<VerticalTitleSlideProps> = ({
   const accent = content.accentColor;
 
   // Global fade-out in last 15 frames
-  const globalOp = interpolate(
-    frame,
-    [durationInFrames - 15, durationInFrames],
-    [1, 0],
-    { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }
-  );
+  const globalOp = interpolate(frame, [durationInFrames - 15, durationInFrames], [1, 0], {
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
+  });
 
   // ── Staggered entrance delays (frames) ──
   const BADGE_DELAY = 0;

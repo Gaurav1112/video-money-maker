@@ -27,18 +27,18 @@ export async function isYouTubeReachable(): Promise<boolean> {
       method: 'HEAD',
       timeout: 5000,
     };
-    
+
     const req = https.request(options, (res) => {
       resolve(res.statusCode !== undefined);
       res.resume();
     });
-    
+
     req.on('error', () => resolve(false));
     req.on('timeout', () => {
       req.destroy();
       resolve(false);
     });
-    
+
     req.end();
   });
 }
@@ -70,7 +70,7 @@ export async function validateTokenRefresh(
   if (!clientId || !clientSecret || !refreshToken) {
     return false;
   }
-  
+
   try {
     const response = await fetch('https://oauth2.googleapis.com/token', {
       method: 'POST',
@@ -83,7 +83,7 @@ export async function validateTokenRefresh(
       }),
       signal: AbortSignal.timeout(10000),
     });
-    
+
     return response.ok;
   } catch {
     return false;
@@ -98,25 +98,25 @@ export async function runHealthChecks(
   maxFileSize?: number
 ): Promise<HealthCheckResult> {
   const errors: string[] = [];
-  
+
   // Check YouTube reachability
   const youtubeReachable = await isYouTubeReachable();
   if (!youtubeReachable) {
     errors.push('YouTube API not reachable');
   }
-  
+
   // Check token validity
   const tokenValid = await validateTokenRefresh(clientId, clientSecret, refreshToken);
   if (!tokenValid) {
     errors.push('OAuth2 token validation failed or credentials incomplete');
   }
-  
+
   // Check video file readability
   const videoReadable = isVideoFileReadable(videoFile);
   if (!videoReadable) {
     errors.push(`Video file not readable: ${videoFile}`);
   }
-  
+
   // Check video file size
   const videoSize = videoReadable && isVideoSizeValid(videoFile, maxFileSize);
   if (videoReadable && !videoSize) {
@@ -124,7 +124,7 @@ export async function runHealthChecks(
     const maxSize = maxFileSize || 100;
     errors.push(`Video file size (${sizeInMb.toFixed(1)}MB) exceeds limit (${maxSize}MB)`);
   }
-  
+
   return {
     healthy: youtubeReachable && tokenValid && videoReadable && videoSize,
     checks: {
@@ -143,13 +143,13 @@ export function reportHealthCheckStatus(result: HealthCheckResult): void {
   console.log(`   Token Valid:       ${result.checks.tokenValid ? '✅' : '❌'}`);
   console.log(`   Video Readable:    ${result.checks.videoReadable ? '✅' : '❌'}`);
   console.log(`   Video Size OK:     ${result.checks.videoSize ? '✅' : '❌'}`);
-  
+
   if (result.checks.errors.length > 0) {
     console.log('\n⚠️  BLOCKERS:');
-    result.checks.errors.forEach(err => {
+    result.checks.errors.forEach((err) => {
       console.log(`   • ${err}`);
     });
   }
-  
+
   console.log(`\n${result.healthy ? '✅ READY TO UPLOAD' : '❌ BLOCKED - Fix errors above'}\n`);
 }

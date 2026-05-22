@@ -77,13 +77,10 @@ export const ArrowFlow: React.FC<ArrowFlowProps> = ({
   const elapsed = Math.max(0, frame - startFrame);
   const n = createNoise(seed);
 
-  const nodeMap = new Map(nodes.map(nd => [nd.id, nd]));
+  const nodeMap = new Map(nodes.map((nd) => [nd.id, nd]));
 
   // How many edges are fully or partially drawn?
-  const edgesRevealed = Math.min(
-    Math.floor(elapsed / framesPerEdge) + 1,
-    edges.length,
-  );
+  const edgesRevealed = Math.min(Math.floor(elapsed / framesPerEdge) + 1, edges.length);
 
   function getPos(id: string) {
     return nodeMap.get(id) ?? { x: 0, y: 0 };
@@ -103,7 +100,15 @@ export const ArrowFlow: React.FC<ArrowFlowProps> = ({
   }
 
   // Bezier point at t
-  function bezierPoint(x1: number, y1: number, cx: number, cy: number, x2: number, y2: number, t: number) {
+  function bezierPoint(
+    x1: number,
+    y1: number,
+    cx: number,
+    cy: number,
+    x2: number,
+    y2: number,
+    t: number
+  ) {
     const mt = 1 - t;
     return {
       x: mt * mt * x1 + 2 * mt * t * cx + t * t * x2,
@@ -119,7 +124,14 @@ export const ArrowFlow: React.FC<ArrowFlowProps> = ({
         style={{ position: 'absolute', top: 0, left: 0, overflow: 'visible' }}
       >
         <defs>
-          <marker id={`arrowhead-${seed}`} markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+          <marker
+            id={`arrowhead-${seed}`}
+            markerWidth="10"
+            markerHeight="7"
+            refX="9"
+            refY="3.5"
+            orient="auto"
+          >
             <polygon points="0 0, 10 3.5, 0 7" fill={DEFAULT_COLOR} />
           </marker>
           {edges.map((e, i) => (
@@ -153,7 +165,8 @@ export const ArrowFlow: React.FC<ArrowFlowProps> = ({
 
           // Packet animation: loops every 60 frames, only after edge is drawn
           const packetT = ((elapsed - edgeFrame - framesPerEdge) % 60) / 60;
-          const packetVisible = showPackets && edgeElapsed > framesPerEdge && packetT >= 0 && packetT <= 1;
+          const packetVisible =
+            showPackets && edgeElapsed > framesPerEdge && packetT >= 0 && packetT <= 1;
           const packetPos = packetVisible
             ? bezierPoint(from.x, from.y, cx, cy, to.x, to.y, packetT)
             : null;
@@ -179,7 +192,10 @@ export const ArrowFlow: React.FC<ArrowFlowProps> = ({
                   fontSize={16}
                   fontFamily='"Space Grotesk", sans-serif'
                   fontWeight="600"
-                  opacity={interpolate(drawProgress, [0.5, 0.8], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' })}
+                  opacity={interpolate(drawProgress, [0.5, 0.8], [0, 1], {
+                    extrapolateLeft: 'clamp',
+                    extrapolateRight: 'clamp',
+                  })}
                 >
                   {edge.label}
                 </text>

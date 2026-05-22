@@ -68,7 +68,7 @@ const checksumCache: Partial<Record<'vinyl' | 'rimshot', string>> = {};
  * Returns null if the file does not exist (graceful degradation on cold clones).
  */
 export async function computePatternInterruptChecksum(
-  kind: 'vinyl' | 'rimshot',
+  kind: 'vinyl' | 'rimshot'
 ): Promise<string | null> {
   if (checksumCache[kind] !== undefined) return checksumCache[kind]!;
   const { path: sfxPath } = getPatternInterruptSfx(kind);
@@ -91,9 +91,7 @@ export async function computePatternInterruptChecksum(
  * Throws if the file exists but the checksum does not match (asset drift).
  * Returns false (no-throw) if the file is absent (cold-clone fallback).
  */
-export async function verifyPatternInterruptChecksum(
-  kind: 'vinyl' | 'rimshot',
-): Promise<boolean> {
+export async function verifyPatternInterruptChecksum(kind: 'vinyl' | 'rimshot'): Promise<boolean> {
   const actual = await computePatternInterruptChecksum(kind);
   if (actual === null) return false; // file absent — degrade gracefully
   const expected = PATTERN_INTERRUPT_CHECKSUMS[kind];
@@ -101,7 +99,7 @@ export async function verifyPatternInterruptChecksum(
     throw new Error(
       `[sfx-pattern-interrupt] asset drift detected for '${kind}': ` +
         `expected ${expected}, got ${actual}. ` +
-        `Re-run the synthesis command in assets/audio/MANIFEST.json to regenerate.`,
+        `Re-run the synthesis command in assets/audio/MANIFEST.json to regenerate.`
     );
   }
   return true;

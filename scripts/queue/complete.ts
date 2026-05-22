@@ -31,16 +31,19 @@ function parseArgs() {
   };
   const require = (flag: string): string => {
     const v = get(flag);
-    if (!v) { console.error(`Missing required arg: ${flag}`); process.exit(1); }
+    if (!v) {
+      console.error(`Missing required arg: ${flag}`);
+      process.exit(1);
+    }
     return v!;
   };
 
   return {
     platformPublishId: parseInt(require('--platform-publish-id'), 10),
-    idempotencyKey:    require('--idempotency-key'),
-    platformVideoId:   get('--platform-video-id'),
-    durationMs:        get('--duration-ms') ? parseInt(get('--duration-ms')!, 10) : undefined,
-    runId:             get('--run-id') ?? process.env['GITHUB_RUN_ID'] ?? 'local',
+    idempotencyKey: require('--idempotency-key'),
+    platformVideoId: get('--platform-video-id'),
+    durationMs: get('--duration-ms') ? parseInt(get('--duration-ms')!, 10) : undefined,
+    runId: get('--run-id') ?? process.env['GITHUB_RUN_ID'] ?? 'local',
   };
 }
 
@@ -70,9 +73,11 @@ function main(): void {
   }
 
   // Fetch the row — validate it exists and belongs to this claim
-  const row = db.prepare(
-    'SELECT id, queue_item_id, platform, status, idempotency_key, attempts FROM platform_publishes WHERE id = ?'
-  ).get(args.platformPublishId) as PPRow | undefined;
+  const row = db
+    .prepare(
+      'SELECT id, queue_item_id, platform, status, idempotency_key, attempts FROM platform_publishes WHERE id = ?'
+    )
+    .get(args.platformPublishId) as PPRow | undefined;
 
   if (!row) {
     console.error(`❌ platform_publish id ${args.platformPublishId} not found`);
@@ -90,72 +95,86 @@ function main(): void {
   if (row.idempotency_key !== args.idempotencyKey) {
     console.error(
       `❌ Idempotency key mismatch for ${row.queue_item_id}/${row.platform}.\n` +
-      `   Expected: ${row.idempotency_key}\n` +
-      `   Got:      ${args.idempotencyKey}\n` +
-      `   This claim belongs to a different run. Aborting.`
+        `   Expected: ${row.idempotency_key}\n` +
+        `   Got:      ${args.idempotencyKey}\n` +
+        `   This claim belongs to a different run. Aborting.`
     );
     process.exit(1);
   }
 
   const completeTx = db.transaction(() => {
     // Mark published
-    db.prepare(`
+    db.prepare(
+      `
       UPDATE platform_publishes
       SET    status             = 'published',
              platform_video_id = ?,
              updated_at        = strftime('%Y-%m-%dT%H:%M:%fZ','now')
       WHERE  id                = ?
         AND  idempotency_key   = ?
-    `).run(args.platformVideoId ?? null, args.platformPublishId, args.idempotencyKey);
+    `
+    ).run(args.platformVideoId ?? null, args.platformPublishId, args.idempotencyKey);
 
     // Write publish log
-    db.prepare(`
+    db.prepare(
+      `
       INSERT INTO publish_log
         (queue_item_id, platform, status, platform_video_id, duration_ms, run_id, idempotency_key)
       VALUES (?, ?, 'success', ?, ?, ?, ?)
-    `).run(
+    `
+    ).run(
       row.queue_item_id,
       row.platform,
       args.platformVideoId ?? null,
       args.durationMs ?? null,
       args.runId,
-      args.idempotencyKey,
+      args.idempotencyKey
     );
 
     // Recalculate overall_status for the queue item
-    interface CountRow { total: number; published_count: number; dead_count: number }
-    const counts = db.prepare(`
+    interface CountRow {
+      total: number;
+      published_count: number;
+      dead_count: number;
+    }
+    const counts = db
+      .prepare(
+        `
       SELECT
         COUNT(*) AS total,
         SUM(CASE WHEN status = 'published'    THEN 1 ELSE 0 END) AS published_count,
         SUM(CASE WHEN status = 'dead_letter'  THEN 1 ELSE 0 END) AS dead_count
       FROM platform_publishes
       WHERE queue_item_id = ?
-    `).get(row.queue_item_id) as CountRow;
+    `
+      )
+      .get(row.queue_item_id) as CountRow;
 
     let overallStatus: string;
     if (counts.published_count === counts.total) {
-      overallStatus = 'published';   // all platforms done
+      overallStatus = 'published'; // all platforms done
     } else if (counts.dead_count > 0) {
       overallStatus = 'dead_letter'; // at least one dead-lettered
     } else {
-      overallStatus = 'partial';     // some published, some pending/claimed/failed
+      overallStatus = 'partial'; // some published, some pending/claimed/failed
     }
 
-    db.prepare(`
+    db.prepare(
+      `
       UPDATE queue_items
       SET    overall_status = ?,
              updated_at     = strftime('%Y-%m-%dT%H:%M:%fZ','now')
       WHERE  id             = ?
-    `).run(overallStatus, row.queue_item_id);
+    `
+    ).run(overallStatus, row.queue_item_id);
   });
 
   completeTx();
 
   console.log(
     `✅ Published: ${row.queue_item_id} / ${row.platform}` +
-    (args.platformVideoId ? ` → ID ${args.platformVideoId}` : '') +
-    (args.durationMs ? ` (${args.durationMs} ms)` : '')
+      (args.platformVideoId ? ` → ID ${args.platformVideoId}` : '') +
+      (args.durationMs ? ` (${args.durationMs} ms)` : '')
   );
 
   setOutput('result', 'published');

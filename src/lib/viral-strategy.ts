@@ -29,9 +29,7 @@ type TitleFormula = (topic: string, narration: string) => string;
 // ─── Internal Helpers ────────────────────────────────────────────────────────
 
 function humanize(slug: string): string {
-  return slug
-    .replace(/-/g, ' ')
-    .replace(/\b\w/g, (c) => c.toUpperCase());
+  return slug.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 /** Extract a dollar amount or company name from narration if present */
@@ -81,7 +79,8 @@ const TITLE_FORMULAS: Record<string, TitleFormula[]> = {
     (topic) => `${humanize(topic)} is DYING. Here's the proof.`,
     (topic) => `${getPopularAlternative(topic)} fans won't like this about ${humanize(topic)}`,
     (topic) => `I asked ChatGPT about ${humanize(topic)}. The answer was WRONG.`,
-    (topic) => `Stop using ${getPopularAlternative(topic)}. ${humanize(topic)} is better. Here's why.`,
+    (topic) =>
+      `Stop using ${getPopularAlternative(topic)}. ${humanize(topic)} is better. Here's why.`,
   ],
   trendjack: [
     (topic) => `The NEW ${humanize(topic)} that changes everything in 2026`,
@@ -100,7 +99,8 @@ const TITLE_FORMULAS: Record<string, TitleFormula[]> = {
   story: [
     (topic, narration) => {
       const incident = extractIncident(narration);
-      if (incident) return `How ${incident.company} lost ${incident.amount} because of ${humanize(topic)}`;
+      if (incident)
+        return `How ${incident.company} lost ${incident.amount} because of ${humanize(topic)}`;
       return `The ${humanize(topic)} mistake that cost a startup $2M`;
     },
     (topic) => `A single ${humanize(topic)} bug took down the entire system`,
@@ -142,7 +142,11 @@ function selectFormatsForContent(
 
   // Challenge format for DSA or quiz-like content
   const category = getTopicCategory(topicSlug);
-  if (category === 'dsa' || lowerNarration.includes('question') || lowerNarration.includes('solve')) {
+  if (
+    category === 'dsa' ||
+    lowerNarration.includes('question') ||
+    lowerNarration.includes('solve')
+  ) {
     formats.push('challenge');
   }
 
@@ -266,7 +270,11 @@ export function getCommunityTargets(topicSlug: string): CommunityTarget[] {
     kafka: [
       { platform: 'reddit', community: 'r/apachekafka', postStyle: 'technical-discussion' },
       { platform: 'devto', community: 'kafka tag', postStyle: 'tutorial-with-embed' },
-      { platform: 'slack', community: 'Confluent Community Slack', postStyle: 'help-thread-contribution' },
+      {
+        platform: 'slack',
+        community: 'Confluent Community Slack',
+        postStyle: 'help-thread-contribution',
+      },
     ],
     'message-queue': [
       { platform: 'reddit', community: 'r/apachekafka', postStyle: 'technical-discussion' },
@@ -339,7 +347,11 @@ export function getCommunityTargets(topicSlug: string): CommunityTarget[] {
     { platform: 'reddit', community: 'r/cscareerquestions', postStyle: 'career-angle' },
     { platform: 'hackernews', community: 'Hacker News', postStyle: 'show-hn-or-link' },
     { platform: 'devto', community: `Dev.to ${topic} tag`, postStyle: 'article-with-video' },
-    { platform: 'twitter', community: `#${topicSlug.replace(/-/g, '')} hashtag`, postStyle: 'thread-with-clip' }
+    {
+      platform: 'twitter',
+      community: `#${topicSlug.replace(/-/g, '')} hashtag`,
+      postStyle: 'thread-with-clip',
+    }
   );
 
   // Deduplicate by community name

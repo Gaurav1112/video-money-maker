@@ -43,7 +43,7 @@ function parseArgs(): Args {
   return {
     threshold: Number(get('--threshold', '50')),
     minAge: Number(get('--min-age', '7')),
-    action: (get('--action', 'private') as 'private' | 'delete'),
+    action: get('--action', 'private') as 'private' | 'delete',
     dryRun,
     confirmDelete: has('--confirm-delete'),
   };
@@ -54,7 +54,9 @@ async function main() {
   console.log('Args:', args);
 
   if (args.action === 'delete' && !args.confirmDelete) {
-    console.error('REFUSED: --action delete requires --confirm-delete flag. Hard delete is irreversible. Use --action private (default) for reversible cleanup.');
+    console.error(
+      'REFUSED: --action delete requires --confirm-delete flag. Hard delete is irreversible. Use --action private (default) for reversible cleanup.'
+    );
     process.exit(1);
   }
 
@@ -66,27 +68,32 @@ async function main() {
   const inv = JSON.parse(fs.readFileSync(inventoryPath, 'utf-8'));
   const records: VideoRecord[] = inv.records ?? [];
 
-  const candidates = records.filter(r =>
-    r.views < args.threshold &&
-    r.ageInDays >= args.minAge &&
-    r.privacyStatus === 'public'
+  const candidates = records.filter(
+    (r) => r.views < args.threshold && r.ageInDays >= args.minAge && r.privacyStatus === 'public'
   );
 
-  console.log(`\nFound ${candidates.length} candidates (views < ${args.threshold}, age >= ${args.minAge}d, currently public).`);
+  console.log(
+    `\nFound ${candidates.length} candidates (views < ${args.threshold}, age >= ${args.minAge}d, currently public).`
+  );
   console.log('Sample (first 20):');
-  candidates.slice(0, 20).forEach(c => {
-    console.log(`  ${String(c.views).padStart(4)} views | ${String(c.ageInDays).padStart(3)}d | ${c.title.slice(0, 70)} | ${c.videoId}`);
+  candidates.slice(0, 20).forEach((c) => {
+    console.log(
+      `  ${String(c.views).padStart(4)} views | ${String(c.ageInDays).padStart(3)}d | ${c.title.slice(0, 70)} | ${c.videoId}`
+    );
   });
 
   if (args.dryRun) {
-    console.log(`\n[DRY-RUN] No changes made. Re-run with --execute to apply --action=${args.action}.`);
+    console.log(
+      `\n[DRY-RUN] No changes made. Re-run with --execute to apply --action=${args.action}.`
+    );
     return;
   }
 
   console.log(`\nExecuting action=${args.action} on ${candidates.length} videos...`);
   const auth = getYouTubeAuthClient();
   const yt = google.youtube({ version: 'v3', auth });
-  let ok = 0, fail = 0;
+  let ok = 0,
+    fail = 0;
   for (const c of candidates) {
     try {
       if (args.action === 'delete') {
@@ -108,4 +115,7 @@ async function main() {
   console.log(`\nDone. ${ok} succeeded, ${fail} failed.`);
 }
 
-main().catch(err => { console.error(err); process.exit(1); });
+main().catch((err) => {
+  console.error(err);
+  process.exit(1);
+});

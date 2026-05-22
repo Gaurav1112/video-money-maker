@@ -5,10 +5,7 @@ import type { SfxDensity } from './video-styles';
  * Auto-generate SFX triggers by analyzing scene content.
  * Scans for patterns and assigns appropriate sound effects.
  */
-export function generateSfxTriggers(
-  scenes: Scene[],
-  density: SfxDensity = 'sparse',
-): SfxTrigger[] {
+export function generateSfxTriggers(scenes: Scene[], density: SfxDensity = 'sparse'): SfxTrigger[] {
   const maxPerScene = density === 'dense' ? 3 : 1;
   const triggers: SfxTrigger[] = [];
 
@@ -53,7 +50,7 @@ export function generateSfxTriggers(
     // Text scenes with numbers get an impact SFX
     if (scene.narration && /\d{2,}/.test(scene.narration)) {
       const words = scene.narration.split(/\s+/);
-      const numIdx = words.findIndex(w => /\d{2,}/.test(w));
+      const numIdx = words.findIndex((w) => /\d{2,}/.test(w));
       if (numIdx >= 0) {
         sceneTriggers.push({
           sceneIndex,
@@ -86,9 +83,10 @@ export function generateSfxTriggers(
 
     // Emphasis words get a pop SFX (dense mode only, avoids double-triggering in sparse)
     if (density === 'dense' && scene.narration) {
-      const emphasisPattern = /\b(key|important|critical|never|always|biggest|worst|best|secret|trick|dangerous|breaking)\b/i;
+      const emphasisPattern =
+        /\b(key|important|critical|never|always|biggest|worst|best|secret|trick|dangerous|breaking)\b/i;
       const words = scene.narration.split(/\s+/);
-      const emphIdx = words.findIndex(w => emphasisPattern.test(w));
+      const emphIdx = words.findIndex((w) => emphasisPattern.test(w));
       if (emphIdx >= 0) {
         sceneTriggers.push({
           sceneIndex,

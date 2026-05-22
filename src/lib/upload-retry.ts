@@ -22,10 +22,10 @@ export interface RetryResult<T> {
 
 export function isNetworkError(error: any): boolean {
   if (!error) return false;
-  
+
   const message = error.message?.toLowerCase() || '';
   const code = error.code || error.status || 0;
-  
+
   // Network-level errors that should be retried
   const networkPatterns = [
     'econnrefused',
@@ -38,26 +38,26 @@ export function isNetworkError(error: any): boolean {
     'socket hang up',
     'fetch failed',
   ];
-  
-  if (networkPatterns.some(p => message.includes(p))) {
+
+  if (networkPatterns.some((p) => message.includes(p))) {
     return true;
   }
-  
+
   // HTTP status codes indicating temporary issues
   const retryableStatuses = [408, 429, 500, 502, 503, 504];
   if (retryableStatuses.includes(code)) {
     return true;
   }
-  
+
   return false;
 }
 
 export function isPermissionError(error: any): boolean {
   if (!error) return false;
-  
+
   const message = error.message?.toLowerCase() || '';
   const code = error.code || error.status || 0;
-  
+
   // Permission/auth errors that should NOT be retried
   const permissionPatterns = [
     'unauthorized',
@@ -70,17 +70,17 @@ export function isPermissionError(error: any): boolean {
     'quota exceeded',
     'invalid grant',
   ];
-  
-  if (permissionPatterns.some(p => message.includes(p))) {
+
+  if (permissionPatterns.some((p) => message.includes(p))) {
     return true;
   }
-  
+
   // HTTP status codes indicating permission issues
   const permissionStatuses = [401, 403, 404, 422];
   if (permissionStatuses.includes(code)) {
     return true;
   }
-  
+
   return false;
 }
 
@@ -91,19 +91,19 @@ export async function retryWithExponentialBackoff<T>(
   const maxAttempts = config?.maxAttempts ?? 3;
   const delays = config?.delays ?? [1000, 2000, 4000];
   const logFn = config?.logFn ?? console.log;
-  
+
   let lastError: Error | null = null;
-  
+
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
       const timestamp = new Date().toISOString();
       logFn(`[${timestamp}] Attempt ${attempt}/${maxAttempts}...`);
-      
+
       const result = await fn();
-      
+
       const successMsg = `[${timestamp}] ✅ Upload succeeded on attempt ${attempt}`;
       logFn(successMsg);
-      
+
       return {
         success: true,
         data: result,
@@ -113,12 +113,12 @@ export async function retryWithExponentialBackoff<T>(
       lastError = error as Error;
       const timestamp = new Date().toISOString();
       const errorMsg = error.message || String(error);
-      
+
       // Check if this is a permission error
       if (isPermissionError(error)) {
         const permissionMsg = `[${timestamp}] ❌ Permission error (will not retry): ${errorMsg}`;
         logFn(permissionMsg);
-        
+
         return {
           success: false,
           error: errorMsg,
@@ -126,12 +126,12 @@ export async function retryWithExponentialBackoff<T>(
           lastError,
         };
       }
-      
+
       // Check if this is a network error
       if (!isNetworkError(error)) {
         const unknownMsg = `[${timestamp}] ❌ Unknown error type: ${errorMsg}`;
         logFn(unknownMsg);
-        
+
         return {
           success: false,
           error: errorMsg,
@@ -139,21 +139,21 @@ export async function retryWithExponentialBackoff<T>(
           lastError,
         };
       }
-      
+
       // Network error - retry if attempts remain
       if (attempt < maxAttempts) {
         const delay = delays[attempt - 1];
         const retryMsg = `[${timestamp}] ⚠️  Network error (${errorMsg}). Retrying in ${delay}ms...`;
         logFn(retryMsg);
-        
-        await new Promise(resolve => setTimeout(resolve, delay));
+
+        await new Promise((resolve) => setTimeout(resolve, delay));
       } else {
         const finalMsg = `[${timestamp}] ❌ Failed after ${maxAttempts} attempts: ${errorMsg}`;
         logFn(finalMsg);
       }
     }
   }
-  
+
   return {
     success: false,
     error: lastError?.message || 'Unknown error',

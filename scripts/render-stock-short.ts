@@ -31,7 +31,13 @@ import { runQualityGate } from '../src/stock/quality-gate.js';
 // Hot TTS path: synthesize routes to hi-IN-MadhurNeural (Hinglish) by default.
 // Set TTS_VOICE_TRACK=en to fall back to en-IN-NeerjaNeural. — CDawgVA P0
 import { synthesize as ttsSynthesize } from '../src/voice/tts.js';
-import { generateShortMetadata, BRAND_AT, BRAND_HANDLE_RAW, BRAND_SITE, BRAND_TAGLINE_HINGLISH } from '../src/services/short-metadata.js';
+import {
+  generateShortMetadata,
+  BRAND_AT,
+  BRAND_HANDLE_RAW,
+  BRAND_SITE,
+  BRAND_TAGLINE_HINGLISH,
+} from '../src/services/short-metadata.js';
 import { getConceptDiagram } from '../src/stock/concept-diagram.js';
 import { findTopicBankEntry } from '../src/data/topic-bank-loader.js';
 import { rotateBankHook } from '../src/data/hook-rotator.js';
@@ -45,8 +51,8 @@ import * as crypto from 'node:crypto';
 const execFileAsync = promisify(execFile);
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const REPO_ROOT  = path.resolve(__dirname, '..');
-const MANIFEST   = path.join(REPO_ROOT, 'assets', 'stock', 'manifest.json');
+const REPO_ROOT = path.resolve(__dirname, '..');
+const MANIFEST = path.join(REPO_ROOT, 'assets', 'stock', 'manifest.json');
 
 // ─── CLI arg parsing ──────────────────────────────────────────────────────────
 
@@ -58,15 +64,24 @@ function parseArgs(): { storyboard: string; out: string } {
     if (args[i] === '--storyboard' && args[i + 1]) storyboard = args[++i];
     if (args[i] === '--out' && args[i + 1]) out = args[++i];
   }
-  if (!storyboard) { console.error('--storyboard <path> is required'); process.exit(1); }
-  if (!out)        { console.error('--out <dir> is required');          process.exit(1); }
+  if (!storyboard) {
+    console.error('--storyboard <path> is required');
+    process.exit(1);
+  }
+  if (!out) {
+    console.error('--out <dir> is required');
+    process.exit(1);
+  }
   return { storyboard, out };
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function safeTopic(topic: string): string {
-  return topic.replace(/[^a-z0-9\-_]/gi, '-').replace(/-+/g, '-').toLowerCase();
+  return topic
+    .replace(/[^a-z0-9\-_]/gi, '-')
+    .replace(/-+/g, '-')
+    .toLowerCase();
 }
 
 interface LicenseEntry {
@@ -101,7 +116,13 @@ interface AudioLicenseEntry {
 function collectVendoredAudioLicenses(): AudioLicenseEntry[] {
   const manifestPath = path.join(REPO_ROOT, 'assets', 'audio', 'MANIFEST.json');
   if (!fs.existsSync(manifestPath)) return [];
-  const ACTIVE_ROLES = new Set(['bgm-primary', 'hook-sting', 'end-card-uplift', 'pattern-interrupt-vinyl', 'pattern-interrupt-rimshot']);
+  const ACTIVE_ROLES = new Set([
+    'bgm-primary',
+    'hook-sting',
+    'end-card-uplift',
+    'pattern-interrupt-vinyl',
+    'pattern-interrupt-rimshot',
+  ]);
   try {
     const m = JSON.parse(fs.readFileSync(manifestPath, 'utf8')) as {
       license: string;
@@ -142,22 +163,23 @@ async function main(): Promise<void> {
 
   const storyboard: StockStoryboard = {
     fps,
-    width:            (raw['width'] as number)  ?? 1920,
-    height:           (raw['height'] as number) ?? 1080,
-    topic:            (raw['topic'] as string)  ?? 'Untitled',
-    audioFile:        raw['audioFile'] as string | undefined,
+    width: (raw['width'] as number) ?? 1920,
+    height: (raw['height'] as number) ?? 1080,
+    topic: (raw['topic'] as string) ?? 'Untitled',
+    audioFile: raw['audioFile'] as string | undefined,
     durationInFrames: (raw['durationInFrames'] as number) ?? 0,
     scenes: rawScenes.map((s, i) => ({
-      sceneIndex:    (s['sceneIndex'] as number) ?? i,
-      startFrame:    (s['startFrame'] as number) ?? 0,
-      endFrame:      (s['endFrame']   as number) ?? 0,
+      sceneIndex: (s['sceneIndex'] as number) ?? i,
+      startFrame: (s['startFrame'] as number) ?? 0,
+      endFrame: (s['endFrame'] as number) ?? 0,
       // Support both durationFrames (new format) and duration in seconds (legacy)
-      durationFrames: s['durationFrames'] != null
-        ? (s['durationFrames'] as number)
-        : Math.round(((s['duration'] as number) ?? 0) * fps),
-      type:          (s['type']      as string) ?? 'text',
-      narration:     (s['narration'] as string) ?? '',
-      templateId:    s['templateId'] as string | undefined,
+      durationFrames:
+        s['durationFrames'] != null
+          ? (s['durationFrames'] as number)
+          : Math.round(((s['duration'] as number) ?? 0) * fps),
+      type: (s['type'] as string) ?? 'text',
+      narration: (s['narration'] as string) ?? '',
+      templateId: s['templateId'] as string | undefined,
       wordTimestamps: s['wordTimestamps'] as StockScene['wordTimestamps'],
     })),
   };
@@ -172,12 +194,14 @@ async function main(): Promise<void> {
   // (~line 240) was already bumped to 4.0s. Pre-baked-audio storyboards
   // (test fixtures, manual production) hit only this clamp and lost the
   // tail of every Hindi hook. Unified to 4.0s here.
-  const HOOK_MAX_FRAMES = Math.round(4 * fps);   // 4.0s — Aud P0
-  const BODY_MAX_FRAMES = Math.round(4 * fps);   // 4.0s
+  const HOOK_MAX_FRAMES = Math.round(4 * fps); // 4.0s — Aud P0
+  const BODY_MAX_FRAMES = Math.round(4 * fps); // 4.0s
   storyboard.scenes = storyboard.scenes.map((scene, i) => {
     const cap = i === 0 ? HOOK_MAX_FRAMES : BODY_MAX_FRAMES;
     if (scene.durationFrames > cap) {
-      console.log(`[orchestrator] clamping scene ${i}: ${scene.durationFrames}f → ${cap}f (retention SLA)`);
+      console.log(
+        `[orchestrator] clamping scene ${i}: ${scene.durationFrames}f → ${cap}f (retention SLA)`
+      );
       const ratio = cap / scene.durationFrames;
       const wt = scene.wordTimestamps?.map((w) => ({
         word: w.word,
@@ -199,7 +223,9 @@ async function main(): Promise<void> {
   const picked = await pickClipsForStoryboard(storyboard, providers);
   picked.forEach((p, i) => {
     const isFallback = p.clip.id === FALLBACK_CLIP.id;
-    console.log(`  scene ${i}: ${isFallback ? 'FALLBACK' : p.clip.id} (score=${p.score.toFixed(1)})`);
+    console.log(
+      `  scene ${i}: ${isFallback ? 'FALLBACK' : p.clip.id} (score=${p.score.toFixed(1)})`
+    );
   });
 
   // 4. Download clips in parallel
@@ -226,9 +252,7 @@ async function main(): Promise<void> {
   if (clipPaths.length > 1) {
     const lastIdx = clipPaths.length - 1;
     if (clipPaths[lastIdx]?.startsWith('synthetic://')) {
-      const realIdx = clipPaths.findIndex(
-        (p, i) => i !== lastIdx && !p.startsWith('synthetic://')
-      );
+      const realIdx = clipPaths.findIndex((p, i) => i !== lastIdx && !p.startsWith('synthetic://'));
       if (realIdx >= 0) {
         console.log(
           `[orchestrator] last scene was synthetic — recycling clip from scene ${realIdx} for retention`
@@ -270,13 +294,12 @@ async function main(): Promise<void> {
   // schema reference but ignored at runtime.
   const rotated = bankEntry ? rotateBankHook(bankEntry) : null;
   if (bankEntry && rotated) {
-    console.log(`[orchestrator] topic-bank hit: ${slug} → rotated h/${rotated.hinglishIdx} t/${rotated.titleIdx}: "${rotated.hookHinglish}"`);
+    console.log(
+      `[orchestrator] topic-bank hit: ${slug} → rotated h/${rotated.hinglishIdx} t/${rotated.titleIdx}: "${rotated.hookHinglish}"`
+    );
   }
 
-  const hookHeadline = buildHookHeadline(
-    storyboard.topic,
-    storyboard.scenes[0]?.narration ?? '',
-  );
+  const hookHeadline = buildHookHeadline(storyboard.topic, storyboard.scenes[0]?.narration ?? '');
   // hookSpoken: full Hinglish hook for TTS scene-0 audio.
   // hookVisual: scene-0 on-screen big text. Panel-10 Dist P0-A (MrBeast
   // regression fix): visual hook MUST match the thumbnail + YT title or
@@ -298,14 +321,13 @@ async function main(): Promise<void> {
   // everywhere the viewer might see it.
   const punchyHook = hookTextFor(storyboard.topic);
 
-  const hookSpoken: string = rotated?.hookHinglish || bankEntry?.hookHinglish?.trim() || hookHeadline;
+  const hookSpoken: string =
+    rotated?.hookHinglish || bankEntry?.hookHinglish?.trim() || hookHeadline;
   // Panel-17 Retention P0 (MrBeast): visualSource now prefers punchyHook
   // so the in-video drawtext at scene-0 matches what the thumbnail
   // promised. shortTitle survives as the secondary line / fallback.
-  const visualSource: string = punchyHook
-    || rotated?.shortTitle
-    || bankEntry?.shortTitle?.trim()
-    || hookSpoken;
+  const visualSource: string =
+    punchyHook || rotated?.shortTitle || bankEntry?.shortTitle?.trim() || hookSpoken;
   const hookVisual: string = (() => {
     const trimmed = visualSource.replace(/\s+/g, ' ').trim();
     if (trimmed.length <= 42) return trimmed;
@@ -338,9 +360,9 @@ async function main(): Promise<void> {
       // Hindi sentences ("Kal Amazon interview hai? Ye…" needs ~3.7s
       // breath). Bumped to 4.0s — still well under the 5s pre-skip
       // window where YT measures hook attention.
-      const HOOK_HARD_CAP = Math.round(4.0 * storyboard.fps);    // 4.0s — Aud P0
+      const HOOK_HARD_CAP = Math.round(4.0 * storyboard.fps); // 4.0s — Aud P0
       const PER_SCENE_HARD_CAP = Math.round(3.5 * storyboard.fps); // 3.5s — Ret2 P0
-      const TOTAL_HARD_CAP = 55 * storyboard.fps;                  // YT Shorts ≤60s
+      const TOTAL_HARD_CAP = 55 * storyboard.fps; // YT Shorts ≤60s
       let runningTotal = 0;
       storyboard.scenes = storyboard.scenes.map((scene, i) => {
         const segDur = ttsResult.sceneDurations[i];
@@ -356,7 +378,9 @@ async function main(): Promise<void> {
         }
         return { ...scene, wordTimestamps: wt };
       });
-      console.log(`[orchestrator] tts: ${voicePath} (scenes: ${ttsResult.sceneDurations.map((d) => d.toFixed(2)).join('s + ')}s)`);
+      console.log(
+        `[orchestrator] tts: ${voicePath} (scenes: ${ttsResult.sceneDurations.map((d) => d.toFixed(2)).join('s + ')}s)`
+      );
 
       // Panel-8 Eng P0 (Carmack): when summed scene narration exceeds
       // the cap budget, ffmpeg's `-shortest` silently truncates audio
@@ -376,8 +400,8 @@ async function main(): Promise<void> {
         if (desiredVideoSec > totalCapSec + 0.05) {
           throw new Error(
             `[orchestrator] audio (${totalAudioSec.toFixed(2)}s) + end-card (${END_CARD_SEC}s) ` +
-            `exceeds TOTAL_HARD_CAP (${totalCapSec.toFixed(1)}s). Author shorter narration ` +
-            `or split into multiple shorts.`
+              `exceeds TOTAL_HARD_CAP (${totalCapSec.toFixed(1)}s). Author shorter narration ` +
+              `or split into multiple shorts.`
           );
         }
         const lastIdx = storyboard.scenes.length - 1;
@@ -387,8 +411,8 @@ async function main(): Promise<void> {
         storyboard.scenes[lastIdx] = { ...last, durationFrames: newLastFrames };
         console.log(
           `[orchestrator] extended last scene by ${extraFrames}f (` +
-          `${(extraFrames / storyboard.fps).toFixed(2)}s) to fit ` +
-          `audio ${totalAudioSec.toFixed(2)}s + end-card ${END_CARD_SEC}s`
+            `${(extraFrames / storyboard.fps).toFixed(2)}s) to fit ` +
+            `audio ${totalAudioSec.toFixed(2)}s + end-card ${END_CARD_SEC}s`
         );
       }
     } catch (err) {
@@ -399,11 +423,13 @@ async function main(): Promise<void> {
       // ALLOW_SILENT_FALLBACK=1 env (test fixtures rely on it). In
       // production, hard-fail the render.
       if (process.env['ALLOW_SILENT_FALLBACK'] === '1') {
-        console.warn(`[orchestrator] TTS failed (${String(err).slice(0, 160)}) — composing with silent audio (ALLOW_SILENT_FALLBACK=1)`);
+        console.warn(
+          `[orchestrator] TTS failed (${String(err).slice(0, 160)}) — composing with silent audio (ALLOW_SILENT_FALLBACK=1)`
+        );
       } else {
         throw new Error(
           `[orchestrator] TTS synthesis failed: ${String(err).slice(0, 240)}. ` +
-          `Refusing to ship a muted video. Set ALLOW_SILENT_FALLBACK=1 to override (tests only).`
+            `Refusing to ship a muted video. Set ALLOW_SILENT_FALLBACK=1 to override (tests only).`
         );
       }
     }
@@ -442,9 +468,7 @@ async function main(): Promise<void> {
       // Hook scene: short, punchy 4-6 word hook in giant text.
       // Body scenes: narration sentence as caption strip — but only when
       // ASS karaoke captions are NOT active, otherwise we double-stack.
-      const bigText = isHook
-        ? hookVisual
-        : undefined;
+      const bigText = isHook ? hookVisual : undefined;
       const captionText = isHook
         ? undefined // hook text already dominates the upper third
         : hasAssCaptions
@@ -533,9 +557,9 @@ async function main(): Promise<void> {
       const midpointSceneIdx = Math.floor(storyboard.scenes.length / 2);
       const isMidpointScene = isBody && i === midpointSceneIdx;
       const midPromiseText = isMidpointScene
-        ? (bankEntry?.salaryBand
-            ? `Last 5 sec mein ${bankEntry.salaryBand} ka twist`
-            : 'Ruko — last 5 sec mein twist hai')
+        ? bankEntry?.salaryBand
+          ? `Last 5 sec mein ${bankEntry.salaryBand} ka twist`
+          : 'Ruko — last 5 sec mein twist hai'
         : undefined;
 
       // Panel-21 Retention P0 (user follow-up: "graphic should stay,
@@ -544,9 +568,10 @@ async function main(): Promise<void> {
       // the cut. Panel-22 MrBeast P1: also rendered on the HOOK scene
       // in titleOnly mode — a compact visual anchor card showing just
       // the concept name, persistent for the full hook duration.
-      const conceptDiagram = wantsDiagram || isHook
-        ? getConceptDiagram(storyboard.topic, bankEntry?.shortTitle ?? rotated?.shortTitle)
-        : undefined;
+      const conceptDiagram =
+        wantsDiagram || isHook
+          ? getConceptDiagram(storyboard.topic, bankEntry?.shortTitle ?? rotated?.shortTitle)
+          : undefined;
       const sceneSec = scene.durationFrames / storyboard.fps;
       // End-card window: Panel-22 Beggs P1 raised the floor from 2.0 →
       // 3.0s (3-line CTA at FS=64 needs ≥2.8-3.2s for click-through
@@ -570,10 +595,10 @@ async function main(): Promise<void> {
         : isBody
           ? { startT: 1.95 }
           : isHook
-            // Panel-22 MrBeast P1: titleOnly card for hook scene visual
-            // anchor. startT=0 → persistent from frame 0 for the full
-            // hook duration (up to 4.0s HOOK_HARD_CAP).
-            ? { titleOnly: true, startT: 0 }
+            ? // Panel-22 MrBeast P1: titleOnly card for hook scene visual
+              // anchor. startT=0 → persistent from frame 0 for the full
+              // hook duration (up to 4.0s HOOK_HARD_CAP).
+              { titleOnly: true, startT: 0 }
             : undefined;
 
       // Brand subline appears on EVERY scene below the watermark
@@ -626,20 +651,16 @@ async function main(): Promise<void> {
       // endCardStart calculation (both use 3.0s). A named constant here makes the
       // coupling explicit without importing from composer.ts.
       const END_CARD_WINDOW_SEC = 3.0;
-      const sceneDursSec = storyboard.scenes.map(
-        (s) => s.durationFrames / storyboard.fps,
-      );
+      const sceneDursSec = storyboard.scenes.map((s) => s.durationFrames / storyboard.fps);
       const midpointSceneIdx = Math.floor(storyboard.scenes.length / 2);
       const vinylOffsetMs = Math.max(
         0,
-        Math.round(
-          sceneDursSec.slice(0, midpointSceneIdx).reduce((a, b) => a + b, 0) * 1000 - 50,
-        ),
+        Math.round(sceneDursSec.slice(0, midpointSceneIdx).reduce((a, b) => a + b, 0) * 1000 - 50)
       );
       const totalDurSec = sceneDursSec.reduce((a, b) => a + b, 0);
       const rimshotOffsetMs = Math.max(
         0,
-        Math.round((totalDurSec - END_CARD_WINDOW_SEC - 0.1) * 1000),
+        Math.round((totalDurSec - END_CARD_WINDOW_SEC - 0.1) * 1000)
       );
       const totalDurStr = totalDurSec.toFixed(3);
       const vinylDurStr = (vinylSfx.durationMs / 1000).toFixed(3);
@@ -647,9 +668,12 @@ async function main(): Promise<void> {
       const piOut = path.join(workDir, 'output-pi.mp4');
       await execFileAsync(FFMPEG_BIN, [
         '-y',
-        '-i', outputPath,
-        '-i', vinylSfx.path,
-        '-i', rimshotSfx.path,
+        '-i',
+        outputPath,
+        '-i',
+        vinylSfx.path,
+        '-i',
+        rimshotSfx.path,
         '-filter_complex',
         [
           `[1:a]aformat=channel_layouts=stereo,` +
@@ -661,24 +685,32 @@ async function main(): Promise<void> {
           `[0:a][vinyl_pi][rimshot_pi]amix=inputs=3:duration=first:` +
             `dropout_transition=0.5:weights=1 0.5 0.5[outa]`,
         ].join(';'),
-        '-map', '0:v',
-        '-map', '[outa]',
-        '-c:v', 'copy',
-        '-c:a', 'aac',
-        '-b:a', '192k',
-        '-movflags', '+faststart',
+        '-map',
+        '0:v',
+        '-map',
+        '[outa]',
+        '-c:v',
+        'copy',
+        '-c:a',
+        'aac',
+        '-b:a',
+        '192k',
+        '-movflags',
+        '+faststart',
         piOut,
       ]);
       fs.renameSync(piOut, outputPath);
       console.log(
-        `[orchestrator] ✓ pattern-interrupt SFX: vinyl@${vinylOffsetMs}ms rimshot@${rimshotOffsetMs}ms`,
+        `[orchestrator] ✓ pattern-interrupt SFX: vinyl@${vinylOffsetMs}ms rimshot@${rimshotOffsetMs}ms`
       );
     }
   }
 
   // ── Quality gate: refuse to ship solid-black / frozen-frame renders ──
   const qg = await runQualityGate(outputPath);
-  console.log(`[orchestrator] quality-gate: passed=${qg.passed} meanVariance=${qg.meanVariance.toFixed(1)}${qg.reason ? ' reason=' + qg.reason : ''}`);
+  console.log(
+    `[orchestrator] quality-gate: passed=${qg.passed} meanVariance=${qg.meanVariance.toFixed(1)}${qg.reason ? ' reason=' + qg.reason : ''}`
+  );
   if (!qg.passed) {
     console.error(`[orchestrator] ✗ QUALITY GATE FAILED — refusing to publish`);
     process.exit(2);
@@ -704,7 +736,7 @@ async function main(): Promise<void> {
   fs.writeFileSync(
     licensesPath,
     JSON.stringify({ clips: licenses, audio: audioLicenses }, null, 2),
-    'utf8',
+    'utf8'
   );
   console.log(`[orchestrator] ✓ licenses: ${licensesPath}`);
 
@@ -766,92 +798,106 @@ async function main(): Promise<void> {
   const metadataPath = path.join(finalOutDir, 'metadata.json');
   fs.writeFileSync(
     metadataPath,
-    JSON.stringify({
-      slug,
-      topic: storyboard.topic,
-      // Panel-23 (user-request): persist session metadata into
-      // metadata.json so downstream consumers (published-state.ts
-      // record, telegram seed, instagram poster) bucket each session
-      // independently and quote the correct lesson title.
-      session: storyboard.session,
-      totalSessions: storyboard.totalSessions,
-      siteTopicSlug: storyboard.siteTopicSlug ?? bankEntry?.siteTopicSlug ?? slug,
-      siteSessionSlug: storyboard.siteSessionSlug,
-      siteSessionTitle: storyboard.siteSessionTitle,
-      siteSessionFocus: storyboard.siteSessionFocus,
-      hook: hookHeadline,
-      title: metadata.title,
-      description: metadata.description,
-      tags: metadata.tags,
-      youtube: { title: metadata.title, description: metadata.description, tags: metadata.tags },
-      // Cross-platform contracts so adapters in CI don't have to reverse-
-      // engineer the field shape per platform. Each sub-object is a strict
-      // subset of YT metadata adapted to platform character/format limits.
-      //
-      // UTM attribution: YT description URLs carry `utm_source=yt_shorts`.
-      // For other platforms we rewrite that to the correct source so
-      // analytics segments traffic by origin (Aud2 P0 / Dist P0).
-      instagram_reels: {
-        // Panel-18 Distribution P1 (Mogilko): prior IG caption was a
-        // verbatim copy of the YT title + first 6 lines of YT
-        // description. IG feed shows the first 125 chars before the
-        // "more" fold, and that window was burned on a YT-native
-        // string with `#Shorts` (a non-IG hashtag) and raw URLs (which
-        // are not clickable in IG captions). Result: zero hook value
-        // on the IG surface. Native adaptation: open with the
-        // hookHinglish if available (already curated for the brand
-        // voice) → 1-line value → "Link in bio" CTA. Strip raw URLs
-        // and the `#Shorts` tag. Result is a tight IG-native caption
-        // that respects the 125-char fold and uses platform-correct
-        // CTA conventions.
-        caption: (() => {
-          const igHook = (rotated?.hookHinglish || bankEntry?.hookHinglish || metadata.title)
-            .replace(/\s*#\w+\s*/g, '')
-            .trim();
-          const igStake = bankEntry?.salaryBand
-            ? `Yeh galti = ${bankEntry.salaryBand} offer cancel 🔥`
-            : 'Yeh galti = FAANG offer cancel 🔥';
-          const igCta = `Link in bio → free 80-Q FAANG sheet\n${BRAND_AT}`;
-          return [igHook, '', igStake, '', igCta].join('\n').slice(0, 2200);
-        })(),
-        hashtags: metadata.tags
-          .filter((t) => !/^shorts$/i.test(t))
-          .slice(0, 30)
-          .map((t) => `#${t}`)
-          .join(' '),
+    JSON.stringify(
+      {
+        slug,
+        topic: storyboard.topic,
+        // Panel-23 (user-request): persist session metadata into
+        // metadata.json so downstream consumers (published-state.ts
+        // record, telegram seed, instagram poster) bucket each session
+        // independently and quote the correct lesson title.
+        session: storyboard.session,
+        totalSessions: storyboard.totalSessions,
+        siteTopicSlug: storyboard.siteTopicSlug ?? bankEntry?.siteTopicSlug ?? slug,
+        siteSessionSlug: storyboard.siteSessionSlug,
+        siteSessionTitle: storyboard.siteSessionTitle,
+        siteSessionFocus: storyboard.siteSessionFocus,
+        hook: hookHeadline,
+        title: metadata.title,
+        description: metadata.description,
+        tags: metadata.tags,
+        youtube: { title: metadata.title, description: metadata.description, tags: metadata.tags },
+        // Cross-platform contracts so adapters in CI don't have to reverse-
+        // engineer the field shape per platform. Each sub-object is a strict
+        // subset of YT metadata adapted to platform character/format limits.
+        //
+        // UTM attribution: YT description URLs carry `utm_source=yt_shorts`.
+        // For other platforms we rewrite that to the correct source so
+        // analytics segments traffic by origin (Aud2 P0 / Dist P0).
+        instagram_reels: {
+          // Panel-18 Distribution P1 (Mogilko): prior IG caption was a
+          // verbatim copy of the YT title + first 6 lines of YT
+          // description. IG feed shows the first 125 chars before the
+          // "more" fold, and that window was burned on a YT-native
+          // string with `#Shorts` (a non-IG hashtag) and raw URLs (which
+          // are not clickable in IG captions). Result: zero hook value
+          // on the IG surface. Native adaptation: open with the
+          // hookHinglish if available (already curated for the brand
+          // voice) → 1-line value → "Link in bio" CTA. Strip raw URLs
+          // and the `#Shorts` tag. Result is a tight IG-native caption
+          // that respects the 125-char fold and uses platform-correct
+          // CTA conventions.
+          caption: (() => {
+            const igHook = (rotated?.hookHinglish || bankEntry?.hookHinglish || metadata.title)
+              .replace(/\s*#\w+\s*/g, '')
+              .trim();
+            const igStake = bankEntry?.salaryBand
+              ? `Yeh galti = ${bankEntry.salaryBand} offer cancel 🔥`
+              : 'Yeh galti = FAANG offer cancel 🔥';
+            const igCta = `Link in bio → free 80-Q FAANG sheet\n${BRAND_AT}`;
+            return [igHook, '', igStake, '', igCta].join('\n').slice(0, 2200);
+          })(),
+          hashtags: metadata.tags
+            .filter((t) => !/^shorts$/i.test(t))
+            .slice(0, 30)
+            .map((t) => `#${t}`)
+            .join(' '),
+        },
+        x_post: {
+          // Panel-17 Distribution P0 (Schiffer): use punchyHook (4-word
+          // thumbnail copy) instead of hookHeadline so the X-post matches
+          // what the click delivers. Was: ${hookHeadline} — the long
+          // descriptive hook — which broke cross-platform coherence.
+          text: `${punchyHook}\n\n${BRAND_AT} · ${metadata.tags
+            .slice(0, 4)
+            .map((t) => `#${t}`)
+            .join(' ')}`.slice(0, 280),
+        },
+        linkedin: {
+          title: metadata.title.replace(/\s*#\w+\s*/g, '').trim(),
+          // Panel-21 Dist P1-1 + Panel-22 Torvalds P1: filter out lines
+          // that read as a hashtag wall (tagRatio≥0.7) — same threshold
+          // applied in seed-telegram.ts so the Telegram + LinkedIn
+          // bodies derive from a consistent definition of "hashtag spam".
+          body: (() => {
+            const raw = metadata.description.replace(
+              /utm_source=yt_shorts/g,
+              'utm_source=linkedin'
+            );
+            const lines = raw.split('\n');
+            // Strip any line that is purely hashtags (or hashtag-spam).
+            const cleaned = lines.filter((line) => {
+              const trimmed = line.trim();
+              if (!trimmed) return true;
+              const tokens = trimmed.split(/\s+/);
+              const tagRatio = tokens.filter((t) => t.startsWith('#')).length / tokens.length;
+              return tagRatio < 0.7;
+            });
+            return cleaned.slice(0, 7).join('\n').trim();
+          })(),
+        },
+        telegram: {
+          text: `🆕 ${metadata.title}\n\n${metadata.description
+            .replace(/utm_source=yt_shorts/g, 'utm_source=telegram')
+            .split('\n')
+            .slice(0, 4)
+            .join('\n')}`,
+        },
       },
-      x_post: {
-        // Panel-17 Distribution P0 (Schiffer): use punchyHook (4-word
-        // thumbnail copy) instead of hookHeadline so the X-post matches
-        // what the click delivers. Was: ${hookHeadline} — the long
-        // descriptive hook — which broke cross-platform coherence.
-        text: `${punchyHook}\n\n${BRAND_AT} · ${metadata.tags.slice(0, 4).map((t) => `#${t}`).join(' ')}`.slice(0, 280),
-      },
-      linkedin: {
-        title: metadata.title.replace(/\s*#\w+\s*/g, '').trim(),
-        // Panel-21 Dist P1-1 + Panel-22 Torvalds P1: filter out lines
-        // that read as a hashtag wall (tagRatio≥0.7) — same threshold
-        // applied in seed-telegram.ts so the Telegram + LinkedIn
-        // bodies derive from a consistent definition of "hashtag spam".
-        body: (() => {
-          const raw = metadata.description.replace(/utm_source=yt_shorts/g, 'utm_source=linkedin');
-          const lines = raw.split('\n');
-          // Strip any line that is purely hashtags (or hashtag-spam).
-          const cleaned = lines.filter(line => {
-            const trimmed = line.trim();
-            if (!trimmed) return true;
-            const tokens = trimmed.split(/\s+/);
-            const tagRatio = tokens.filter(t => t.startsWith('#')).length / tokens.length;
-            return tagRatio < 0.7;
-          });
-          return cleaned.slice(0, 7).join('\n').trim();
-        })(),
-      },
-      telegram: {
-        text: `🆕 ${metadata.title}\n\n${metadata.description.replace(/utm_source=yt_shorts/g, 'utm_source=telegram').split('\n').slice(0, 4).join('\n')}`,
-      },
-    }, null, 2),
-    'utf8',
+      null,
+      2
+    ),
+    'utf8'
   );
   console.log(`[orchestrator] ✓ metadata: ${metadataPath}`);
 
@@ -873,11 +919,12 @@ async function main(): Promise<void> {
   // and thumbnail — so every surface a viewer sees carries the same
   // promise. Falls back to shortTitle if the topic doesn't match a
   // pattern bank (rare — covers all our CSE/FAANG categories).
-  const thumbnailHook = punchyHook
-    || rotated?.shortTitle
-    || bankEntry?.shortTitle?.trim()
-    || hookSpoken
-    || hookHeadline;
+  const thumbnailHook =
+    punchyHook ||
+    rotated?.shortTitle ||
+    bankEntry?.shortTitle?.trim() ||
+    hookSpoken ||
+    hookHeadline;
   await generateThumbnailPng({
     hook: thumbnailHook,
     handle: process.env['CHANNEL_HANDLE'] ?? BRAND_AT,
@@ -903,15 +950,15 @@ async function main(): Promise<void> {
  * fits on 3 wrapped lines @ 14 chars on the 1080×1920 hook band.
  */
 const HOOK_TEMPLATES: Array<(topic: string) => string> = [
-  (t) => `${t} sirf 60 sec me`,                // H1 density (Hinglish)
-  (t) => `${t} galat samjhe the?`,             // H3 contrarian (Hinglish)
-  (t) => `${t} — FAANG ka favourite`,          // H2 stakes (Hinglish)
-  (t) => `${t} kyun zaruri hai`,               // H4 curiosity (Hinglish)
-  (t) => `3 baatein ${t} ke baare me`,         // H1 number-lead (Hinglish)
-  (t) => `Bhai, ${t} ek line me`,              // H5 peer (Hinglish)
-  (t) => `${t} — ye mistake mat karna`,        // H5 loss-aversion (Hinglish)
-  (t) => `${t} — placement walo ke liye`,      // H5 ICP (Hinglish)
-  (t) => `${t} ka asli concept`,               // H5 authority (Hinglish)
+  (t) => `${t} sirf 60 sec me`, // H1 density (Hinglish)
+  (t) => `${t} galat samjhe the?`, // H3 contrarian (Hinglish)
+  (t) => `${t} — FAANG ka favourite`, // H2 stakes (Hinglish)
+  (t) => `${t} kyun zaruri hai`, // H4 curiosity (Hinglish)
+  (t) => `3 baatein ${t} ke baare me`, // H1 number-lead (Hinglish)
+  (t) => `Bhai, ${t} ek line me`, // H5 peer (Hinglish)
+  (t) => `${t} — ye mistake mat karna`, // H5 loss-aversion (Hinglish)
+  (t) => `${t} — placement walo ke liye`, // H5 ICP (Hinglish)
+  (t) => `${t} ka asli concept`, // H5 authority (Hinglish)
 ];
 
 /**
@@ -920,10 +967,7 @@ const HOOK_TEMPLATES: Array<(topic: string) => string> = [
  */
 function buildHookHeadline(topic: string, narration: string): string {
   const cleanTopic = topic.replace(/\s+/g, ' ').trim();
-  const firstSentence = (narration || '')
-    .split(/[.!?]/)[0]
-    .replace(/\s+/g, ' ')
-    .trim();
+  const firstSentence = (narration || '').split(/[.!?]/)[0].replace(/\s+/g, ' ').trim();
 
   const HOOK_MAX = 42; // covers 3 lines × 14 chars
   if (cleanTopic.length > 0 && cleanTopic.length <= 28) {
@@ -958,7 +1002,9 @@ function buildCaptionPhrase(narration: string): string {
 }
 
 async function buildProviders() {
-  const manifestData = JSON.parse(fs.readFileSync(MANIFEST, 'utf8')) as { clips: import('../src/stock/types.js').StockClip[] };
+  const manifestData = JSON.parse(fs.readFileSync(MANIFEST, 'utf8')) as {
+    clips: import('../src/stock/types.js').StockClip[];
+  };
 
   const coverr = new ManifestProvider('coverr', manifestData.clips);
   const mixkit = new ManifestProvider('mixkit', manifestData.clips);
@@ -1011,10 +1057,10 @@ async function generateWatermarkPng(outPath: string): Promise<void> {
 
   // Try a few common fontfile locations; fall back to default font.
   const candidateFonts = [
-    '/System/Library/Fonts/Helvetica.ttc',                       // macOS
-    '/System/Library/Fonts/Supplemental/Arial.ttf',              // macOS
-    '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf',      // Ubuntu/Debian
-    '/usr/share/fonts/dejavu/DejaVuSans-Bold.ttf',               // Fedora/RHEL
+    '/System/Library/Fonts/Helvetica.ttc', // macOS
+    '/System/Library/Fonts/Supplemental/Arial.ttf', // macOS
+    '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf', // Ubuntu/Debian
+    '/usr/share/fonts/dejavu/DejaVuSans-Bold.ttf', // Fedora/RHEL
   ];
   let fontfileArg = '';
   for (const f of candidateFonts) {
@@ -1024,18 +1070,31 @@ async function generateWatermarkPng(outPath: string): Promise<void> {
         fontfileArg = `:fontfile='${f.replace(/'/g, "\\'")}'`;
         break;
       }
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
   }
 
-  await execFileAsync(FFMPEG_BIN, [
-    '-y',
-    '-f', 'lavfi',
-    '-i', 'color=color=black@0.0:s=440x80:d=1',
-    '-vf', `drawtext=text='${safeHandle}':fontcolor=white:fontsize=42:borderw=3:bordercolor=black@0.85:x=(w-text_w)/2:y=(h-text_h)/2${fontfileArg}`,
-    '-frames:v', '1',
-    outPath,
-  ], { maxBuffer: 4 * 1024 * 1024 }).catch((err) => {
-    console.warn('[orchestrator] watermark generation failed (non-fatal):', String(err).slice(0, 200));
+  await execFileAsync(
+    FFMPEG_BIN,
+    [
+      '-y',
+      '-f',
+      'lavfi',
+      '-i',
+      'color=color=black@0.0:s=440x80:d=1',
+      '-vf',
+      `drawtext=text='${safeHandle}':fontcolor=white:fontsize=42:borderw=3:bordercolor=black@0.85:x=(w-text_w)/2:y=(h-text_h)/2${fontfileArg}`,
+      '-frames:v',
+      '1',
+      outPath,
+    ],
+    { maxBuffer: 4 * 1024 * 1024 }
+  ).catch((err) => {
+    console.warn(
+      '[orchestrator] watermark generation failed (non-fatal):',
+      String(err).slice(0, 200)
+    );
   });
 }
 
@@ -1068,14 +1127,20 @@ if (isDirectInvocation) {
 async function generateNarrationForScenes(
   sb: StockStoryboard,
   workDir: string,
-  hookHeadline?: string,
-): Promise<{ audioPath: string; sceneDurations: number[]; sceneWordTimestamps: Array<Array<{ word: string; startMs: number; endMs: number }> | undefined> }> {
+  hookHeadline?: string
+): Promise<{
+  audioPath: string;
+  sceneDurations: number[];
+  sceneWordTimestamps: Array<Array<{ word: string; startMs: number; endMs: number }> | undefined>;
+}> {
   const fs = await import('node:fs');
   const path = await import('node:path');
 
   const sceneAudioPaths: string[] = [];
   const sceneDurations: number[] = [];
-  const sceneWordTimestamps: Array<Array<{ word: string; startMs: number; endMs: number }> | undefined> = [];
+  const sceneWordTimestamps: Array<
+    Array<{ word: string; startMs: number; endMs: number }> | undefined
+  > = [];
 
   for (let i = 0; i < sb.scenes.length; i++) {
     const scene = sb.scenes[i]!;
@@ -1083,20 +1148,28 @@ async function generateNarrationForScenes(
     // visual hook, and title all say the same 4-7 words. That keeps audio
     // duration inside the 3s HOOK_HARD_CAP and prevents the prior regression
     // where 5s of narration leaked over scene-1 visuals.
-    const text = (
-      i === 0 && hookHeadline ? hookHeadline : (scene.narration ?? '')
-    ).trim();
+    const text = (i === 0 && hookHeadline ? hookHeadline : (scene.narration ?? '')).trim();
     if (!text) {
       // Synthesize a 0.5s silent placeholder so concat math stays consistent.
       const silentPath = path.join(workDir, `voice-${i}.mp3`);
-      await execFileAsync(FFMPEG_BIN, [
-        '-y',
-        '-f', 'lavfi',
-        '-i', 'anullsrc=channel_layout=mono:sample_rate=24000',
-        '-t', '0.5',
-        '-c:a', 'libmp3lame', '-b:a', '128k',
-        silentPath,
-      ], { maxBuffer: 4 * 1024 * 1024 });
+      await execFileAsync(
+        FFMPEG_BIN,
+        [
+          '-y',
+          '-f',
+          'lavfi',
+          '-i',
+          'anullsrc=channel_layout=mono:sample_rate=24000',
+          '-t',
+          '0.5',
+          '-c:a',
+          'libmp3lame',
+          '-b:a',
+          '128k',
+          silentPath,
+        ],
+        { maxBuffer: 4 * 1024 * 1024 }
+      );
       sceneAudioPaths.push(silentPath);
       sceneDurations.push(0.5);
       sceneWordTimestamps.push(undefined);
@@ -1121,15 +1194,26 @@ async function generateNarrationForScenes(
     // `dynaudnorm` which smooths within-segment level variation without
     // engaging the full EBU normaliser — the I=-14 master pass at the
     // end is still the single source of truth for output loudness.
-    await execFileAsync(FFMPEG_BIN, [
-      '-y',
-      '-i', rawPath,
-      '-af', 'dynaudnorm=p=0.7:m=10:s=12',
-      '-ar', '48000',
-      '-ac', '1',
-      '-c:a', 'libmp3lame', '-b:a', '160k',
-      outPath,
-    ], { maxBuffer: 8 * 1024 * 1024 });
+    await execFileAsync(
+      FFMPEG_BIN,
+      [
+        '-y',
+        '-i',
+        rawPath,
+        '-af',
+        'dynaudnorm=p=0.7:m=10:s=12',
+        '-ar',
+        '48000',
+        '-ac',
+        '1',
+        '-c:a',
+        'libmp3lame',
+        '-b:a',
+        '160k',
+        outPath,
+      ],
+      { maxBuffer: 8 * 1024 * 1024 }
+    );
     sceneAudioPaths.push(outPath);
     sceneDurations.push(rawDur);
   }
@@ -1140,18 +1224,27 @@ async function generateNarrationForScenes(
   fs.writeFileSync(
     listFile,
     sceneAudioPaths.map((p) => `file '${p.replace(/'/g, "'\\''")}'`).join('\n') + '\n',
-    'utf8',
+    'utf8'
   );
   const finalAudio = path.join(workDir, 'voice.mp3');
-  await execFileAsync(FFMPEG_BIN, [
-    '-y',
-    '-f', 'concat',
-    '-safe', '0',
-    '-i', listFile,
-    '-c:a', 'libmp3lame',
-    '-b:a', '160k',
-    finalAudio,
-  ], { maxBuffer: 16 * 1024 * 1024 });
+  await execFileAsync(
+    FFMPEG_BIN,
+    [
+      '-y',
+      '-f',
+      'concat',
+      '-safe',
+      '0',
+      '-i',
+      listFile,
+      '-c:a',
+      'libmp3lame',
+      '-b:a',
+      '160k',
+      finalAudio,
+    ],
+    { maxBuffer: 16 * 1024 * 1024 }
+  );
 
   return { audioPath: finalAudio, sceneDurations, sceneWordTimestamps };
 }
@@ -1200,8 +1293,15 @@ export async function generateThumbnailPng(opts: {
   const lines: string[] = [];
   let cur = '';
   for (const w of words) {
-    if (!cur) { cur = w; continue; }
-    if ((cur + ' ' + w).length <= MAX_LINE_CHARS) cur += ' ' + w; else { lines.push(cur); cur = w; }
+    if (!cur) {
+      cur = w;
+      continue;
+    }
+    if ((cur + ' ' + w).length <= MAX_LINE_CHARS) cur += ' ' + w;
+    else {
+      lines.push(cur);
+      cur = w;
+    }
   }
   if (cur) lines.push(cur);
   const hookLines = lines.slice(0, MAX_LINES);
@@ -1209,10 +1309,11 @@ export async function generateThumbnailPng(opts: {
   // If the wrap produced a single word longer than MAX_LINE_CHARS (e.g.,
   // a topic with a 14-char canonical name like "elasticsearch"), shrink
   // the effective font size so it still fits in the safe zone.
-  const widestChars = hookLines.length === 0 ? 1 : Math.max(...hookLines.map(l => l.length));
-  const FS = widestChars > MAX_LINE_CHARS
-    ? Math.floor(BASELINE_FS * MAX_LINE_CHARS / widestChars)
-    : BASELINE_FS;
+  const widestChars = hookLines.length === 0 ? 1 : Math.max(...hookLines.map((l) => l.length));
+  const FS =
+    widestChars > MAX_LINE_CHARS
+      ? Math.floor((BASELINE_FS * MAX_LINE_CHARS) / widestChars)
+      : BASELINE_FS;
 
   // Discover a font (Latin) for drawtext.
   const candidates = [
@@ -1223,7 +1324,10 @@ export async function generateThumbnailPng(opts: {
   ];
   let fontfile = '';
   for (const c of candidates) {
-    if (fs.existsSync(c)) { fontfile = `:fontfile='${c.replace(/'/g, "\\'")}'`; break; }
+    if (fs.existsSync(c)) {
+      fontfile = `:fontfile='${c.replace(/'/g, "\\'")}'`;
+      break;
+    }
   }
 
   // Panel-12 Dist P0: category-driven backdrop palette. Top color is the
@@ -1232,9 +1336,9 @@ export async function generateThumbnailPng(opts: {
   // WCAG against #ffffff hook text (the dim band drops ratios further).
   const PALETTES: Record<string, { top: string; bottom: string; accent: string }> = {
     'system-design': { top: '0x1e3a8a', bottom: '0x0a0a23', accent: '0xfbbf24' }, // navy → near-black, amber accent
-    'dsa':           { top: '0x065f46', bottom: '0x0f1a14', accent: '0xfde047' }, // emerald → near-black, yellow
-    'behavioral':    { top: '0x7c2d12', bottom: '0x1a0a05', accent: '0xfde047' }, // burnt orange → near-black, yellow
-    'db-internals':  { top: '0x4c1d95', bottom: '0x0d0a1f', accent: '0x60a5fa' }, // violet → near-black, sky-blue
+    dsa: { top: '0x065f46', bottom: '0x0f1a14', accent: '0xfde047' }, // emerald → near-black, yellow
+    behavioral: { top: '0x7c2d12', bottom: '0x1a0a05', accent: '0xfde047' }, // burnt orange → near-black, yellow
+    'db-internals': { top: '0x4c1d95', bottom: '0x0d0a1f', accent: '0x60a5fa' }, // violet → near-black, sky-blue
   };
   const cat = (category ?? '').toLowerCase();
   const palette = PALETTES[cat] ?? { top: '0x1e3a8a', bottom: '0x0a0a23', accent: '0xfbbf24' };
@@ -1251,11 +1355,13 @@ export async function generateThumbnailPng(opts: {
     // Inputs are two color sources (declared in the cmdline below).
     // [0] = top, [1] = bottom. Build a vertical gradient by blending
     // [0] over [1] with a top-to-bottom alpha fade.
-    '[0:v]format=rgba,geq=r=\'r(X,Y)\':g=\'g(X,Y)\':b=\'b(X,Y)\':a=\'255*(1-Y/H)\'[topa]',
+    "[0:v]format=rgba,geq=r='r(X,Y)':g='g(X,Y)':b='b(X,Y)':a='255*(1-Y/H)'[topa]",
     '[1:v][topa]overlay=0:0[bg]',
     // Bottom accent stripe (3% of canvas height = ~58px) — adds the
     // category accent color as a clear shelf-readable signal.
-    '[bg]drawbox=x=0:y=1862:w=1080:h=58:color=' + paletteHexToColor(palette.accent) + ':t=fill[bg2]',
+    '[bg]drawbox=x=0:y=1862:w=1080:h=58:color=' +
+      paletteHexToColor(palette.accent) +
+      ':t=fill[bg2]',
     // Dim middle band where the hook sits (less aggressive than before
     // since the backdrop is no longer photographic).
     '[bg2]drawbox=x=0:y=420:w=1080:h=720:color=black@0.45:t=fill[band]',
@@ -1265,8 +1371,8 @@ export async function generateThumbnailPng(opts: {
     const next = `[t${idx}]`;
     filters.push(
       `${chain}drawtext=text='${escapeDrawtext(line)}'${fontfile}:fontcolor=white:fontsize=${FS}:` +
-      `borderw=10:bordercolor=black@0.95:` +
-      `x=(w-text_w)/2:y=${Math.round(startY + idx * LH)}${next}`
+        `borderw=10:bordercolor=black@0.95:` +
+        `x=(w-text_w)/2:y=${Math.round(startY + idx * LH)}${next}`
     );
     chain = next;
   });
@@ -1278,18 +1384,31 @@ export async function generateThumbnailPng(opts: {
   // UI overlay band (subscribe + scroll affordance + like/share row).
   filters.push(
     `${chain}drawtext=text='${escapeDrawtext(handle)}'${fontfile}:fontcolor=#FFEB3B:fontsize=64:` +
-    `borderw=5:bordercolor=black@0.95:x=w-text_w-40:y=h-text_h-300[out]`
+      `borderw=5:bordercolor=black@0.95:x=w-text_w-40:y=h-text_h-300[out]`
   );
 
-  await execFileAsync(FFMPEG_BIN, [
-    '-y',
-    '-f', 'lavfi', '-i', `color=c=${palette.top}:s=1080x1920:d=1`,
-    '-f', 'lavfi', '-i', `color=c=${palette.bottom}:s=1080x1920:d=1`,
-    '-filter_complex', filters.join(';'),
-    '-map', '[out]',
-    '-frames:v', '1',
-    outPath,
-  ], { maxBuffer: 8 * 1024 * 1024 });
+  await execFileAsync(
+    FFMPEG_BIN,
+    [
+      '-y',
+      '-f',
+      'lavfi',
+      '-i',
+      `color=c=${palette.top}:s=1080x1920:d=1`,
+      '-f',
+      'lavfi',
+      '-i',
+      `color=c=${palette.bottom}:s=1080x1920:d=1`,
+      '-filter_complex',
+      filters.join(';'),
+      '-map',
+      '[out]',
+      '-frames:v',
+      '1',
+      outPath,
+    ],
+    { maxBuffer: 8 * 1024 * 1024 }
+  );
 }
 
 /**

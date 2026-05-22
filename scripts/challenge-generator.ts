@@ -50,26 +50,121 @@ interface ChallengeScript {
 // ---- Challenges ------------------------------------------------------------
 
 const CHALLENGES: Challenge[] = [
-  { system: 'SQLite', scale: '1 million concurrent users', verdict: 'fails', why: 'single writer lock' },
-  { system: 'a single Raspberry Pi', scale: 'a Kubernetes cluster', verdict: 'works', why: 'K3s exists' },
-  { system: 'a $5/month VPS', scale: '1 million requests per day', verdict: 'works', why: 'with proper caching' },
-  { system: 'MongoDB', scale: 'a banking system', verdict: 'fails', why: 'no ACID transactions by default' },
-  { system: 'Redis', scale: 'a primary database', verdict: 'works', why: 'with persistence and replication' },
-  { system: 'a single PostgreSQL', scale: '10 million rows', verdict: 'works', why: 'with proper indexing' },
+  {
+    system: 'SQLite',
+    scale: '1 million concurrent users',
+    verdict: 'fails',
+    why: 'single writer lock',
+  },
+  {
+    system: 'a single Raspberry Pi',
+    scale: 'a Kubernetes cluster',
+    verdict: 'works',
+    why: 'K3s exists',
+  },
+  {
+    system: 'a $5/month VPS',
+    scale: '1 million requests per day',
+    verdict: 'works',
+    why: 'with proper caching',
+  },
+  {
+    system: 'MongoDB',
+    scale: 'a banking system',
+    verdict: 'fails',
+    why: 'no ACID transactions by default',
+  },
+  {
+    system: 'Redis',
+    scale: 'a primary database',
+    verdict: 'works',
+    why: 'with persistence and replication',
+  },
+  {
+    system: 'a single PostgreSQL',
+    scale: '10 million rows',
+    verdict: 'works',
+    why: 'with proper indexing',
+  },
   { system: 'a monolith', scale: '100 million users', verdict: 'works', why: 'Shopify does it' },
-  { system: 'JavaScript', scale: 'a real-time trading system', verdict: 'fails', why: 'garbage collection pauses' },
-  { system: 'WebSockets', scale: '1 million simultaneous connections', verdict: 'works', why: 'with proper epoll and load balancing' },
-  { system: 'a single MySQL instance', scale: 'a billion-row table', verdict: 'fails', why: 'queries slow to crawl without partitioning' },
-  { system: 'Kubernetes', scale: 'a 2-person startup', verdict: 'fails', why: 'operational overhead exceeds the team size' },
-  { system: 'a CDN alone', scale: 'a dynamic e-commerce site', verdict: 'fails', why: 'dynamic content needs origin servers' },
-  { system: 'GraphQL', scale: 'a public API', verdict: 'fails', why: 'query complexity attacks without rate limiting' },
-  { system: 'Docker Compose', scale: 'production deployment', verdict: 'works', why: 'for small to medium workloads with proper health checks' },
-  { system: 'a serverless function', scale: 'a video processing pipeline', verdict: 'fails', why: 'timeout limits and cold starts kill throughput' },
-  { system: 'Nginx', scale: '10 million requests per second', verdict: 'works', why: 'with proper tuning and multiple workers' },
-  { system: 'a REST API', scale: 'real-time chat', verdict: 'fails', why: 'polling wastes bandwidth, no push capability' },
-  { system: 'React', scale: 'a 500-page app', verdict: 'works', why: 'with code splitting and lazy loading' },
-  { system: 'a free-tier cloud account', scale: 'a startup MVP', verdict: 'works', why: 'AWS and GCP free tiers are surprisingly generous' },
-  { system: 'Excel', scale: 'a production database', verdict: 'fails', why: 'no concurrency, no ACID, 1 million row limit' },
+  {
+    system: 'JavaScript',
+    scale: 'a real-time trading system',
+    verdict: 'fails',
+    why: 'garbage collection pauses',
+  },
+  {
+    system: 'WebSockets',
+    scale: '1 million simultaneous connections',
+    verdict: 'works',
+    why: 'with proper epoll and load balancing',
+  },
+  {
+    system: 'a single MySQL instance',
+    scale: 'a billion-row table',
+    verdict: 'fails',
+    why: 'queries slow to crawl without partitioning',
+  },
+  {
+    system: 'Kubernetes',
+    scale: 'a 2-person startup',
+    verdict: 'fails',
+    why: 'operational overhead exceeds the team size',
+  },
+  {
+    system: 'a CDN alone',
+    scale: 'a dynamic e-commerce site',
+    verdict: 'fails',
+    why: 'dynamic content needs origin servers',
+  },
+  {
+    system: 'GraphQL',
+    scale: 'a public API',
+    verdict: 'fails',
+    why: 'query complexity attacks without rate limiting',
+  },
+  {
+    system: 'Docker Compose',
+    scale: 'production deployment',
+    verdict: 'works',
+    why: 'for small to medium workloads with proper health checks',
+  },
+  {
+    system: 'a serverless function',
+    scale: 'a video processing pipeline',
+    verdict: 'fails',
+    why: 'timeout limits and cold starts kill throughput',
+  },
+  {
+    system: 'Nginx',
+    scale: '10 million requests per second',
+    verdict: 'works',
+    why: 'with proper tuning and multiple workers',
+  },
+  {
+    system: 'a REST API',
+    scale: 'real-time chat',
+    verdict: 'fails',
+    why: 'polling wastes bandwidth, no push capability',
+  },
+  {
+    system: 'React',
+    scale: 'a 500-page app',
+    verdict: 'works',
+    why: 'with code splitting and lazy loading',
+  },
+  {
+    system: 'a free-tier cloud account',
+    scale: 'a startup MVP',
+    verdict: 'works',
+    why: 'AWS and GCP free tiers are surprisingly generous',
+  },
+  {
+    system: 'Excel',
+    scale: 'a production database',
+    verdict: 'fails',
+    why: 'no concurrency, no ACID, 1 million row limit',
+  },
 ];
 
 // ---- Scale Steps Generator -------------------------------------------------
@@ -161,9 +256,10 @@ export function generateChallenge(index: number): ChallengeScript {
 
   const verdictEmoji = challenge.verdict === 'works' ? 'YES' : 'NO';
   const verdictText = `${verdictEmoji}: ${challenge.system} ${challenge.verdict === 'works' ? 'CAN' : 'CANNOT'} handle ${challenge.scale}`;
-  const spokenVerdict = challenge.verdict === 'works'
-    ? `The answer is YES. ${challenge.system} can handle ${challenge.scale}, ${challenge.why}. Most people underestimate it.`
-    : `The answer is NO. ${challenge.system} cannot handle ${challenge.scale}. The reason: ${challenge.why}. Use the right tool for the job.`;
+  const spokenVerdict =
+    challenge.verdict === 'works'
+      ? `The answer is YES. ${challenge.system} can handle ${challenge.scale}, ${challenge.why}. Most people underestimate it.`
+      : `The answer is NO. ${challenge.system} cannot handle ${challenge.scale}. The reason: ${challenge.why}. Use the right tool for the job.`;
 
   const titleVariants = [
     `Can ${challenge.system} handle ${challenge.scale}?`,
@@ -231,11 +327,13 @@ async function renderChallenge(script: ChallengeScript): Promise<void> {
     sceneInputs,
     'en-US-AndrewMultilingualNeural',
     'english',
-    { text: '+20%' },
+    { text: '+20%' }
   );
 
   const totalAudioDuration = audioResults.reduce((s, r) => s + r.duration, 0);
-  console.log(`  Total audio: ${totalAudioDuration.toFixed(1)}s across ${audioResults.length} segments`);
+  console.log(
+    `  Total audio: ${totalAudioDuration.toFixed(1)}s across ${audioResults.length} segments`
+  );
 
   // 2. Build scenes
   console.log('\n[2/3] Building storyboard...');
@@ -310,7 +408,9 @@ async function renderChallenge(script: ChallengeScript): Promise<void> {
   const videoOutput = path.join(OUTPUT_DIR, `${slug}.mp4`);
 
   const renderCmd = [
-    'npx', 'remotion', 'render',
+    'npx',
+    'remotion',
+    'render',
     'src/compositions/index.tsx',
     'ViralShort',
     videoOutput,

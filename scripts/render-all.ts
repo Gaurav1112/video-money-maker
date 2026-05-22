@@ -38,7 +38,7 @@ interface TopicFile {
 }
 
 function discoverTopics(): TopicFile[] {
-  const files = fs.readdirSync(CONTENT_DIR).filter(f => f.endsWith('.json'));
+  const files = fs.readdirSync(CONTENT_DIR).filter((f) => f.endsWith('.json'));
   const topics: TopicFile[] = [];
 
   for (const file of files) {
@@ -81,7 +81,7 @@ async function renderSession(
   sessionNum: number,
   totalSessions: number,
   topicIndex: number,
-  totalTopics: number,
+  totalTopics: number
 ): Promise<{ success: boolean; time: number }> {
   const start = Date.now();
   const outputFolder = path.join(OUTPUT_DIR, topicSlug);
@@ -92,7 +92,9 @@ async function renderSession(
 
   // Check if already rendered
   if (fs.existsSync(outputFile) && !args.includes('--force')) {
-    console.log(`  \u23ED  Skip ${topicSlug} s${sessionNum} (already exists, use --force to re-render)`);
+    console.log(
+      `  \u23ED  Skip ${topicSlug} s${sessionNum} (already exists, use --force to re-render)`
+    );
     return { success: true, time: 0 };
   }
 
@@ -102,10 +104,10 @@ async function renderSession(
   try {
     // Step 1: Generate storyboard + TTS
     const ttsFlag = skipTts ? '--skip-tts' : '';
-    execSync(
-      `npx tsx scripts/render-session.ts ${topicSlug} ${sessionNum} ${ttsFlag}`,
-      { cwd: path.resolve(__dirname, '..'), stdio: 'pipe' },
-    );
+    execSync(`npx tsx scripts/render-session.ts ${topicSlug} ${sessionNum} ${ttsFlag}`, {
+      cwd: path.resolve(__dirname, '..'),
+      stdio: 'pipe',
+    });
 
     // Step 2: Render video
     const quality = isFast ? '--jpeg-quality 60' : '--jpeg-quality 90';
@@ -116,7 +118,7 @@ async function renderSession(
 
     execSync(
       `npx remotion render src/compositions/index.tsx LongVideo ${propsArg} --output='${outputFile}' ${quality} ${scale} --concurrency=6`,
-      { cwd: path.resolve(__dirname, '..'), stdio: 'pipe' },
+      { cwd: path.resolve(__dirname, '..'), stdio: 'pipe' }
     );
 
     const elapsed = ((Date.now() - start) / 1000).toFixed(1);
@@ -137,11 +139,15 @@ async function renderSession(
 
     // Step 4: Render vertical shorts + reels using Remotion ShortVideo composition
     try {
-      console.log(`  \uD83D\uDCF1 Rendering ${topicSlug} s${sessionNum} vertical shorts (Remotion)...`);
-      const propsForShorts = fs.existsSync(propsFile) ? propsFile : `output/test-props-s${sessionNum}.json`;
+      console.log(
+        `  \uD83D\uDCF1 Rendering ${topicSlug} s${sessionNum} vertical shorts (Remotion)...`
+      );
+      const propsForShorts = fs.existsSync(propsFile)
+        ? propsFile
+        : `output/test-props-s${sessionNum}.json`;
       execSync(
         `npx tsx scripts/render-vertical-shorts.ts --topic "${topicSlug}" --session ${sessionNum} --props "${propsForShorts}"`,
-        { cwd: path.resolve(__dirname, '..'), stdio: 'pipe' },
+        { cwd: path.resolve(__dirname, '..'), stdio: 'pipe' }
       );
 
       // Copy shorts/reels from local output to Documents
@@ -150,24 +156,36 @@ async function renderSession(
       const shortsMetaFile = path.resolve(__dirname, '..', 'output/shorts/metadata.json');
 
       if (fs.existsSync(shortsYtDir)) {
-        fs.readdirSync(shortsYtDir).filter(f => f.endsWith('.mp4')).forEach(f => {
-          fs.copyFileSync(path.join(shortsYtDir, f), path.join(docsShortsDir, f));
-        });
+        fs.readdirSync(shortsYtDir)
+          .filter((f) => f.endsWith('.mp4'))
+          .forEach((f) => {
+            fs.copyFileSync(path.join(shortsYtDir, f), path.join(docsShortsDir, f));
+          });
       }
       if (fs.existsSync(shortsIgDir)) {
-        fs.readdirSync(shortsIgDir).filter(f => f.endsWith('.mp4')).forEach(f => {
-          fs.copyFileSync(path.join(shortsIgDir, f), path.join(docsReelsDir, f));
-        });
+        fs.readdirSync(shortsIgDir)
+          .filter((f) => f.endsWith('.mp4'))
+          .forEach((f) => {
+            fs.copyFileSync(path.join(shortsIgDir, f), path.join(docsReelsDir, f));
+          });
       }
       if (fs.existsSync(shortsMetaFile)) {
         fs.copyFileSync(shortsMetaFile, path.join(docsSessionDir, 'metadata.json'));
       }
 
-      const shortCount = fs.existsSync(shortsYtDir) ? fs.readdirSync(shortsYtDir).filter(f => f.endsWith('.mp4')).length : 0;
-      const reelCount = fs.existsSync(shortsIgDir) ? fs.readdirSync(shortsIgDir).filter(f => f.endsWith('.mp4')).length : 0;
-      console.log(`  \u2705 ${label} \u2192 ${shortCount} shorts + ${reelCount} reels \u2192 Documents/guru-sishya/`);
+      const shortCount = fs.existsSync(shortsYtDir)
+        ? fs.readdirSync(shortsYtDir).filter((f) => f.endsWith('.mp4')).length
+        : 0;
+      const reelCount = fs.existsSync(shortsIgDir)
+        ? fs.readdirSync(shortsIgDir).filter((f) => f.endsWith('.mp4')).length
+        : 0;
+      console.log(
+        `  \u2705 ${label} \u2192 ${shortCount} shorts + ${reelCount} reels \u2192 Documents/guru-sishya/`
+      );
     } catch (shortsErr: any) {
-      console.warn(`  \u26A0\uFE0F  Shorts rendering failed for ${label}: ${shortsErr.message?.slice(0, 100)}`);
+      console.warn(
+        `  \u26A0\uFE0F  Shorts rendering failed for ${label}: ${shortsErr.message?.slice(0, 100)}`
+      );
     }
 
     return { success: true, time: Date.now() - start };
@@ -180,12 +198,14 @@ async function renderSession(
 
 async function renderWithConcurrency(
   tasks: Array<() => Promise<any>>,
-  limit: number,
+  limit: number
 ): Promise<void> {
   const executing: Set<Promise<void>> = new Set();
 
   for (const task of tasks) {
-    const p = task().then(() => { executing.delete(p); });
+    const p = task().then(() => {
+      executing.delete(p);
+    });
     executing.add(p);
     if (executing.size >= limit) {
       await Promise.race(executing);
@@ -225,7 +245,11 @@ async function main() {
       const sessionNum = s;
       tasks.push(async () => {
         const result = await renderSession(
-          topic.slug, sessionNum, topic.sessions, topicIdx, topics.length,
+          topic.slug,
+          sessionNum,
+          topic.sessions,
+          topicIdx,
+          topics.length
         );
         if (result.success) successCount++;
         else failCount++;
@@ -236,7 +260,9 @@ async function main() {
   await renderWithConcurrency(tasks, maxParallel);
 
   const totalTime = ((Date.now() - startTime) / 1000 / 60).toFixed(1);
-  console.log(`\n\uD83C\uDFC1 Done! ${successCount} rendered, ${failCount} failed (${totalTime} minutes)`);
+  console.log(
+    `\n\uD83C\uDFC1 Done! ${successCount} rendered, ${failCount} failed (${totalTime} minutes)`
+  );
   console.log(`  Output: ${OUTPUT_DIR}/\n`);
 
   // Print folder structure
@@ -244,7 +270,7 @@ async function main() {
   for (const topic of topics) {
     const dir = path.join(OUTPUT_DIR, topic.slug);
     if (fs.existsSync(dir)) {
-      const files = fs.readdirSync(dir).filter(f => f.endsWith('.mp4'));
+      const files = fs.readdirSync(dir).filter((f) => f.endsWith('.mp4'));
       console.log(`    ${topic.slug}/ (${files.length} videos)`);
     }
   }

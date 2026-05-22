@@ -215,18 +215,34 @@ export function generateShortMetadata(
   storyboard: StockStoryboard,
   input: MetadataInput = {}
 ): ShortMetadata {
-  const { licenses = [], extraTags = [], siteTopicSlug, hookHeadline, shortTitle, salaryBand, stake, hookHinglish, category, session, totalSessions, siteSessionSlug, siteSessionTitle, siteSessionFocus } = input;
+  const {
+    licenses = [],
+    extraTags = [],
+    siteTopicSlug,
+    hookHeadline,
+    shortTitle,
+    salaryBand,
+    stake,
+    hookHinglish,
+    category,
+    session,
+    totalSessions,
+    siteSessionSlug,
+    siteSessionTitle,
+    siteSessionFocus,
+  } = input;
   // Panel-8 Dist P0: prefer topic-bank curated shortTitle when present —
   // each one is a hand-written power-line tuned to the specific topic
   // ("90% of Engineers Get Kafka Consumer Groups WRONG 😳"). Avoids
   // formulaic shelf-fatigue across 110 videos. Falls back to template
   // path when the bank has no entry.
   const trimmedShortTitle = (shortTitle ?? '').replace(/\s+/g, ' ').trim();
-  const baseHook = trimmedShortTitle.length > 0
-    ? trimmedShortTitle.length <= HOOK_BUDGET
-      ? trimmedShortTitle
-      : trimmedShortTitle.slice(0, HOOK_BUDGET - 1).trimEnd() + '…'
-    : shortHook(storyboard.topic, hookHeadline);
+  const baseHook =
+    trimmedShortTitle.length > 0
+      ? trimmedShortTitle.length <= HOOK_BUDGET
+        ? trimmedShortTitle
+        : trimmedShortTitle.slice(0, HOOK_BUDGET - 1).trimEnd() + '…'
+      : shortHook(storyboard.topic, hookHeadline);
   const hook = baseHook;
   const title = `${baseHook} #Shorts`.slice(0, TITLE_MAX);
 
@@ -252,9 +268,16 @@ export function generateShortMetadata(
   // senior-dev / global discovery graph. Moved into the fresher-funnel
   // bucket so it only fires on dsa / behavioral / empty category.
   const CORE_ICP_TAGS = [
-    'faang', 'dsa', 'systemdesign', 'placement',
-    'interviewprep', 'codingshorts', 'cseducation', 'lowleveldesign',
-    'softwareengineer', 'computerscience',
+    'faang',
+    'dsa',
+    'systemdesign',
+    'placement',
+    'interviewprep',
+    'codingshorts',
+    'cseducation',
+    'lowleveldesign',
+    'softwareengineer',
+    'computerscience',
   ];
   // India-academic / fresher-funnel tags — only attach to dsa /
   // behavioral / empty category. On system-design + db-internals
@@ -265,27 +288,42 @@ export function generateShortMetadata(
   // Panel-13 Dist P0 (Schiffer): `leetcode` is a DSA-platform signal,
   // identical pollution risk to the `strivergrind` problem fixed in
   // P11 — gate identically on dsa / empty category.
-  const DSA_PLATFORM_TAGS = isDsaSurface
-    ? ['leetcode', 'strivergrind']
-    : [];
+  const DSA_PLATFORM_TAGS = isDsaSurface ? ['leetcode', 'strivergrind'] : [];
   // Panel-12 Dist P1 (Schiffer): category-aware high-volume tag
   // expansion. Uses verifiably high-volume Indian-CSE search terms
   // (validated via Apna College / Striver / Take U Forward tag clouds).
   const CATEGORY_TAGS: Record<string, string[]> = {
-    'dsa': [
-      'leetcodeindia', 'codingproblems', 'dsainterview',
-      'algorithms', 'datastructures', 'codingpractice',
-      'striver', 'neetcode', 'cphelp',
+    dsa: [
+      'leetcodeindia',
+      'codingproblems',
+      'dsainterview',
+      'algorithms',
+      'datastructures',
+      'codingpractice',
+      'striver',
+      'neetcode',
+      'cphelp',
     ],
     'system-design': [
-      'systemdesigninterview', 'hld', 'lld',
-      'designpatterns', 'scalability', 'distributedsystems',
-      'microservices', 'backendengineering', 'softwarearchitecture',
+      'systemdesigninterview',
+      'hld',
+      'lld',
+      'designpatterns',
+      'scalability',
+      'distributedsystems',
+      'microservices',
+      'backendengineering',
+      'softwarearchitecture',
     ],
-    'behavioral': [
-      'hrinterview', 'behavioralinterview', 'softskills',
-      'placementtips', 'tellmeaboutyourself', 'starmethod',
-      'careeradvice', 'jobinterview',
+    behavioral: [
+      'hrinterview',
+      'behavioralinterview',
+      'softskills',
+      'placementtips',
+      'tellmeaboutyourself',
+      'starmethod',
+      'careeradvice',
+      'jobinterview',
     ],
     'db-internals': [
       // Panel-13 Aud P1 (Harkirat): `sqlinterview` and `dbms` are
@@ -294,9 +332,14 @@ export function generateShortMetadata(
       // `explain analyze`, not `dbms`. Swapped academic terms for
       // production-DB ones; kept `database`, `mysql`, `transactions`,
       // `indexing`, `queryoptimization` which serve both audiences.
-      'database', 'postgresql', 'mysql',
-      'queryplanner', 'explainanalyze', 'transactions',
-      'indexing', 'queryoptimization',
+      'database',
+      'postgresql',
+      'mysql',
+      'queryplanner',
+      'explainanalyze',
+      'transactions',
+      'indexing',
+      'queryoptimization',
     ],
   };
   const ICP_TAGS = [
@@ -327,15 +370,20 @@ export function generateShortMetadata(
   // pull viewers to its own URL — not collapse 10 sessions into one
   // funnel — so the actual session content (`Round Robin & Weighted
   // Round Robin` for load-balancing/s2) is one click away.
-  const sessionSlug = (session !== undefined && siteSessionSlug)
-    ? siteSessionSlug.replace(/[^a-z0-9-]+/gi, '-').toLowerCase()
-    : '';
+  const sessionSlug =
+    session !== undefined && siteSessionSlug
+      ? siteSessionSlug.replace(/[^a-z0-9-]+/gi, '-').toLowerCase()
+      : '';
   const ctaTarget = sessionSlug
     ? `${SITE_BASE}/topics/${slug}/sessions/${sessionSlug}`
     : `${SITE_BASE}/topics/${slug}`;
   // UTM-tag every CTA URL so we can attribute email sign-ups, deep-link
   // taps, and session bookings to specific topic Shorts (Aud2 P0).
-  const ctaUrl = withUtm(ctaTarget, slug, sessionSlug ? `cta_session_${sessionSlug}` : 'cta_deeplink');
+  const ctaUrl = withUtm(
+    ctaTarget,
+    slug,
+    sessionSlug ? `cta_session_${sessionSlug}` : 'cta_deeplink'
+  );
   const leadMagnetUrl = withUtm(`${SITE_BASE}/free-pdf-faang-80-questions`, slug, 'cta_leadmagnet');
   const sessionsUrl = withUtm(`${SITE_BASE}/sessions`, slug, 'cta_sessions');
   const proUrl = withUtm(`${SITE_BASE}/pro`, slug, 'cta_pro');
@@ -343,13 +391,14 @@ export function generateShortMetadata(
   // Per-session anchor line — surfaces the lesson position so viewers
   // know "Session 2 of 10: Round Robin" rather than thinking they
   // watched a generic "Load Balancing" Short. Empty when no session.
-  const sessionLine = (session !== undefined)
-    ? (() => {
-        const total = totalSessions && totalSessions > 0 ? `/${totalSessions}` : '';
-        const titleSuffix = siteSessionTitle ? ` · ${siteSessionTitle}` : '';
-        return `🎓 Session ${session}${total}${titleSuffix} — full lesson on ${BRAND_SITE}`;
-      })()
-    : null;
+  const sessionLine =
+    session !== undefined
+      ? (() => {
+          const total = totalSessions && totalSessions > 0 ? `/${totalSessions}` : '';
+          const titleSuffix = siteSessionTitle ? ` · ${siteSessionTitle}` : '';
+          return `🎓 Session ${session}${total}${titleSuffix} — full lesson on ${BRAND_SITE}`;
+        })()
+      : null;
 
   const sceneSummaries = storyboard.scenes
     .slice(0, 4)
@@ -371,13 +420,14 @@ export function generateShortMetadata(
   // Stake line shows ONLY when the bank entry curated both salaryBand
   // and stake (Panel-9 Aud P1 — make the consequence concrete in the
   // first 4 lines of the description).
-  const stakeLine = salaryBand && stake
-    ? `🤑 ${salaryBand} roles · ${stake}`
-    : salaryBand
-      ? `🤑 ${salaryBand} roles`
-      : stake
-        ? `⚠️ ${stake}`
-        : null;
+  const stakeLine =
+    salaryBand && stake
+      ? `🤑 ${salaryBand} roles · ${stake}`
+      : salaryBand
+        ? `🤑 ${salaryBand} roles`
+        : stake
+          ? `⚠️ ${stake}`
+          : null;
 
   // Panel-15 Aud P1 (Apna College / Harkirat): when the bank entry has
   // no curated salaryBand (most system-design / db-internals topics)
@@ -416,7 +466,8 @@ export function generateShortMetadata(
       : `Is Short me tum sikhoge ${storyboard.topic} — exactly waise jaise ek senior engineer apne junior ko code review me samjhata hai. Hum cover karenge core idea, kab use karna hai, common interview trap, aur ek-line takeaway jo tum next FAANG / system-design round me bol sakte ho.`,
     '',
     'Inside this 60-second Short:',
-    sceneSummaries || '1. The hook — why this matters now\n2. The core mechanism\n3. The interview trap\n4. The takeaway',
+    sceneSummaries ||
+      '1. The hook — why this matters now\n2. The core mechanism\n3. The interview trap\n4. The takeaway',
     '',
     `🎯 Roz ek naya Hinglish dev Short — system design, DSA, low-level design, OS/DBMS internals — Indian CSE students ke liye, FAANG ki taiyaari ke liye.`,
     '',

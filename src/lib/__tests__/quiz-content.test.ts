@@ -1,9 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import {
-  getDailyQuiz,
-  resolveTopicLock,
-  LOCK_EXPIRES,
-} from '../quiz-content';
+import { getDailyQuiz, resolveTopicLock, LOCK_EXPIRES } from '../quiz-content';
 
 const ORIGINAL_ENV = process.env.QUIZ_TOPIC_LOCK;
 

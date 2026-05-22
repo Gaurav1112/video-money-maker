@@ -138,7 +138,9 @@ export const RemotionRoot: React.FC = () => {
       />
 
       {/* MultiShort compositions — one per clip type (4-5 targeted Shorts per long-form video) */}
-      {(['hook', 'code-highlight', 'aha-moment', 'comparison', 'review-challenge'] as ClipType[]).map((clipType) => (
+      {(
+        ['hook', 'code-highlight', 'aha-moment', 'comparison', 'review-challenge'] as ClipType[]
+      ).map((clipType) => (
         <Composition
           key={`MultiShort-${clipType}`}
           id={`MultiShort-${clipType}`}
@@ -148,7 +150,7 @@ export const RemotionRoot: React.FC = () => {
             // Estimate: up to 3 scenes × avg 10s + 1s intro (30f) + 2s CTA (60f), capped at 900 frames (30s)
             const estimatedDuration = Math.min(
               30 + 3 * 10 * 30 + 60,
-              storyboard?.durationInFrames || 900,
+              storyboard?.durationInFrames || 900
             );
             return {
               durationInFrames: estimatedDuration,
@@ -181,7 +183,10 @@ export const RemotionRoot: React.FC = () => {
         fps={30}
         width={1080}
         height={1920}
-        defaultProps={{ topic: 'CAP Theorem', ctaText: 'Follow @GuruSishya-India for daily tech in 60 seconds' }}
+        defaultProps={{
+          topic: 'CAP Theorem',
+          ctaText: 'Follow @GuruSishya-India for daily tech in 60 seconds',
+        }}
       />
       <Composition
         id="ThumbnailShortPortrait"
@@ -206,11 +211,13 @@ export const RemotionRoot: React.FC = () => {
             topic: 'kafka',
             hookText: 'Only 2% of devs\nget this right',
             spokenHook: 'Only two percent of developers get this Kafka question right.',
-            question: 'If your Kafka producer sets acks=0 and the broker crashes, what happens to your message?',
+            question:
+              'If your Kafka producer sets acks=0 and the broker crashes, what happens to your message?',
             options: ['It retries automatically', 'Gone forever', 'Consumer replays it'],
             correctIndex: 1,
             explanation: 'The answer is B — gone forever. acks=0 means fire and forget.',
-            twist: 'acks=1 is the default — and that is ALSO unsafe if the leader crashes before replication.',
+            twist:
+              'acks=1 is the default — and that is ALSO unsafe if the leader crashes before replication.',
             endQuestion: 'Are you acks=all or acks=1? Comment below.',
             title: '90% of devs get Kafka acks WRONG 😳',
           },
@@ -226,11 +233,13 @@ export const RemotionRoot: React.FC = () => {
             topic: 'kafka',
             hookText: 'Only 2% of devs\nget this right',
             spokenHook: 'Only two percent of developers get this Kafka question right.',
-            question: 'If your Kafka producer sets acks=0 and the broker crashes, what happens to your message?',
+            question:
+              'If your Kafka producer sets acks=0 and the broker crashes, what happens to your message?',
             options: ['It retries automatically', 'Gone forever', 'Consumer replays it'],
             correctIndex: 1,
             explanation: 'The answer is B — gone forever. acks=0 means fire and forget.',
-            twist: 'acks=1 is the default — and that is ALSO unsafe if the leader crashes before replication.',
+            twist:
+              'acks=1 is the default — and that is ALSO unsafe if the leader crashes before replication.',
             endQuestion: 'Are you acks=all or acks=1? Comment below.',
             title: '90% of devs get Kafka acks WRONG 😳',
           },
@@ -286,8 +295,10 @@ const defaultOpinionLongProps: OpinionLongProps = {
     pros: ['Independent scaling', 'Faster deployments', 'Team autonomy'],
     cons: ['40+ services for a simple workflow', 'API dependency chains nobody understands'],
     pivot: 'Did the architecture improve customer experience and operational efficiency?',
-    lesson: 'Technology evolution should reduce friction, not transfer it from developers to customers.',
-    question: 'Have microservices simplified your ecosystem or introduced a new layer of operational drama?',
+    lesson:
+      'Technology evolution should reduce friction, not transfer it from developers to customers.',
+    question:
+      'Have microservices simplified your ecosystem or introduced a new layer of operational drama?',
   },
   sceneAudios: [
     { type: 'hook', audioFile: '', duration: 6 },

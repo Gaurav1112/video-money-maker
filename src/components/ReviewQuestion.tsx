@@ -101,8 +101,8 @@ const ReviewQuestion: React.FC<ReviewQuestionProps> = ({
 
   // Phase boundaries (in frames relative to startFrame)
   const phase1End = Math.round(sceneDuration * 0.15);
-  const phase2End = Math.round(sceneDuration * 0.30);
-  const phase3End = Math.round(sceneDuration * 0.60);
+  const phase2End = Math.round(sceneDuration * 0.3);
+  const phase3End = Math.round(sceneDuration * 0.6);
   const phase4End = Math.round(sceneDuration * 0.75);
   // phase5 = 75-100%
 
@@ -110,7 +110,7 @@ const ReviewQuestion: React.FC<ReviewQuestionProps> = ({
   const rawOptions = buildOptions(answer, quizOptions);
   const options = shuffleOptions(rawOptions, question);
   const correctIndex = options.findIndex(
-    (o) => o.trim().toLowerCase() === answer.trim().toLowerCase(),
+    (o) => o.trim().toLowerCase() === answer.trim().toLowerCase()
   );
 
   // ─── PHASE 1: "POP QUIZ!" ───────────────────────────────────────────────
@@ -122,18 +122,16 @@ const ReviewQuestion: React.FC<ReviewQuestionProps> = ({
     to: 1.0,
     config: { damping: 8, stiffness: 200, mass: 0.6 },
   });
-  const popQuizOpacity = interpolate(
-    frame,
-    [popQuizStart, popQuizStart + 8],
-    [0, 1],
-    { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
-  );
+  const popQuizOpacity = interpolate(frame, [popQuizStart, popQuizStart + 8], [0, 1], {
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
+  });
   // Fade out pop quiz after phase 1
   const popQuizFade = interpolate(
     frame,
     [startFrame + phase1End - 5, startFrame + phase1End],
     [1, 0],
-    { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
+    { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }
   );
 
   // ─── PHASE 2: Question text ─────────────────────────────────────────────
@@ -166,15 +164,13 @@ const ReviewQuestion: React.FC<ReviewQuestionProps> = ({
     frame,
     [countdownStart, startFrame + phase4End],
     [0, circumference],
-    { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
+    { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }
   );
 
-  const countdownOpacity = interpolate(
-    frame,
-    [countdownStart, countdownStart + 5],
-    [0, 1],
-    { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' },
-  );
+  const countdownOpacity = interpolate(frame, [countdownStart, countdownStart + 5], [0, 1], {
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
+  });
 
   const countdownScale = countdownNumber
     ? spring({
@@ -210,18 +206,24 @@ const ReviewQuestion: React.FC<ReviewQuestionProps> = ({
     >
       {/* Animated background — never plain black */}
       <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
-        <div style={{
-          position: 'absolute', inset: 0,
-          backgroundImage: `
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            backgroundImage: `
             linear-gradient(rgba(232,93,38,0.02) 1px, transparent 1px),
             linear-gradient(90deg, rgba(232,93,38,0.02) 1px, transparent 1px)
           `,
-          backgroundSize: '80px 80px',
-        }} />
-        <div style={{
-          position: 'absolute', inset: 0,
-          background: `radial-gradient(ellipse at 50% 50%, rgba(232,93,38,0.05) 0%, transparent 50%)`,
-        }} />
+            backgroundSize: '80px 80px',
+          }}
+        />
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            background: `radial-gradient(ellipse at 50% 50%, rgba(232,93,38,0.05) 0%, transparent 50%)`,
+          }}
+        />
       </div>
 
       {/* ── Phase 1: POP QUIZ! ── */}
@@ -332,9 +334,10 @@ const ReviewQuestion: React.FC<ReviewQuestionProps> = ({
                   gap: 16,
                   filter: revealFilter,
                   transition: 'none',
-                  boxShadow: isRevealed && isCorrect
-                    ? `0 0 24px ${COLORS.teal}44`
-                    : `0 2px 12px ${COLORS.bgBase}40`,
+                  boxShadow:
+                    isRevealed && isCorrect
+                      ? `0 0 24px ${COLORS.teal}44`
+                      : `0 2px 12px ${COLORS.bgBase}40`,
                 }}
               >
                 {/* Letter badge */}
@@ -387,7 +390,14 @@ const ReviewQuestion: React.FC<ReviewQuestionProps> = ({
                     }}
                   >
                     <svg width={28} height={28} viewBox="0 0 28 28">
-                      <circle cx={14} cy={14} r={13} fill={`${COLORS.teal}33`} stroke={COLORS.teal} strokeWidth={2} />
+                      <circle
+                        cx={14}
+                        cy={14}
+                        r={13}
+                        fill={`${COLORS.teal}33`}
+                        stroke={COLORS.teal}
+                        strokeWidth={2}
+                      />
                       <path
                         d="M8 14.5 L12 18.5 L20 10"
                         fill="none"

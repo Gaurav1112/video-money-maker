@@ -19,14 +19,14 @@ interface TitleSlideProps {
 // TOPIC INTRO CONTENT — movie-trailer text per topic (no shapes, no diagrams)
 // ════════════════════════════════════════════════════════════════════════════════
 interface TopicIntroContent {
-  statNumber: string;        // e.g. "10,000,000"
-  statLabel: string;         // e.g. "requests per second"
-  statContext: string;       // e.g. "This is what Google handles."
-  questionLine1: string;     // "What happens..."
-  questionLine2: string;     // "...when ONE server fails?"
-  questionHook: string;      // "YOUR interview depends on this answer."
+  statNumber: string; // e.g. "10,000,000"
+  statLabel: string; // e.g. "requests per second"
+  statContext: string; // e.g. "This is what Google handles."
+  questionLine1: string; // "What happens..."
+  questionLine2: string; // "...when ONE server fails?"
+  questionHook: string; // "YOUR interview depends on this answer."
   teaserPoints: [string, string, string];
-  accentColor: string;       // override accent per topic
+  accentColor: string; // override accent per topic
 }
 
 const TOPIC_INTRO_CONTENT: Record<string, TopicIntroContent> = {
@@ -44,12 +44,12 @@ const TOPIC_INTRO_CONTENT: Record<string, TopicIntroContent> = {
     ],
     accentColor: '#E85D26',
   },
-  'caching': {
+  caching: {
     statNumber: '230,000,000',
     statLabel: 'users served by Netflix',
     statContext: 'Every single request hits the cache first.',
     questionLine1: 'What happens...',
-    questionLine2: '...when the database can\'t keep up?',
+    questionLine2: "...when the database can't keep up?",
     questionHook: 'YOUR interview depends on this answer.',
     teaserPoints: [
       'The caching layer that saves millions',
@@ -72,10 +72,10 @@ const TOPIC_INTRO_CONTENT: Record<string, TopicIntroContent> = {
     ],
     accentColor: '#E85D26',
   },
-  'database': {
+  database: {
     statNumber: '2,500,000,000',
     statLabel: 'rows in a single table',
-    statContext: 'This is what Facebook\'s user table looks like.',
+    statContext: "This is what Facebook's user table looks like.",
     questionLine1: 'What happens...',
     questionLine2: '...when your queries take 30 seconds?',
     questionHook: 'YOUR interview depends on this answer.',
@@ -86,7 +86,7 @@ const TOPIC_INTRO_CONTENT: Record<string, TopicIntroContent> = {
     ],
     accentColor: '#A78BFA',
   },
-  'microservices': {
+  microservices: {
     statNumber: '2,000',
     statLabel: 'microservices at Amazon',
     statContext: 'Every team owns exactly one service.',
@@ -145,7 +145,7 @@ const TOPIC_INTRO_CONTENT: Record<string, TopicIntroContent> = {
   'circuit breaker': {
     statNumber: '3',
     statLabel: 'seconds to detect a cascade failure',
-    statContext: 'Netflix\'s Hystrix catches it before you notice.',
+    statContext: "Netflix's Hystrix catches it before you notice.",
     questionLine1: 'What happens...',
     questionLine2: '...when one service brings down everything?',
     questionHook: 'YOUR interview depends on this answer.',
@@ -156,7 +156,7 @@ const TOPIC_INTRO_CONTENT: Record<string, TopicIntroContent> = {
     ],
     accentColor: '#1DD1A1',
   },
-  'docker': {
+  docker: {
     statNumber: '13,000,000',
     statLabel: 'developers using Docker',
     statContext: 'Every modern deployment starts here.',
@@ -170,7 +170,7 @@ const TOPIC_INTRO_CONTENT: Record<string, TopicIntroContent> = {
     ],
     accentColor: '#2496ED',
   },
-  'kubernetes': {
+  kubernetes: {
     statNumber: '5,600,000',
     statLabel: 'clusters running worldwide',
     statContext: 'Google built it to run their own infrastructure.',
@@ -184,7 +184,7 @@ const TOPIC_INTRO_CONTENT: Record<string, TopicIntroContent> = {
     ],
     accentColor: '#326CE5',
   },
-  'cdn': {
+  cdn: {
     statNumber: '300',
     statLabel: 'milliseconds saved per request',
     statContext: 'Cloudflare has 300+ PoPs across the globe.',
@@ -194,11 +194,11 @@ const TOPIC_INTRO_CONTENT: Record<string, TopicIntroContent> = {
     teaserPoints: [
       'Edge caching that makes content feel instant',
       'Cache invalidation — the hard problem',
-      'The architecture behind YouTube\'s speed',
+      "The architecture behind YouTube's speed",
     ],
     accentColor: '#1DD1A1',
   },
-  'kafka': {
+  kafka: {
     statNumber: '7,000,000,000',
     statLabel: 'messages per day at Uber',
     statContext: 'Every ride, every payment — all through Kafka.',
@@ -212,10 +212,10 @@ const TOPIC_INTRO_CONTENT: Record<string, TopicIntroContent> = {
     ],
     accentColor: '#1DD1A1',
   },
-  'authentication': {
+  authentication: {
     statNumber: '81',
     statLabel: 'percent of breaches caused by weak auth',
-    statContext: 'Verizon\'s Data Breach Report, every single year.',
+    statContext: "Verizon's Data Breach Report, every single year.",
     questionLine1: 'What happens...',
     questionLine2: '...when your auth system has a single flaw?',
     questionHook: 'YOUR interview depends on this answer.',
@@ -226,15 +226,15 @@ const TOPIC_INTRO_CONTENT: Record<string, TopicIntroContent> = {
     ],
     accentColor: '#27AE60',
   },
-  'distributed': {
+  distributed: {
     statNumber: '99.999',
     statLabel: 'percent uptime — five nines',
-    statContext: 'That\'s only 5 minutes of downtime per year.',
+    statContext: "That's only 5 minutes of downtime per year.",
     questionLine1: 'What happens...',
     questionLine2: '...when the network splits in half?',
     questionHook: 'YOUR interview depends on this answer.',
     teaserPoints: [
-      'The CAP theorem — you can\'t have it all',
+      "The CAP theorem — you can't have it all",
       'Consensus algorithms that keep data consistent',
       'The replication strategy Google uses',
     ],
@@ -312,12 +312,13 @@ const PhaseStat: React.FC<{ frame: number; content: TopicIntroContent }> = ({ fr
   });
 
   // Number PULSE after reaching target (frame 90-120)
-  const pulseScale = frame > 90
-    ? interpolate(frame, [90, 100, 110], [1.0, 1.08, 1.0], {
-        extrapolateLeft: 'clamp',
-        extrapolateRight: 'clamp',
-      })
-    : 1.0;
+  const pulseScale =
+    frame > 90
+      ? interpolate(frame, [90, 100, 110], [1.0, 1.08, 1.0], {
+          extrapolateLeft: 'clamp',
+          extrapolateRight: 'clamp',
+        })
+      : 1.0;
 
   // Context line fades in after pulse
   const contextOp = interpolate(frame, [92, 105], [0, 1], {
@@ -414,7 +415,10 @@ const PhaseStat: React.FC<{ frame: number; content: TopicIntroContent }> = ({ fr
 // PHASE 2: THE QUESTION (120-300f / 4-10s)
 // "What happens..." → "...when ONE server fails?" → interview hook
 // ════════════════════════════════════════════════════════════════════════════════
-const PhaseQuestion: React.FC<{ frame: number; content: TopicIntroContent }> = ({ frame, content }) => {
+const PhaseQuestion: React.FC<{ frame: number; content: TopicIntroContent }> = ({
+  frame,
+  content,
+}) => {
   const accent = content.accentColor;
 
   // Phase overall opacity
@@ -552,7 +556,10 @@ const PhaseQuestion: React.FC<{ frame: number; content: TopicIntroContent }> = (
 // PHASE 3: THE TEASER (300-540f / 10-18s)
 // Three key points slide in one by one, previous ones dim
 // ════════════════════════════════════════════════════════════════════════════════
-const PhaseTeaser: React.FC<{ frame: number; content: TopicIntroContent }> = ({ frame, content }) => {
+const PhaseTeaser: React.FC<{ frame: number; content: TopicIntroContent }> = ({
+  frame,
+  content,
+}) => {
   const accent = content.accentColor;
   const teal = '#1DD1A1';
 
@@ -772,7 +779,8 @@ const PhaseHook: React.FC<{
               letterSpacing: 2,
             }}
           >
-            Session {sessionNumber}{totalSessions > 1 ? ` of ${totalSessions}` : ''}
+            Session {sessionNumber}
+            {totalSessions > 1 ? ` of ${totalSessions}` : ''}
           </span>
         </div>
       </div>
@@ -799,7 +807,7 @@ const PhaseHook: React.FC<{
             }}
           >
             <span style={{ color: '#E85D26' }}>GURU</span>
-            <span style={{ color: '#FDB813' }}>{' '}SISHYA</span>
+            <span style={{ color: '#FDB813' }}> SISHYA</span>
           </span>
         </div>
         <div style={{ marginTop: 10 }}>

@@ -68,7 +68,7 @@ function parseArgs(): CliArgs {
 function renderQuiz(
   quizNumber: number,
   audioPath: string,
-  dryRun: boolean,
+  dryRun: boolean
 ): { videoPath: string; metadataPath: string; success: boolean } {
   const quizIndex = quizNumber % QUIZ_BANK.length;
   const quiz = getQuizByIndex(quizNumber);
@@ -100,7 +100,9 @@ function renderQuiz(
 
   // Render
   const renderCmd = [
-    'npx', 'remotion', 'render',
+    'npx',
+    'remotion',
+    'render',
     'src/compositions/index.tsx',
     'QuizShort',
     videoPath,
@@ -189,7 +191,7 @@ async function main() {
 
   if (missing.length > 0) {
     console.error('ERROR: Missing audio files:');
-    missing.forEach(f => console.error(`  ${resolvedAudioDir}/${f}`));
+    missing.forEach((f) => console.error(`  ${resolvedAudioDir}/${f}`));
     console.error(`\nRecord these files first using:`);
     console.error(`  npx tsx scripts/batch-record.ts --from ${from} --to ${to}`);
     process.exit(1);
@@ -234,9 +236,9 @@ async function main() {
   }
 
   // Summary
-  const renderedCount = results.filter(r => r.rendered).length;
-  const uploadedCount = results.filter(r => r.uploaded).length;
-  const failedCount = results.filter(r => !r.rendered).length;
+  const renderedCount = results.filter((r) => r.rendered).length;
+  const uploadedCount = results.filter((r) => r.uploaded).length;
+  const failedCount = results.filter((r) => !r.rendered).length;
 
   console.log(`\n========================================`);
   console.log(`  BATCH COMPLETE`);

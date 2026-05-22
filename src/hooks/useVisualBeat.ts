@@ -12,10 +12,7 @@ interface VisualBeatState {
  * Hook that returns the current active visual beat based on frame position.
  * Used by scene components to sync visual reveals to narration.
  */
-export function useVisualBeat(
-  beats: VisualBeat[],
-  sceneStartFrame: number = 0,
-): VisualBeatState {
+export function useVisualBeat(beats: VisualBeat[], sceneStartFrame: number = 0): VisualBeatState {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
@@ -40,12 +37,10 @@ export function useVisualBeat(
 
   const beat = beats[beatIndex];
   const beatDuration = beat.endTime - beat.startTime;
-  const progress = beatDuration > 0
-    ? Math.min(1, (elapsedSec - beat.startTime) / beatDuration)
-    : 1;
+  const progress = beatDuration > 0 ? Math.min(1, (elapsedSec - beat.startTime) / beatDuration) : 1;
 
   // Transitioning = within first 0.3s of a beat
-  const isTransitioning = (elapsedSec - beat.startTime) < 0.3;
+  const isTransitioning = elapsedSec - beat.startTime < 0.3;
 
   return {
     activeBeat: beat,

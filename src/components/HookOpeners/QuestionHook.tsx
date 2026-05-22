@@ -26,7 +26,14 @@ export const QuestionHook: React.FC<HookOpenerProps> = ({ frame, fps, topic, hoo
   });
 
   // ── Phase 2: question text ──────────────────────────────────────────────────
-  const qScale = spring({ frame: Math.max(0, frame - 16), fps, from: 2.2, to: 1, durationInFrames: 22, config: { damping: 14, stiffness: 160 } });
+  const qScale = spring({
+    frame: Math.max(0, frame - 16),
+    fps,
+    from: 2.2,
+    to: 1,
+    durationInFrames: 22,
+    config: { damping: 14, stiffness: 160 },
+  });
   const qOp = interpolate(frame, [16, 22, 72, 80], [0, 1, 1, 0], {
     extrapolateLeft: 'clamp',
     extrapolateRight: 'clamp',
@@ -83,48 +90,74 @@ export const QuestionHook: React.FC<HookOpenerProps> = ({ frame, fps, topic, hoo
       }}
     >
       {/* Flash overlay */}
-      <div style={{ position: 'absolute', inset: 0, backgroundColor: '#FFFFFF', opacity: flashOp, zIndex: 10 }} />
+      <div
+        style={{
+          position: 'absolute',
+          inset: 0,
+          backgroundColor: '#FFFFFF',
+          opacity: flashOp,
+          zIndex: 10,
+        }}
+      />
 
       {/* Thin horizontal rule */}
-      <div style={{
-        position: 'absolute',
-        top: '44%',
-        left: '10%',
-        right: '10%',
-        height: 2,
-        background: `linear-gradient(90deg, transparent, ${COLORS.saffron}, transparent)`,
-        opacity: qOp * 0.4,
-      }} />
+      <div
+        style={{
+          position: 'absolute',
+          top: '44%',
+          left: '10%',
+          right: '10%',
+          height: 2,
+          background: `linear-gradient(90deg, transparent, ${COLORS.saffron}, transparent)`,
+          opacity: qOp * 0.4,
+        }}
+      />
 
       {/* Big question */}
-      <div style={{
-        fontFamily: FONTS.heading,
-        fontSize: 64,
-        fontWeight: 900,
-        color: COLORS.textOnDark,
-        textAlign: 'center',
-        paddingLeft: 80,
-        paddingRight: 80,
-        transform: `scale(${qScale})`,
-        opacity: qOp,
-        lineHeight: 1.1,
-        textShadow: `0 0 ${40 * glow}px ${COLORS.saffron}80`,
-      }}>
+      <div
+        style={{
+          fontFamily: FONTS.heading,
+          fontSize: 64,
+          fontWeight: 900,
+          color: COLORS.textOnDark,
+          textAlign: 'center',
+          paddingLeft: 80,
+          paddingRight: 80,
+          transform: `scale(${qScale})`,
+          opacity: qOp,
+          lineHeight: 1.1,
+          textShadow: `0 0 ${40 * glow}px ${COLORS.saffron}80`,
+        }}
+      >
         {question}
       </div>
 
       {/* Sub-teasers */}
-      <div style={{ marginTop: 36, display: 'flex', flexDirection: 'column', gap: 14, opacity: bulletOp }}>
-        {[{ text: teaser1, x: bullet1X }, { text: teaser2, x: bullet2X }].map(({ text, x }, i) => (
-          <div key={i} style={{
-            fontFamily: FONTS.text,
-            fontSize: 30,
-            color: COLORS.saffron,
-            transform: `translateX(${x}px)`,
-            display: 'flex',
-            alignItems: 'center',
-            gap: 10,
-          }}>
+      <div
+        style={{
+          marginTop: 36,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 14,
+          opacity: bulletOp,
+        }}
+      >
+        {[
+          { text: teaser1, x: bullet1X },
+          { text: teaser2, x: bullet2X },
+        ].map(({ text, x }, i) => (
+          <div
+            key={i}
+            style={{
+              fontFamily: FONTS.text,
+              fontSize: 30,
+              color: COLORS.saffron,
+              transform: `translateX(${x}px)`,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 10,
+            }}
+          >
             <span style={{ opacity: 0.7 }}>▶</span>
             {text}
           </div>

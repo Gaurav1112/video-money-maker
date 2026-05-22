@@ -17,7 +17,14 @@
  *   />
  */
 import React from 'react';
-import { useCurrentFrame, useVideoConfig, interpolate, spring, Easing, AbsoluteFill } from 'remotion';
+import {
+  useCurrentFrame,
+  useVideoConfig,
+  interpolate,
+  spring,
+  Easing,
+  AbsoluteFill,
+} from 'remotion';
 import { createNoise } from './seeded-noise';
 
 interface BeforeAfterProps {
@@ -57,11 +64,16 @@ export const BeforeAfter: React.FC<BeforeAfterProps> = ({
 
   if (autoSlide && frame > slideStartFrame) {
     // After initial reveal, continue sliding to full right
-    clipFraction = interpolate(frame, [slideStartFrame, slideStartFrame + revealFrames], [0.5, 1.0], {
-      extrapolateLeft: 'clamp',
-      extrapolateRight: 'clamp',
-      easing: Easing.inOut(Easing.cubic),
-    });
+    clipFraction = interpolate(
+      frame,
+      [slideStartFrame, slideStartFrame + revealFrames],
+      [0.5, 1.0],
+      {
+        extrapolateLeft: 'clamp',
+        extrapolateRight: 'clamp',
+        easing: Easing.inOut(Easing.cubic),
+      }
+    );
   } else {
     // Animate from 0 to 0.5 (center) on enter
     clipFraction = interpolate(frame, [0, revealFrames], [0, 0.5], {

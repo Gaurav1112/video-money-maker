@@ -77,9 +77,7 @@ export function buildFirstCommentText(meta: ShortMetadata | null): string {
   // surface) when slug is known; otherwise fall back to the homepage so
   // the comment is never broken (Dist4 P0 first-comment UTM blind fix).
   const utm = `utm_source=yt_first_comment&utm_medium=comment&utm_campaign=${encodeURIComponent(slug || 'unknown')}&utm_content=cta_first_comment`;
-  const url = slug
-    ? `${SITE_URL}/topics/${slug}?${utm}`
-    : `${SITE_URL}/?${utm}`;
+  const url = slug ? `${SITE_URL}/topics/${slug}?${utm}` : `${SITE_URL}/?${utm}`;
   return [
     `🎯 Aaj ka ${topic} ka FULL deep-dive (free, illustrated):`,
     ``,
@@ -99,11 +97,7 @@ export function buildFirstCommentText(meta: ShortMetadata | null): string {
   ].join('\n');
 }
 
-async function withRetry<T>(
-  label: string,
-  fn: () => Promise<T>,
-  attempts = 3,
-): Promise<T> {
+async function withRetry<T>(label: string, fn: () => Promise<T>, attempts = 3): Promise<T> {
   let lastErr: unknown;
   for (let i = 1; i <= attempts; i++) {
     try {
@@ -126,8 +120,7 @@ export async function postFirstComment(args: {
   youtube?: youtube_v3.Youtube;
 }): Promise<{ commentId: string; threadId: string }> {
   const { videoId } = args;
-  const youtube =
-    args.youtube ?? google.youtube({ version: 'v3', auth: getAuthClient() });
+  const youtube = args.youtube ?? google.youtube({ version: 'v3', auth: getAuthClient() });
   const text = buildFirstCommentText(args.metadata ?? null);
 
   console.log(`[first-comment] inserting comment on video ${videoId}`);
@@ -142,21 +135,17 @@ export async function postFirstComment(args: {
           },
         },
       },
-    }),
+    })
   );
 
   const threadId = insertResp.data.id;
   const commentId = insertResp.data.snippet?.topLevelComment?.id;
   if (!threadId || !commentId) {
-    throw new Error(
-      `comment insert returned no id (thread=${threadId} comment=${commentId})`,
-    );
+    throw new Error(`comment insert returned no id (thread=${threadId} comment=${commentId})`);
   }
+  console.log(`[first-comment] inserted: thread=${threadId} comment=${commentId}`);
   console.log(
-    `[first-comment] inserted: thread=${threadId} comment=${commentId}`,
-  );
-  console.log(
-    `[first-comment] NOTE: this is NOT pinned — pin manually via YT Studio for full effect`,
+    `[first-comment] NOTE: this is NOT pinned — pin manually via YT Studio for full effect`
   );
   return { commentId, threadId };
 }
@@ -175,9 +164,7 @@ async function cli(): Promise<void> {
   }
 
   if (!videoId) {
-    console.error(
-      'usage: first-comment.ts <videoId> [--metadata <metadata.json>]',
-    );
+    console.error('usage: first-comment.ts <videoId> [--metadata <metadata.json>]');
     process.exit(2);
   }
 
@@ -188,9 +175,7 @@ async function cli(): Promise<void> {
 
   try {
     const result = await postFirstComment({ videoId, metadata: meta });
-    console.log(
-      `[first-comment] done: commentId=${result.commentId}`,
-    );
+    console.log(`[first-comment] done: commentId=${result.commentId}`);
   } catch (err) {
     console.error(`[first-comment] FATAL: ${(err as Error).message}`);
     process.exit(1);
@@ -200,4 +185,3 @@ async function cli(): Promise<void> {
 if (process.argv[1]?.endsWith('first-comment.ts')) {
   cli();
 }
-

@@ -47,4 +47,7 @@ async function main() {
   console.log(`Wrote ${metrics.length} metric files to ${OUT_DIR}/`);
 }
 
-main().catch(err => { console.error(err); process.exit(1); });
+main().catch((err) => {
+  console.error(err);
+  process.exit(1);
+});

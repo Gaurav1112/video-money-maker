@@ -12,9 +12,19 @@ export type {
 // renderer hasn't been created yet.
 
 /* eslint-disable @typescript-eslint/no-empty-function */
-try { module.exports = { ...module.exports, ...require('./ArchitectureRenderer') }; } catch {}
-try { module.exports = { ...module.exports, ...require('./FlowRenderer') }; } catch {}
-try { module.exports = { ...module.exports, ...require('./ConceptRenderer') }; } catch {}
-try { module.exports = { ...module.exports, ...require('./ComparisonRenderer') }; } catch {}
-try { module.exports = { ...module.exports, ...require('./MonitoringRenderer') }; } catch {}
+try {
+  module.exports = { ...module.exports, ...require('./ArchitectureRenderer') };
+} catch {}
+try {
+  module.exports = { ...module.exports, ...require('./FlowRenderer') };
+} catch {}
+try {
+  module.exports = { ...module.exports, ...require('./ConceptRenderer') };
+} catch {}
+try {
+  module.exports = { ...module.exports, ...require('./ComparisonRenderer') };
+} catch {}
+try {
+  module.exports = { ...module.exports, ...require('./MonitoringRenderer') };
+} catch {}
 /* eslint-enable @typescript-eslint/no-empty-function */

@@ -47,10 +47,7 @@ function msToAss(ms: number): string {
 
 /** Escape a word for safe inclusion inside an ASS Dialogue Text field. */
 function escapeAssText(s: string): string {
-  return s
-    .replace(/\\/g, '\\\\')
-    .replace(/\{/g, '\\{')
-    .replace(/\}/g, '\\}');
+  return s.replace(/\\/g, '\\\\').replace(/\{/g, '\\{').replace(/\}/g, '\\}');
 }
 
 // Panel-17 Retention P1 (Robbins): pure char-count + word-count
@@ -60,12 +57,45 @@ function escapeAssText(s: string): string {
 // to the next word so phrase-level integrity is preserved.
 const CONNECTOR_STOP_LIST = new Set<string>([
   // English articles / linking verbs / prepositions
-  'is', 'a', 'an', 'the', 'of', 'to', 'in', 'on', 'at', 'by', 'for',
-  'and', 'or', 'but', 'with', 'as', 'so',
+  'is',
+  'a',
+  'an',
+  'the',
+  'of',
+  'to',
+  'in',
+  'on',
+  'at',
+  'by',
+  'for',
+  'and',
+  'or',
+  'but',
+  'with',
+  'as',
+  'so',
   // Hindi/Hinglish post-positions + common connectors that break
   // sentences mid-clause when broken on the wrong side
-  'ka', 'ki', 'ko', 'se', 'ne', 'me', 'mein', 'par', 'bhi', 'hi',
-  'aur', 'ya', 'jo', 'ke', 'tak', 'tha', 'thi', 'hai', 'hain', 'ho',
+  'ka',
+  'ki',
+  'ko',
+  'se',
+  'ne',
+  'me',
+  'mein',
+  'par',
+  'bhi',
+  'hi',
+  'aur',
+  'ya',
+  'jo',
+  'ke',
+  'tak',
+  'tha',
+  'thi',
+  'hai',
+  'hain',
+  'ho',
 ]);
 
 function isConnector(word: string): boolean {

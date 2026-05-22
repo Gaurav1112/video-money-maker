@@ -273,7 +273,7 @@ const COMMUNITY_POST_TEMPLATES: Record<SupportedLanguage, CommunityPostTemplates
       '📚 Read more stories: https://guru-sishya.in\n' +
       '#KathaKeeda #Panchatantra #AnimatedStories',
     recap:
-      "▶️ \"{story}\" is LIVE now! Watch it here → {VIDEO_URL}\n\n" +
+      '▶️ "{story}" is LIVE now! Watch it here → {VIDEO_URL}\n\n' +
       'The lesson in this one: {moral}\n\n' +
       '💬 What did YOU take away from this story? Tell us in one word below!\n\n' +
       '📚 Read + share the written version: https://guru-sishya.in\n' +
@@ -289,43 +289,107 @@ const COMMUNITY_POST_TEMPLATES: Record<SupportedLanguage, CommunityPostTemplates
 
 const TAG_TEMPLATES: Record<SupportedLanguage, string[]> = {
   hi: [
-    'Katha Keeda', 'katha keeda hindi', 'पंचतंत्र की कहानी', 'panchatantra hindi',
-    'हिंदी कार्टून', 'hindi cartoon', 'नैतिक कहानी', 'moral story hindi',
-    'कार्टून कहानी', 'panchatantra tales', 'हिंदी एनीमेशन', 'hindi animation',
-    'folk tales hindi', 'लोककथा', 'animated story hindi', 'भारतीय कार्टून',
-    'hindi stories', 'bedtime story hindi', 'Indian cartoon hindi',
-    'family entertainment india', 'panchatantra cartoon',
+    'Katha Keeda',
+    'katha keeda hindi',
+    'पंचतंत्र की कहानी',
+    'panchatantra hindi',
+    'हिंदी कार्टून',
+    'hindi cartoon',
+    'नैतिक कहानी',
+    'moral story hindi',
+    'कार्टून कहानी',
+    'panchatantra tales',
+    'हिंदी एनीमेशन',
+    'hindi animation',
+    'folk tales hindi',
+    'लोककथा',
+    'animated story hindi',
+    'भारतीय कार्टून',
+    'hindi stories',
+    'bedtime story hindi',
+    'Indian cartoon hindi',
+    'family entertainment india',
+    'panchatantra cartoon',
   ],
   te: [
-    'Katha Keeda', 'katha keeda telugu', 'పంచతంత్ర కథలు', 'panchatantra telugu',
-    'తెలుగు కార్టూన్', 'telugu cartoon', 'నీతి కథలు', 'moral stories telugu',
-    'తెలుగు కథలు', 'telugu animation', 'animated stories telugu',
-    'folk tales telugu', 'Indian cartoon telugu', 'family entertainment',
+    'Katha Keeda',
+    'katha keeda telugu',
+    'పంచతంత్ర కథలు',
+    'panchatantra telugu',
+    'తెలుగు కార్టూన్',
+    'telugu cartoon',
+    'నీతి కథలు',
+    'moral stories telugu',
+    'తెలుగు కథలు',
+    'telugu animation',
+    'animated stories telugu',
+    'folk tales telugu',
+    'Indian cartoon telugu',
+    'family entertainment',
   ],
   ta: [
-    'Katha Keeda', 'katha keeda tamil', 'பஞ்சதந்திரக் கதைகள்', 'panchatantra tamil',
-    'தமிழ் கார்ட்டூன்', 'tamil cartoon', 'நீதிக்கதை', 'moral stories tamil',
-    'animated stories tamil', 'Indian cartoon tamil', 'family entertainment',
+    'Katha Keeda',
+    'katha keeda tamil',
+    'பஞ்சதந்திரக் கதைகள்',
+    'panchatantra tamil',
+    'தமிழ் கார்ட்டூன்',
+    'tamil cartoon',
+    'நீதிக்கதை',
+    'moral stories tamil',
+    'animated stories tamil',
+    'Indian cartoon tamil',
+    'family entertainment',
   ],
   kn: [
-    'Katha Keeda', 'ಪಂಚತಂತ್ರ ಕಥೆಗಳು', 'panchatantra kannada', 'ಕನ್ನಡ ಕಾರ್ಟೂನ್',
-    'kannada cartoon', 'ನೀತಿ ಕಥೆ', 'moral stories kannada', 'animated stories kannada',
+    'Katha Keeda',
+    'ಪಂಚತಂತ್ರ ಕಥೆಗಳು',
+    'panchatantra kannada',
+    'ಕನ್ನಡ ಕಾರ್ಟೂನ್',
+    'kannada cartoon',
+    'ನೀತಿ ಕಥೆ',
+    'moral stories kannada',
+    'animated stories kannada',
   ],
   mr: [
-    'Katha Keeda', 'पंचतंत्र गोष्टी', 'panchatantra marathi', 'मराठी कार्टून',
-    'marathi cartoon', 'नैतिक गोष्ट', 'moral stories marathi', 'animated stories marathi',
+    'Katha Keeda',
+    'पंचतंत्र गोष्टी',
+    'panchatantra marathi',
+    'मराठी कार्टून',
+    'marathi cartoon',
+    'नैतिक गोष्ट',
+    'moral stories marathi',
+    'animated stories marathi',
   ],
   bn: [
-    'Katha Keeda', 'পঞ্চতন্ত্র গল্প', 'panchatantra bengali', 'বাংলা কার্টুন',
-    'bangla cartoon', 'নীতিগল্প', 'moral stories bengali', 'animated stories bengali',
+    'Katha Keeda',
+    'পঞ্চতন্ত্র গল্প',
+    'panchatantra bengali',
+    'বাংলা কার্টুন',
+    'bangla cartoon',
+    'নীতিগল্প',
+    'moral stories bengali',
+    'animated stories bengali',
   ],
   en: [
-    'Katha Keeda', 'panchatantra stories', 'moral stories', 'Indian cartoon',
-    'animated stories', 'panchatantra tales english', 'Indian animation',
-    'folk tales india', 'animated moral stories', 'family entertainment',
-    'Indian folklore', 'bedtime stories animated', 'moral lessons',
-    'ancient Indian tales', 'wisdom stories', 'values stories',
-    'Indian animated series', 'life lessons cartoon', 'panchatantra animated',
+    'Katha Keeda',
+    'panchatantra stories',
+    'moral stories',
+    'Indian cartoon',
+    'animated stories',
+    'panchatantra tales english',
+    'Indian animation',
+    'folk tales india',
+    'animated moral stories',
+    'family entertainment',
+    'Indian folklore',
+    'bedtime stories animated',
+    'moral lessons',
+    'ancient Indian tales',
+    'wisdom stories',
+    'values stories',
+    'Indian animated series',
+    'life lessons cartoon',
+    'panchatantra animated',
   ],
 };
 
@@ -333,7 +397,7 @@ function simpleHash(str: string): number {
   let hash = 0;
   for (let i = 0; i < str.length; i++) {
     const chr = str.charCodeAt(i);
-    hash = ((hash << 5) - hash) + chr;
+    hash = (hash << 5) - hash + chr;
     hash |= 0;
   }
   return Math.abs(hash);
@@ -344,7 +408,7 @@ function simpleHash(str: string): number {
 function generateCommunityPost(
   episode: CartoonEpisode,
   language: SupportedLanguage,
-  characterName: string,
+  characterName: string
 ): MetadataFile['communityPost'] {
   const t = COMMUNITY_POST_TEMPLATES[language];
   const fill = (s: string) =>
@@ -365,7 +429,7 @@ function generateCommunityPost(
 export function generateMetadata(
   episode: CartoonEpisode,
   language: SupportedLanguage,
-  episodeNumber: number,
+  episodeNumber: number
 ): MetadataFile {
   const templates = TITLE_TEMPLATES[language];
   const seed = simpleHash(episode.title + language + episodeNumber);

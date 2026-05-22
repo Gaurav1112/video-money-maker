@@ -41,7 +41,7 @@ const ASCII_BOX_CHARS = /[│─┌┐└┘├┤┬┴┼┏┓┗┛┣┫┳
 function containsAsciiArt(content: string): boolean {
   const matches = content.match(ASCII_BOX_CHARS);
   // Also check plain-ASCII box patterns: lines with 3+ of |, +, - used as drawing
-  const plainBoxLines = content.split('\n').filter(line => {
+  const plainBoxLines = content.split('\n').filter((line) => {
     const stripped = line.replace(/\s/g, '');
     // A line is "box drawing" if it has 3+ box chars or is mostly made of +, -, |
     const boxChars = (stripped.match(/[|+\-]/g) || []).length;
@@ -66,7 +66,10 @@ function asciiArtNarration(heading?: string): string {
 type StoryAct = 'setup' | 'conflict' | 'rising' | 'climax' | 'resolution';
 
 /** Indian-context analogy bank — relatable metaphors for each topic category */
-const ANALOGY_BANK: Record<string, { character: string; world: string; problem: string; metaphor: string }> = {
+const ANALOGY_BANK: Record<
+  string,
+  { character: string; world: string; problem: string; metaphor: string }
+> = {
   'message-queue': {
     character: 'Ravi, a village postmaster',
     world: 'a post office handling 200 letters daily',
@@ -79,31 +82,31 @@ const ANALOGY_BANK: Record<string, { character: string; world: string; problem: 
     problem: 'Diwali rush creates a line around the block',
     metaphor: 'chai shop',
   },
-  'database': {
+  database: {
     character: 'Arjun, a school librarian',
     world: 'a library with 50,000 books and one register',
     problem: 'students wait 20 minutes to find a single book',
     metaphor: 'library',
   },
-  'caching': {
+  caching: {
     character: 'Meera, a street food vendor',
     world: 'a pani puri stall making everything from scratch',
     problem: 'regular customers wait just as long as new ones',
     metaphor: 'pani puri stall',
   },
-  'streaming': {
+  streaming: {
     character: 'Deepak, a newspaper editor',
     world: 'a printing press batching all news into one edition',
     problem: 'breaking news at 2 PM reaches readers at 6 AM next day',
     metaphor: 'newspaper',
   },
-  'replication': {
+  replication: {
     character: 'Sunita, a recipe keeper',
     world: 'a family where only grandmother knows the recipes',
     problem: 'when grandmother falls ill, nobody can cook',
     metaphor: 'family recipe book',
   },
-  'default': {
+  default: {
     character: 'Dev, a junior engineer at a Bangalore startup',
     world: 'a startup that just hit 1000 users',
     problem: 'the system that worked for 10 users is breaking at 1000',
@@ -111,12 +114,14 @@ const ANALOGY_BANK: Record<string, { character: string; world: string; problem: 
   },
 };
 
-function getStoryAnalogy(topic: string): typeof ANALOGY_BANK['default'] {
+function getStoryAnalogy(topic: string): (typeof ANALOGY_BANK)['default'] {
   const lower = topic.toLowerCase();
   for (const [key, val] of Object.entries(ANALOGY_BANK)) {
-    if (key !== 'default' && (lower.includes(key) || lower.includes(key.replace('-', ' ')))) return val;
+    if (key !== 'default' && (lower.includes(key) || lower.includes(key.replace('-', ' '))))
+      return val;
   }
-  if (lower.includes('kafka') || lower.includes('producer') || lower.includes('consumer')) return ANALOGY_BANK['message-queue'];
+  if (lower.includes('kafka') || lower.includes('producer') || lower.includes('consumer'))
+    return ANALOGY_BANK['message-queue'];
   if (lower.includes('cache') || lower.includes('redis')) return ANALOGY_BANK['caching'];
   return ANALOGY_BANK['default'];
 }
@@ -150,15 +155,17 @@ function storyFrameNarration(narration: string, act: StoryAct, topic: string, id
 }
 
 /** Map flat sections into a 5-act story arc */
-function storyArcMapper(sections: MarkdownSection[]): Array<{ act: StoryAct; section: MarkdownSection }> {
+function storyArcMapper(
+  sections: MarkdownSection[]
+): Array<{ act: StoryAct; section: MarkdownSection }> {
   const total = sections.length;
-  if (total <= 2) return sections.map(s => ({ act: 'climax' as StoryAct, section: s }));
+  if (total <= 2) return sections.map((s) => ({ act: 'climax' as StoryAct, section: s }));
 
   return sections.map((section, i) => {
     const pct = i / total;
     let act: StoryAct;
     if (pct < 0.15) act = 'setup';
-    else if (pct < 0.30) act = 'conflict';
+    else if (pct < 0.3) act = 'conflict';
     else if (pct < 0.45) act = 'rising';
     else if (pct < 0.85) act = 'climax';
     else act = 'resolution';
@@ -172,16 +179,60 @@ function storyArcMapper(sections: MarkdownSection[]): Array<{ act: StoryAct; sec
 // ConsistentHash code appearing in a Kafka video.
 // ---------------------------------------------------------------------------
 const TOPIC_CODE_KEYWORDS: Record<string, string[]> = {
-  'kafka': ['kafka', 'producer', 'consumer', 'broker', 'partition', 'offset', 'topic', 'subscribe', 'publish', 'event stream', 'commit'],
-  'caching': ['cache', 'redis', 'memcache', 'ttl', 'evict', 'lru', 'invalidat', 'hit', 'miss', 'expire'],
-  'load balancing': ['load_balanc', 'loadbalanc', 'round_robin', 'roundrobin', 'health_check', 'healthcheck', 'server_pool', 'upstream', 'backend', 'weight'],
+  kafka: [
+    'kafka',
+    'producer',
+    'consumer',
+    'broker',
+    'partition',
+    'offset',
+    'topic',
+    'subscribe',
+    'publish',
+    'event stream',
+    'commit',
+  ],
+  caching: [
+    'cache',
+    'redis',
+    'memcache',
+    'ttl',
+    'evict',
+    'lru',
+    'invalidat',
+    'hit',
+    'miss',
+    'expire',
+  ],
+  'load balancing': [
+    'load_balanc',
+    'loadbalanc',
+    'round_robin',
+    'roundrobin',
+    'health_check',
+    'healthcheck',
+    'server_pool',
+    'upstream',
+    'backend',
+    'weight',
+  ],
   'consistent hashing': ['hash_ring', 'consistent_hash', 'virtual_node', 'vnode', 'hash ring'],
   'api gateway': ['gateway', 'route', 'middleware', 'rate_limit', 'ratelimit', 'proxy', 'upstream'],
-  'microservices': ['microservice', 'service_registry', 'discovery', 'circuit_breaker', 'sidecar'],
-  'database': ['database', 'db_', 'query', 'schema', 'shard', 'replica', 'index', 'transaction', 'sql'],
+  microservices: ['microservice', 'service_registry', 'discovery', 'circuit_breaker', 'sidecar'],
+  database: [
+    'database',
+    'db_',
+    'query',
+    'schema',
+    'shard',
+    'replica',
+    'index',
+    'transaction',
+    'sql',
+  ],
   'message queue': ['queue', 'enqueue', 'dequeue', 'rabbitmq', 'amqp', 'message_broker'],
   'rate limiting': ['rate_limit', 'ratelimit', 'token_bucket', 'sliding_window', 'throttl'],
-  'monitoring': ['metric', 'monitor', 'alert', 'prometheus', 'grafana', 'healthcheck', 'dashboard'],
+  monitoring: ['metric', 'monitor', 'alert', 'prometheus', 'grafana', 'healthcheck', 'dashboard'],
 };
 
 function isCodeRelevantToTopic(code: string, topic: string): boolean {
@@ -192,7 +243,7 @@ function isCodeRelevantToTopic(code: string, topic: string): boolean {
   for (const [key, keywords] of Object.entries(TOPIC_CODE_KEYWORDS)) {
     if (topicLower.includes(key)) {
       // Check if code contains at least one keyword for this topic
-      return keywords.some(kw => lower.includes(kw));
+      return keywords.some((kw) => lower.includes(kw));
     }
   }
 
@@ -225,115 +276,190 @@ interface ScriptOptions {
 const SESSION_ANALOGY_SETS: Record<string, string>[] = [
   // Session 1: Restaurant analogy (waiters = servers, host = load balancer)
   {
-    'load balancing': 'Think of it like a restaurant with multiple chefs. Instead of one chef cooking everything and getting overwhelmed, a host distributes orders across all chefs equally.',
-    'hash map': 'Imagine a library where instead of searching every shelf, you have a magic index card that tells you exactly which shelf your book is on.',
-    'binary search': 'It is like finding a word in a dictionary. You don\'t start from page 1. You open the middle, then decide whether to go left or right.',
-    'cache': 'Think of it like keeping your most-used apps on your phone\'s home screen instead of searching through all apps every time.',
-    'queue': 'Like a line at a ticket counter. First person in line gets served first.',
-    'stack': 'Like a stack of plates. You always take the top plate first.',
-    'tree': 'Like a family tree. Each person can have children, and those children can have their own children.',
-    'graph': 'Like a social network. People are connected to other people, and those connections can go in any direction.',
-    'recursion': 'Like standing between two mirrors. You see yourself reflected infinitely, each reflection slightly smaller.',
-    'api': 'Like a waiter in a restaurant. You tell the waiter what you want, the waiter goes to the kitchen, and brings back your food.',
-    'database': 'Like a giant Excel spreadsheet that can handle millions of rows and multiple people reading and writing at the same time.',
-    'microservices': 'Instead of one giant kitchen handling everything, imagine separate food stalls each specializing in one dish. Pizza stall, burger stall, drinks stall. Each works independently.',
-    'linked list': 'Like a treasure hunt where each clue tells you where to find the next clue. You have to follow the chain.',
-    'array': 'Like a row of lockers in a school hallway. Each locker has a number, and you can go directly to any locker if you know its number.',
-    'dynamic programming': 'Like filling out a multiplication table. Each cell uses values you already calculated, so you never solve the same problem twice.',
-    'sorting': 'Like organizing a messy bookshelf. You could do it slowly by checking every book, or smartly by dividing the shelf into sections first.',
-    'http': 'Like sending a letter. You write a request, put it in an envelope with an address, send it, and wait for a reply.',
-    'tcp': 'Like a phone call. Both sides confirm they can hear each other before the conversation starts.',
-    'dns': 'Like a phone book for the internet. You look up a name and get a number back.',
-    'docker': 'Like a shipping container. Everything your app needs is packed inside, and it works the same no matter where you ship it.',
-    'kubernetes': 'Like an air traffic controller for shipping containers. It decides where each container goes, restarts them if they crash, and scales up when traffic increases.',
-    'promise': 'Like ordering food at a counter. They give you a receipt number. You can go sit down, and they\'ll call your number when the food is ready.',
-    'mutex': 'Like a bathroom key at a coffee shop. Only one person can use it at a time. Everyone else waits their turn.',
-    'deadlock': 'Like two people in a narrow hallway, each waiting for the other to move first. Neither can make progress.',
-    'big o': 'Like asking how long a road trip takes. You don\'t want the exact minutes. You want to know: is it a quick drive or a cross-country journey?',
+    'load balancing':
+      'Think of it like a restaurant with multiple chefs. Instead of one chef cooking everything and getting overwhelmed, a host distributes orders across all chefs equally.',
+    'hash map':
+      'Imagine a library where instead of searching every shelf, you have a magic index card that tells you exactly which shelf your book is on.',
+    'binary search':
+      "It is like finding a word in a dictionary. You don't start from page 1. You open the middle, then decide whether to go left or right.",
+    cache:
+      "Think of it like keeping your most-used apps on your phone's home screen instead of searching through all apps every time.",
+    queue: 'Like a line at a ticket counter. First person in line gets served first.',
+    stack: 'Like a stack of plates. You always take the top plate first.',
+    tree: 'Like a family tree. Each person can have children, and those children can have their own children.',
+    graph:
+      'Like a social network. People are connected to other people, and those connections can go in any direction.',
+    recursion:
+      'Like standing between two mirrors. You see yourself reflected infinitely, each reflection slightly smaller.',
+    api: 'Like a waiter in a restaurant. You tell the waiter what you want, the waiter goes to the kitchen, and brings back your food.',
+    database:
+      'Like a giant Excel spreadsheet that can handle millions of rows and multiple people reading and writing at the same time.',
+    microservices:
+      'Instead of one giant kitchen handling everything, imagine separate food stalls each specializing in one dish. Pizza stall, burger stall, drinks stall. Each works independently.',
+    'linked list':
+      'Like a treasure hunt where each clue tells you where to find the next clue. You have to follow the chain.',
+    array:
+      'Like a row of lockers in a school hallway. Each locker has a number, and you can go directly to any locker if you know its number.',
+    'dynamic programming':
+      'Like filling out a multiplication table. Each cell uses values you already calculated, so you never solve the same problem twice.',
+    sorting:
+      'Like organizing a messy bookshelf. You could do it slowly by checking every book, or smartly by dividing the shelf into sections first.',
+    http: 'Like sending a letter. You write a request, put it in an envelope with an address, send it, and wait for a reply.',
+    tcp: 'Like a phone call. Both sides confirm they can hear each other before the conversation starts.',
+    dns: 'Like a phone book for the internet. You look up a name and get a number back.',
+    docker:
+      'Like a shipping container. Everything your app needs is packed inside, and it works the same no matter where you ship it.',
+    kubernetes:
+      'Like an air traffic controller for shipping containers. It decides where each container goes, restarts them if they crash, and scales up when traffic increases.',
+    promise:
+      "Like ordering food at a counter. They give you a receipt number. You can go sit down, and they'll call your number when the food is ready.",
+    mutex:
+      'Like a bathroom key at a coffee shop. Only one person can use it at a time. Everyone else waits their turn.',
+    deadlock:
+      'Like two people in a narrow hallway, each waiting for the other to move first. Neither can make progress.',
+    'big o':
+      "Like asking how long a road trip takes. You don't want the exact minutes. You want to know: is it a quick drive or a cross-country journey?",
   },
   // Session 2: Highway/traffic analogy (lanes = servers, toll booth = algorithm)
   {
-    'load balancing': 'Think of a 10-lane highway during rush hour. Each lane is a server. The toll booth is the load balancing algorithm, routing each car to the lane with the fewest vehicles.',
-    'hash map': 'Imagine a parking garage with numbered spots. Instead of driving around searching, you compute your spot number from your license plate and go directly there.',
-    'binary search': 'Like navigating a highway exit system. You see "exits 1-50 left, 51-100 right." You never check every exit, you halve your search each time.',
-    'cache': 'Like the fast lane on a toll road. Frequent travelers get an E-ZPass so they skip the long line every time.',
-    'queue': 'Like cars waiting at a traffic light. First car through the intersection is the first one that arrived.',
-    'stack': 'Like cars in a narrow dead-end alley. The last car in has to be the first car out.',
-    'tree': 'Like a highway system branching from one interstate into state highways, then local roads, then driveways.',
-    'graph': 'Like a city road network. Intersections are nodes, roads are edges, and you can often go both directions.',
-    'recursion': 'Like GPS rerouting. Each detour calculates a new route, which might need another detour, which calculates another route.',
-    'api': 'Like a drive-through window. You speak your order into the microphone, the kitchen processes it, and your food comes out the other side.',
-    'database': 'Like a massive warehouse distribution center. Items are organized in aisles and shelves so any worker can find anything in seconds.',
-    'microservices': 'Like specialized lanes on a highway. Bus lane, bike lane, carpool lane, truck lane. Each handles one type of traffic optimally.',
-    'linked list': 'Like a chain of toll booths on a highway. Each booth only knows the location of the next booth ahead.',
-    'array': 'Like mile markers on a highway. Marker 42 is always at mile 42. You can jump directly to any marker.',
-    'dynamic programming': 'Like using traffic data from previous rush hours to predict today\'s best route. Past solutions inform future decisions.',
-    'sorting': 'Like merging traffic from 4 on-ramps into one highway in speed order. The fastest cars end up in the fast lane.',
-    'http': 'Like a postal delivery truck. It picks up a package at one address, follows a route, and delivers to another address.',
-    'tcp': 'Like a walkie-talkie conversation. "Do you copy?" "I copy." Only then do you start talking.',
-    'dns': 'Like a GPS system. You type in a name, and it gives you the exact coordinates to get there.',
-    'docker': 'Like a moving truck. Everything in your apartment is packed into one truck, and it works the same at any destination.',
-    'kubernetes': 'Like a fleet dispatcher for delivery trucks. Assigning routes, restarting broken-down trucks, adding more trucks during holidays.',
-    'promise': 'Like a pizza delivery tracker. You order, get a tracking link, and can do other things until it shows "delivered."',
-    'mutex': 'Like a single-lane bridge. Only one car can cross at a time. Everyone else queues up.',
-    'deadlock': 'Like two trucks meeting head-on in a single-lane tunnel. Neither can back up, neither can go forward.',
-    'big o': 'Like estimating drive time. You don\'t need the exact seconds. You want to know: is it a 10-minute drive or a 10-hour drive?',
+    'load balancing':
+      'Think of a 10-lane highway during rush hour. Each lane is a server. The toll booth is the load balancing algorithm, routing each car to the lane with the fewest vehicles.',
+    'hash map':
+      'Imagine a parking garage with numbered spots. Instead of driving around searching, you compute your spot number from your license plate and go directly there.',
+    'binary search':
+      'Like navigating a highway exit system. You see "exits 1-50 left, 51-100 right." You never check every exit, you halve your search each time.',
+    cache:
+      'Like the fast lane on a toll road. Frequent travelers get an E-ZPass so they skip the long line every time.',
+    queue:
+      'Like cars waiting at a traffic light. First car through the intersection is the first one that arrived.',
+    stack: 'Like cars in a narrow dead-end alley. The last car in has to be the first car out.',
+    tree: 'Like a highway system branching from one interstate into state highways, then local roads, then driveways.',
+    graph:
+      'Like a city road network. Intersections are nodes, roads are edges, and you can often go both directions.',
+    recursion:
+      'Like GPS rerouting. Each detour calculates a new route, which might need another detour, which calculates another route.',
+    api: 'Like a drive-through window. You speak your order into the microphone, the kitchen processes it, and your food comes out the other side.',
+    database:
+      'Like a massive warehouse distribution center. Items are organized in aisles and shelves so any worker can find anything in seconds.',
+    microservices:
+      'Like specialized lanes on a highway. Bus lane, bike lane, carpool lane, truck lane. Each handles one type of traffic optimally.',
+    'linked list':
+      'Like a chain of toll booths on a highway. Each booth only knows the location of the next booth ahead.',
+    array:
+      'Like mile markers on a highway. Marker 42 is always at mile 42. You can jump directly to any marker.',
+    'dynamic programming':
+      "Like using traffic data from previous rush hours to predict today's best route. Past solutions inform future decisions.",
+    sorting:
+      'Like merging traffic from 4 on-ramps into one highway in speed order. The fastest cars end up in the fast lane.',
+    http: 'Like a postal delivery truck. It picks up a package at one address, follows a route, and delivers to another address.',
+    tcp: 'Like a walkie-talkie conversation. "Do you copy?" "I copy." Only then do you start talking.',
+    dns: 'Like a GPS system. You type in a name, and it gives you the exact coordinates to get there.',
+    docker:
+      'Like a moving truck. Everything in your apartment is packed into one truck, and it works the same at any destination.',
+    kubernetes:
+      'Like a fleet dispatcher for delivery trucks. Assigning routes, restarting broken-down trucks, adding more trucks during holidays.',
+    promise:
+      'Like a pizza delivery tracker. You order, get a tracking link, and can do other things until it shows "delivered."',
+    mutex: 'Like a single-lane bridge. Only one car can cross at a time. Everyone else queues up.',
+    deadlock:
+      'Like two trucks meeting head-on in a single-lane tunnel. Neither can back up, neither can go forward.',
+    'big o':
+      "Like estimating drive time. You don't need the exact seconds. You want to know: is it a 10-minute drive or a 10-hour drive?",
   },
   // Session 3: Hospital/ER analogy (triage = routing, specialists = workers)
   {
-    'load balancing': 'Think of an emergency room with multiple doctors. The triage nurse is the load balancer, routing patients to the right specialist based on severity and each doctor\'s current patient load.',
-    'hash map': 'Like a hospital filing system. Each patient gets a unique ID, and that ID tells you exactly which cabinet holds their medical records.',
-    'binary search': 'Like a doctor narrowing down a diagnosis. Temperature high or low? Blood pressure normal or abnormal? Each test eliminates half the possibilities.',
-    'cache': 'Like a doctor keeping the most common prescriptions in their coat pocket instead of walking to the pharmacy every time.',
-    'queue': 'Like patients in a waiting room. They are called in the order they signed in, unless it is an emergency.',
-    'stack': 'Like a stack of patient charts on a doctor\'s desk. The most recent one on top gets attention first.',
-    'tree': 'Like a diagnostic decision tree. Start with symptoms, branch into possible conditions, narrow down to the diagnosis.',
-    'graph': 'Like a hospital referral network. Doctors refer to specialists who refer to other specialists. The connections form a web.',
-    'recursion': 'Like a specialist referring you to another specialist, who refers you to yet another. Each level goes deeper into the problem.',
-    'api': 'Like a nurse acting as intermediary. You tell the nurse your symptoms, the nurse relays them to the doctor, and brings back the prescription.',
-    'database': 'Like a hospital\'s electronic health records system. Every patient, every visit, every test result, all searchable in seconds.',
-    'microservices': 'Like hospital departments. Cardiology, radiology, oncology. Each department is independent but they collaborate on complex cases.',
-    'linked list': 'Like a chain of medical referrals. Each doctor\'s note points you to the next specialist.',
-    'array': 'Like numbered hospital rooms. Room 305 is always on the 3rd floor, 5th room. You go directly there.',
-    'dynamic programming': 'Like a treatment plan that builds on previous test results. Each new decision uses all the data you\'ve already gathered.',
-    'sorting': 'Like triaging patients by severity. Critical cases first, then urgent, then routine. Organizing for maximum impact.',
-    'http': 'Like a lab test request. The doctor writes what they need, sends it to the lab, and waits for results to come back.',
-    'tcp': 'Like a surgeon confirming the procedure. "We\'re operating on the left knee, correct?" "Correct." "Proceeding."',
-    'dns': 'Like a hospital directory. You know the doctor\'s name, and the directory tells you which floor and room to find them.',
-    'docker': 'Like a mobile surgery unit. Everything needed for the operation is packed inside, and it works the same at any hospital.',
-    'kubernetes': 'Like a hospital administrator managing staff across multiple locations. Scheduling shifts, handling sick days, scaling up during flu season.',
-    'promise': 'Like getting bloodwork done. They take the sample, give you a reference number, and tell you to come back tomorrow for results.',
-    'mutex': 'Like a single operating room. Only one surgery at a time. The next surgery waits until the room is cleaned and ready.',
-    'deadlock': 'Like two surgeons each waiting for the other\'s operating room to free up before they can start their procedure.',
-    'big o': 'Like estimating recovery time. You don\'t need exact hours. You want to know: are we talking days or months?',
+    'load balancing':
+      "Think of an emergency room with multiple doctors. The triage nurse is the load balancer, routing patients to the right specialist based on severity and each doctor's current patient load.",
+    'hash map':
+      'Like a hospital filing system. Each patient gets a unique ID, and that ID tells you exactly which cabinet holds their medical records.',
+    'binary search':
+      'Like a doctor narrowing down a diagnosis. Temperature high or low? Blood pressure normal or abnormal? Each test eliminates half the possibilities.',
+    cache:
+      'Like a doctor keeping the most common prescriptions in their coat pocket instead of walking to the pharmacy every time.',
+    queue:
+      'Like patients in a waiting room. They are called in the order they signed in, unless it is an emergency.',
+    stack:
+      "Like a stack of patient charts on a doctor's desk. The most recent one on top gets attention first.",
+    tree: 'Like a diagnostic decision tree. Start with symptoms, branch into possible conditions, narrow down to the diagnosis.',
+    graph:
+      'Like a hospital referral network. Doctors refer to specialists who refer to other specialists. The connections form a web.',
+    recursion:
+      'Like a specialist referring you to another specialist, who refers you to yet another. Each level goes deeper into the problem.',
+    api: 'Like a nurse acting as intermediary. You tell the nurse your symptoms, the nurse relays them to the doctor, and brings back the prescription.',
+    database:
+      "Like a hospital's electronic health records system. Every patient, every visit, every test result, all searchable in seconds.",
+    microservices:
+      'Like hospital departments. Cardiology, radiology, oncology. Each department is independent but they collaborate on complex cases.',
+    'linked list':
+      "Like a chain of medical referrals. Each doctor's note points you to the next specialist.",
+    array:
+      'Like numbered hospital rooms. Room 305 is always on the 3rd floor, 5th room. You go directly there.',
+    'dynamic programming':
+      "Like a treatment plan that builds on previous test results. Each new decision uses all the data you've already gathered.",
+    sorting:
+      'Like triaging patients by severity. Critical cases first, then urgent, then routine. Organizing for maximum impact.',
+    http: 'Like a lab test request. The doctor writes what they need, sends it to the lab, and waits for results to come back.',
+    tcp: 'Like a surgeon confirming the procedure. "We\'re operating on the left knee, correct?" "Correct." "Proceeding."',
+    dns: "Like a hospital directory. You know the doctor's name, and the directory tells you which floor and room to find them.",
+    docker:
+      'Like a mobile surgery unit. Everything needed for the operation is packed inside, and it works the same at any hospital.',
+    kubernetes:
+      'Like a hospital administrator managing staff across multiple locations. Scheduling shifts, handling sick days, scaling up during flu season.',
+    promise:
+      'Like getting bloodwork done. They take the sample, give you a reference number, and tell you to come back tomorrow for results.',
+    mutex:
+      'Like a single operating room. Only one surgery at a time. The next surgery waits until the room is cleaned and ready.',
+    deadlock:
+      "Like two surgeons each waiting for the other's operating room to free up before they can start their procedure.",
+    'big o':
+      "Like estimating recovery time. You don't need exact hours. You want to know: are we talking days or months?",
   },
   // Session 4+: Airport analogy (gates = servers, control tower = health checks)
   {
-    'load balancing': 'Picture an airport control tower managing 50 gates. The tower assigns each incoming flight to the gate with the best availability, shortest taxiway, and right equipment. That\'s load balancing at expert level.',
-    'hash map': 'Like an airport baggage system. Your bag gets a barcode tag, and that code tells the conveyor system exactly which carousel to send it to.',
-    'binary search': 'Like a pilot scanning instruments. Altitude too high or too low? Adjust. Speed too fast or too slow? Adjust. Converging on the target with each check.',
-    'cache': 'Like a frequent flyer lounge. The most valuable passengers get instant access instead of waiting in the general queue every time.',
-    'queue': 'Like airplanes in a holding pattern. They circle in order and land when the runway is clear.',
-    'stack': 'Like luggage loaded into a cargo hold. Last bags in are the first bags out.',
-    'tree': 'Like an airline route map. The hub airport branches to regional airports, which branch to smaller cities.',
-    'graph': 'Like a global flight network. Airports are nodes, flight routes are edges, and you can find paths between any two cities.',
-    'recursion': 'Like a flight with connections. To get to your destination, you first need to get to the connecting city, which might require another connection.',
-    'api': 'Like the check-in counter. You present your booking, the agent processes it through the airline system, and hands you a boarding pass.',
-    'database': 'Like an airline reservation system. Millions of bookings, seat assignments, and flight statuses, all updated in real-time across the globe.',
-    'microservices': 'Like airport operations. Baggage handling, security, catering, fueling, gate management. Each operates independently but coordinates for every flight.',
-    'linked list': 'Like a chain of connecting flights. Each boarding pass tells you your next gate and departure time.',
-    'array': 'Like seat numbers on a plane. Seat 14C is always in the same place. You find it directly.',
-    'dynamic programming': 'Like optimizing flight schedules based on historical data. Past delays and patterns inform tomorrow\'s gate assignments.',
-    'sorting': 'Like boarding a plane. First class, then business, then economy by row. Organized for maximum efficiency.',
-    'http': 'Like sending a cargo shipment. Fill out the manifest, load it on a plane, and it arrives at the destination with a confirmation receipt.',
-    'tcp': 'Like radio communication between pilot and control tower. "Tower, requesting clearance for takeoff." "Cleared for takeoff, runway 27." "Runway 27, roger."',
-    'dns': 'Like an airport code system. You say "JFK" and everyone knows you mean John F. Kennedy International in New York.',
-    'docker': 'Like a standardized shipping container on a cargo plane. It fits any aircraft, any route, any destination.',
-    'kubernetes': 'Like an air traffic control system for an entire country. Managing hundreds of flights, rerouting around storms, handling emergencies, scaling with holiday traffic.',
-    'promise': 'Like a flight booking confirmation. You get a PNR code, and you can check the status anytime without waiting at the counter.',
-    'mutex': 'Like a single runway. Only one plane can take off or land at a time. All others hold their position.',
-    'deadlock': 'Like two planes on intersecting taxiways, each waiting for the other to move first. The whole airport grinds to a halt.',
-    'big o': 'Like flight time estimates. You don\'t need exact seconds. You want to know: is it a 1-hour hop or a 14-hour transatlantic journey?',
+    'load balancing':
+      "Picture an airport control tower managing 50 gates. The tower assigns each incoming flight to the gate with the best availability, shortest taxiway, and right equipment. That's load balancing at expert level.",
+    'hash map':
+      'Like an airport baggage system. Your bag gets a barcode tag, and that code tells the conveyor system exactly which carousel to send it to.',
+    'binary search':
+      'Like a pilot scanning instruments. Altitude too high or too low? Adjust. Speed too fast or too slow? Adjust. Converging on the target with each check.',
+    cache:
+      'Like a frequent flyer lounge. The most valuable passengers get instant access instead of waiting in the general queue every time.',
+    queue:
+      'Like airplanes in a holding pattern. They circle in order and land when the runway is clear.',
+    stack: 'Like luggage loaded into a cargo hold. Last bags in are the first bags out.',
+    tree: 'Like an airline route map. The hub airport branches to regional airports, which branch to smaller cities.',
+    graph:
+      'Like a global flight network. Airports are nodes, flight routes are edges, and you can find paths between any two cities.',
+    recursion:
+      'Like a flight with connections. To get to your destination, you first need to get to the connecting city, which might require another connection.',
+    api: 'Like the check-in counter. You present your booking, the agent processes it through the airline system, and hands you a boarding pass.',
+    database:
+      'Like an airline reservation system. Millions of bookings, seat assignments, and flight statuses, all updated in real-time across the globe.',
+    microservices:
+      'Like airport operations. Baggage handling, security, catering, fueling, gate management. Each operates independently but coordinates for every flight.',
+    'linked list':
+      'Like a chain of connecting flights. Each boarding pass tells you your next gate and departure time.',
+    array:
+      'Like seat numbers on a plane. Seat 14C is always in the same place. You find it directly.',
+    'dynamic programming':
+      "Like optimizing flight schedules based on historical data. Past delays and patterns inform tomorrow's gate assignments.",
+    sorting:
+      'Like boarding a plane. First class, then business, then economy by row. Organized for maximum efficiency.',
+    http: 'Like sending a cargo shipment. Fill out the manifest, load it on a plane, and it arrives at the destination with a confirmation receipt.',
+    tcp: 'Like radio communication between pilot and control tower. "Tower, requesting clearance for takeoff." "Cleared for takeoff, runway 27." "Runway 27, roger."',
+    dns: 'Like an airport code system. You say "JFK" and everyone knows you mean John F. Kennedy International in New York.',
+    docker:
+      'Like a standardized shipping container on a cargo plane. It fits any aircraft, any route, any destination.',
+    kubernetes:
+      'Like an air traffic control system for an entire country. Managing hundreds of flights, rerouting around storms, handling emergencies, scaling with holiday traffic.',
+    promise:
+      'Like a flight booking confirmation. You get a PNR code, and you can check the status anytime without waiting at the counter.',
+    mutex:
+      'Like a single runway. Only one plane can take off or land at a time. All others hold their position.',
+    deadlock:
+      'Like two planes on intersecting taxiways, each waiting for the other to move first. The whole airport grinds to a halt.',
+    'big o':
+      "Like flight time estimates. You don't need exact seconds. You want to know: is it a 1-hour hop or a 14-hour transatlantic journey?",
   },
 ];
 
@@ -360,7 +486,7 @@ function getAnalogy(topic: string, sessionNumber: number = 1): string | null {
   const topicWords = lower.split(/\s+/);
   for (const [key, analogy] of Object.entries(analogySet)) {
     const keyWords = key.split(/\s+/);
-    if (keyWords.some(kw => topicWords.includes(kw) && kw.length > 3)) return analogy;
+    if (keyWords.some((kw) => topicWords.includes(kw) && kw.length > 3)) return analogy;
   }
   return null;
 }
@@ -378,15 +504,15 @@ function reinforceConcept(concept: string, _topic: string): string {
 // Injected every 60-90 seconds during the deep dive to keep viewers watching.
 // ---------------------------------------------------------------------------
 const OPEN_LOOP_PHRASES = [
-  'But here\'s where it gets really interesting...',
+  "But here's where it gets really interesting...",
   'Stay with me, because this next part is gold...',
   'Now THIS is what actually matters in interviews...',
   'Most people miss this completely...',
-  'Here\'s the part that will blow your mind...',
+  "Here's the part that will blow your mind...",
   'Keep watching — this is the piece everyone skips...',
   'This next idea changes everything...',
   'Wait for it... this is the moment everything clicks...',
-  'Don\'t skip this part. Seriously. This is interview gold...',
+  "Don't skip this part. Seriously. This is interview gold...",
   'I saved the best insight for right here...',
   'This is the part that 99% of tutorials skip...',
   'Okay pay VERY close attention to this next bit...',
@@ -401,19 +527,19 @@ const PATTERN_INTERRUPTS = [
   // Speed-up (creates urgency)
   'Quick quick quick — let me rapid-fire through this.',
   'Okay speed round. Three things you MUST remember.',
-  'Fast forward mode — here\'s the key takeaway in one sentence.',
+  "Fast forward mode — here's the key takeaway in one sentence.",
   // Slow dramatic (creates emphasis)
   'Now... listen carefully. This. Is. The. Key.',
   'Slow down for a second. Let this sink in.',
-  'Stop. Re-read that last sentence. It\'s THAT important.',
+  "Stop. Re-read that last sentence. It's THAT important.",
   // Direct address (breaks fourth wall)
   'Yes, YOU. The person watching at 2x speed. Slow down for this part.',
-  'I know you\'re tempted to skip ahead. Don\'t. This is the part that gets asked in interviews.',
-  'Real talk for a second. If you\'re just passively watching, pause and think about this.',
+  "I know you're tempted to skip ahead. Don't. This is the part that gets asked in interviews.",
+  "Real talk for a second. If you're just passively watching, pause and think about this.",
   // Challenge (activates viewer)
   'Before I show the answer, pause and try to guess.',
   'Can you spot the bug in this approach? Think about it...',
-  'Predict what happens next. If you get it right, you\'re already thinking like a senior engineer.',
+  "Predict what happens next. If you get it right, you're already thinking like a senior engineer.",
   // Enthusiasm spike
   'THIS. This right here is why I love teaching this topic.',
   'Okay I am genuinely excited about this next part.',
@@ -451,12 +577,18 @@ function stripCompletionSignals(text: string): string {
 // Uses the "unfinished business" psychological principle.
 // ---------------------------------------------------------------------------
 const MIDPOINT_TRAPS = [
-  (topic: string) => `Okay quick recap. We covered the theory of ${topic}. Now comes the implementation — actual code you can use in production and explain in interviews.`,
-  (topic: string) => `So far we have the building blocks of ${topic}. Now let me show you how they connect in a real system. This is where understanding beats memorization.`,
-  (topic: string) => `Alright, theory done. Now the question every interviewer asks: "How would you actually implement ${topic}?" Let me show you.`,
-  (topic: string) => `Quick checkpoint — you now understand the WHY of ${topic}. Next up is the HOW. Production code, failure modes, and the edge cases interviewers love.`,
-  (topic: string) => `Good progress. You understand ${topic} conceptually. Now let me show you what it looks like in production — this is the part that gets you the offer.`,
-  (topic: string) => `We are halfway through. Everything after this is implementation and interview strategy for ${topic}. This is where it gets practical.`,
+  (topic: string) =>
+    `Okay quick recap. We covered the theory of ${topic}. Now comes the implementation — actual code you can use in production and explain in interviews.`,
+  (topic: string) =>
+    `So far we have the building blocks of ${topic}. Now let me show you how they connect in a real system. This is where understanding beats memorization.`,
+  (topic: string) =>
+    `Alright, theory done. Now the question every interviewer asks: "How would you actually implement ${topic}?" Let me show you.`,
+  (topic: string) =>
+    `Quick checkpoint — you now understand the WHY of ${topic}. Next up is the HOW. Production code, failure modes, and the edge cases interviewers love.`,
+  (topic: string) =>
+    `Good progress. You understand ${topic} conceptually. Now let me show you what it looks like in production — this is the part that gets you the offer.`,
+  (topic: string) =>
+    `We are halfway through. Everything after this is implementation and interview strategy for ${topic}. This is where it gets practical.`,
 ];
 
 function getMidpointTrap(topic: string, seed: number): string {
@@ -468,11 +600,16 @@ function getMidpointTrap(topic: string, seed: number): string {
 // Strong unresolved tension that makes viewers click the NEXT video.
 // ---------------------------------------------------------------------------
 const CLIFFHANGER_ENDINGS = [
-  (topic: string, nextTopic: string) => `But here's what nobody tells you about ${topic}... it completely BREAKS when you combine it with ${nextTopic}. I'll show you exactly how in the next video. Don't miss it.`,
-  (topic: string, nextTopic: string) => `Everything we just learned has one critical weakness. And the solution? ${nextTopic}. Next video, I'll show you how these two concepts work together to build bulletproof systems.`,
-  (topic: string, nextTopic: string) => `There's one scenario where ${topic} fails spectacularly. And it's EXACTLY the scenario interviewers love to ask about. The answer involves ${nextTopic}. Next video.`,
-  (topic: string, _nextTopic: string) => `I left out one detail on purpose. The most dangerous edge case in ${topic}. If you want to know what it is... you know what to do. Next video drops soon.`,
-  (topic: string, nextTopic: string) => `Here's a secret: the best engineers don't use ${topic} alone. They combine it with ${nextTopic} for 10x performance. That's our next video. Subscribe so you don't miss it.`,
+  (topic: string, nextTopic: string) =>
+    `But here's what nobody tells you about ${topic}... it completely BREAKS when you combine it with ${nextTopic}. I'll show you exactly how in the next video. Don't miss it.`,
+  (topic: string, nextTopic: string) =>
+    `Everything we just learned has one critical weakness. And the solution? ${nextTopic}. Next video, I'll show you how these two concepts work together to build bulletproof systems.`,
+  (topic: string, nextTopic: string) =>
+    `There's one scenario where ${topic} fails spectacularly. And it's EXACTLY the scenario interviewers love to ask about. The answer involves ${nextTopic}. Next video.`,
+  (topic: string, _nextTopic: string) =>
+    `I left out one detail on purpose. The most dangerous edge case in ${topic}. If you want to know what it is... you know what to do. Next video drops soon.`,
+  (topic: string, nextTopic: string) =>
+    `Here's a secret: the best engineers don't use ${topic} alone. They combine it with ${nextTopic} for 10x performance. That's our next video. Subscribe so you don't miss it.`,
 ];
 
 function getOpenLoopPhrase(seed: number): string {
@@ -487,8 +624,8 @@ const ENGAGEMENT_HOOKS = [
   'Pause. What happens next? Got your guess? Let me show you.',
   'Stop. Before I reveal the answer — what would YOU do here? Think for 3 seconds.',
   // Competence affirmations
-  'If you understood that, you\'re ahead of 90% of candidates. Not kidding.',
-  'Most tutorials don\'t cover this part. You\'re already in the top tier.',
+  "If you understood that, you're ahead of 90% of candidates. Not kidding.",
+  "Most tutorials don't cover this part. You're already in the top tier.",
   // Comment drivers
   'Drop your approach in the comments. I want to see how you think about this.',
   'Hot take time. Agree or disagree? Tell me in the comments.',
@@ -496,7 +633,7 @@ const ENGAGEMENT_HOOKS = [
   'This exact question showed up in Google interviews last month. Multiple candidates confirmed it.',
   'Screenshot this diagram. You WILL see a variation in your interview.',
   // Time anchors
-  'You\'re already halfway. And you know more than most engineers with 3 years of experience.',
+  "You're already halfway. And you know more than most engineers with 3 years of experience.",
   // Challenge
   'Quick — can you explain what we just covered to an imaginary friend? Try it. Right now. 10 seconds.',
 ];
@@ -527,9 +664,9 @@ const AHA_PHRASES = [
   'And HERE is the key insight that changes everything...',
   'Now this is the part that separates good from GREAT engineers...',
   'Once you understand THIS, the whole concept clicks...',
-  'This is the secret that most tutorials don\'t tell you...',
+  "This is the secret that most tutorials don't tell you...",
   'Pay attention to this next part. This is GOLD for interviews...',
-  'THIS is the trick. Once you see it, you can\'t unsee it...',
+  "THIS is the trick. Once you see it, you can't unsee it...",
   'Here is the moment everything comes together...',
 ];
 
@@ -578,16 +715,27 @@ function addWhyContext(description: string, code: string, topic: string): string
   const topicLower = topic.toLowerCase();
 
   // Loop + server/node → distributing work
-  if ((trimmed.includes('for') || trimmed.includes('while') || desc.includes('loop')) &&
-      (trimmed.includes('server') || trimmed.includes('node') || trimmed.includes('worker') ||
-       topicLower.includes('load balancing') || topicLower.includes('distributed'))) {
+  if (
+    (trimmed.includes('for') || trimmed.includes('while') || desc.includes('loop')) &&
+    (trimmed.includes('server') ||
+      trimmed.includes('node') ||
+      trimmed.includes('worker') ||
+      topicLower.includes('load balancing') ||
+      topicLower.includes('distributed'))
+  ) {
     return `${description} — to distribute the work evenly`;
   }
 
   // If-check + null/error handling
-  if ((desc.includes('check if') || desc.includes('if ')) &&
-      (trimmed.includes('null') || trimmed.includes('none') || trimmed.includes('error') ||
-       trimmed.includes('undefined') || trimmed.includes('empty') || trimmed.includes('nil'))) {
+  if (
+    (desc.includes('check if') || desc.includes('if ')) &&
+    (trimmed.includes('null') ||
+      trimmed.includes('none') ||
+      trimmed.includes('error') ||
+      trimmed.includes('undefined') ||
+      trimmed.includes('empty') ||
+      trimmed.includes('nil'))
+  ) {
     return `${description} — to handle the edge case that trips up most developers`;
   }
 
@@ -597,15 +745,27 @@ function addWhyContext(description: string, code: string, topic: string): string
   }
 
   // Hash/map → O(1) lookups
-  if (trimmed.includes('hashmap') || trimmed.includes('hash_map') || trimmed.includes('dict(') ||
-      trimmed.includes('map(') || trimmed.includes('{}') || desc.includes('hash map') ||
-      desc.includes('dictionary') || desc.includes('map for')) {
+  if (
+    trimmed.includes('hashmap') ||
+    trimmed.includes('hash_map') ||
+    trimmed.includes('dict(') ||
+    trimmed.includes('map(') ||
+    trimmed.includes('{}') ||
+    desc.includes('hash map') ||
+    desc.includes('dictionary') ||
+    desc.includes('map for')
+  ) {
     return `${description} — for O(1) constant time lookups. This is why hash maps are interview gold`;
   }
 
   // Try/catch → production resilience
-  if (trimmed.startsWith('try') || trimmed.startsWith('catch') || trimmed.startsWith('except') ||
-      desc.includes('try block') || desc.includes('catch')) {
+  if (
+    trimmed.startsWith('try') ||
+    trimmed.startsWith('catch') ||
+    trimmed.startsWith('except') ||
+    desc.includes('try block') ||
+    desc.includes('catch')
+  ) {
     return `${description} — because in production, things WILL fail, and we need to handle it gracefully`;
   }
 
@@ -615,9 +775,15 @@ function addWhyContext(description: string, code: string, topic: string): string
   }
 
   // Sort/compare → order matters
-  if (trimmed.includes('.sort') || trimmed.includes('sorted') || trimmed.includes('arrays.sort') ||
-      trimmed.includes('compare') || trimmed.includes('compareto') ||
-      desc.includes('sort') || desc.includes('order')) {
+  if (
+    trimmed.includes('.sort') ||
+    trimmed.includes('sorted') ||
+    trimmed.includes('arrays.sort') ||
+    trimmed.includes('compare') ||
+    trimmed.includes('compareto') ||
+    desc.includes('sort') ||
+    desc.includes('order')
+  ) {
     return `${description} — because the order matters for our algorithm to work correctly`;
   }
 
@@ -629,7 +795,7 @@ function addWhyContext(description: string, code: string, topic: string): string
 // Teaching Technique: Line-by-Line Code Walkthrough (Fireship style)
 // ---------------------------------------------------------------------------
 function generateCodeWalkthrough(code: string, _language: string, topic: string = ''): string {
-  const lines = code.split('\n').filter(l => l.trim());
+  const lines = code.split('\n').filter((l) => l.trim());
   if (lines.length === 0) return '';
 
   // Identify "important" lines — skip blank, comments-only, closing braces, pass
@@ -638,12 +804,19 @@ function generateCodeWalkthrough(code: string, _language: string, topic: string 
     const trimmed = line.trim();
     // Skip uninteresting lines
     if (
-      trimmed === '}' || trimmed === '};' || trimmed === ')' || trimmed === ');' ||
-      trimmed === 'pass' || trimmed === 'else:' || trimmed === 'else {' ||
-      trimmed === '{' || trimmed === '' ||
+      trimmed === '}' ||
+      trimmed === '};' ||
+      trimmed === ')' ||
+      trimmed === ');' ||
+      trimmed === 'pass' ||
+      trimmed === 'else:' ||
+      trimmed === 'else {' ||
+      trimmed === '{' ||
+      trimmed === '' ||
       (trimmed.startsWith('#') && !trimmed.startsWith('#!')) ||
       (trimmed.startsWith('//') && !trimmed.startsWith('///'))
-    ) continue;
+    )
+      continue;
 
     const desc = describeCodeLine(line);
     important.push({ line, desc });
@@ -669,12 +842,22 @@ function generateCodeWalkthrough(code: string, _language: string, topic: string 
   }
 
   // Build natural narration with varied connectors and WHY context
-  const connectors = ['First, we', 'Now we', 'Here we', 'At this point, we', 'This is where we', 'Finally, we'];
+  const connectors = [
+    'First, we',
+    'Now we',
+    'Here we',
+    'At this point, we',
+    'This is where we',
+    'Finally, we',
+  ];
   const parts: string[] = [];
   for (let i = 0; i < selected.length; i++) {
-    const connector = i === 0 ? connectors[0]
-      : i === selected.length - 1 ? connectors[connectors.length - 1]
-      : connectors[Math.min(i, connectors.length - 2)];
+    const connector =
+      i === 0
+        ? connectors[0]
+        : i === selected.length - 1
+          ? connectors[connectors.length - 1]
+          : connectors[Math.min(i, connectors.length - 2)];
     // Add WHY context to make narration educational, not just descriptive
     const enrichedDesc = addWhyContext(selected[i].desc, selected[i].line, topic);
     parts.push(`${connector} ${enrichedDesc}`);
@@ -687,7 +870,9 @@ function describeCodeLine(line: string): string {
   const trimmed = line.trim();
 
   // --- Class / struct definitions ---
-  const classMatch = trimmed.match(/^(?:public\s+|private\s+|abstract\s+|static\s+)*class\s+(\w+)(?:\s+extends\s+(\w+))?(?:\s+implements\s+(\w+))?/);
+  const classMatch = trimmed.match(
+    /^(?:public\s+|private\s+|abstract\s+|static\s+)*class\s+(\w+)(?:\s+extends\s+(\w+))?(?:\s+implements\s+(\w+))?/
+  );
   if (classMatch) {
     let desc = `define our ${classMatch[1]} class`;
     if (classMatch[2]) desc += ` that extends ${classMatch[2]}`;
@@ -708,18 +893,23 @@ function describeCodeLine(line: string): string {
     const name = jsFuncMatch[1];
     const params = jsFuncMatch[2].trim();
     const asyncPrefix = trimmed.startsWith('async') ? 'async ' : '';
-    if (params) return `define the ${asyncPrefix}${name} function that takes ${describeParams(params)}`;
+    if (params)
+      return `define the ${asyncPrefix}${name} function that takes ${describeParams(params)}`;
     return `define the ${asyncPrefix}${name} function`;
   }
   // Arrow functions: const name = (...) => or const name = async (...) =>
-  const arrowMatch = trimmed.match(/^(?:const|let|var)\s+(\w+)\s*=\s*(?:async\s+)?\(?([^)=]*)\)?\s*=>/);
+  const arrowMatch = trimmed.match(
+    /^(?:const|let|var)\s+(\w+)\s*=\s*(?:async\s+)?\(?([^)=]*)\)?\s*=>/
+  );
   if (arrowMatch) {
     const name = arrowMatch[1];
     const asyncPrefix = trimmed.includes('async') ? 'async ' : '';
     return `define the ${asyncPrefix}${name} arrow function`;
   }
   // Java / TypeScript methods: public void methodName(...) or private int calculate(...)
-  const javaMethodMatch = trimmed.match(/^(?:public|private|protected)\s+(?:static\s+)?(?:async\s+)?(?:\w+(?:<[^>]+>)?)\s+(\w+)\s*\(([^)]*)\)/);
+  const javaMethodMatch = trimmed.match(
+    /^(?:public|private|protected)\s+(?:static\s+)?(?:async\s+)?(?:\w+(?:<[^>]+>)?)\s+(\w+)\s*\(([^)]*)\)/
+  );
   if (javaMethodMatch) {
     const name = javaMethodMatch[1];
     const params = javaMethodMatch[2].trim();
@@ -741,7 +931,9 @@ function describeCodeLine(line: string): string {
   // --- Import statements ---
   const pyImportMatch = trimmed.match(/^from\s+([\w.]+)\s+import\s+(.+)/);
   if (pyImportMatch) return `import ${pyImportMatch[2].trim()} from the ${pyImportMatch[1]} module`;
-  const importMatch = trimmed.match(/^import\s+(?:\{?\s*(.+?)\s*\}?\s+from\s+)?['"]([\w./@-]+)['"]/);
+  const importMatch = trimmed.match(
+    /^import\s+(?:\{?\s*(.+?)\s*\}?\s+from\s+)?['"]([\w./@-]+)['"]/
+  );
   if (importMatch) {
     if (importMatch[1]) return `import ${importMatch[1].trim()} from ${importMatch[2]}`;
     return `import the ${importMatch[2]} module`;
@@ -792,9 +984,13 @@ function describeCodeLine(line: string): string {
   }
   const jsForOfMatch = trimmed.match(/^for\s*\(\s*(?:const|let|var)\s+(\w+)\s+of\s+(\w+)/);
   if (jsForOfMatch) return `loop through each ${jsForOfMatch[1]} in ${jsForOfMatch[2]}`;
-  const jsForMatch = trimmed.match(/^for\s*\(\s*(?:let|int|var)\s+(\w+)\s*=\s*(\d+)\s*;\s*\w+\s*[<>=!]+\s*(.+?)\s*;/);
-  if (jsForMatch) return `loop from ${jsForMatch[2]} up to ${jsForMatch[3].replace(/;$/, '')} using ${jsForMatch[1]}`;
-  if (trimmed.startsWith('for ') || trimmed.startsWith('for(')) return 'iterate through each element';
+  const jsForMatch = trimmed.match(
+    /^for\s*\(\s*(?:let|int|var)\s+(\w+)\s*=\s*(\d+)\s*;\s*\w+\s*[<>=!]+\s*(.+?)\s*;/
+  );
+  if (jsForMatch)
+    return `loop from ${jsForMatch[2]} up to ${jsForMatch[3].replace(/;$/, '')} using ${jsForMatch[1]}`;
+  if (trimmed.startsWith('for ') || trimmed.startsWith('for('))
+    return 'iterate through each element';
 
   // --- While loops ---
   const whileMatch = trimmed.match(/^while\s*\(?\s*(.+?)\s*\)?\s*[:{]?\s*$/);
@@ -809,16 +1005,34 @@ function describeCodeLine(line: string): string {
   const ifMatch = trimmed.match(/^(?:if|elif|else\s+if)\s*\(?\s*(.+?)\s*\)?\s*[:{]?\s*$/);
   if (ifMatch) {
     const cond = ifMatch[1].replace(/[{:]$/, '').trim();
-    const prefix = trimmed.startsWith('elif') || trimmed.startsWith('else if') ? 'otherwise, check if' : 'check if';
-    if (cond.includes(' is None') || cond.includes(' == None') || cond.includes(' === null') || cond.includes(' == null'))
+    const prefix =
+      trimmed.startsWith('elif') || trimmed.startsWith('else if')
+        ? 'otherwise, check if'
+        : 'check if';
+    if (
+      cond.includes(' is None') ||
+      cond.includes(' == None') ||
+      cond.includes(' === null') ||
+      cond.includes(' == null')
+    )
       return `${prefix} the value is null`;
     if (cond.includes(' not in ') || cond.includes('.includes(') || cond.includes(' in '))
       return `${prefix} the element exists in our collection`;
     if (cond.includes('.length') || cond.includes('len('))
       return `${prefix} the size meets our requirement`;
-    if (cond.includes(' > ') || cond.includes(' < ') || cond.includes(' >= ') || cond.includes(' <= '))
+    if (
+      cond.includes(' > ') ||
+      cond.includes(' < ') ||
+      cond.includes(' >= ') ||
+      cond.includes(' <= ')
+    )
       return `${prefix} ${cond.length < 35 ? cond : 'our boundary condition'}`;
-    if (cond.includes(' == ') || cond.includes(' === ') || cond.includes(' != ') || cond.includes(' !== '))
+    if (
+      cond.includes(' == ') ||
+      cond.includes(' === ') ||
+      cond.includes(' != ') ||
+      cond.includes(' !== ')
+    )
       return `${prefix} ${cond.length < 35 ? cond : 'the values match'}`;
     if (cond.length < 30) return `${prefix} ${cond}`;
     return `${prefix} our condition is met`;
@@ -833,7 +1047,9 @@ function describeCodeLine(line: string): string {
   if (trimmed === 'break;' || trimmed === 'break') return 'break out of the current block';
 
   // --- Variable declarations with meaningful content ---
-  const constAssignMatch = trimmed.match(/^(?:const|let|var|final)\s+(\w+)(?:\s*:\s*\w+(?:<[^>]+>)?)?\s*=\s*(.+)/);
+  const constAssignMatch = trimmed.match(
+    /^(?:const|let|var|final)\s+(\w+)(?:\s*:\s*\w+(?:<[^>]+>)?)?\s*=\s*(.+)/
+  );
   if (constAssignMatch) {
     const varName = constAssignMatch[1];
     const value = constAssignMatch[2].replace(/;$/, '').trim();
@@ -845,7 +1061,8 @@ function describeCodeLine(line: string): string {
       return `transform our data and store it in ${varName}`;
     if (value.match(/^\[/) || value.startsWith('Array')) return `initialize the ${varName} array`;
     if (value.match(/^\{/)) return `set up the ${varName} config object`;
-    if (value.match(/^['"`]/)) return `set ${varName} to ${value.length < 25 ? value : 'our string value'}`;
+    if (value.match(/^['"`]/))
+      return `set ${varName} to ${value.length < 25 ? value : 'our string value'}`;
     if (value.match(/^\d/)) return `set ${varName} to ${value}`;
     if (value.includes('(')) {
       const callName = value.match(/(\w+(?:\.\w+)*)\s*\(/);
@@ -859,8 +1076,10 @@ function describeCodeLine(line: string): string {
   if (selfAssign) {
     const prop = selfAssign[1];
     const val = selfAssign[2].replace(/;$/, '').trim();
-    if (val.match(/^\[/) || val.includes('ArrayList') || val.includes('list(')) return `initialize the ${prop} collection on our instance`;
-    if (val.match(/^\{/) || val.includes('HashMap') || val.includes('dict(')) return `set up the ${prop} map on our instance`;
+    if (val.match(/^\[/) || val.includes('ArrayList') || val.includes('list('))
+      return `initialize the ${prop} collection on our instance`;
+    if (val.match(/^\{/) || val.includes('HashMap') || val.includes('dict('))
+      return `set up the ${prop} map on our instance`;
     if (val.match(/^\d/)) return `set ${prop} to ${val}`;
     return `store ${prop} on our instance`;
   }
@@ -871,7 +1090,8 @@ function describeCodeLine(line: string): string {
     const varName = pyAssignMatch[1];
     const value = pyAssignMatch[2].trim();
     if (value.startsWith('[') || value.startsWith('list(')) return `initialize the ${varName} list`;
-    if (value.startsWith('{') || value.startsWith('dict(')) return `set up the ${varName} dictionary`;
+    if (value.startsWith('{') || value.startsWith('dict('))
+      return `set up the ${varName} dictionary`;
     if (value.match(/^\d/)) return `set ${varName} to ${value}`;
     if (value.includes('(')) {
       const callName = value.match(/(\w+(?:\.\w+)*)\s*\(/);
@@ -888,7 +1108,11 @@ function describeCodeLine(line: string): string {
   }
 
   // --- HashMap / ArrayList / data structure creation ---
-  if (trimmed.includes('HashMap') || trimmed.includes('TreeMap') || trimmed.includes('LinkedHashMap'))
+  if (
+    trimmed.includes('HashMap') ||
+    trimmed.includes('TreeMap') ||
+    trimmed.includes('LinkedHashMap')
+  )
     return 'create a hash map for fast key-value lookups';
   if (trimmed.includes('ArrayList') || trimmed.includes('LinkedList'))
     return 'create a list to store our elements dynamically';
@@ -912,7 +1136,8 @@ function describeCodeLine(line: string): string {
     if (keyMatch && keyMatch[1].length < 20) return `look up ${keyMatch[1]} in our map`;
     return 'look up the value in our map';
   }
-  if (trimmed.includes('.put(') || trimmed.includes('.set(')) return 'insert the key-value pair into our map';
+  if (trimmed.includes('.put(') || trimmed.includes('.set('))
+    return 'insert the key-value pair into our map';
   if (trimmed.includes('.sort(') || trimmed.includes('.sorted(') || trimmed.includes('Arrays.sort'))
     return 'sort the collection so we can process elements in order';
   if (trimmed.includes('.reverse(')) return 'reverse the order of our elements';
@@ -921,7 +1146,8 @@ function describeCodeLine(line: string): string {
   if (trimmed.includes('.map(')) return 'transform each element using map';
   if (trimmed.includes('.filter(')) return 'filter down to only the elements we need';
   if (trimmed.includes('.reduce(')) return 'reduce our collection down to a single value';
-  if (trimmed.includes('.forEach(') || trimmed.includes('.each(')) return 'process each element one by one';
+  if (trimmed.includes('.forEach(') || trimmed.includes('.each('))
+    return 'process each element one by one';
 
   // --- Print / log statements ---
   if (trimmed.startsWith('print(') || trimmed.startsWith('print ')) {
@@ -933,7 +1159,11 @@ function describeCodeLine(line: string): string {
     return 'log the output to verify it works';
 
   // --- List comprehensions / generator expressions ---
-  if (trimmed.includes(' for ') && trimmed.includes(' in ') && (trimmed.includes('[') || trimmed.includes('(')))
+  if (
+    trimmed.includes(' for ') &&
+    trimmed.includes(' in ') &&
+    (trimmed.includes('[') || trimmed.includes('('))
+  )
     return 'build our result using a comprehension for clean, concise code';
 
   // --- Type annotations / interface ---
@@ -969,7 +1199,13 @@ function describeCodeLine(line: string): string {
   // Assignment with operator: x += y, x -= y, etc.
   const compoundAssign = trimmed.match(/(\w+)\s*([+\-*/%])=\s*(.+)/);
   if (compoundAssign) {
-    const ops: Record<string, string> = { '+': 'add', '-': 'subtract', '*': 'multiply', '/': 'divide', '%': 'take modulo of' };
+    const ops: Record<string, string> = {
+      '+': 'add',
+      '-': 'subtract',
+      '*': 'multiply',
+      '/': 'divide',
+      '%': 'take modulo of',
+    };
     const op = ops[compoundAssign[2]] || 'update';
     return `${op} ${compoundAssign[3].replace(/;$/, '').trim()} ${compoundAssign[2] === '+' ? 'to' : 'from'} ${compoundAssign[1]}`;
   }
@@ -981,7 +1217,10 @@ function describeCodeLine(line: string): string {
 
 /** Turn a parameter string like "servers, count: int" into readable text */
 function describeParams(params: string): string {
-  const paramList = params.split(',').map(p => p.trim().split(/[:\s]/)[0]).filter(Boolean);
+  const paramList = params
+    .split(',')
+    .map((p) => p.trim().split(/[:\s]/)[0])
+    .filter(Boolean);
   if (paramList.length === 0) return 'no parameters';
   if (paramList.length === 1) return paramList[0];
   if (paramList.length === 2) return `${paramList[0]} and ${paramList[1]}`;
@@ -995,22 +1234,30 @@ function describeParams(params: string): string {
 // Myth Buster Opening — topic-specific wrong facts + dramatic reveal
 // Creates a "wait, WHAT?!" moment in the first 30 seconds
 // ---------------------------------------------------------------------------
-function generateTopicMyths(topic: string): { myths: string[]; mythBullets: string[]; reveal: string } {
+function generateTopicMyths(topic: string): {
+  myths: string[];
+  mythBullets: string[];
+  reveal: string;
+} {
   const ex = getTopicExample(topic);
   const lower = topic.toLowerCase();
 
   // Topic-specific myth sets — 3 wrong "facts" that sound believable
   const MYTH_SETS: Record<string, { myths: string[]; mythBullets: string[]; reveal: string }> = {
-    'kafka': {
+    kafka: {
       myths: [
         `Fact number 1: Kafka is just a message queue, like RabbitMQ.`,
         `Fact number 2: Kafka guarantees exactly-once delivery out of the box.`,
         `Fact number 3: More partitions always means better performance.`,
       ],
-      mythBullets: ['Kafka = Message Queue?', 'Exactly-once by default?', 'More partitions = faster?'],
+      mythBullets: [
+        'Kafka = Message Queue?',
+        'Exactly-once by default?',
+        'More partitions = faster?',
+      ],
       reveal: `Kafka is NOT a message queue. It's a distributed commit log. Exactly-once requires idempotent producers AND transactional consumers. And too many partitions actually HURT performance. Let me explain each one.`,
     },
-    'caching': {
+    caching: {
       myths: [
         `Fact number 1: Caching always makes your system faster.`,
         `Fact number 2: Redis is the only caching solution you need.`,
@@ -1037,7 +1284,7 @@ function generateTopicMyths(topic: string): { myths: string[]; mythBullets: stri
       mythBullets: ['Just a reverse proxy?', 'Always needed?', 'Adds latency?'],
       reveal: `An API gateway does authentication, rate limiting, circuit breaking, and request transformation — way more than a reverse proxy. Sometimes you DON'T need one. And the latency argument? ${ex.company} routes ${ex.scale} through one. Let me show you the real picture.`,
     },
-    'microservices': {
+    microservices: {
       myths: [
         `Fact number 1: Microservices are always better than monoliths.`,
         `Fact number 2: Each microservice should have its own database.`,
@@ -1046,7 +1293,7 @@ function generateTopicMyths(topic: string): { myths: string[]; mythBullets: stri
       mythBullets: ['Always better than monolith?', 'Own database each?', 'Copy Netflix?'],
       reveal: `Most startups should START with a monolith. Shared databases are fine early on. And Netflix has 2000 engineers — you probably have 5. Copying their architecture will KILL your velocity. Let me show you when microservices actually make sense.`,
     },
-    'database': {
+    database: {
       myths: [
         `Fact number 1: NoSQL is faster than SQL for everything.`,
         `Fact number 2: Indexes always speed up your queries.`,
@@ -1275,33 +1522,72 @@ function generateCleanAnswer(question: string, topic: string, sessionContent?: s
 function extractAnswerFromContent(question: string, content: string): string | null {
   // Strip markdown formatting, code blocks, mermaid diagrams, ASCII art before extracting
   const cleanContent = content
-    .replace(/```[\s\S]*?```/g, '')           // Remove fenced code blocks (including mermaid)
-    .replace(/`[^`]+`/g, '')                  // Remove inline code
-    .replace(/^#{1,6}\s+/gm, '')              // Remove heading markers
-    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')  // Remove markdown links
-    .replace(/[*_~]+/g, '')                   // Remove bold/italic/strikethrough
-    .replace(/[┌┐└┘├┤┬┴┼─│╔╗╚╝║═]+/g, '')  // Remove ASCII art box characters
-    .replace(/^\s*[-|]\s*/gm, '')             // Remove list markers and table pipes
-    .replace(/\n{2,}/g, '\n');                // Collapse multiple newlines
+    .replace(/```[\s\S]*?```/g, '') // Remove fenced code blocks (including mermaid)
+    .replace(/`[^`]+`/g, '') // Remove inline code
+    .replace(/^#{1,6}\s+/gm, '') // Remove heading markers
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1') // Remove markdown links
+    .replace(/[*_~]+/g, '') // Remove bold/italic/strikethrough
+    .replace(/[┌┐└┘├┤┬┴┼─│╔╗╚╝║═]+/g, '') // Remove ASCII art box characters
+    .replace(/^\s*[-|]\s*/gm, '') // Remove list markers and table pipes
+    .replace(/\n{2,}/g, '\n'); // Collapse multiple newlines
 
   // Extract key nouns/phrases from the question (skip common words)
-  const stopWords = new Set(['what', 'is', 'the', 'a', 'an', 'and', 'or', 'how', 'does', 'do',
-    'when', 'would', 'you', 'your', 'give', 'name', 'explain', 'why', 'each', 'for',
-    'of', 'in', 'to', 'with', 'between', 'are', 'can', 'be', 'it', 'its', 'that',
-    'this', 'from', 'by', 'on', 'at', 'use', 'specific', 'concrete', 'scenario']);
+  const stopWords = new Set([
+    'what',
+    'is',
+    'the',
+    'a',
+    'an',
+    'and',
+    'or',
+    'how',
+    'does',
+    'do',
+    'when',
+    'would',
+    'you',
+    'your',
+    'give',
+    'name',
+    'explain',
+    'why',
+    'each',
+    'for',
+    'of',
+    'in',
+    'to',
+    'with',
+    'between',
+    'are',
+    'can',
+    'be',
+    'it',
+    'its',
+    'that',
+    'this',
+    'from',
+    'by',
+    'on',
+    'at',
+    'use',
+    'specific',
+    'concrete',
+    'scenario',
+  ]);
 
-  const keywords = question.toLowerCase()
+  const keywords = question
+    .toLowerCase()
     .replace(/[?.,!'"]/g, '')
     .split(/\s+/)
-    .filter(w => w.length > 2 && !stopWords.has(w));
+    .filter((w) => w.length > 2 && !stopWords.has(w));
 
   if (keywords.length === 0) return null;
 
   // Split cleaned content into sentences
-  const sentences = cleanContent.split(/[.!?]\s+/).filter(s => s.length > 20);
+  const sentences = cleanContent.split(/[.!?]\s+/).filter((s) => s.length > 20);
 
   // Score each sentence by keyword matches
-  const scored = sentences.map(sentence => {
+  const scored = sentences.map((sentence) => {
     const lower = sentence.toLowerCase();
     const score = keywords.reduce((sum, kw) => sum + (lower.includes(kw) ? 1 : 0), 0);
     return { sentence: sentence.trim(), score };
@@ -1309,19 +1595,25 @@ function extractAnswerFromContent(question: string, content: string): string | n
 
   // Take top 3 most relevant sentences
   const top = scored
-    .filter(s => s.score >= 2) // At least 2 keyword matches
+    .filter((s) => s.score >= 2) // At least 2 keyword matches
     .sort((a, b) => b.score - a.score)
     .slice(0, 3);
 
   if (top.length === 0) return null;
 
-  return top.map(s => '- ' + s.sentence.replace(/^[-*]\s*/, '').slice(0, 120)).join('\n');
+  return top.map((s) => '- ' + s.sentence.replace(/^[-*]\s*/, '').slice(0, 120)).join('\n');
 }
 
 // ---------------------------------------------------------------------------
 // Summary + CTA Narration (with guru-sishya.in reference)
 // ---------------------------------------------------------------------------
-function generateSummaryNarration(topic: string, objectives: string[], nextTopic?: string, sessionNumber: number = 1, totalSessions?: number): string {
+function generateSummaryNarration(
+  topic: string,
+  objectives: string[],
+  nextTopic?: string,
+  sessionNumber: number = 1,
+  totalSessions?: number
+): string {
   const topObjectives = objectives.slice(0, 3).join('. ');
   const closingEncouragement = getEncouragement(topic.length);
 
@@ -1381,14 +1673,14 @@ function makeConversational(text: string): string {
     .replace(/subsequently/gi, 'then')
     .replace(/functionality/gi, 'feature')
     .replace(/in order to/gi, 'to')
-    .replace(/However,/g, "But")
-    .replace(/Furthermore,/g, "Also,")
-    .replace(/Therefore,/g, "So")
-    .replace(/In addition,/g, "Plus,")
-    .replace(/It is essential to/gi, "You need to")
-    .replace(/One must/gi, "You should")
-    .replace(/It can be observed that/gi, "Notice:")
-    .replace(/This demonstrates/gi, "This shows");
+    .replace(/However,/g, 'But')
+    .replace(/Furthermore,/g, 'Also,')
+    .replace(/Therefore,/g, 'So')
+    .replace(/In addition,/g, 'Plus,')
+    .replace(/It is essential to/gi, 'You need to')
+    .replace(/One must/gi, 'You should')
+    .replace(/It can be observed that/gi, 'Notice:')
+    .replace(/This demonstrates/gi, 'This shows');
 
   // Strip anti-patterns (research: cause instant drop-off)
   for (const pattern of ANTI_PATTERNS) {
@@ -1416,7 +1708,7 @@ function generateTableNarration(heading?: string): string {
   if (heading) {
     return `Here's a comparison of ${heading.toLowerCase()}. Pay attention to the trade-offs.`;
   }
-  return 'Let\'s compare the approaches. Notice the key differences.';
+  return "Let's compare the approaches. Notice the key differences.";
 }
 
 function generateCalloutNarration(content: string): string {
@@ -1523,11 +1815,12 @@ export function generateScript(session: SessionInput, options: ScriptOptions = {
 
   // ── 1b. RECAP SCENE — "Previously on..." for session 2+ ───────────────
   if (sessionNum >= 2) {
-    const recapPoints = previousSessionSummary && previousSessionSummary.length > 0
-      ? previousSessionSummary.slice(0, 4)
-      : generateDefaultRecapPoints(session.topic, sessionNum);
+    const recapPoints =
+      previousSessionSummary && previousSessionSummary.length > 0
+        ? previousSessionSummary.slice(0, 4)
+        : generateDefaultRecapPoints(session.topic, sessionNum);
 
-    const recapBullets = recapPoints.map(p => p.replace(/^[-*]\s*/, ''));
+    const recapBullets = recapPoints.map((p) => p.replace(/^[-*]\s*/, ''));
     const recapNarration = `In our last session, we covered ${recapBullets.slice(0, 3).join(', ')}. Today we're building on that foundation and going deeper.`;
 
     const recapDuration = 7; // 5-8 seconds
@@ -1591,11 +1884,7 @@ export function generateScript(session: SessionInput, options: ScriptOptions = {
       startFrame: currentFrame,
       endFrame: (currentFrame += TIMING.secondsToFrames(problemDuration)),
       heading: 'The Problem',
-      bullets: [
-        `Why ${session.topic} exists`,
-        'What happens without it',
-        'The real-world impact',
-      ],
+      bullets: [`Why ${session.topic} exists`, 'What happens without it', 'The real-world impact'],
     });
 
     const wrongAnswerNarration = generateWrongAnswer(session.topic);
@@ -1633,9 +1922,9 @@ export function generateScript(session: SessionInput, options: ScriptOptions = {
   let sectionIndex = 0;
   let arcIndex = 0;
   let hasInterview = false;
-  let openLoopCounter = 0;     // tracks elapsed deep-dive scenes for open-loop injection
+  let openLoopCounter = 0; // tracks elapsed deep-dive scenes for open-loop injection
   let halfwayInjected = false; // 50% midpoint retention trap guard
-  let reHookInjected = false;  // 60% danger zone re-hook guard
+  let reHookInjected = false; // 60% danger zone re-hook guard
   let patternInterruptCounter = 0; // pattern interrupts every ~4 scenes
   let interviewAnchor1Done = false; // 30% interview anchor
   let interviewAnchor2Done = false; // 60% interview anchor
@@ -1687,7 +1976,20 @@ export function generateScript(session: SessionInput, options: ScriptOptions = {
     // Skip code blocks in other languages unless they're universal (TS, JS, bash, etc.)
     if (section.type === 'code' && section.language) {
       const sectionLang = section.language.toLowerCase();
-      const allowedLangs = ['python', 'java', 'typescript', 'javascript', 'text', 'bash', 'shell', 'sql', 'json', 'yaml', 'html', 'css'];
+      const allowedLangs = [
+        'python',
+        'java',
+        'typescript',
+        'javascript',
+        'text',
+        'bash',
+        'shell',
+        'sql',
+        'json',
+        'yaml',
+        'html',
+        'css',
+      ];
       if (!allowedLangs.includes(sectionLang)) {
         continue;
       }
@@ -1700,18 +2002,21 @@ export function generateScript(session: SessionInput, options: ScriptOptions = {
       reHookInjected = true;
       const seriesConnector = getSeriesConnector(sessionNum, session.topic);
       // BUG FIX: "separates" phrase gated by oncePerVideo to avoid repetition
-      const separatesPhrase = oncePerVideo('separates-phrase',
-        `This is what separates the good developers from the GREAT ones.`);
+      const separatesPhrase = oncePerVideo(
+        'separates-phrase',
+        `This is what separates the good developers from the GREAT ones.`
+      );
       const session1Hook = separatesPhrase
         ? `Okay, stay with me. You've already learned the fundamentals of ${session.topic}. But this next part? ${separatesPhrase} Don't leave now.`
         : `Okay, stay with me. You've already learned the fundamentals of ${session.topic}. But this next part is where it all clicks. Don't leave now.`;
-      const reHookBase = sessionNum === 1
-        ? session1Hook
-        : sessionNum === 2
-        ? `This is the part where session 2 really pays off. The concepts from session 1 are about to click in a whole new way. Stay with me.`
-        : sessionNum === 3
-        ? `We're deep into advanced territory now. This is the stuff that makes interviewers go "wow, this candidate REALLY knows ${session.topic}." Don't skip this.`
-        : `This is expert-level ${session.topic}. The kind of knowledge that principal engineers have. You're almost there.`;
+      const reHookBase =
+        sessionNum === 1
+          ? session1Hook
+          : sessionNum === 2
+            ? `This is the part where session 2 really pays off. The concepts from session 1 are about to click in a whole new way. Stay with me.`
+            : sessionNum === 3
+              ? `We're deep into advanced territory now. This is the stuff that makes interviewers go "wow, this candidate REALLY knows ${session.topic}." Don't skip this.`
+              : `This is expert-level ${session.topic}. The kind of knowledge that principal engineers have. You're almost there.`;
       const reHookNarration = seriesConnector ? `${seriesConnector} ${reHookBase}` : reHookBase;
       scenes.push({
         type: 'text',
@@ -1746,7 +2051,11 @@ export function generateScript(session: SessionInput, options: ScriptOptions = {
     // GUARD: Skip if injectOpenLoops() will also prepend to this scene.
     // Open loops target code/interview/review/summary scenes, so skip those.
     openLoopCounter++;
-    const isOpenLoopTarget = scene.type === 'code' || scene.type === 'interview' || scene.type === 'review' || scene.type === 'summary';
+    const isOpenLoopTarget =
+      scene.type === 'code' ||
+      scene.type === 'interview' ||
+      scene.type === 'review' ||
+      scene.type === 'summary';
     if (openLoopCounter % 3 === 0 && !isOpenLoopTarget) {
       const openLoop = getOpenLoopPhrase(openLoopCounter);
       scene.narration = `${openLoop} ${scene.narration}`;
@@ -1763,7 +2072,12 @@ export function generateScript(session: SessionInput, options: ScriptOptions = {
 
     // ── Apply story arc framing to narration ────────────────────────────
     if (scene.type === 'text' && scene.narration) {
-      scene.narration = storyFrameNarration(scene.narration, currentAct, session.topic, sectionIndex);
+      scene.narration = storyFrameNarration(
+        scene.narration,
+        currentAct,
+        session.topic,
+        sectionIndex
+      );
     }
 
     const splitScenes = splitLongScene(scene, currentFrame);
@@ -1794,7 +2108,7 @@ export function generateScript(session: SessionInput, options: ScriptOptions = {
       const checkpointDuration = 6; // was 4 — quiz needs more time
       const insertFrame = scenes[pos]?.startFrame ?? currentFrame;
       const checkpointScene: Scene = {
-        type: 'review',  // was 'text' — triggers ReviewQuestion visual with game-show layout
+        type: 'review', // was 'text' — triggers ReviewQuestion visual with game-show layout
         content: checkpointQuestions[ci],
         narration: checkpointQuestions[ci],
         duration: checkpointDuration,
@@ -1869,8 +2183,9 @@ export function generateScript(session: SessionInput, options: ScriptOptions = {
   if (scenes.length < maxScenes) {
     const ex = getTopicExample(session.topic);
     const topObjectives = session.objectives.slice(0, 3);
-    const steps = topObjectives.map((obj, i) =>
-      `Step ${i + 1}: ${obj.replace(/^(understand|learn|know|explain)\s+/i, 'Explain ')}`
+    const steps = topObjectives.map(
+      (obj, i) =>
+        `Step ${i + 1}: ${obj.replace(/^(understand|learn|know|explain)\s+/i, 'Explain ')}`
     );
     const completeAnswerNarration = `Here's exactly how you answer a ${session.topic} question in an interview. ${steps.join('. ')}. Then you seal it with a real-world example: "${ex.company} uses this to handle ${ex.scale}." That's a 45 LPA answer. Practice saying it out loud right now. Seriously. Pause and say it.`;
     const completeAnswerDuration = 15;
@@ -1891,7 +2206,13 @@ export function generateScript(session: SessionInput, options: ScriptOptions = {
   }
 
   // ── 10. SUMMARY + CTA ────────────────────────────────────────────────
-  const summaryNarration = generateSummaryNarration(session.topic, session.objectives, nextTopic, sessionNum, totalSessions);
+  const summaryNarration = generateSummaryNarration(
+    session.topic,
+    session.objectives,
+    nextTopic,
+    sessionNum,
+    totalSessions
+  );
   const summaryDuration = SCENE_DEFAULTS.summaryDuration + 4; // Extra time for CTA
   scenes.push({
     type: 'summary',
@@ -1931,7 +2252,13 @@ export function generateScript(session: SessionInput, options: ScriptOptions = {
     }
     // Template selection
     if (scene.type !== 'title') {
-      const tmpl = getVisualTemplate(session.topic, sessionNum, scene.heading || '', scene.type, scene.vizVariant);
+      const tmpl = getVisualTemplate(
+        session.topic,
+        sessionNum,
+        scene.heading || '',
+        scene.type,
+        scene.vizVariant
+      );
       scene.templateId = tmpl.templateId;
       scene.templateVariant = tmpl.variant;
     }
@@ -1963,7 +2290,7 @@ function getTopicSurpriseFacts(topic: string): string[] {
   return [
     `Fun fact: ${ex.company} ${ex.useCase} — handling ${ex.scale}. Let that sink in.`,
     `Here's something wild: ${ex.company} once had a major outage because their ${topic.toLowerCase()} system failed. Cost them millions.`,
-    "Plot twist: Most production implementations of this... are actually FREE and open source.",
+    'Plot twist: Most production implementations of this... are actually FREE and open source.',
     `Real talk: I've seen senior engineers at ${ex.company} get this wrong in interviews. Don't be that person.`,
     "Hot take: If you can explain this concept clearly, you're already ahead of 80% of interview candidates.",
     `Wild stat: ${ex.company} processes ${ex.scale}. And it all depends on concepts like this.`,
@@ -1980,7 +2307,7 @@ const AUDIENCE_CALLOUTS = [
   "For my DSA grinders out there, this one's for you.",
   "If you're from a tier-2 college like many of us, listen up. This is your equalizer.",
   "Comment 'UNDERSTOOD' if you made it this far. I read every single comment.",
-  "To everyone grinding for placements right now... this pain is temporary. The package is permanent.",
+  'To everyone grinding for placements right now... this pain is temporary. The package is permanent.',
   "If you're switching from service-based to product-based, THIS is the stuff you need to know.",
   "For everyone who's been told 'you need a CS degree to crack FAANG'... watch me prove them wrong.",
   "My non-CS branch engineers, this one's especially for you. Background doesn't matter, preparation does.",
@@ -1994,16 +2321,16 @@ const AUDIENCE_CALLOUTS = [
 const EMOTIONAL_STAKES = [
   "This is the difference between a 12 LPA offer and a 40 LPA offer. I'm not exaggerating.",
   "I know someone who got rejected from a top product company because they couldn't explain this. Don't let that be you.",
-  "This one concept shows up in literally every system design interview at FAANG.",
+  'This one concept shows up in literally every system design interview at FAANG.',
   "Master this, and you're not just interview-ready. You're production-ready. That's rare.",
   "This is the kind of knowledge that makes your team lead go 'wait, how do you know that?'",
   "Three months from now, when you're holding that offer letter, you'll remember this video.",
   "This separates the developers who GET callbacks from the ones who don't. Simple as that.",
-  "I watched a candidate explain this perfectly and get a 45 LPA offer at a top product company in Bangalore. Same concept, same interview room, same question.",
-  "The last 5 people I mentored who understood this concept ALL cleared their system design rounds. All five.",
+  'I watched a candidate explain this perfectly and get a 45 LPA offer at a top product company in Bangalore. Same concept, same interview room, same question.',
+  'The last 5 people I mentored who understood this concept ALL cleared their system design rounds. All five.',
   "This is the concept that made me go from 'maybe I'll crack it' to 'I KNOW I'll crack it.'",
-  "Your competition is watching this video too. The question is: will you actually practice it on guru-sishya.in? Link in the description.",
-  "Three months of focused prep beats three years of unfocused coding. This video is focused prep.",
+  'Your competition is watching this video too. The question is: will you actually practice it on guru-sishya.in? Link in the description.',
+  'Three months of focused prep beats three years of unfocused coding. This video is focused prep.',
   "The interviewer has seen 500 candidates this month. 490 of them couldn't explain this. Be the other 10.",
 ];
 
@@ -2011,18 +2338,18 @@ const EMOTIONAL_STAKES = [
 const CONVERSATIONAL_OPENERS = [
   'Plot twist. ',
   'Quick fact. ',
-  'Here\'s the catch. ',
+  "Here's the catch. ",
   'Key insight: ',
   'Now. ',
   'But wait. ',
   'The trick? ',
   'Real talk. ',
   // Hindi-English code-switching openers (Edge TTS PrabhatNeural handles these naturally)
-  'Dekho, ',           // "Look,"
+  'Dekho, ', // "Look,"
   'Suno, yeh important hai. ', // "Listen, this is important."
-  'Ab samjho. ',       // "Now understand."
-  'Dhyan se. ',        // "Pay attention."
-  'Ek second. ',       // "One second."
+  'Ab samjho. ', // "Now understand."
+  'Dhyan se. ', // "Pay attention."
+  'Ek second. ', // "One second."
   'Yeh wala concept? Game changer. ', // "This concept? Game changer."
 ];
 
@@ -2030,19 +2357,19 @@ const CONVERSATIONAL_OPENERS = [
 const CONVERSATIONAL_CLOSERS = [
   ' And that changes everything.',
   ' Most people miss this.',
-  ' That\'s the key.',
+  " That's the key.",
   ' Remember this.',
   ' This alone is worth the whole video.',
 ];
 
 /** Brand catchphrase — appended to summary scenes */
-const CATCHPHRASE = "Now go crush that interview.";
+const CATCHPHRASE = 'Now go crush that interview.';
 
 /** Guru mode transition — used when explaining the hard part */
 const GURU_MODE_PHRASES = [
   "Guru mode activated. Let's break this down.",
-  "This is where Sishya becomes Guru.",
-  "Okay, Guru mode ON. Focus.",
+  'This is where Sishya becomes Guru.',
+  'Okay, Guru mode ON. Focus.',
 ];
 
 /**
@@ -2058,7 +2385,11 @@ const GURU_MODE_PHRASES = [
  * - Injects guru-mode phrase at the deepest technical scene
  * - Appends catchphrase to the summary scene
  */
-export function personalityInjector(scenes: Scene[], sessionNumber: number = 1, topic: string = ''): Scene[] {
+export function personalityInjector(
+  scenes: Scene[],
+  sessionNumber: number = 1,
+  topic: string = ''
+): Scene[] {
   const totalScenes = scenes.length;
   let textSceneCount = 0;
 
@@ -2114,7 +2445,10 @@ export function personalityInjector(scenes: Scene[], sessionNumber: number = 1, 
     if (scene.type === 'text' && textSceneCount % 2 === 1) {
       // Only prepend if narration doesn't already start conversationally
       if (!/^(Okay|Here's|And |Look|So |Now |Alright|But )/i.test(narration)) {
-        const isFormal = /\b(distributed|fault-tolerant|architecture|protocol|mechanism|implementation|monotonically|configuration|coordination)\b/i.test(narration.slice(0, 120));
+        const isFormal =
+          /\b(distributed|fault-tolerant|architecture|protocol|mechanism|implementation|monotonically|configuration|coordination)\b/i.test(
+            narration.slice(0, 120)
+          );
         // Use only English openers (indices 0-7) for formal text, allow Hindi (8-13) for casual
         const openerPool = isFormal ? 8 : CONVERSATIONAL_OPENERS.length;
         const openerIdx = (seed + idx) % openerPool;
@@ -2132,7 +2466,7 @@ export function personalityInjector(scenes: Scene[], sessionNumber: number = 1, 
     // ── Audience callout at ~25% ─────────────────────────────────
     if (!callout25Done && idx >= callout25 && scene.type === 'text') {
       callout25Done = true;
-      const calloutIdx = (seed) % AUDIENCE_CALLOUTS.length;
+      const calloutIdx = seed % AUDIENCE_CALLOUTS.length;
       narration = `${AUDIENCE_CALLOUTS[calloutIdx]} ${narration}`;
     }
 
@@ -2146,7 +2480,7 @@ export function personalityInjector(scenes: Scene[], sessionNumber: number = 1, 
     // ── Emotional stakes at ~40% ─────────────────────────────────
     if (!stakes40Done && idx >= stakes40 && scene.type === 'text') {
       stakes40Done = true;
-      const stakesIdx = (seed) % EMOTIONAL_STAKES.length;
+      const stakesIdx = seed % EMOTIONAL_STAKES.length;
       narration = `${narration} ${EMOTIONAL_STAKES[stakesIdx]}`;
     }
 
@@ -2234,11 +2568,11 @@ function lowercaseFirst(str: string): string {
 function addStoryTransitions(scenes: Scene[]): Scene[] {
   // Transition phrases — one per type, used only on the FIRST occurrence
   const transitionsByType: Record<string, string> = {
-    code: "Let me show you the code. ",
-    diagram: "Let me show you this visually. ",
+    code: 'Let me show you the code. ',
+    diagram: 'Let me show you this visually. ',
     table: "Let's compare the approaches side by side. ",
-    interview: "Now for the interview insight. ",
-    review: "Time to test yourself. ",
+    interview: 'Now for the interview insight. ',
+    review: 'Time to test yourself. ',
   };
 
   const usedTypes = new Set<string>();
@@ -2267,8 +2601,8 @@ function addStoryTransitions(scenes: Scene[]): Scene[] {
 function extractBulletsFromNarration(narration: string, maxBullets: number = 3): string[] {
   const sentences = narration
     .split(/[.!?]+/)
-    .map(s => s.trim())
-    .filter(s => s.length > 15 && s.length < 120);
+    .map((s) => s.trim())
+    .filter((s) => s.length > 15 && s.length < 120);
 
   if (sentences.length <= maxBullets) return sentences;
 
@@ -2293,102 +2627,167 @@ function extractBulletsFromNarration(narration: string, maxBullets: number = 3):
 /** Session 1 hooks — provocative, curiosity-driven, standalone */
 const SESSION_1_HOOKS = [
   // ── Story openings (5) ──
-  (topic: string) => `In 2023, a major tech company lost 14 million dollars in revenue because of ONE poorly implemented ${topic} system. Fourteen. Million. Dollars. Let me make sure that never happens to you.`,
-  (topic: string) => `I once watched a senior engineer get rejected at ${getTopicExample(topic).company} because they couldn't explain ${topic} properly. They had 10 years of experience. Let me tell you what they got wrong.`,
-  (topic: string) => `The engineer who built ${getTopicExample(topic).company}'s ${topic} system shared something in a blog post that changed how I think about software forever. Let me share it with you.`,
-  (topic: string) => `Picture this. It's your final round interview at ${getTopicExample(topic).company}. The interviewer leans forward and says, "Tell me about ${topic}." Your next 5 minutes decide your career. Are you ready?`,
-  (topic: string) => `A startup I advised went from 100 to 10 million users in 6 months. The ONLY reason they survived? They understood ${topic} deeply. Most companies don't.`,
+  (topic: string) =>
+    `In 2023, a major tech company lost 14 million dollars in revenue because of ONE poorly implemented ${topic} system. Fourteen. Million. Dollars. Let me make sure that never happens to you.`,
+  (topic: string) =>
+    `I once watched a senior engineer get rejected at ${getTopicExample(topic).company} because they couldn't explain ${topic} properly. They had 10 years of experience. Let me tell you what they got wrong.`,
+  (topic: string) =>
+    `The engineer who built ${getTopicExample(topic).company}'s ${topic} system shared something in a blog post that changed how I think about software forever. Let me share it with you.`,
+  (topic: string) =>
+    `Picture this. It's your final round interview at ${getTopicExample(topic).company}. The interviewer leans forward and says, "Tell me about ${topic}." Your next 5 minutes decide your career. Are you ready?`,
+  (topic: string) =>
+    `A startup I advised went from 100 to 10 million users in 6 months. The ONLY reason they survived? They understood ${topic} deeply. Most companies don't.`,
 
   // ── Shocking questions (5) ──
-  (topic: string) => `What happens when 10 million users hit your server at the exact same time? If you don't know the answer, you don't understand ${topic}. Let's fix that right now.`,
-  (topic: string) => `Can you explain ${topic} in 30 seconds? Because that's exactly how long you get in an interview before they decide if you know your stuff.`,
-  (topic: string) => `Why do 73 percent of candidates fail system design interviews? One word: ${topic}. They memorize the definition but miss the point entirely.`,
-  (topic: string) => `If I asked you to design ${topic} from scratch on a whiteboard right now, could you do it? Be honest. By the end of this video, you absolutely can.`,
-  (topic: string) => `What's the ONE concept that separates a 100K developer from a 300K developer? It's not algorithms. It's not LeetCode. It's understanding ${topic} at a deep level.`,
+  (topic: string) =>
+    `What happens when 10 million users hit your server at the exact same time? If you don't know the answer, you don't understand ${topic}. Let's fix that right now.`,
+  (topic: string) =>
+    `Can you explain ${topic} in 30 seconds? Because that's exactly how long you get in an interview before they decide if you know your stuff.`,
+  (topic: string) =>
+    `Why do 73 percent of candidates fail system design interviews? One word: ${topic}. They memorize the definition but miss the point entirely.`,
+  (topic: string) =>
+    `If I asked you to design ${topic} from scratch on a whiteboard right now, could you do it? Be honest. By the end of this video, you absolutely can.`,
+  (topic: string) =>
+    `What's the ONE concept that separates a 100K developer from a 300K developer? It's not algorithms. It's not LeetCode. It's understanding ${topic} at a deep level.`,
 
   // ── Shocking facts (4) ──
-  (topic: string) => `Did you know? Every single request you make on the internet touches ${topic} at least three times before reaching its destination. And most developers have no idea how it works.`,
-  (topic: string) => `Here's a stat that should terrify you. 89 percent of production outages at big tech companies trace back to ${topic} failures. 89 percent.`,
-  (topic: string) => `${getTopicExample(topic).company} ${getTopicExample(topic).useCase}, processing ${getTopicExample(topic).scale}. The secret sauce behind all of it? ${topic}. And I'm going to teach it to you in under 5 minutes.`,
-  (topic: string) => `The average tech interview lasts 45 minutes. ${topic} questions take up 15 of those minutes. That's one third of your interview riding on THIS topic.`,
+  (topic: string) =>
+    `Did you know? Every single request you make on the internet touches ${topic} at least three times before reaching its destination. And most developers have no idea how it works.`,
+  (topic: string) =>
+    `Here's a stat that should terrify you. 89 percent of production outages at big tech companies trace back to ${topic} failures. 89 percent.`,
+  (topic: string) =>
+    `${getTopicExample(topic).company} ${getTopicExample(topic).useCase}, processing ${getTopicExample(topic).scale}. The secret sauce behind all of it? ${topic}. And I'm going to teach it to you in under 5 minutes.`,
+  (topic: string) =>
+    `The average tech interview lasts 45 minutes. ${topic} questions take up 15 of those minutes. That's one third of your interview riding on THIS topic.`,
 
   // ── Challenge hooks (4) ──
-  (topic: string) => `I'm going to explain ${topic} so clearly that you will NEVER forget it. That's not a promise. That's a guarantee. Let's go.`,
-  (topic: string) => `Give me 5 minutes. Just 5 minutes. And I'll teach you ${topic} better than any textbook, any course, any bootcamp ever could.`,
-  (topic: string) => `By the end of this video, you'll understand ${topic} better than 90 percent of working developers. That sounds crazy, but stick with me.`,
-  (topic: string) => `I challenge you to watch this entire video and NOT understand ${topic}. Seriously. Try. You can't. Let's go.`,
+  (topic: string) =>
+    `I'm going to explain ${topic} so clearly that you will NEVER forget it. That's not a promise. That's a guarantee. Let's go.`,
+  (topic: string) =>
+    `Give me 5 minutes. Just 5 minutes. And I'll teach you ${topic} better than any textbook, any course, any bootcamp ever could.`,
+  (topic: string) =>
+    `By the end of this video, you'll understand ${topic} better than 90 percent of working developers. That sounds crazy, but stick with me.`,
+  (topic: string) =>
+    `I challenge you to watch this entire video and NOT understand ${topic}. Seriously. Try. You can't. Let's go.`,
 
   // ── Pain point hooks (5) ──
-  (topic: string) => `If your interviewer asks about ${topic} and you start with the textbook definition... you've already lost. Let me show you what to say instead.`,
-  (topic: string) => `Stop memorizing ${topic}. Seriously, stop it. Memorization is why you keep forgetting it. Today I'm going to help you UNDERSTAND it.`,
-  (topic: string) => `You've probably read 10 articles about ${topic} and still feel confused. That's not your fault. They explain it wrong. Let me show you the right way.`,
-  (topic: string) => `The biggest lie in computer science education? That ${topic} is complicated. It's not. It's been taught badly. Let me prove it.`,
-  (topic: string) => `Every time you open YouTube to learn ${topic}, you get a 45-minute lecture that puts you to sleep. Not today. Today you learn it in 5 minutes, and it sticks.`,
+  (topic: string) =>
+    `If your interviewer asks about ${topic} and you start with the textbook definition... you've already lost. Let me show you what to say instead.`,
+  (topic: string) =>
+    `Stop memorizing ${topic}. Seriously, stop it. Memorization is why you keep forgetting it. Today I'm going to help you UNDERSTAND it.`,
+  (topic: string) =>
+    `You've probably read 10 articles about ${topic} and still feel confused. That's not your fault. They explain it wrong. Let me show you the right way.`,
+  (topic: string) =>
+    `The biggest lie in computer science education? That ${topic} is complicated. It's not. It's been taught badly. Let me prove it.`,
+  (topic: string) =>
+    `Every time you open YouTube to learn ${topic}, you get a 45-minute lecture that puts you to sleep. Not today. Today you learn it in 5 minutes, and it sticks.`,
 
   // ── Contrarian hooks (4) ──
-  (topic: string) => `Everything your CS professor taught you about ${topic} is technically correct and completely useless in the real world. Here's what actually matters.`,
-  (topic: string) => `Hot take: most "senior" engineers don't actually understand ${topic}. They know the buzzwords, but ask them WHY it works, and they freeze. Don't be that engineer.`,
-  (topic: string) => `I'm about to explain ${topic} in a way your textbook never did. No jargon. No fluff. Just the raw truth about how it actually works.`,
-  (topic: string) => `${topic} is not what you think it is. I know that sounds dramatic, but hear me out. What they teach in school and what happens in production are two completely different things.`,
+  (topic: string) =>
+    `Everything your CS professor taught you about ${topic} is technically correct and completely useless in the real world. Here's what actually matters.`,
+  (topic: string) =>
+    `Hot take: most "senior" engineers don't actually understand ${topic}. They know the buzzwords, but ask them WHY it works, and they freeze. Don't be that engineer.`,
+  (topic: string) =>
+    `I'm about to explain ${topic} in a way your textbook never did. No jargon. No fluff. Just the raw truth about how it actually works.`,
+  (topic: string) =>
+    `${topic} is not what you think it is. I know that sounds dramatic, but hear me out. What they teach in school and what happens in production are two completely different things.`,
 
   // ── Authority hooks (4) ──
-  (topic: string) => `${getTopicExample(topic).company}, Google, and other top companies all ask about ${topic} in their interviews. After studying hundreds of interview questions, I found the exact pattern they follow. Let me share it.`,
-  (topic: string) => `I've reviewed over 500 technical interview recordings. The number one reason candidates get rejected? They can't explain ${topic} with clarity and confidence. Let's fix that.`,
-  (topic: string) => `The top 1 percent of engineers all have one thing in common. They don't just USE ${topic}. They understand it deeply enough to TEACH it. That's what we're doing today.`,
-  (topic: string) => `After helping over 1000 students crack FAANG interviews, I can tell you the exact moment most interviews are won or lost. It's the ${topic} question. And here's how to nail it.`,
+  (topic: string) =>
+    `${getTopicExample(topic).company}, Google, and other top companies all ask about ${topic} in their interviews. After studying hundreds of interview questions, I found the exact pattern they follow. Let me share it.`,
+  (topic: string) =>
+    `I've reviewed over 500 technical interview recordings. The number one reason candidates get rejected? They can't explain ${topic} with clarity and confidence. Let's fix that.`,
+  (topic: string) =>
+    `The top 1 percent of engineers all have one thing in common. They don't just USE ${topic}. They understand it deeply enough to TEACH it. That's what we're doing today.`,
+  (topic: string) =>
+    `After helping over 1000 students crack FAANG interviews, I can tell you the exact moment most interviews are won or lost. It's the ${topic} question. And here's how to nail it.`,
 
   // ── Curiosity gap hooks (2) ──
-  (topic: string) => `There's a reason ${topic} is asked in EVERY system design interview. And it's not the reason you think.`,
-  (topic: string) => `What if I told you that ${topic} is actually about ONE simple idea? Just one. And once you see it, you can never unsee it.`,
+  (topic: string) =>
+    `There's a reason ${topic} is asked in EVERY system design interview. And it's not the reason you think.`,
+  (topic: string) =>
+    `What if I told you that ${topic} is actually about ONE simple idea? Just one. And once you see it, you can never unsee it.`,
 
   // ── Dramatic / clickbait-worthy hooks (10) ──
   (topic: string) => `DELETE this video if I can't explain ${topic} in under 5 minutes...`,
-  (topic: string) => `I asked a senior engineer at ${getTopicExample(topic).company} to explain ${topic}. His answer shocked me.`,
+  (topic: string) =>
+    `I asked a senior engineer at ${getTopicExample(topic).company} to explain ${topic}. His answer shocked me.`,
   (topic: string) => `This one concept has appeared in EVERY FAANG interview this year.`,
   (topic: string) => `Most YouTube tutorials get ${topic} COMPLETELY wrong. Here's the truth.`,
-  (topic: string) => `My friend failed his ${getTopicExample(topic).company} interview because of ${topic}. Don't make his mistake.`,
+  (topic: string) =>
+    `My friend failed his ${getTopicExample(topic).company} interview because of ${topic}. Don't make his mistake.`,
   (topic: string) => `I spent 200 hours researching ${topic}. Here's everything in one video.`,
-  (topic: string) => `WARNING: Once you understand ${topic}, you can't unsee it in every system you use.`,
-  (topic: string) => `The REAL reason tech companies pay 50 LPA... they need people who understand THIS.`,
-  (topic: string) => `If I had to explain ${topic} to my younger self, this is exactly what I'd say.`,
+  (topic: string) =>
+    `WARNING: Once you understand ${topic}, you can't unsee it in every system you use.`,
+  (topic: string) =>
+    `The REAL reason tech companies pay 50 LPA... they need people who understand THIS.`,
+  (topic: string) =>
+    `If I had to explain ${topic} to my younger self, this is exactly what I'd say.`,
   (topic: string) => `Your interviewer is PRAYING you don't know this about ${topic}...`,
 ];
 
 /** Session 2 hooks — recap + preview, building on session 1 */
 const SESSION_2_HOOKS = [
-  (topic: string) => `Last time we learned WHY ${topic} matters and what problems it solves. Today we're going DEEP into the algorithms and implementations that make it actually work.`,
-  (topic: string) => `In session 1, I showed you the big picture of ${topic}. You know the "what" and the "why." Now it's time for the "how." And this is where it gets really fun.`,
-  (topic: string) => `If you watched session 1, you already understand ${topic} better than most junior developers. Today we level up to intermediate. Building on that foundation.`,
-  (topic: string) => `Remember when I said ${topic} isn't complicated? I stand by that. But today's session goes deeper. We're moving from understanding to IMPLEMENTING. Big difference.`,
-  (topic: string) => `You learned the fundamentals of ${topic} last time. Great start. But fundamentals alone don't get you hired. Today we cover the implementation details that interviewers actually ask about.`,
-  (topic: string) => `Session 1 was the warm-up. You now know what ${topic} is and why every big tech company relies on it. Today? We roll up our sleeves and write the actual code.`,
-  (topic: string) => `Last session I promised you'd understand ${topic}. Today I'm promising you'll be able to IMPLEMENT it. Let's pick up right where we left off.`,
-  (topic: string) => `If session 1 was "Introduction to ${topic}", today is "Mastering ${topic}." We're going from theory to practice, from definitions to code, from concepts to interview answers.`,
+  (topic: string) =>
+    `Last time we learned WHY ${topic} matters and what problems it solves. Today we're going DEEP into the algorithms and implementations that make it actually work.`,
+  (topic: string) =>
+    `In session 1, I showed you the big picture of ${topic}. You know the "what" and the "why." Now it's time for the "how." And this is where it gets really fun.`,
+  (topic: string) =>
+    `If you watched session 1, you already understand ${topic} better than most junior developers. Today we level up to intermediate. Building on that foundation.`,
+  (topic: string) =>
+    `Remember when I said ${topic} isn't complicated? I stand by that. But today's session goes deeper. We're moving from understanding to IMPLEMENTING. Big difference.`,
+  (topic: string) =>
+    `You learned the fundamentals of ${topic} last time. Great start. But fundamentals alone don't get you hired. Today we cover the implementation details that interviewers actually ask about.`,
+  (topic: string) =>
+    `Session 1 was the warm-up. You now know what ${topic} is and why every big tech company relies on it. Today? We roll up our sleeves and write the actual code.`,
+  (topic: string) =>
+    `Last session I promised you'd understand ${topic}. Today I'm promising you'll be able to IMPLEMENT it. Let's pick up right where we left off.`,
+  (topic: string) =>
+    `If session 1 was "Introduction to ${topic}", today is "Mastering ${topic}." We're going from theory to practice, from definitions to code, from concepts to interview answers.`,
 ];
 
 /** Session 3 hooks — escalation, separating seniors from juniors */
 const SESSION_3_HOOKS = [
-  (topic: string) => `You now know the basics AND the algorithms of ${topic}. But here's the question that separates senior engineers from everyone else: what happens when it BREAKS in production?`,
-  (topic: string) => `Two sessions in, and you already know more about ${topic} than most developers with years of experience. Today we tackle the advanced patterns that get you the senior-level offer.`,
-  (topic: string) => `Sessions 1 and 2 made you dangerous. You can explain ${topic} and implement it. Session 3 makes you LETHAL. We're covering the edge cases, the failure modes, the stuff that breaks at 3 AM.`,
-  (topic: string) => `Here's what's different about session 3. In sessions 1 and 2, I taught you how ${topic} works. Today I'm teaching you how it FAILS. And that's what really matters in production.`,
-  (topic: string) => `You've built the foundation. You've written the code. Now comes the part that actually matters in senior-level interviews: the trade-offs, the edge cases, the real-world gotchas of ${topic}.`,
-  (topic: string) => `Let me ask you something. You can now explain ${topic} and implement it from scratch. But can you debug it at scale? Can you design it for a billion users? That's what session 3 is about.`,
-  (topic: string) => `This is the session that turns knowledge into expertise. We've covered what ${topic} is and how to build it. Now we learn how to make it bulletproof. This is senior engineer territory.`,
-  (topic: string) => `A junior knows WHAT ${topic} is. A mid-level knows HOW to implement it. A senior knows WHEN it fails and WHAT to do about it. That's what session 3 is about.`,
+  (topic: string) =>
+    `You now know the basics AND the algorithms of ${topic}. But here's the question that separates senior engineers from everyone else: what happens when it BREAKS in production?`,
+  (topic: string) =>
+    `Two sessions in, and you already know more about ${topic} than most developers with years of experience. Today we tackle the advanced patterns that get you the senior-level offer.`,
+  (topic: string) =>
+    `Sessions 1 and 2 made you dangerous. You can explain ${topic} and implement it. Session 3 makes you LETHAL. We're covering the edge cases, the failure modes, the stuff that breaks at 3 AM.`,
+  (topic: string) =>
+    `Here's what's different about session 3. In sessions 1 and 2, I taught you how ${topic} works. Today I'm teaching you how it FAILS. And that's what really matters in production.`,
+  (topic: string) =>
+    `You've built the foundation. You've written the code. Now comes the part that actually matters in senior-level interviews: the trade-offs, the edge cases, the real-world gotchas of ${topic}.`,
+  (topic: string) =>
+    `Let me ask you something. You can now explain ${topic} and implement it from scratch. But can you debug it at scale? Can you design it for a billion users? That's what session 3 is about.`,
+  (topic: string) =>
+    `This is the session that turns knowledge into expertise. We've covered what ${topic} is and how to build it. Now we learn how to make it bulletproof. This is senior engineer territory.`,
+  (topic: string) =>
+    `A junior knows WHAT ${topic} is. A mid-level knows HOW to implement it. A senior knows WHEN it fails and WHAT to do about it. That's what session 3 is about.`,
 ];
 
 /** Session 4+ hooks — expert level, production reality */
 const SESSION_4_PLUS_HOOKS = [
-  (topic: string) => `We've covered the fundamentals, the algorithms, and the failure modes of ${topic}. Now let's tackle the part that actually breaks in production and how ${getTopicExample(topic).company} handles it at ${getTopicExample(topic).scale}.`,
-  (topic: string) => `Three sessions of ${topic} have made you more knowledgeable than most working engineers. But there's one more level. The level where you can ARCHITECT systems. Let's get there.`,
-  (topic: string) => `If you've been following this series, you can already ace most ${topic} interview questions. Today we go beyond the interview. We're talking real production architecture at massive scale.`,
-  (topic: string) => `This is the advanced ${topic} session that I wish existed when I was preparing for interviews. Everything we cover today comes from real production incidents at top tech companies.`,
-  (topic: string) => `By now you're not just familiar with ${topic}. You're fluent. Today we become experts. We're covering the patterns that principal engineers use when designing systems for billions of users.`,
-  (topic: string) => `We've built up ${topic} from zero to advanced. In this session, we're looking at the cutting edge. The newest patterns, the latest developments, and what the future holds.`,
+  (topic: string) =>
+    `We've covered the fundamentals, the algorithms, and the failure modes of ${topic}. Now let's tackle the part that actually breaks in production and how ${getTopicExample(topic).company} handles it at ${getTopicExample(topic).scale}.`,
+  (topic: string) =>
+    `Three sessions of ${topic} have made you more knowledgeable than most working engineers. But there's one more level. The level where you can ARCHITECT systems. Let's get there.`,
+  (topic: string) =>
+    `If you've been following this series, you can already ace most ${topic} interview questions. Today we go beyond the interview. We're talking real production architecture at massive scale.`,
+  (topic: string) =>
+    `This is the advanced ${topic} session that I wish existed when I was preparing for interviews. Everything we cover today comes from real production incidents at top tech companies.`,
+  (topic: string) =>
+    `By now you're not just familiar with ${topic}. You're fluent. Today we become experts. We're covering the patterns that principal engineers use when designing systems for billions of users.`,
+  (topic: string) =>
+    `We've built up ${topic} from zero to advanced. In this session, we're looking at the cutting edge. The newest patterns, the latest developments, and what the future holds.`,
 ];
 
-function generateHook(topic: string, title: string, sessionNumber: number = 1, totalSessions?: number): string {
+function generateHook(
+  topic: string,
+  title: string,
+  sessionNumber: number = 1,
+  totalSessions?: number
+): string {
   let hook: string;
 
   if (sessionNumber === 1) {
@@ -2478,13 +2877,17 @@ function parseMarkdown(markdown: string): MarkdownSection[] {
     if (line.includes('|') && line.trim().startsWith('|')) {
       const tableLines: string[] = [];
       while (i < lines.length && lines[i].includes('|')) {
-        if (!lines[i].includes('---')) { // Skip separator row
+        if (!lines[i].includes('---')) {
+          // Skip separator row
           tableLines.push(lines[i]);
         }
         i++;
       }
-      const rows = tableLines.map(l =>
-        l.split('|').map(cell => cell.trim()).filter(Boolean)
+      const rows = tableLines.map((l) =>
+        l
+          .split('|')
+          .map((cell) => cell.trim())
+          .filter(Boolean)
       );
       sections.push({
         type: 'table',
@@ -2514,12 +2917,19 @@ function parseMarkdown(markdown: string): MarkdownSection[] {
     // Regular text paragraphs
     if (line.trim()) {
       const textLines: string[] = [];
-      while (i < lines.length && lines[i].trim() && !lines[i].startsWith('#') && !lines[i].startsWith('```') && !lines[i].startsWith('|')) {
+      while (
+        i < lines.length &&
+        lines[i].trim() &&
+        !lines[i].startsWith('#') &&
+        !lines[i].startsWith('```') &&
+        !lines[i].startsWith('|')
+      ) {
         textLines.push(lines[i]);
         i++;
       }
       const text = textLines.join(' ').replace(/[*_]/g, '');
-      if (text.length > 20) { // Skip very short fragments
+      if (text.length > 20) {
+        // Skip very short fragments
         sections.push({
           type: 'text',
           heading: currentHeading,
@@ -2565,9 +2975,7 @@ function generateCodeCues(narration: string, codeLineCount: number): AnimationCu
 
 function generateTextCues(narration: string, bulletCount: number): AnimationCue[] {
   const phrases = SyncTimeline.computePhraseBoundaries(narration);
-  const cues: AnimationCue[] = [
-    { wordIndex: 0, action: 'revealBullet', target: 0 },
-  ];
+  const cues: AnimationCue[] = [{ wordIndex: 0, action: 'revealBullet', target: 0 }];
 
   for (let i = 0; i < Math.min(phrases.length, bulletCount - 1); i++) {
     cues.push({ wordIndex: phrases[i] + 1, action: 'revealBullet', target: i + 1 });
@@ -2589,15 +2997,17 @@ function generateTableCues(narration: string, rowCount: number): AnimationCue[] 
 function generateSceneSfxTriggers(
   sceneIndex: number,
   sceneType: string,
-  cues: AnimationCue[],
+  cues: AnimationCue[]
 ): SfxTrigger[] {
   const triggers: SfxTrigger[] = [];
   triggers.push({ sceneIndex, wordIndex: 0, effect: 'whoosh-in', volume: 0.4 });
 
   if (sceneType === 'table') {
-    cues.filter(c => c.action === 'revealRow').forEach(c => {
-      triggers.push({ sceneIndex, wordIndex: c.wordIndex, effect: 'ding', volume: 0.3 });
-    });
+    cues
+      .filter((c) => c.action === 'revealRow')
+      .forEach((c) => {
+        triggers.push({ sceneIndex, wordIndex: c.wordIndex, effect: 'ding', volume: 0.3 });
+      });
   }
 
   return triggers;
@@ -2611,8 +3021,8 @@ function generateSceneSfxTriggers(
 function bulletsFromText(text: string, max: number = 4): string[] {
   return text
     .split(/(?<=[.!?])\s+/)
-    .map(s => s.trim())
-    .filter(s => s.length > 15 && s.length < 120) // skip tiny fragments and huge blocks
+    .map((s) => s.trim())
+    .filter((s) => s.length > 15 && s.length < 120) // skip tiny fragments and huge blocks
     .slice(0, max);
 }
 
@@ -2642,10 +3052,20 @@ function splitLongScene(scene: Scene, _currentFrame: number): Scene[] {
       frame = end;
       const suffix = i === 0 ? '' : i === 1 ? ' — Deep Dive' : ' — Key Insight';
       // KEY FIX: each sub-scene gets its OWN content + bullets derived from its narration chunk
-      const partBullets = i === 0 && scene.bullets && scene.bullets.length > 0
-        ? scene.bullets.slice(0, 3)
-        : bulletsFromText(part);
-      return { ...scene, narration: part, content: part, duration: dur, startFrame: start, endFrame: end, heading: (scene.heading || '') + suffix, bullets: partBullets };
+      const partBullets =
+        i === 0 && scene.bullets && scene.bullets.length > 0
+          ? scene.bullets.slice(0, 3)
+          : bulletsFromText(part);
+      return {
+        ...scene,
+        narration: part,
+        content: part,
+        duration: dur,
+        startFrame: start,
+        endFrame: end,
+        heading: (scene.heading || '') + suffix,
+        bullets: partBullets,
+      };
     });
   }
 
@@ -2653,19 +3073,40 @@ function splitLongScene(scene: Scene, _currentFrame: number): Scene[] {
   const mid = Math.ceil(sentences.length / 2);
   const firstHalf = sentences.slice(0, mid).join(' ');
   const secondHalf = sentences.slice(mid).join(' ');
-  const firstDuration = Math.max(4, Math.round((firstHalf.length / scene.narration.length) * scene.duration));
+  const firstDuration = Math.max(
+    4,
+    Math.round((firstHalf.length / scene.narration.length) * scene.duration)
+  );
   const secondDuration = Math.max(4, scene.duration - firstDuration);
 
-  const firstBullets = scene.bullets && scene.bullets.length > 0
-    ? scene.bullets.slice(0, Math.ceil(scene.bullets.length / 2))
-    : bulletsFromText(firstHalf);
-  const secondBullets = scene.bullets && scene.bullets.length > 2
-    ? scene.bullets.slice(Math.ceil(scene.bullets.length / 2))
-    : bulletsFromText(secondHalf);
+  const firstBullets =
+    scene.bullets && scene.bullets.length > 0
+      ? scene.bullets.slice(0, Math.ceil(scene.bullets.length / 2))
+      : bulletsFromText(firstHalf);
+  const secondBullets =
+    scene.bullets && scene.bullets.length > 2
+      ? scene.bullets.slice(Math.ceil(scene.bullets.length / 2))
+      : bulletsFromText(secondHalf);
 
   return [
-    { ...scene, narration: firstHalf, content: firstHalf, duration: firstDuration, endFrame: scene.startFrame + TIMING.secondsToFrames(firstDuration), bullets: firstBullets },
-    { ...scene, narration: secondHalf, content: secondHalf, duration: secondDuration, startFrame: scene.startFrame + TIMING.secondsToFrames(firstDuration), endFrame: scene.endFrame, heading: (scene.heading || '') + ' — Key Insight', bullets: secondBullets },
+    {
+      ...scene,
+      narration: firstHalf,
+      content: firstHalf,
+      duration: firstDuration,
+      endFrame: scene.startFrame + TIMING.secondsToFrames(firstDuration),
+      bullets: firstBullets,
+    },
+    {
+      ...scene,
+      narration: secondHalf,
+      content: secondHalf,
+      duration: secondDuration,
+      startFrame: scene.startFrame + TIMING.secondsToFrames(firstDuration),
+      endFrame: scene.endFrame,
+      heading: (scene.heading || '') + ' — Key Insight',
+      bullets: secondBullets,
+    },
   ];
 }
 
@@ -2677,7 +3118,7 @@ function sectionToScene(
   language: string,
   currentFrame: number,
   sectionIndex: number = 0,
-  topic: string = '',
+  topic: string = ''
 ): Scene {
   const type = mapSectionType(section.type);
 
@@ -2689,12 +3130,13 @@ function sectionToScene(
     effectiveTopic = '';
   }
 
-  let narration = generateNarration(section, effectiveTopic);
+  const narration = generateNarration(section, effectiveTopic);
 
   // No more stacking of aha phrases, encouragement, or repetition on every scene.
   // The narration from generateNarration() is already clean and complete.
 
-  const speedKey = section.type === 'code' ? 'code' : section.type === 'callout' ? 'interview' : 'text';
+  const speedKey =
+    section.type === 'code' ? 'code' : section.type === 'callout' ? 'interview' : 'text';
   const wpm = NARRATION_SPEEDS[speedKey];
   const wordCount = narration.split(/\s+/).length;
   const duration = Math.max(5, Math.ceil((wordCount / wpm) * 60));
@@ -2725,19 +3167,19 @@ function sectionToScene(
   if (type === 'text') {
     scene.bullets = section.content
       .split(/[.!?]/)
-      .map(s => s.trim())
-      .filter(s => s.length > 10)
+      .map((s) => s.trim())
+      .filter((s) => s.length > 10)
       .slice(0, 5);
   }
 
   // Generate animation cues based on scene type
   if (scene.type === 'code') {
-    const lineCount = scene.content.split('\n').filter(l => l.trim()).length;
+    const lineCount = scene.content.split('\n').filter((l) => l.trim()).length;
     scene.animationCues = generateCodeCues(scene.narration, lineCount);
   } else if (scene.type === 'text' && scene.bullets) {
     scene.animationCues = generateTextCues(scene.narration, scene.bullets.length);
   } else if (scene.type === 'table') {
-    const rowCount = scene.content.split('\n').filter(l => l.includes('|')).length - 2;
+    const rowCount = scene.content.split('\n').filter((l) => l.includes('|')).length - 2;
     scene.animationCues = generateTableCues(scene.narration, Math.max(1, rowCount));
   }
 
@@ -2789,14 +3231,14 @@ const LANG_TRANSITIONS: Record<string, string[]> = {
   python: [
     "Let's see this in Python first.",
     "Here's how this looks in Python.",
-    "Starting with the Python implementation.",
-    "First up, the Python version.",
+    'Starting with the Python implementation.',
+    'First up, the Python version.',
   ],
   java: [
     "And here's the same logic in Java.",
     "Now let's see the Java version.",
     "Here's the equivalent Java implementation.",
-    "And in Java, it looks like this.",
+    'And in Java, it looks like this.',
   ],
 };
 
@@ -2808,15 +3250,16 @@ function getLanguageTransition(language: string, seed: number): string {
 }
 
 function summarizeCode(code: string, language: string, topic: string = ''): string {
-  const lines = code.split('\n').filter(l => l.trim());
+  const lines = code.split('\n').filter((l) => l.trim());
   const funcMatch = code.match(/(?:function|def|public\s+\w+)\s+(\w+)/);
   const classMatch = code.match(/class\s+(\w+)/);
   const lang = language.toLowerCase();
 
   // Add language transition for Python and Java dual-language mode
-  const langTransition = (lang === 'python' || lang === 'java')
-    ? getLanguageTransition(lang, (code.length + lines.length) % 4) + ' '
-    : '';
+  const langTransition =
+    lang === 'python' || lang === 'java'
+      ? getLanguageTransition(lang, (code.length + lines.length) % 4) + ' '
+      : '';
 
   // Extract what the code actually DOES by analyzing its content
   const purposeHint = inferCodePurpose(code);
@@ -2847,7 +3290,10 @@ function summarizeCode(code: string, language: string, topic: string = ''): stri
   }
   const purpose = purposeHint ? ` This code ${purposeHint}.` : '';
   // BUG FIX: "Here is the implementation in X lines" only appears ONCE per video
-  const implPhrase = oncePerVideo('impl-in-lines', `Here is the implementation in ${lines.length} lines.`);
+  const implPhrase = oncePerVideo(
+    'impl-in-lines',
+    `Here is the implementation in ${lines.length} lines.`
+  );
   const implFallback = implPhrase || `Let's look at this ${lines.length}-line implementation.`;
   return `${langTransition}${implFallback}${purpose}${topicBridge} ${walkthrough}`;
 }
@@ -2859,33 +3305,62 @@ function inferCodePurpose(code: string): string {
   // Check for common algorithm/data structure patterns
   if (lower.includes('sort') && (lower.includes('pivot') || lower.includes('partition')))
     return 'sorts elements using a partitioning strategy';
-  if (lower.includes('binary') && lower.includes('search') || (lower.includes('mid') && lower.includes('low') && lower.includes('high')))
+  if (
+    (lower.includes('binary') && lower.includes('search')) ||
+    (lower.includes('mid') && lower.includes('low') && lower.includes('high'))
+  )
     return 'performs a binary search to find elements efficiently';
   if (lower.includes('bfs') || (lower.includes('queue') && lower.includes('visited')))
     return 'traverses the graph level by level using BFS';
-  if (lower.includes('dfs') || (lower.includes('stack') && lower.includes('visited')) || (lower.includes('def dfs') || lower.includes('function dfs')))
+  if (
+    lower.includes('dfs') ||
+    (lower.includes('stack') && lower.includes('visited')) ||
+    lower.includes('def dfs') ||
+    lower.includes('function dfs')
+  )
     return 'explores the graph depth-first using DFS';
   if (lower.includes('dijkstra') || (lower.includes('priority') && lower.includes('distance')))
     return 'finds the shortest path using a priority queue';
-  if (lower.includes('cache') && (lower.includes('get') && lower.includes('put')))
+  if (lower.includes('cache') && lower.includes('get') && lower.includes('put'))
     return 'implements a cache with get and put operations';
   if (lower.includes('lru') || lower.includes('least recently'))
     return 'implements an LRU cache that evicts the least recently used entries';
 
   // Check for system design patterns
-  if (lower.includes('round_robin') || lower.includes('roundrobin') || lower.includes('round robin'))
+  if (
+    lower.includes('round_robin') ||
+    lower.includes('roundrobin') ||
+    lower.includes('round robin')
+  )
     return 'distributes requests across servers using round robin';
-  if (lower.includes('load_balanc') || lower.includes('loadbalanc') || lower.includes('load balanc'))
+  if (
+    lower.includes('load_balanc') ||
+    lower.includes('loadbalanc') ||
+    lower.includes('load balanc')
+  )
     return 'balances load across multiple servers';
-  if (lower.includes('hash_ring') || lower.includes('consistent_hash') || lower.includes('consistent hash'))
+  if (
+    lower.includes('hash_ring') ||
+    lower.includes('consistent_hash') ||
+    lower.includes('consistent hash')
+  )
     return 'distributes data using consistent hashing';
-  if (lower.includes('rate_limit') || lower.includes('ratelimit') || lower.includes('token_bucket') || lower.includes('tokenbucket'))
+  if (
+    lower.includes('rate_limit') ||
+    lower.includes('ratelimit') ||
+    lower.includes('token_bucket') ||
+    lower.includes('tokenbucket')
+  )
     return 'implements rate limiting to control request flow';
   if (lower.includes('circuit_breaker') || lower.includes('circuitbreaker'))
     return 'implements a circuit breaker to prevent cascading failures';
   if (lower.includes('retry') && (lower.includes('backoff') || lower.includes('attempt')))
     return 'retries failed operations with backoff';
-  if (lower.includes('health_check') || lower.includes('healthcheck') || lower.includes('heartbeat'))
+  if (
+    lower.includes('health_check') ||
+    lower.includes('healthcheck') ||
+    lower.includes('heartbeat')
+  )
     return 'monitors server health with periodic checks';
 
   // Check for data structure operations
@@ -2893,7 +3368,11 @@ function inferCodePurpose(code: string): string {
     return 'implements a queue with enqueue and dequeue operations';
   if ((lower.includes('.push') || lower.includes('.pop')) && lower.includes('stack'))
     return 'implements stack-based operations';
-  if (lower.includes('insert') && lower.includes('node') && (lower.includes('left') || lower.includes('right')))
+  if (
+    lower.includes('insert') &&
+    lower.includes('node') &&
+    (lower.includes('left') || lower.includes('right'))
+  )
     return 'builds and manipulates a tree structure';
   if (lower.includes('linked') && lower.includes('node') && lower.includes('next'))
     return 'works with a linked list structure';
@@ -2903,7 +3382,10 @@ function inferCodePurpose(code: string): string {
   // Check for common operations by keywords
   if (lower.includes('distribute') && lower.includes('server'))
     return 'distributes work across multiple servers';
-  if (lower.includes('connect') && (lower.includes('socket') || lower.includes('http') || lower.includes('tcp')))
+  if (
+    lower.includes('connect') &&
+    (lower.includes('socket') || lower.includes('http') || lower.includes('tcp'))
+  )
     return 'establishes network connections';
   if (lower.includes('encrypt') || lower.includes('decrypt') || lower.includes('cipher'))
     return 'handles encryption and decryption';
@@ -2911,23 +3393,32 @@ function inferCodePurpose(code: string): string {
     return 'validates and sanitizes the input data';
   if (lower.includes('serialize') || lower.includes('deserialize') || lower.includes('json'))
     return 'handles data serialization';
-  if (lower.includes('thread') && (lower.includes('lock') || lower.includes('mutex') || lower.includes('synchronized')))
+  if (
+    lower.includes('thread') &&
+    (lower.includes('lock') || lower.includes('mutex') || lower.includes('synchronized'))
+  )
     return 'manages concurrent access with thread safety';
 
   // Check for return patterns to infer purpose
   const returnMatch = code.match(/return\s+(\w+)/g);
   if (returnMatch && returnMatch.length === 1) {
     const retVal = returnMatch[0].replace('return ', '');
-    if (retVal === 'result' || retVal === 'output' || retVal === 'res') return 'computes and returns the result';
-    if (retVal === 'count' || retVal === 'total' || retVal === 'sum') return 'calculates and returns a running total';
+    if (retVal === 'result' || retVal === 'output' || retVal === 'res')
+      return 'computes and returns the result';
+    if (retVal === 'count' || retVal === 'total' || retVal === 'sum')
+      return 'calculates and returns a running total';
     if (retVal.includes('max') || retVal.includes('min')) return `finds the ${retVal} value`;
-    if (retVal === 'True' || retVal === 'true' || retVal === 'False' || retVal === 'false') return 'checks a condition and returns a boolean';
+    if (retVal === 'True' || retVal === 'true' || retVal === 'False' || retVal === 'false')
+      return 'checks a condition and returns a boolean';
   }
 
   // Fallback: check for loops + data structures to describe the pattern
   if ((lower.includes('for ') || lower.includes('while ')) && lower.includes('append'))
     return 'builds up a result by iterating and collecting elements';
-  if ((lower.includes('for ') || lower.includes('while ')) && (lower.includes('max') || lower.includes('min')))
+  if (
+    (lower.includes('for ') || lower.includes('while ')) &&
+    (lower.includes('max') || lower.includes('min'))
+  )
     return 'iterates to find the optimal value';
 
   return '';
@@ -2958,106 +3449,325 @@ function addTeachingPauses(text: string): string {
  */
 const VIZ_VARIANT_RULES: Record<string, Array<{ keywords: string[]; variant: string }>> = {
   // ── TrafficFlow variants ─────────────────────────────────────────────
-  'traffic': [
+  traffic: [
     {
       keywords: [
-        'overload', 'overwhelm', 'crash', 'single server', 'one server',
-        'no load balancer', 'bottleneck', 'too many', 'million users', 'spike',
-        'without load', 'without a load', 'imagine a server', 'gets overwhelmed',
-        'goes down', 'too much traffic', 'one machine', 'single point',
-        'can\'t handle', 'piling up', 'slow down', 'response time',
+        'overload',
+        'overwhelm',
+        'crash',
+        'single server',
+        'one server',
+        'no load balancer',
+        'bottleneck',
+        'too many',
+        'million users',
+        'spike',
+        'without load',
+        'without a load',
+        'imagine a server',
+        'gets overwhelmed',
+        'goes down',
+        'too much traffic',
+        'one machine',
+        'single point',
+        "can't handle",
+        'piling up',
+        'slow down',
+        'response time',
       ],
       variant: 'overload',
     },
     {
       keywords: [
-        'round robin', 'distribute', 'even', 'equally', 'rotation', 'algorithm',
-        'weighted', 'split traffic', 'multiple server', 'spread', 'balance',
-        'across servers', 'among servers', 'each server gets',
-        'evenly', 'fairly', 'least connection', 'ip hash',
+        'round robin',
+        'distribute',
+        'even',
+        'equally',
+        'rotation',
+        'algorithm',
+        'weighted',
+        'split traffic',
+        'multiple server',
+        'spread',
+        'balance',
+        'across servers',
+        'among servers',
+        'each server gets',
+        'evenly',
+        'fairly',
+        'least connection',
+        'ip hash',
       ],
       variant: 'distribute',
     },
     {
       keywords: [
-        'health check', 'heartbeat', 'failover', 'detect', 'reroute', 'monitor',
-        'server down', 'failure', 'recovery', 'backup', 'dead server',
-        'unhealthy', 'remove from pool', 'mark as down', 'stop sending',
-        'periodic check', 'ping', 'health endpoint', 'liveness',
+        'health check',
+        'heartbeat',
+        'failover',
+        'detect',
+        'reroute',
+        'monitor',
+        'server down',
+        'failure',
+        'recovery',
+        'backup',
+        'dead server',
+        'unhealthy',
+        'remove from pool',
+        'mark as down',
+        'stop sending',
+        'periodic check',
+        'ping',
+        'health endpoint',
+        'liveness',
       ],
       variant: 'healthcheck',
     },
     {
       keywords: [
-        'sticky', 'session', 'affinity', 'cookie', 'same server', 'stateful',
-        'persistence', 'session id', 'always go to', 'remember which',
-        'client stays', 'bound to', 'pinned',
+        'sticky',
+        'session',
+        'affinity',
+        'cookie',
+        'same server',
+        'stateful',
+        'persistence',
+        'session id',
+        'always go to',
+        'remember which',
+        'client stays',
+        'bound to',
+        'pinned',
       ],
       variant: 'sticky',
     },
     {
       keywords: [
-        'scale', 'horizontal', 'add server', 'auto-scale', 'elastic', 'grow',
-        'new instance', 'capacity', 'spin up', 'launch more',
-        'dynamically add', 'scale out', 'scale up', 'more servers',
-        'cloud auto', 'demand increases', 'handle more',
+        'scale',
+        'horizontal',
+        'add server',
+        'auto-scale',
+        'elastic',
+        'grow',
+        'new instance',
+        'capacity',
+        'spin up',
+        'launch more',
+        'dynamically add',
+        'scale out',
+        'scale up',
+        'more servers',
+        'cloud auto',
+        'demand increases',
+        'handle more',
       ],
       variant: 'scale',
     },
   ],
 
   // ── HashTableViz variants ────────────────────────────────────────────
-  'hashtable': [
-    { keywords: ['insert', 'add', 'put', 'store', 'create', 'new entry', 'first'], variant: 'insert' },
-    { keywords: ['collision', 'chain', 'same bucket', 'linked list', 'open addressing', 'probe', 'conflict', 'same index', 'same slot'], variant: 'collision' },
-    { keywords: ['resize', 'rehash', 'load factor', 'grow', 'double', 'capacity', 'threshold', 'expand', 'too full'], variant: 'resize' },
-    { keywords: ['lookup', 'search', 'find', 'get', 'retrieve', 'access', 'query', 'O(1)', 'constant time', 'fetch'], variant: 'lookup' },
+  hashtable: [
+    {
+      keywords: ['insert', 'add', 'put', 'store', 'create', 'new entry', 'first'],
+      variant: 'insert',
+    },
+    {
+      keywords: [
+        'collision',
+        'chain',
+        'same bucket',
+        'linked list',
+        'open addressing',
+        'probe',
+        'conflict',
+        'same index',
+        'same slot',
+      ],
+      variant: 'collision',
+    },
+    {
+      keywords: [
+        'resize',
+        'rehash',
+        'load factor',
+        'grow',
+        'double',
+        'capacity',
+        'threshold',
+        'expand',
+        'too full',
+      ],
+      variant: 'resize',
+    },
+    {
+      keywords: [
+        'lookup',
+        'search',
+        'find',
+        'get',
+        'retrieve',
+        'access',
+        'query',
+        'O(1)',
+        'constant time',
+        'fetch',
+      ],
+      variant: 'lookup',
+    },
   ],
 
   // ── TreeViz variants ─────────────────────────────────────────────────
-  'tree': [
+  tree: [
     { keywords: ['insert', 'add', 'new node', 'place', 'create'], variant: 'insert' },
     { keywords: ['search', 'find', 'lookup', 'traverse', 'locate', 'path'], variant: 'search' },
-    { keywords: ['delete', 'remove', 'predecessor', 'successor', 'restructure', 'reorganize'], variant: 'delete' },
-    { keywords: ['balance', 'AVL', 'rotation', 'red-black', 'skew', 'height', 'rebalance', 'unbalanced'], variant: 'balance' },
+    {
+      keywords: ['delete', 'remove', 'predecessor', 'successor', 'restructure', 'reorganize'],
+      variant: 'delete',
+    },
+    {
+      keywords: [
+        'balance',
+        'AVL',
+        'rotation',
+        'red-black',
+        'skew',
+        'height',
+        'rebalance',
+        'unbalanced',
+      ],
+      variant: 'balance',
+    },
   ],
 
   // ── SystemArchViz variants ───────────────────────────────────────────
-  'sysarch': [
-    { keywords: ['request', 'flow', 'architecture', 'layer', 'component', 'overview', 'structure', 'basic', 'how it works'], variant: 'request-flow' },
-    { keywords: ['failure', 'circuit breaker', 'cascade', 'fallback', 'resilience', 'fault', 'outage', 'retry', 'timeout', 'graceful degradation'], variant: 'failure' },
-    { keywords: ['scale', 'horizontal', 'replica', 'throughput', 'capacity', 'instances', 'auto-scale', 'grow', 'handle more'], variant: 'scale-up' },
-    { keywords: ['cache', 'redis', 'memcached', 'latency', 'hit rate', 'miss', 'invalidation', 'TTL', 'warm', 'cold'], variant: 'caching' },
+  sysarch: [
+    {
+      keywords: [
+        'request',
+        'flow',
+        'architecture',
+        'layer',
+        'component',
+        'overview',
+        'structure',
+        'basic',
+        'how it works',
+      ],
+      variant: 'request-flow',
+    },
+    {
+      keywords: [
+        'failure',
+        'circuit breaker',
+        'cascade',
+        'fallback',
+        'resilience',
+        'fault',
+        'outage',
+        'retry',
+        'timeout',
+        'graceful degradation',
+      ],
+      variant: 'failure',
+    },
+    {
+      keywords: [
+        'scale',
+        'horizontal',
+        'replica',
+        'throughput',
+        'capacity',
+        'instances',
+        'auto-scale',
+        'grow',
+        'handle more',
+      ],
+      variant: 'scale-up',
+    },
+    {
+      keywords: [
+        'cache',
+        'redis',
+        'memcached',
+        'latency',
+        'hit rate',
+        'miss',
+        'invalidation',
+        'TTL',
+        'warm',
+        'cold',
+      ],
+      variant: 'caching',
+    },
   ],
 
   // ── DatabaseViz variants ─────────────────────────────────────────────
   // CRITICAL: variant names must match the component switch in DatabaseViz.tsx
   // Available variants: (default/replication), 'sharding', 'failover'
-  'database': [
+  database: [
     {
       keywords: [
-        'replication', 'replica', 'read replica', 'master', 'slave', 'primary',
-        'secondary', 'sync', 'lag', 'master-slave', 'primary-secondary',
-        'read/write split', 'replicate', 'copy data', 'standby copy',
-        'data sync', 'read traffic', 'write to primary',
+        'replication',
+        'replica',
+        'read replica',
+        'master',
+        'slave',
+        'primary',
+        'secondary',
+        'sync',
+        'lag',
+        'master-slave',
+        'primary-secondary',
+        'read/write split',
+        'replicate',
+        'copy data',
+        'standby copy',
+        'data sync',
+        'read traffic',
+        'write to primary',
       ],
       variant: 'replication',
     },
     {
       keywords: [
-        'shard', 'partition', 'horizontal scaling', 'shard key', 'range',
-        'hash partition', 'consistent hash', 'distribute data', 'split data',
-        'data across', 'multiple databases', 'break up', 'subset of data',
-        'user a through', 'user id mod', 'hash function',
+        'shard',
+        'partition',
+        'horizontal scaling',
+        'shard key',
+        'range',
+        'hash partition',
+        'consistent hash',
+        'distribute data',
+        'split data',
+        'data across',
+        'multiple databases',
+        'break up',
+        'subset of data',
+        'user a through',
+        'user id mod',
+        'hash function',
       ],
       variant: 'sharding',
     },
     {
       keywords: [
-        'failover', 'backup', 'disaster', 'standby', 'recovery', 'promote',
-        'switchover', 'database down', 'database fails', 'high availability',
-        'automatic failover', 'hot standby', 'warm standby',
-        'database crash', 'promote standby', 'take over',
+        'failover',
+        'backup',
+        'disaster',
+        'standby',
+        'recovery',
+        'promote',
+        'switchover',
+        'database down',
+        'database fails',
+        'high availability',
+        'automatic failover',
+        'hot standby',
+        'warm standby',
+        'database crash',
+        'promote standby',
+        'take over',
       ],
       variant: 'failover',
     },
@@ -3065,85 +3775,218 @@ const VIZ_VARIANT_RULES: Record<string, Array<{ keywords: string[]; variant: str
       // Default variant (replication viz) for general DB concepts — this is the
       // broadest bucket so it's listed LAST (scored after more-specific rules)
       keywords: [
-        'database', 'table', 'schema', 'query', 'sql', 'normalize',
-        'index', 'join', 'select', 'insert', 'transaction', 'acid',
-        'single database', 'overwhelm', 'bottleneck', 'slow queries',
-        'one database', 'relational', 'data model', 'store data',
-        'b-tree', 'query optimization', 'indexing',
+        'database',
+        'table',
+        'schema',
+        'query',
+        'sql',
+        'normalize',
+        'index',
+        'join',
+        'select',
+        'insert',
+        'transaction',
+        'acid',
+        'single database',
+        'overwhelm',
+        'bottleneck',
+        'slow queries',
+        'one database',
+        'relational',
+        'data model',
+        'store data',
+        'b-tree',
+        'query optimization',
+        'indexing',
       ],
-      variant: 'replication',  // default variant shows basic DB concepts
+      variant: 'replication', // default variant shows basic DB concepts
     },
   ],
 
   // ── CacheViz variants ────────────────────────────────────────────────
-  'cache': [
+  cache: [
     {
       keywords: [
-        'hit', 'miss', 'cache hit', 'cache miss', 'lookup', 'check cache',
-        'fast', 'read', 'get', 'fetch', 'retrieve', 'key-value',
-        'in memory', 'hot data', 'frequently accessed', 'speed up',
+        'hit',
+        'miss',
+        'cache hit',
+        'cache miss',
+        'lookup',
+        'check cache',
+        'fast',
+        'read',
+        'get',
+        'fetch',
+        'retrieve',
+        'key-value',
+        'in memory',
+        'hot data',
+        'frequently accessed',
+        'speed up',
       ],
       variant: 'lookup',
     },
     {
       keywords: [
-        'evict', 'eviction', 'lru', 'lfu', 'ttl', 'expire', 'remove',
-        'policy', 'capacity', 'full', 'overflow', 'replacement',
-        'least recently', 'least frequently', 'time to live', 'stale',
+        'evict',
+        'eviction',
+        'lru',
+        'lfu',
+        'ttl',
+        'expire',
+        'remove',
+        'policy',
+        'capacity',
+        'full',
+        'overflow',
+        'replacement',
+        'least recently',
+        'least frequently',
+        'time to live',
+        'stale',
       ],
       variant: 'eviction',
     },
     {
       keywords: [
-        'layer', 'l1', 'l2', 'multi-level', 'distributed', 'local', 'global',
-        'tier', 'hierarchy', 'cdn', 'edge', 'multi-layer', 'app cache',
-        'browser cache', 'server cache', 'levels of cache',
+        'layer',
+        'l1',
+        'l2',
+        'multi-level',
+        'distributed',
+        'local',
+        'global',
+        'tier',
+        'hierarchy',
+        'cdn',
+        'edge',
+        'multi-layer',
+        'app cache',
+        'browser cache',
+        'server cache',
+        'levels of cache',
       ],
       variant: 'layers',
     },
   ],
 
   // ── QueueViz variants ────────────────────────────────────────────────
-  'queue': [
+  queue: [
     {
       keywords: [
-        'fifo', 'enqueue', 'dequeue', 'push', 'pop', 'order', 'first in',
-        'sequential', 'simple queue', 'basic queue', 'message queue',
-        'producer', 'consumer', 'send message', 'receive message',
-        'process in order', 'one by one',
+        'fifo',
+        'enqueue',
+        'dequeue',
+        'push',
+        'pop',
+        'order',
+        'first in',
+        'sequential',
+        'simple queue',
+        'basic queue',
+        'message queue',
+        'producer',
+        'consumer',
+        'send message',
+        'receive message',
+        'process in order',
+        'one by one',
       ],
       variant: 'fifo',
     },
     {
       keywords: [
-        'publish', 'subscribe', 'pub/sub', 'pub-sub', 'fan-out', 'broadcast',
-        'consumer group', 'topic', 'event', 'multiple consumers',
-        'all subscribers', 'notification', 'event-driven',
-        'one-to-many', 'decouple',
+        'publish',
+        'subscribe',
+        'pub/sub',
+        'pub-sub',
+        'fan-out',
+        'broadcast',
+        'consumer group',
+        'topic',
+        'event',
+        'multiple consumers',
+        'all subscribers',
+        'notification',
+        'event-driven',
+        'one-to-many',
+        'decouple',
       ],
       variant: 'pubsub',
     },
     {
       keywords: [
-        'dead letter', 'dlq', 'retry', 'failed', 'poison', 'error queue',
-        'backoff', 'failed message', 'reprocess', 'undeliverable',
-        'max retries', 'error handling', 'poison pill',
+        'dead letter',
+        'dlq',
+        'retry',
+        'failed',
+        'poison',
+        'error queue',
+        'backoff',
+        'failed message',
+        'reprocess',
+        'undeliverable',
+        'max retries',
+        'error handling',
+        'poison pill',
       ],
       variant: 'deadletter',
     },
   ],
 
   // ── GraphViz variants ────────────────────────────────────────────────
-  'graph': [
-    { keywords: ['bfs', 'breadth', 'level order', 'queue-based', 'shortest', 'unweighted', 'layer by layer', 'level by level'], variant: 'bfs' },
-    { keywords: ['dfs', 'depth', 'stack', 'backtrack', 'cycle', 'topological', 'recursive', 'explore deep'], variant: 'dfs' },
-    { keywords: ['dijkstra', 'weight', 'shortest path', 'distance', 'bellman', 'priority', 'priority queue', 'greedy'], variant: 'dijkstra' },
+  graph: [
+    {
+      keywords: [
+        'bfs',
+        'breadth',
+        'level order',
+        'queue-based',
+        'shortest',
+        'unweighted',
+        'layer by layer',
+        'level by level',
+      ],
+      variant: 'bfs',
+    },
+    {
+      keywords: [
+        'dfs',
+        'depth',
+        'stack',
+        'backtrack',
+        'cycle',
+        'topological',
+        'recursive',
+        'explore deep',
+      ],
+      variant: 'dfs',
+    },
+    {
+      keywords: [
+        'dijkstra',
+        'weight',
+        'shortest path',
+        'distance',
+        'bellman',
+        'priority',
+        'priority queue',
+        'greedy',
+      ],
+      variant: 'dijkstra',
+    },
   ],
 
   // ── SortingViz variants ──────────────────────────────────────────────
-  'sorting': [
-    { keywords: ['merge', 'divide', 'conquer', 'split', 'combine', 'merge sort'], variant: 'merge' },
-    { keywords: ['quick', 'pivot', 'partition', 'quick sort', 'lomuto', 'hoare'], variant: 'quick' },
+  sorting: [
+    {
+      keywords: ['merge', 'divide', 'conquer', 'split', 'combine', 'merge sort'],
+      variant: 'merge',
+    },
+    {
+      keywords: ['quick', 'pivot', 'partition', 'quick sort', 'lomuto', 'hoare'],
+      variant: 'quick',
+    },
     { keywords: ['bubble', 'swap', 'adjacent', 'selection', 'insertion'], variant: 'bubble' },
     { keywords: ['binary search', 'search', 'find', 'mid', 'target', 'sorted'], variant: 'search' },
   ],
@@ -3154,51 +3997,119 @@ function getVizFamily(topic: string): string | null {
   const t = topic.toLowerCase().replace(/[^a-z0-9]/g, '-');
 
   // Traffic/Network
-  if (t.includes('load-balanc') || t.includes('cdn') || t.includes('api-gateway') ||
-      t.includes('rate-limit') || t.includes('network') || t.includes('proxy') ||
-      t.includes('dns') || t.includes('http') || t.includes('grpc') ||
-      t.includes('websocket')) return 'traffic';
+  if (
+    t.includes('load-balanc') ||
+    t.includes('cdn') ||
+    t.includes('api-gateway') ||
+    t.includes('rate-limit') ||
+    t.includes('network') ||
+    t.includes('proxy') ||
+    t.includes('dns') ||
+    t.includes('http') ||
+    t.includes('grpc') ||
+    t.includes('websocket')
+  )
+    return 'traffic';
 
   // Hash Table
-  if (t.includes('hash-table') || t.includes('hash-map') || t.includes('hashing') ||
-      t.includes('consistent-hash')) return 'hashtable';
+  if (
+    t.includes('hash-table') ||
+    t.includes('hash-map') ||
+    t.includes('hashing') ||
+    t.includes('consistent-hash')
+  )
+    return 'hashtable';
 
   // Tree
-  if (t.includes('tree') || t.includes('bst') || t.includes('heap') ||
-      t.includes('trie') || t.includes('avl') || t.includes('red-black') ||
-      t.includes('priority-queue')) return 'tree';
+  if (
+    t.includes('tree') ||
+    t.includes('bst') ||
+    t.includes('heap') ||
+    t.includes('trie') ||
+    t.includes('avl') ||
+    t.includes('red-black') ||
+    t.includes('priority-queue')
+  )
+    return 'tree';
 
   // Database
-  if (t.includes('database') || t.includes('rdbms') || t.includes('sql') ||
-      t.includes('nosql') || t.includes('mongo') || t.includes('postgres') ||
-      t.includes('mysql') || t.includes('dynamo') || t.includes('cassandra') ||
-      t.includes('sharding') || t.includes('replicat') ||
-      t.includes('acid') || t.includes('cap-theorem')) return 'database';
+  if (
+    t.includes('database') ||
+    t.includes('rdbms') ||
+    t.includes('sql') ||
+    t.includes('nosql') ||
+    t.includes('mongo') ||
+    t.includes('postgres') ||
+    t.includes('mysql') ||
+    t.includes('dynamo') ||
+    t.includes('cassandra') ||
+    t.includes('sharding') ||
+    t.includes('replicat') ||
+    t.includes('acid') ||
+    t.includes('cap-theorem')
+  )
+    return 'database';
 
   // Cache
-  if (t.includes('cach') || t.includes('redis') || t.includes('memcache') ||
-      t.includes('content-delivery')) return 'cache';
+  if (
+    t.includes('cach') ||
+    t.includes('redis') ||
+    t.includes('memcache') ||
+    t.includes('content-delivery')
+  )
+    return 'cache';
 
   // Queue/Messaging
-  if (t.includes('queue') || t.includes('kafka') || t.includes('rabbitmq') ||
-      t.includes('message') || t.includes('pub-sub') || t.includes('event-driven') ||
-      t.includes('notification') || t.includes('scheduler') ||
-      t.includes('sqs') || t.includes('sns')) return 'queue';
+  if (
+    t.includes('queue') ||
+    t.includes('kafka') ||
+    t.includes('rabbitmq') ||
+    t.includes('message') ||
+    t.includes('pub-sub') ||
+    t.includes('event-driven') ||
+    t.includes('notification') ||
+    t.includes('scheduler') ||
+    t.includes('sqs') ||
+    t.includes('sns')
+  )
+    return 'queue';
 
   // Graph
-  if (t.includes('graph') || t.includes('distributed-system') ||
-      t.includes('consensus') || t.includes('raft') || t.includes('paxos')) return 'graph';
+  if (
+    t.includes('graph') ||
+    t.includes('distributed-system') ||
+    t.includes('consensus') ||
+    t.includes('raft') ||
+    t.includes('paxos')
+  )
+    return 'graph';
 
   // Sorting/Arrays
-  if (t.includes('sort') || t.includes('array') || t.includes('string') ||
-      t.includes('two-pointer') || t.includes('sliding-window') ||
-      t.includes('binary-search')) return 'sorting';
+  if (
+    t.includes('sort') ||
+    t.includes('array') ||
+    t.includes('string') ||
+    t.includes('two-pointer') ||
+    t.includes('sliding-window') ||
+    t.includes('binary-search')
+  )
+    return 'sorting';
 
   // System Architecture (broadest — must be after more specific checks)
-  if (t.includes('system-design') || t.includes('microservice') ||
-      t.includes('design-') || t.includes('scalab') || t.includes('architect') ||
-      t.includes('auth') || t.includes('security') || t.includes('ci-cd') ||
-      t.includes('devops') || t.includes('monitor') || t.includes('observ')) return 'sysarch';
+  if (
+    t.includes('system-design') ||
+    t.includes('microservice') ||
+    t.includes('design-') ||
+    t.includes('scalab') ||
+    t.includes('architect') ||
+    t.includes('auth') ||
+    t.includes('security') ||
+    t.includes('ci-cd') ||
+    t.includes('devops') ||
+    t.includes('monitor') ||
+    t.includes('observ')
+  )
+    return 'sysarch';
 
   return null;
 }
@@ -3216,7 +4127,8 @@ function getVizFamily(topic: string): string | null {
  */
 function assignVizVariant(scene: Scene, topic: string, sceneIndex: number): string | undefined {
   // Only visual scenes (text, interview, code) get variants — diagram/table render differently
-  if (scene.type !== 'text' && scene.type !== 'interview' && scene.type !== 'code') return undefined;
+  if (scene.type !== 'text' && scene.type !== 'interview' && scene.type !== 'code')
+    return undefined;
 
   const family = getVizFamily(topic);
   if (!family) return undefined;
@@ -3232,7 +4144,7 @@ function assignVizVariant(scene: Scene, topic: string, sceneIndex: number): stri
     headingText, // double-weight heading
     (scene.narration || '').toLowerCase(),
     (scene.content || '').toLowerCase(),
-    ...(scene.bullets || []).map(b => b.toLowerCase()),
+    ...(scene.bullets || []).map((b) => b.toLowerCase()),
   ].join(' ');
 
   // Score each variant by keyword match count

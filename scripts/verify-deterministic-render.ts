@@ -40,7 +40,7 @@ import { execSync, spawnSync } from 'child_process';
 const DEFAULT_TOPIC = 'load-balancing';
 const DEFAULT_SESSION = 1;
 const COMPOSITIONS = ['LongVideo', 'VerticalLong', 'ShortVideo'] as const;
-type Composition = typeof COMPOSITIONS[number];
+type Composition = (typeof COMPOSITIONS)[number];
 
 const PROJECT_ROOT = path.resolve(__dirname, '..');
 const OUTPUT_DIR = path.join(PROJECT_ROOT, 'output', '_determinism_check');
@@ -65,17 +65,22 @@ function parseArgs(): Config {
   let keepOutput = false;
 
   for (let i = 0; i < args.length; i++) {
-    if (args[i] === '--topic' && args[i + 1]) { topic = args[++i]; }
-    else if (args[i] === '--session' && args[i + 1]) { session = parseInt(args[++i], 10); }
-    else if (args[i] === '--props' && args[i + 1]) { propsFile = path.resolve(args[++i]); }
-    else if (args[i] === '--composition' && args[i + 1]) {
+    if (args[i] === '--topic' && args[i + 1]) {
+      topic = args[++i];
+    } else if (args[i] === '--session' && args[i + 1]) {
+      session = parseInt(args[++i], 10);
+    } else if (args[i] === '--props' && args[i + 1]) {
+      propsFile = path.resolve(args[++i]);
+    } else if (args[i] === '--composition' && args[i + 1]) {
       const c = args[++i] as Composition;
       if (!COMPOSITIONS.includes(c)) {
         console.error(`Unknown composition "${c}". Valid: ${COMPOSITIONS.join(', ')}`);
         process.exit(1);
       }
       composition = c;
-    } else if (args[i] === '--keep-output') { keepOutput = true; }
+    } else if (args[i] === '--keep-output') {
+      keepOutput = true;
+    }
   }
 
   return { topic, session, propsFile, composition, keepOutput };
@@ -128,18 +133,29 @@ function resolvePropsFile(topic: string, session: number, propsFile: string | nu
 
   const generatedFile = path.join(OUTPUT_DIR, `props-${topic}-${session}.json`);
   const result = spawnSync(
-    'npx', ['tsx', 'scripts/render-session.ts',
-      '--topic', topic,
-      '--session', String(session),
+    'npx',
+    [
+      'tsx',
+      'scripts/render-session.ts',
+      '--topic',
+      topic,
+      '--session',
+      String(session),
       '--dry-run',
-      '--out', generatedFile,
+      '--out',
+      generatedFile,
     ],
-    { cwd: PROJECT_ROOT, stdio: 'inherit', shell: true },
+    { cwd: PROJECT_ROOT, stdio: 'inherit', shell: true }
   );
 
   if (result.status !== 0) {
     console.error('ERROR: Could not generate props via dry-run. Is TTS cache warm?');
-    console.error('  Run a full render first:  npx tsx scripts/render-session.ts --topic', topic, '--session', String(session));
+    console.error(
+      '  Run a full render first:  npx tsx scripts/render-session.ts --topic',
+      topic,
+      '--session',
+      String(session)
+    );
     process.exit(1);
   }
 
@@ -158,19 +174,25 @@ function runRender(
   propsFile: string,
   composition: Composition,
   outputFile: string,
-  runLabel: string,
+  runLabel: string
 ): void {
-  console.log(`\n  [${runLabel}] npx remotion render ${composition} → ${path.basename(outputFile)}`);
+  console.log(
+    `\n  [${runLabel}] npx remotion render ${composition} → ${path.basename(outputFile)}`
+  );
 
   const result = spawnSync(
-    'npx', [
-      'remotion', 'render',
+    'npx',
+    [
+      'remotion',
+      'render',
       composition,
       outputFile,
-      '--props', propsFile,
-      '--log', 'error',   // suppress Remotion progress noise in CI
+      '--props',
+      propsFile,
+      '--log',
+      'error', // suppress Remotion progress noise in CI
     ],
-    { cwd: PROJECT_ROOT, stdio: 'inherit', shell: true },
+    { cwd: PROJECT_ROOT, stdio: 'inherit', shell: true }
   );
 
   if (result.status !== 0) {
@@ -209,7 +231,9 @@ async function main() {
   const out2 = path.join(OUTPUT_DIR, `render_2.mp4`);
 
   // Remove any stale outputs from a previous run.
-  [out1, out2].forEach(f => { if (fs.existsSync(f)) fs.unlinkSync(f); });
+  [out1, out2].forEach((f) => {
+    if (fs.existsSync(f)) fs.unlinkSync(f);
+  });
 
   runRender(propsFile, config.composition, out1, 'render 1');
   runRender(propsFile, config.composition, out2, 'render 2');
@@ -243,7 +267,9 @@ async function main() {
     console.error('    1. grep "Math.random\\|Date.now\\|new Date(" src/');
     console.error('    2. Check if any component reads process.env dynamically at render time.');
     console.error('    3. Check if any component reads the filesystem at render time.');
-    console.error('    4. Run with --log verbose to see which frames differ (use ffmpeg framemd5).');
+    console.error(
+      '    4. Run with --log verbose to see which frames differ (use ffmpeg framemd5).'
+    );
     process.exit(1);
   }
 }

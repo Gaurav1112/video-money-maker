@@ -23,7 +23,10 @@ interface InterviewInsightProps {
 function deriveQuestion(heading?: string, insight?: string): string {
   if (heading) {
     // Strip markdown-style prefixes
-    const clean = heading.replace(/^#+\s*/, '').replace(/[*_`]/g, '').trim();
+    const clean = heading
+      .replace(/^#+\s*/, '')
+      .replace(/[*_`]/g, '')
+      .trim();
     // If it already ends with ?, use it
     if (clean.endsWith('?')) return clean;
     // Common transformations
@@ -46,8 +49,8 @@ function deriveQuestion(heading?: string, insight?: string): string {
 function buildFrameworkSections(insight: string): Array<{ label: string; content: string }> {
   const sentences = insight
     .split(/[.!?]+/)
-    .map(s => s.trim())
-    .filter(s => s.length > 10);
+    .map((s) => s.trim())
+    .filter((s) => s.length > 10);
 
   if (sentences.length === 0) {
     return [
@@ -82,19 +85,42 @@ function buildFrameworkSections(insight: string): Array<{ label: string; content
 /** Highlights key interview phrases */
 function highlightKeyPhrases(text: string): React.ReactNode[] {
   const keywords = [
-    'always', 'never', 'key', 'critical', 'important', 'must', 'should',
-    'interviewer', 'interviewers', 'expect', 'O\\(n\\)', 'O\\(log n\\)', 'O\\(1\\)',
-    'trade-off', 'tradeoff', 'edge case', 'edge cases', 'time complexity',
-    'space complexity', 'optimize', 'optimal', 'efficient', 'explain',
+    'always',
+    'never',
+    'key',
+    'critical',
+    'important',
+    'must',
+    'should',
+    'interviewer',
+    'interviewers',
+    'expect',
+    'O\\(n\\)',
+    'O\\(log n\\)',
+    'O\\(1\\)',
+    'trade-off',
+    'tradeoff',
+    'edge case',
+    'edge cases',
+    'time complexity',
+    'space complexity',
+    'optimize',
+    'optimal',
+    'efficient',
+    'explain',
   ];
   const pattern = new RegExp(
-    `\\b(${keywords.map(k => k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})\\b`,
-    'gi',
+    `\\b(${keywords.map((k) => k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})\\b`,
+    'gi'
   );
 
   const parts = text.split(pattern);
   return parts.map((part, i) => {
-    if (keywords.some(k => k.toLowerCase().replace(/\\\(/g, '(').replace(/\\\)/g, ')') === part.toLowerCase())) {
+    if (
+      keywords.some(
+        (k) => k.toLowerCase().replace(/\\\(/g, '(').replace(/\\\)/g, ')') === part.toLowerCase()
+      )
+    ) {
       return (
         <span key={i} style={{ color: COLORS.gold, fontWeight: 700 }}>
           {part}
@@ -155,7 +181,7 @@ const InterviewInsight: React.FC<InterviewInsightProps> = ({
   const sectionInterval = 40; // frames per section
   const activeSection = Math.min(
     sections.length - 1,
-    Math.max(0, Math.floor((elapsed - cardDelay - 15) / sectionInterval)),
+    Math.max(0, Math.floor((elapsed - cardDelay - 15) / sectionInterval))
   );
 
   // Pro tip badge fade-in
@@ -182,18 +208,24 @@ const InterviewInsight: React.FC<InterviewInsightProps> = ({
     >
       {/* Animated background — never plain black */}
       <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
-        <div style={{
-          position: 'absolute', inset: 0,
-          backgroundImage: `
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            backgroundImage: `
             linear-gradient(rgba(232,93,38,0.02) 1px, transparent 1px),
             linear-gradient(90deg, rgba(232,93,38,0.02) 1px, transparent 1px)
           `,
-          backgroundSize: '80px 80px',
-        }} />
-        <div style={{
-          position: 'absolute', inset: 0,
-          background: `radial-gradient(ellipse at 40% 30%, rgba(253,184,19,0.04) 0%, transparent 50%)`,
-        }} />
+            backgroundSize: '80px 80px',
+          }}
+        />
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            background: `radial-gradient(ellipse at 40% 30%, rgba(253,184,19,0.04) 0%, transparent 50%)`,
+          }}
+        />
       </div>
 
       {/* ── Top 30%: Interviewer Chat Bubble ───────────────────────────────── */}

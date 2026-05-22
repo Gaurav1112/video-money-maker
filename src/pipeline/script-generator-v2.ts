@@ -127,9 +127,9 @@ type SlotData = typeof slotsRaw;
 function getHookSlots(topic: string, language: ScriptLanguage): string[] {
   const slots = slotsRaw.HOOK as Record<string, { _en: string[]; _hi: string[] }>;
   const langKey = language === 'hinglish' ? '_hi' : '_en';
-  const topicKey = Object.keys(slots).find(
-    (k) => k.toLowerCase() === topic.toLowerCase().replace(/\s+/g, '-'),
-  ) ?? 'kafka'; // fallback
+  const topicKey =
+    Object.keys(slots).find((k) => k.toLowerCase() === topic.toLowerCase().replace(/\s+/g, '-')) ??
+    'kafka'; // fallback
   return slots[topicKey]?.[langKey] ?? slots['kafka'][langKey];
 }
 
@@ -154,7 +154,7 @@ interface StakeEntry {
 function getStake(topic: string, seed: string, language: ScriptLanguage): string {
   const stakes = stakesRaw.stakes as StakeEntry[];
   const topicStakes = stakes.filter(
-    (s) => s.topic === topic.toLowerCase().replace(/\s+/g, '-') || s.topic === 'generic',
+    (s) => s.topic === topic.toLowerCase().replace(/\s+/g, '-') || s.topic === 'generic'
   );
   const entry = pick(topicStakes.length > 0 ? topicStakes : stakes, seed);
   return language === 'hinglish' ? entry.text_hi : entry.text_en;
@@ -181,7 +181,20 @@ function analogyText(entry: AnalogyEntry, language: ScriptLanguage): string {
 
 // ─── Company / salary anchors ──────────────────────────────────────────────────
 
-const COMPANIES = ['Amazon', 'Flipkart', 'Swiggy', 'Zomato', 'PhonePe', 'Razorpay', 'Meesho', 'CRED', 'Hotstar', 'Google', 'Microsoft', 'Uber'];
+const COMPANIES = [
+  'Amazon',
+  'Flipkart',
+  'Swiggy',
+  'Zomato',
+  'PhonePe',
+  'Razorpay',
+  'Meesho',
+  'CRED',
+  'Hotstar',
+  'Google',
+  'Microsoft',
+  'Uber',
+];
 const SALARY_BANDS = ['₹25LPA', '₹35LPA', '₹45LPA', '₹50LPA', '₹55LPA', '₹65LPA', '₹80LPA'];
 const YEARS = ['2021', '2022', '2023', 'Q1 2024', 'Q3 2023'];
 
@@ -206,7 +219,7 @@ function buildTeachBlock(
   topic: string,
   blockIndex: number,
   language: ScriptLanguage,
-  analogy: AnalogyEntry,
+  analogy: AnalogyEntry
 ): TeachBlock {
   const company = pick(COMPANIES, `${topic}-block${blockIndex}-company`);
   const salary = pick(SALARY_BANDS, `${topic}-block${blockIndex}-salary`);
@@ -214,12 +227,12 @@ function buildTeachBlock(
   const label = labels[blockIndex % labels.length];
 
   const definitions_en: Record<string, string[]> = {
-    'kafka': [
+    kafka: [
       `Kafka is a distributed commit log. Producers write. Consumers read. The log persists.`,
       `Kafka topics are split into partitions. Parallelism comes from partition count.`,
       `Consumer groups let multiple services read the same topic independently.`,
     ],
-    'redis': [
+    redis: [
       `Redis is an in-memory key-value store. Speed comes from RAM, not disk.`,
       `Redis supports six data structures. Pick the wrong one and you pay in latency.`,
       `Redis persistence is optional. Default mode loses data on restart.`,
@@ -239,12 +252,12 @@ function buildTeachBlock(
   ];
 
   const gotchas_en: Record<string, string[]> = {
-    'kafka': [
+    kafka: [
       `90% miss: consumer offset is stored in Kafka itself, not in your app. Restart safe.`,
       `90% miss: partition count cannot be reduced after creation. Plan capacity upfront.`,
       `90% miss: rebalancing pauses all consumers in the group. Design for it.`,
     ],
-    'redis': [
+    redis: [
       `90% miss: Redis is single-threaded for commands. Parallelism comes from pipelining.`,
       `90% miss: KEYS command in production is an instant performance disaster.`,
       `90% miss: Pub/Sub messages are not persisted. Use Streams if persistence matters.`,
@@ -270,14 +283,16 @@ function buildTeachBlock(
 
   return {
     label,
-    definition: language === 'hinglish'
-      ? (defs[blockIndex % defs.length] ?? defs[0]).replace('90%', '90%')
-      : (defs[blockIndex % defs.length] ?? defs[0]),
+    definition:
+      language === 'hinglish'
+        ? (defs[blockIndex % defs.length] ?? defs[0]).replace('90%', '90%')
+        : (defs[blockIndex % defs.length] ?? defs[0]),
     analogyEntry: analogy,
     example: pick(examples_en, `${topic}-block${blockIndex}-example`),
-    gotcha: language === 'hinglish'
-      ? (gotchas[blockIndex % gotchas.length] ?? gotchas[0])
-      : (gotchas[blockIndex % gotchas.length] ?? gotchas[0]),
+    gotcha:
+      language === 'hinglish'
+        ? (gotchas[blockIndex % gotchas.length] ?? gotchas[0])
+        : (gotchas[blockIndex % gotchas.length] ?? gotchas[0]),
   };
 }
 
@@ -291,7 +306,7 @@ function makeSegment(
   text: string,
   type: SegmentType,
   brollHint: string,
-  audioHint: string,
+  audioHint: string
 ): ScriptSegment {
   return {
     frameStart: Math.round(timeStart * FPS),
@@ -319,29 +334,55 @@ function generateLongForm(input: ScriptInput): ScriptSegment[] {
 
   // ── 0–5s: HOOK ────────────────────────────────────────────────────────────
   const hookText = pick(hookSlots, `${topic}-hook-0`);
-  segments.push(makeSegment(0, 5, hookText, 'HOOK',
-    'B-roll: interviewer writing on whiteboard OR salary letter closeup',
-    'audio: sudden silence, then single piano note — high tension'));
+  segments.push(
+    makeSegment(
+      0,
+      5,
+      hookText,
+      'HOOK',
+      'B-roll: interviewer writing on whiteboard OR salary letter closeup',
+      'audio: sudden silence, then single piano note — high tension'
+    )
+  );
 
   // ── 5–20s: PROMISE + STAKES ──────────────────────────────────────────────
   const stakeText = getStake(topicNorm, `${topic}-stake-0`, language);
-  const promise = language === 'hinglish'
-    ? `Yeh video khatam hone ke baad, tujhe pata hoga exactly ${topic} kaise explain karte hain FAANG mein. ${stakeText}`
-    : `By the end of this, you'll know exactly how to answer ${topic} in a FAANG loop. ${stakeText}`;
-  segments.push(makeSegment(5, 20, promise, 'TENSION',
-    'B-roll: offer letter, FAANG logo wall, salary negotiation',
-    'audio: low urgency drone, slightly faster pace'));
+  const promise =
+    language === 'hinglish'
+      ? `Yeh video khatam hone ke baad, tujhe pata hoga exactly ${topic} kaise explain karte hain FAANG mein. ${stakeText}`
+      : `By the end of this, you'll know exactly how to answer ${topic} in a FAANG loop. ${stakeText}`;
+  segments.push(
+    makeSegment(
+      5,
+      20,
+      promise,
+      'TENSION',
+      'B-roll: offer letter, FAANG logo wall, salary negotiation',
+      'audio: low urgency drone, slightly faster pace'
+    )
+  );
 
   // ── 20–45s: SETUP — CONCRETE SCENARIO ────────────────────────────────────
   const company = pick(COMPANIES, `${topic}-setup-company`);
   const year = pick(YEARS, `${topic}-setup-year`);
-  const scale = pick(['40 million', '100 million', '1 billion', '10 million'], `${topic}-setup-scale`);
-  const setupText = language === 'hinglish'
-    ? `${company} ke engineers ko ${year} mein face karna pada: ${scale} users ek saath ${topic} use kar rahe the. Ek galat decision — system down. Toh unhone kya kiya?`
-    : `${company}'s engineering team faced this in ${year}: ${scale} users hitting ${topic} simultaneously. One wrong decision — the system fails. Here's what they actually did.`;
-  segments.push(makeSegment(20, 45, setupText, 'TENSION',
-    `B-roll: ${company} engineering blog, server monitoring dashboard, spike chart`,
-    'audio: tension builds, typing sounds'));
+  const scale = pick(
+    ['40 million', '100 million', '1 billion', '10 million'],
+    `${topic}-setup-scale`
+  );
+  const setupText =
+    language === 'hinglish'
+      ? `${company} ke engineers ko ${year} mein face karna pada: ${scale} users ek saath ${topic} use kar rahe the. Ek galat decision — system down. Toh unhone kya kiya?`
+      : `${company}'s engineering team faced this in ${year}: ${scale} users hitting ${topic} simultaneously. One wrong decision — the system fails. Here's what they actually did.`;
+  segments.push(
+    makeSegment(
+      20,
+      45,
+      setupText,
+      'TENSION',
+      `B-roll: ${company} engineering blog, server monitoring dashboard, spike chart`,
+      'audio: tension builds, typing sounds'
+    )
+  );
 
   // ── 45s–3:00: TEACH — THREE BUILDING BLOCKS ───────────────────────────────
   const blockTimings = [
@@ -356,39 +397,63 @@ function generateLongForm(input: ScriptInput): ScriptSegment[] {
     const block = buildTeachBlock(topicNorm, i, language, analogy);
     const analogyStr = analogyText(analogy, language);
 
-    const blockText = language === 'hinglish'
-      ? `Block ${i + 1}: ${block.label}. ${block.definition} Suno yeh analogy: ${analogyStr} Real example: ${block.example} Aur yeh jo 90% miss karte hain: ${block.gotcha}`
-      : `Block ${i + 1}: ${block.label}. ${block.definition} Here's the analogy: ${analogyStr} Real example: ${block.example} The thing 90% miss: ${block.gotcha}`;
+    const blockText =
+      language === 'hinglish'
+        ? `Block ${i + 1}: ${block.label}. ${block.definition} Suno yeh analogy: ${analogyStr} Real example: ${block.example} Aur yeh jo 90% miss karte hain: ${block.gotcha}`
+        : `Block ${i + 1}: ${block.label}. ${block.definition} Here's the analogy: ${analogyStr} Real example: ${block.example} The thing 90% miss: ${block.gotcha}`;
 
-    segments.push(makeSegment(blockStart, blockEnd, blockText, 'TEACH',
-      `B-roll: ${analogy.visual_hint}`,
-      `audio: teaching voice pace, slight emphasis on "90% miss"`));
+    segments.push(
+      makeSegment(
+        blockStart,
+        blockEnd,
+        blockText,
+        'TEACH',
+        `B-roll: ${analogy.visual_hint}`,
+        `audio: teaching voice pace, slight emphasis on "90% miss"`
+      )
+    );
 
     // Insert pattern-interrupt tension beat every ~30s
     if (i < 2) {
-      const piText = language === 'hinglish'
-        ? `Ruko — ${pick(COMPANIES, `${topic}-pi-${i}`)} ka ${pick(YEARS, `${topic}-pi-year-${i}`)} data dekhte hain. ${pick(SALARY_BANDS, `${topic}-pi-sal-${i}`)} offer ke liye yeh critical hai.`
-        : `Wait — let's look at ${pick(COMPANIES, `${topic}-pi-${i}`)}'s ${pick(YEARS, `${topic}-pi-year-${i}`)} production data. This matters for the ${pick(SALARY_BANDS, `${topic}-pi-sal-${i}`)} offer.`;
-      segments.push(makeSegment(blockEnd - 5, blockEnd, piText, 'TENSION',
-        'B-roll: engineering dashboard, metric spikes',
-        'audio: slight pause, then resume — wake-up beat'));
+      const piText =
+        language === 'hinglish'
+          ? `Ruko — ${pick(COMPANIES, `${topic}-pi-${i}`)} ka ${pick(YEARS, `${topic}-pi-year-${i}`)} data dekhte hain. ${pick(SALARY_BANDS, `${topic}-pi-sal-${i}`)} offer ke liye yeh critical hai.`
+          : `Wait — let's look at ${pick(COMPANIES, `${topic}-pi-${i}`)}'s ${pick(YEARS, `${topic}-pi-year-${i}`)} production data. This matters for the ${pick(SALARY_BANDS, `${topic}-pi-sal-${i}`)} offer.`;
+      segments.push(
+        makeSegment(
+          blockEnd - 5,
+          blockEnd,
+          piText,
+          'TENSION',
+          'B-roll: engineering dashboard, metric spikes',
+          'audio: slight pause, then resume — wake-up beat'
+        )
+      );
     }
   }
 
   // ── 3:00–4:30: APPLY — REAL INTERVIEW Q ──────────────────────────────────
   const applyCompany = pick(COMPANIES, `${topic}-apply-company`);
-  const applyText = language === 'hinglish'
-    ? `Ab real interview question. ${applyCompany} panel ne literally yahi pucha: "${topic} kaise design karoge for ${pick(['₹1B transactions/day', '500M daily active users', 'real-time analytics on 100M events'], `${topic}-apply-scale`)}?" ` +
-      `Galat fork: most candidates seedha architecture pe jump karte hain. ` +
-      `Sahi approach: pehle clarify karo consistency requirement, phir throughput, phir failure modes. ` +
-      `Phir architecture. Complete answer: ${pick(['3 partitions per consumer group, replication factor 3, acks=all', 'sharded by user_id, consistent hash, eventual consistency for reads', 'cache-aside with TTL 300s, thundering herd mitigation via jitter'], `${topic}-apply-answer`)}.`
-    : `Now the real interview question. ${applyCompany}'s panel literally asked this: "How would you design ${topic} for ${pick(['₹1B transactions/day', '500M daily active users', 'real-time analytics on 100M events'], `${topic}-apply-scale`)}?" ` +
-      `Wrong fork: most candidates jump straight to architecture. ` +
-      `Right approach: clarify consistency requirements first, then throughput, then failure modes. Then architecture. ` +
-      `Complete answer: ${pick(['3 partitions per consumer group, replication factor 3, acks=all', 'sharded by user_id, consistent hash, eventual consistency for reads', 'cache-aside with TTL 300s, thundering herd mitigation via jitter'], `${topic}-apply-answer`)}.`;
-  segments.push(makeSegment(180, 270, applyText, 'TEACH',
-    'B-roll: whiteboard drawing with interviewer, system diagram being built',
-    'audio: confident, slower pace for the right answer section'));
+  const applyText =
+    language === 'hinglish'
+      ? `Ab real interview question. ${applyCompany} panel ne literally yahi pucha: "${topic} kaise design karoge for ${pick(['₹1B transactions/day', '500M daily active users', 'real-time analytics on 100M events'], `${topic}-apply-scale`)}?" ` +
+        `Galat fork: most candidates seedha architecture pe jump karte hain. ` +
+        `Sahi approach: pehle clarify karo consistency requirement, phir throughput, phir failure modes. ` +
+        `Phir architecture. Complete answer: ${pick(['3 partitions per consumer group, replication factor 3, acks=all', 'sharded by user_id, consistent hash, eventual consistency for reads', 'cache-aside with TTL 300s, thundering herd mitigation via jitter'], `${topic}-apply-answer`)}.`
+      : `Now the real interview question. ${applyCompany}'s panel literally asked this: "How would you design ${topic} for ${pick(['₹1B transactions/day', '500M daily active users', 'real-time analytics on 100M events'], `${topic}-apply-scale`)}?" ` +
+        `Wrong fork: most candidates jump straight to architecture. ` +
+        `Right approach: clarify consistency requirements first, then throughput, then failure modes. Then architecture. ` +
+        `Complete answer: ${pick(['3 partitions per consumer group, replication factor 3, acks=all', 'sharded by user_id, consistent hash, eventual consistency for reads', 'cache-aside with TTL 300s, thundering herd mitigation via jitter'], `${topic}-apply-answer`)}.`;
+  segments.push(
+    makeSegment(
+      180,
+      270,
+      applyText,
+      'TEACH',
+      'B-roll: whiteboard drawing with interviewer, system diagram being built',
+      'audio: confident, slower pace for the right answer section'
+    )
+  );
 
   // ── 4:30–5:30: MISTAKES ──────────────────────────────────────────────────
   const mistakes_en = [
@@ -401,12 +466,17 @@ function generateLongForm(input: ScriptInput): ScriptSegment[] {
     `Galat answer #2: failure modes address nahi karna. 70% candidates yeh skip karte hain. Result: panel feedback mein "weak signal" immediately.`,
     `Galat answer #3: pehli baar mein over-engineering. Jahan ek instance kafi ho wahan distributed system propose karna. Signal: no judgment, no pragmatism. Offer gone.`,
   ];
-  const mistakesText = language === 'hinglish'
-    ? mistakes_hi.join(' ')
-    : mistakes_en.join(' ');
-  segments.push(makeSegment(270, 330, mistakesText, 'TENSION',
-    'B-roll: rejection email, interview scorecard with red marks',
-    'audio: slightly slower, weight on each mistake'));
+  const mistakesText = language === 'hinglish' ? mistakes_hi.join(' ') : mistakes_en.join(' ');
+  segments.push(
+    makeSegment(
+      270,
+      330,
+      mistakesText,
+      'TENSION',
+      'B-roll: rejection email, interview scorecard with red marks',
+      'audio: slightly slower, weight on each mistake'
+    )
+  );
 
   // ── 5:30–6:00: RECAP + CTA ────────────────────────────────────────────────
   const recap_en = `Three things to remember: 1. Define before you design. 2. Failure modes before components. 3. Trade-offs, not just the happy path.`;
@@ -414,9 +484,16 @@ function generateLongForm(input: ScriptInput): ScriptSegment[] {
   const ctaText1 = pick(ctaSlots.slice(0, 4), `${topic}-cta-1`);
   const ctaText2 = pick(ctaSlots.slice(4), `${topic}-cta-2`);
   const recapText = `${language === 'hinglish' ? recap_hi : recap_en} ${ctaText1} ${ctaText2}`;
-  segments.push(makeSegment(330, 360, recapText, 'CTA',
-    'B-roll: guru-sishya.in on screen, question bank preview',
-    'audio: confident, final statement energy — no fade, assertive end'));
+  segments.push(
+    makeSegment(
+      330,
+      360,
+      recapText,
+      'CTA',
+      'B-roll: guru-sishya.in on screen, question bank preview',
+      'audio: confident, final statement energy — no fade, assertive end'
+    )
+  );
 
   return segments;
 }
@@ -435,59 +512,98 @@ function generateShortForm(input: ScriptInput): ScriptSegment[] {
   const hookText = pick(hookSlots, `${topic}-short-hook`);
   // Use only first sentence for Shorts
   const hookShort = hookText.split(/[.!]/)[0] + '.';
-  segments.push(makeSegment(0, 3, hookShort, 'HOOK',
-    'B-roll: high-energy cut, company logo or salary text on screen',
-    'audio: sudden open, no intro music'));
+  segments.push(
+    makeSegment(
+      0,
+      3,
+      hookShort,
+      'HOOK',
+      'B-roll: high-energy cut, company logo or salary text on screen',
+      'audio: sudden open, no intro music'
+    )
+  );
 
   // ── 3–13s: SETUP ─────────────────────────────────────────────────────────
   const company = pick(COMPANIES, `${topic}-short-setup`);
   const salary = pick(SALARY_BANDS, `${topic}-short-salary`);
-  const setup = language === 'hinglish'
-    ? `${company} interview mein yeh question aata hai. ${salary} offer isi pe depend karta hai.`
-    : `${company}'s interview includes this exact question. The ${salary} offer depends on this.`;
-  segments.push(makeSegment(3, 13, setup, 'TENSION',
-    'B-roll: interview room, offer letter with salary',
-    'audio: urgency tone, fast delivery'));
+  const setup =
+    language === 'hinglish'
+      ? `${company} interview mein yeh question aata hai. ${salary} offer isi pe depend karta hai.`
+      : `${company}'s interview includes this exact question. The ${salary} offer depends on this.`;
+  segments.push(
+    makeSegment(
+      3,
+      13,
+      setup,
+      'TENSION',
+      'B-roll: interview room, offer letter with salary',
+      'audio: urgency tone, fast delivery'
+    )
+  );
 
   // ── 13–33s: REVEAL ───────────────────────────────────────────────────────
   const analogy = analogies[0];
-  const reveal = language === 'hinglish'
-    ? `Yeh hai sahi jawab: ${analogy ? analogyText(analogy, language) : `${topic} ka core concept trade-offs ke baare mein hai. ${company} isko production mein aise implement karta hai.`}`
-    : `Here's the correct answer: ${analogy ? analogyText(analogy, language) : `${topic}'s core is about trade-offs. Here's how ${company} implements this in production.`}`;
-  segments.push(makeSegment(13, 33, reveal, 'TEACH',
-    `B-roll: ${analogy?.visual_hint ?? 'diagram being drawn on whiteboard'}`,
-    'audio: teaching pace, slower on key terms'));
+  const reveal =
+    language === 'hinglish'
+      ? `Yeh hai sahi jawab: ${analogy ? analogyText(analogy, language) : `${topic} ka core concept trade-offs ke baare mein hai. ${company} isko production mein aise implement karta hai.`}`
+      : `Here's the correct answer: ${analogy ? analogyText(analogy, language) : `${topic}'s core is about trade-offs. Here's how ${company} implements this in production.`}`;
+  segments.push(
+    makeSegment(
+      13,
+      33,
+      reveal,
+      'TEACH',
+      `B-roll: ${analogy?.visual_hint ?? 'diagram being drawn on whiteboard'}`,
+      'audio: teaching pace, slower on key terms'
+    )
+  );
 
   // ── 33–48s: DO THIS INSTEAD ───────────────────────────────────────────────
-  const doThis = language === 'hinglish'
-    ? `Zyaadatar log galat kehte hain. Sahi approach: pehle trade-offs, phir architecture. ${company} interviewers yahi sunte hain.`
-    : `Most people answer it wrong. Right approach: trade-offs first, then architecture. That's what ${company} interviewers want to hear.`;
-  segments.push(makeSegment(33, 48, doThis, 'TEACH',
-    'B-roll: wrong answer X vs right answer checkmark side-by-side',
-    'audio: slightly higher energy on "right approach"'));
+  const doThis =
+    language === 'hinglish'
+      ? `Zyaadatar log galat kehte hain. Sahi approach: pehle trade-offs, phir architecture. ${company} interviewers yahi sunte hain.`
+      : `Most people answer it wrong. Right approach: trade-offs first, then architecture. That's what ${company} interviewers want to hear.`;
+  segments.push(
+    makeSegment(
+      33,
+      48,
+      doThis,
+      'TEACH',
+      'B-roll: wrong answer X vs right answer checkmark side-by-side',
+      'audio: slightly higher energy on "right approach"'
+    )
+  );
 
   // ── 48–55s: LOOPBACK CTA ─────────────────────────────────────────────────
   const ctaShort = pick(ctaSlots.slice(0, 3), `${topic}-short-cta`);
   // Callback to hook word
   const hookFirstWord = hookShort.split(' ')[0];
-  const ctaFull = language === 'hinglish'
-    ? `${hookFirstWord} se start kiya tha. guru-sishya.in pe 80 aur questions hain. Free.`
-    : `Started with ${hookFirstWord}. guru-sishya.in has 80 more like this. Free.`;
-  segments.push(makeSegment(48, 55, ctaFull, 'CTA',
-    'B-roll: guru-sishya.in URL on screen, QR code',
-    'audio: final beat, assertive — no fade'));
+  const ctaFull =
+    language === 'hinglish'
+      ? `${hookFirstWord} se start kiya tha. guru-sishya.in pe 80 aur questions hain. Free.`
+      : `Started with ${hookFirstWord}. guru-sishya.in has 80 more like this. Free.`;
+  segments.push(
+    makeSegment(
+      48,
+      55,
+      ctaFull,
+      'CTA',
+      'B-roll: guru-sishya.in URL on screen, QR code',
+      'audio: final beat, assertive — no fade'
+    )
+  );
 
   return segments;
 }
 
 // ─── Inline validator ─────────────────────────────────────────────────────────
 
-function validateSegments(
-  segments: ScriptSegment[],
-  format: ScriptFormat,
-): string[] {
+function validateSegments(segments: ScriptSegment[], format: ScriptFormat): string[] {
   const errors: string[] = [];
-  const fullText = segments.map((s) => s.text).join(' ').toLowerCase();
+  const fullText = segments
+    .map((s) => s.text)
+    .join(' ')
+    .toLowerCase();
 
   // Check banned phrases
   for (const phrase of BANNED_PHRASES) {
@@ -525,7 +641,9 @@ function validateSegments(
     for (const sentence of sentences) {
       const wc = sentence.trim().split(/\s+/).length;
       if (wc > 15) {
-        errors.push(`MAX_SENTENCE_LENGTH: sentence has ${wc} words (max 12 allowed): "${sentence.trim().slice(0, 60)}..."`);
+        errors.push(
+          `MAX_SENTENCE_LENGTH: sentence has ${wc} words (max 12 allowed): "${sentence.trim().slice(0, 60)}..."`
+        );
       }
     }
   }
@@ -544,7 +662,9 @@ function scoreDensity(segments: ScriptSegment[]): number {
   // Density = teach words / total words (target ≥ 0.45)
   // Bonus for specific terms (company names, numbers, technical terms)
   const fullText = segments.map((s) => s.text).join(' ');
-  const specificTerms = (fullText.match(/₹\d+|amazon|flipkart|swiggy|zomato|google|kafka|redis|\d{4}|\d+%/gi) ?? []).length;
+  const specificTerms = (
+    fullText.match(/₹\d+|amazon|flipkart|swiggy|zomato|google|kafka|redis|\d{4}|\d+%/gi) ?? []
+  ).length;
   const specificTermBonus = Math.min(specificTerms / totalWords, 0.15);
 
   return Math.round((totalTeachWords / totalWords + specificTermBonus) * 100) / 100;
@@ -599,10 +719,7 @@ function adaptToRetention(segments: ScriptSegment[]): RetentionSegment[] {
  * so downstream renderers (Remotion compositions) can keep their existing
  * type-driven styling.
  */
-function adaptFromRetention(
-  out: RetentionEngineOutput,
-  fps: number,
-): ScriptSegment[] {
+function adaptFromRetention(out: RetentionEngineOutput, fps: number): ScriptSegment[] {
   return out.segments.map((s) => {
     const text = s.text;
     const wordCount = text.trim() === '' ? 0 : text.trim().split(/\s+/).length;
@@ -613,9 +730,7 @@ function adaptFromRetention(
     else if (s.type === 'cta') mappedType = 'CTA';
     else if (s.type === 'retention_beat') {
       const beat = out.beatsInserted.find(
-        (b) =>
-          Math.abs(b.insertAtSeconds - s.startSeconds) < 0.01 &&
-          b.text === s.text,
+        (b) => Math.abs(b.insertAtSeconds - s.startSeconds) < 0.01 && b.text === s.text
       );
       mappedType = beat?.beatType === 'cta_buyback' ? 'CTA' : 'TENSION';
     } else {
@@ -636,10 +751,7 @@ function adaptFromRetention(
 }
 
 export function generateScript(input: ScriptInput): GeneratedScript {
-  const rawSegments =
-    input.format === 'short'
-      ? generateShortForm(input)
-      : generateLongForm(input);
+  const rawSegments = input.format === 'short' ? generateShortForm(input) : generateLongForm(input);
 
   // Default retention-beat injection is OFF for backward compatibility —
   // existing callers (and the test suite) expect the raw segments shape.
@@ -653,14 +765,11 @@ export function generateScript(input: ScriptInput): GeneratedScript {
   const segments: ScriptSegment[] = useRetention
     ? (() => {
         try {
-          const out = insertRetentionBeats(
-            adaptToRetention(rawSegments),
-            input.topic,
-          );
+          const out = insertRetentionBeats(adaptToRetention(rawSegments), input.topic);
           return adaptFromRetention(out, 30); // 30fps standard
         } catch (err) {
           console.warn(
-            `[script-generator-v2] retention-engine fallback for "${input.topic}" — ${(err as Error).message}`,
+            `[script-generator-v2] retention-engine fallback for "${input.topic}" — ${(err as Error).message}`
           );
           return rawSegments;
         }

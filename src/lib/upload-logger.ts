@@ -27,23 +27,27 @@ export function getLogFile(): string {
   return path.join(LOG_DIR, `upload-${timestamp}.log`);
 }
 
-export function logUpload(level: 'info' | 'warn' | 'error', message: string, context?: Record<string, any>): void {
+export function logUpload(
+  level: 'info' | 'warn' | 'error',
+  message: string,
+  context?: Record<string, any>
+): void {
   const log: UploadLog = {
     timestamp: new Date().toISOString(),
     level,
     message,
     context,
   };
-  
+
   logBuffer.push(log);
-  
+
   // Also log to console
   const prefix = {
     info: 'ℹ️',
     warn: '⚠️',
     error: '❌',
   }[level];
-  
+
   console.log(`${prefix} ${log.timestamp} ${message}`);
   if (context) {
     console.log('   Context:', JSON.stringify(context, null, 2));
@@ -52,18 +56,18 @@ export function logUpload(level: 'info' | 'warn' | 'error', message: string, con
 
 export function flushLogs(): void {
   if (logBuffer.length === 0) return;
-  
+
   try {
     ensureLogDir();
     const logFile = getLogFile();
-    const content = logBuffer.map(log => JSON.stringify(log)).join('\n');
-    
+    const content = logBuffer.map((log) => JSON.stringify(log)).join('\n');
+
     if (fs.existsSync(logFile)) {
       fs.appendFileSync(logFile, '\n' + content);
     } else {
       fs.writeFileSync(logFile, content);
     }
-    
+
     console.log(`\n📝 Logs saved to: ${logFile}`);
     logBuffer = [];
   } catch (err) {

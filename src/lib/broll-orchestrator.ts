@@ -80,7 +80,7 @@ function pickIndex(candidates: BrollComponentId[], hashKey: string): number {
 
 export function orchestrateBroll(
   segments: ScriptSegment[],
-  options: OrchestratorOptions = {},
+  options: OrchestratorOptions = {}
 ): BrollPlan[] {
   const { fps = 30, seed = 42, repeatGapSec = 15 } = options;
   const repeatGapFrames = repeatGapSec * fps;
@@ -164,7 +164,7 @@ export function validateBrollPlan(plan: BrollPlan[], fps = 30): string[] {
     const lastFrame = lastUsed.get(item.component) ?? -Infinity;
     if (item.startFrame - lastFrame < repeatGapFrames) {
       errors.push(
-        `Segment ${i}: component ${item.component} repeated within ${(item.startFrame - lastFrame) / fps}s (min 15s)`,
+        `Segment ${i}: component ${item.component} repeated within ${(item.startFrame - lastFrame) / fps}s (min 15s)`
       );
     }
 
@@ -185,7 +185,7 @@ export function validateBrollPlan(plan: BrollPlan[], fps = 30): string[] {
 export function autoSegmentScript(
   narration: string,
   conceptTypeHints: Partial<Record<string, ConceptType>> = {},
-  fps = 30,
+  fps = 30
 ): ScriptSegment[] {
   // Very naive: split on sentence boundaries, assign ~4s per sentence
   const sentences = narration.match(/[^.!?]+[.!?]+/g) ?? [narration];

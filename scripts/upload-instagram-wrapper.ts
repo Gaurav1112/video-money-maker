@@ -56,15 +56,8 @@ function main() {
   const target = path.resolve(__dirname, 'publish-to-instagram.ts');
   const result = spawnSync(
     'npx',
-    [
-      'tsx',
-      target,
-      '--video', video,
-      '--metadata', metadata,
-      '--topic', topic,
-      '--session', '1',
-    ],
-    { stdio: 'inherit', env: process.env },
+    ['tsx', target, '--video', video, '--metadata', metadata, '--topic', topic, '--session', '1'],
+    { stdio: 'inherit', env: process.env }
   );
   process.exit(result.status ?? 1);
 }

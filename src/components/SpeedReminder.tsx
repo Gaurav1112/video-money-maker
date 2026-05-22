@@ -59,8 +59,7 @@ export const SpeedReminder: React.FC<SpeedReminderProps> = ({
               })
             : 0;
 
-        const translateX =
-          interpolate(enterProgress, [0, 1], [300, 0]) + exitProgress * 300;
+        const translateX = interpolate(enterProgress, [0, 1], [300, 0]) + exitProgress * 300;
         const opacity = enterProgress * (1 - exitProgress);
 
         const msg = MESSAGES[idx];
@@ -89,7 +88,7 @@ export const SpeedReminder: React.FC<SpeedReminderProps> = ({
             <span style={{ fontSize: 22 }}>{msg.icon}</span>
             <span
               style={{
-                color: "#FFFFFF",
+                color: '#FFFFFF',
                 fontSize: 18,
                 fontWeight: 600,
                 fontFamily: 'Inter, sans-serif',
@@ -109,7 +108,7 @@ export const SpeedReminder: React.FC<SpeedReminderProps> = ({
                 justifyContent: 'center',
                 fontSize: 14,
                 fontWeight: 700,
-                color: "#FFFFFF",
+                color: '#FFFFFF',
               }}
             >
               1.5x

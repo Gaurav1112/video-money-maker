@@ -79,32 +79,124 @@ interface Palette {
 function getPalette(topic: string): Palette {
   const lower = topic.toLowerCase();
 
-  if (['kafka', 'rabbit', 'message', 'queue', 'event', 'stream'].some(k => lower.includes(k))) {
-    return { bg: '#1A0A00', accent: '#FF6B00', hookText: '#FFFFFF', wrongBg: '#2D0000', rightBg: '#002000' };
+  if (['kafka', 'rabbit', 'message', 'queue', 'event', 'stream'].some((k) => lower.includes(k))) {
+    return {
+      bg: '#1A0A00',
+      accent: '#FF6B00',
+      hookText: '#FFFFFF',
+      wrongBg: '#2D0000',
+      rightBg: '#002000',
+    };
   }
-  if (['database', 'sql', 'postgres', 'mongo', 'redis', 'cache', 'storage', 'index'].some(k => lower.includes(k))) {
-    return { bg: '#001A0D', accent: '#00E676', hookText: '#FFFFFF', wrongBg: '#2D0000', rightBg: '#002D0A' };
+  if (
+    ['database', 'sql', 'postgres', 'mongo', 'redis', 'cache', 'storage', 'index'].some((k) =>
+      lower.includes(k)
+    )
+  ) {
+    return {
+      bg: '#001A0D',
+      accent: '#00E676',
+      hookText: '#FFFFFF',
+      wrongBg: '#2D0000',
+      rightBg: '#002D0A',
+    };
   }
-  if (['algo', 'sort', 'tree', 'graph', 'array', 'dp', 'recursion', 'bfs', 'dfs', 'heap', 'trie'].some(k => lower.includes(k))) {
-    return { bg: '#000D1A', accent: '#00B0FF', hookText: '#FFFFFF', wrongBg: '#1A0000', rightBg: '#001A0D' };
+  if (
+    [
+      'algo',
+      'sort',
+      'tree',
+      'graph',
+      'array',
+      'dp',
+      'recursion',
+      'bfs',
+      'dfs',
+      'heap',
+      'trie',
+    ].some((k) => lower.includes(k))
+  ) {
+    return {
+      bg: '#000D1A',
+      accent: '#00B0FF',
+      hookText: '#FFFFFF',
+      wrongBg: '#1A0000',
+      rightBg: '#001A0D',
+    };
   }
-  if (['design pattern', 'architecture', 'system design', 'microservice', 'solid'].some(k => lower.includes(k))) {
-    return { bg: '#0D001A', accent: '#AA00FF', hookText: '#FFFFFF', wrongBg: '#1A0010', rightBg: '#0A001A' };
+  if (
+    ['design pattern', 'architecture', 'system design', 'microservice', 'solid'].some((k) =>
+      lower.includes(k)
+    )
+  ) {
+    return {
+      bg: '#0D001A',
+      accent: '#AA00FF',
+      hookText: '#FFFFFF',
+      wrongBg: '#1A0010',
+      rightBg: '#0A001A',
+    };
   }
-  if (['network', 'tcp', 'http', 'dns', 'api', 'rest', 'graphql', 'grpc', 'websocket'].some(k => lower.includes(k))) {
-    return { bg: '#000A1A', accent: '#448AFF', hookText: '#FFFFFF', wrongBg: '#1A0000', rightBg: '#001219' };
+  if (
+    ['network', 'tcp', 'http', 'dns', 'api', 'rest', 'graphql', 'grpc', 'websocket'].some((k) =>
+      lower.includes(k)
+    )
+  ) {
+    return {
+      bg: '#000A1A',
+      accent: '#448AFF',
+      hookText: '#FFFFFF',
+      wrongBg: '#1A0000',
+      rightBg: '#001219',
+    };
   }
-  if (['security', 'auth', 'oauth', 'jwt', 'encrypt', 'rate limit', 'throttl'].some(k => lower.includes(k))) {
-    return { bg: '#1A0000', accent: '#FF1744', hookText: '#FFFFFF', wrongBg: '#2D0000', rightBg: '#001A0D' };
+  if (
+    ['security', 'auth', 'oauth', 'jwt', 'encrypt', 'rate limit', 'throttl'].some((k) =>
+      lower.includes(k)
+    )
+  ) {
+    return {
+      bg: '#1A0000',
+      accent: '#FF1744',
+      hookText: '#FFFFFF',
+      wrongBg: '#2D0000',
+      rightBg: '#001A0D',
+    };
   }
-  if (['docker', 'kubernetes', 'k8s', 'deploy', 'aws', 'cloud', 'nginx', 'terraform'].some(k => lower.includes(k))) {
-    return { bg: '#001219', accent: '#00E5FF', hookText: '#FFFFFF', wrongBg: '#1A0000', rightBg: '#001A0D' };
+  if (
+    ['docker', 'kubernetes', 'k8s', 'deploy', 'aws', 'cloud', 'nginx', 'terraform'].some((k) =>
+      lower.includes(k)
+    )
+  ) {
+    return {
+      bg: '#001219',
+      accent: '#00E5FF',
+      hookText: '#FFFFFF',
+      wrongBg: '#1A0000',
+      rightBg: '#001A0D',
+    };
   }
-  if (['react', 'frontend', 'css', 'html', 'vue', 'angular', 'next', 'typescript', 'javascript'].some(k => lower.includes(k))) {
-    return { bg: '#1A0010', accent: '#F50057', hookText: '#FFFFFF', wrongBg: '#1A0010', rightBg: '#001A0D' };
+  if (
+    ['react', 'frontend', 'css', 'html', 'vue', 'angular', 'next', 'typescript', 'javascript'].some(
+      (k) => lower.includes(k)
+    )
+  ) {
+    return {
+      bg: '#1A0010',
+      accent: '#F50057',
+      hookText: '#FFFFFF',
+      wrongBg: '#1A0010',
+      rightBg: '#001A0D',
+    };
   }
   // Default — deep charcoal + electric blue
-  return { bg: '#0A0A12', accent: '#3D84FF', hookText: '#FFFFFF', wrongBg: '#1A0000', rightBg: '#001A0D' };
+  return {
+    bg: '#0A0A12',
+    accent: '#3D84FF',
+    hookText: '#FFFFFF',
+    wrongBg: '#1A0000',
+    rightBg: '#001A0D',
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -137,12 +229,7 @@ const BrandWatermark: React.FC<{ accent: string }> = ({ accent }) => (
 // ---------------------------------------------------------------------------
 
 function cap4Words(text: string): string {
-  return text
-    .trim()
-    .toUpperCase()
-    .split(/\s+/)
-    .slice(0, 4)
-    .join(' ');
+  return text.trim().toUpperCase().split(/\s+/).slice(0, 4).join(' ');
 }
 
 // ---------------------------------------------------------------------------
@@ -159,7 +246,9 @@ const LayoutA: React.FC<{
   const faceEmotion = emotionFor(hookText);
 
   return (
-    <AbsoluteFill style={{ background: palette.bg, fontFamily: 'Inter, sans-serif', overflow: 'hidden' }}>
+    <AbsoluteFill
+      style={{ background: palette.bg, fontFamily: 'Inter, sans-serif', overflow: 'hidden' }}
+    >
       {/* Subtle vignette for depth */}
       <div
         style={{
@@ -215,7 +304,14 @@ const LayoutA: React.FC<{
 
       {/* SVG Arrow — pointing from face zone to text */}
       <svg
-        style={{ position: 'absolute', left: 360, top: 260, width: 200, height: 160, overflow: 'visible' }}
+        style={{
+          position: 'absolute',
+          left: 360,
+          top: 260,
+          width: 200,
+          height: 160,
+          overflow: 'visible',
+        }}
         viewBox="0 0 200 160"
       >
         {/* Hand-drawn style arrow: curved path */}
@@ -228,10 +324,7 @@ const LayoutA: React.FC<{
           strokeLinejoin="round"
         />
         {/* Arrowhead */}
-        <polygon
-          points="165,55 185,75 150,80"
-          fill="#FFEA00"
-        />
+        <polygon points="165,55 185,75 150,80" fill="#FFEA00" />
       </svg>
 
       {/* Hook text — right side, vertically centred */}
@@ -319,7 +412,9 @@ const LayoutB: React.FC<{
   const topicWord = cap4Words(hookText).split(' ')[0];
 
   return (
-    <AbsoluteFill style={{ background: palette.bg, fontFamily: 'Inter, sans-serif', overflow: 'hidden' }}>
+    <AbsoluteFill
+      style={{ background: palette.bg, fontFamily: 'Inter, sans-serif', overflow: 'hidden' }}
+    >
       {/* Left half — WRONG */}
       <div
         style={{
@@ -338,7 +433,9 @@ const LayoutB: React.FC<{
         }}
       >
         {/* Big ❌ */}
-        <div style={{ fontSize: 140, lineHeight: 1, filter: 'drop-shadow(0 4px 16px #FF000080)' }}>❌</div>
+        <div style={{ fontSize: 140, lineHeight: 1, filter: 'drop-shadow(0 4px 16px #FF000080)' }}>
+          ❌
+        </div>
         <div
           style={{
             fontSize: 64,
@@ -385,7 +482,15 @@ const LayoutB: React.FC<{
         }}
       >
         {/* Big ✅ */}
-        <div style={{ fontSize: 140, lineHeight: 1, filter: `drop-shadow(0 4px 16px ${palette.accent}80)` }}>✅</div>
+        <div
+          style={{
+            fontSize: 140,
+            lineHeight: 1,
+            filter: `drop-shadow(0 4px 16px ${palette.accent}80)`,
+          }}
+        >
+          ✅
+        </div>
         <div
           style={{
             fontSize: 64,
@@ -483,7 +588,9 @@ const LayoutC: React.FC<{
   const restWords = words.slice(1).join(' ');
 
   return (
-    <AbsoluteFill style={{ background: palette.bg, fontFamily: 'Inter, sans-serif', overflow: 'hidden' }}>
+    <AbsoluteFill
+      style={{ background: palette.bg, fontFamily: 'Inter, sans-serif', overflow: 'hidden' }}
+    >
       {/* BEFORE — top 44% */}
       <div
         style={{
@@ -673,8 +780,7 @@ export const ThumbnailV2: React.FC<ThumbnailV2Props> = (props) => {
   } = props;
 
   const hookText = cap4Words(hookTextProp ?? hookTextFor(topic));
-  const variant: ThumbnailVariant =
-    variantOverride ?? variantFor(topic);
+  const variant: ThumbnailVariant = variantOverride ?? variantFor(topic);
 
   const palette = getPalette(topic);
 

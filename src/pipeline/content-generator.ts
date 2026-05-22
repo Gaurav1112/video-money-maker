@@ -114,19 +114,27 @@ export function generateFromPrompt(prompt: string, options: GenerateOptions = {}
  * If the text has markdown headings, they are preserved. Otherwise the text
  * is wrapped with a generated title.
  */
-export function generateFromContent(rawContent: string, options: GenerateOptions = {}): SessionInput {
+export function generateFromContent(
+  rawContent: string,
+  options: GenerateOptions = {}
+): SessionInput {
   const { sessionNumber = 1 } = options;
 
   // Try to extract a title from the first heading
   const headingMatch = rawContent.match(/^#\s+(.+)/m) || rawContent.match(/^##\s+(.+)/m);
-  const title = headingMatch ? headingMatch[1].trim() : rawContent.slice(0, 60).replace(/[#*_\n]/g, '').trim();
+  const title = headingMatch
+    ? headingMatch[1].trim()
+    : rawContent
+        .slice(0, 60)
+        .replace(/[#*_\n]/g, '')
+        .trim();
 
   // Extract topic from title
   const topic = title.replace(/^(Introduction to |Explain |Teach me |Understanding )/i, '').trim();
 
   // Extract objectives from subheadings
   const headings = rawContent.match(/^###?\s+.+/gm) || [];
-  const objectives = headings.slice(0, 5).map(h => h.replace(/^#+\s*/, '').trim());
+  const objectives = headings.slice(0, 5).map((h) => h.replace(/^#+\s*/, '').trim());
   if (objectives.length === 0) {
     objectives.push(`Understand the core concepts of ${topic}`);
   }
@@ -134,15 +142,15 @@ export function generateFromContent(rawContent: string, options: GenerateOptions
   // Extract potential review questions (lines ending with ?)
   const questions = rawContent.match(/^.+\?$/gm) || [];
   const reviewQuestions = questions
-    .filter(q => q.length > 15 && q.length < 200)
+    .filter((q) => q.length > 15 && q.length < 200)
     .slice(0, 5)
-    .map(q => q.replace(/^[>#*-]\s*/, '').trim());
+    .map((q) => q.replace(/^[>#*-]\s*/, '').trim());
 
   if (reviewQuestions.length === 0) {
     reviewQuestions.push(
       `What are the key advantages of ${topic}?`,
       `How would you explain ${topic} in an interview?`,
-      `What are common mistakes when working with ${topic}?`,
+      `What are common mistakes when working with ${topic}?`
     );
   }
 
@@ -161,35 +169,86 @@ export function generateFromContent(rawContent: string, options: GenerateOptions
 function extractTopicName(prompt: string): string {
   // Strip common prefixes
   let topic = prompt
-    .replace(/^(explain|teach me|teach|what is|how does|describe|introduction to|intro to|create a video about|make a video on|video about|generate)\s+/i, '')
-    .replace(/\s+(in python|in java|in typescript|in javascript|in detail|step by step|for beginners|for interviews)$/i, '')
+    .replace(
+      /^(explain|teach me|teach|what is|how does|describe|introduction to|intro to|create a video about|make a video on|video about|generate)\s+/i,
+      ''
+    )
+    .replace(
+      /\s+(in python|in java|in typescript|in javascript|in detail|step by step|for beginners|for interviews)$/i,
+      ''
+    )
     .replace(/[?.!]$/g, '')
     .trim();
 
   // Capitalize properly
-  const acronyms = ['API', 'REST', 'SQL', 'NoSQL', 'HTTP', 'HTTPS', 'DNS', 'TCP', 'UDP', 'IP',
-    'OOP', 'SOLID', 'DRY', 'KISS', 'ACID', 'BASE', 'CAP', 'JWT', 'OAuth', 'GraphQL',
-    'CI', 'CD', 'TDD', 'BDD', 'AWS', 'GCP', 'CSS', 'HTML', 'DOM', 'XSS', 'CSRF',
-    'LRU', 'LFU', 'BFS', 'DFS', 'BST', 'AVL', 'CORS', 'CDN', 'SSL', 'TLS'];
+  const acronyms = [
+    'API',
+    'REST',
+    'SQL',
+    'NoSQL',
+    'HTTP',
+    'HTTPS',
+    'DNS',
+    'TCP',
+    'UDP',
+    'IP',
+    'OOP',
+    'SOLID',
+    'DRY',
+    'KISS',
+    'ACID',
+    'BASE',
+    'CAP',
+    'JWT',
+    'OAuth',
+    'GraphQL',
+    'CI',
+    'CD',
+    'TDD',
+    'BDD',
+    'AWS',
+    'GCP',
+    'CSS',
+    'HTML',
+    'DOM',
+    'XSS',
+    'CSRF',
+    'LRU',
+    'LFU',
+    'BFS',
+    'DFS',
+    'BST',
+    'AVL',
+    'CORS',
+    'CDN',
+    'SSL',
+    'TLS',
+  ];
 
-  topic = topic.split(/\s+/).map(word => {
-    const upper = word.toUpperCase();
-    if (acronyms.includes(upper)) return upper;
-    if (word.length <= 2) return word.toLowerCase();
-    return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
-  }).join(' ');
+  topic = topic
+    .split(/\s+/)
+    .map((word) => {
+      const upper = word.toUpperCase();
+      if (acronyms.includes(upper)) return upper;
+      if (word.length <= 2) return word.toLowerCase();
+      return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+    })
+    .join(' ');
 
   return topic;
 }
 
 function toSlug(topic: string): string {
-  return topic.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  return topic
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
 }
 
 function hashString(s: string): number {
   let hash = 0;
   for (let i = 0; i < s.length; i++) {
-    hash = ((hash << 5) - hash) + s.charCodeAt(i);
+    hash = (hash << 5) - hash + s.charCodeAt(i);
     hash |= 0;
   }
   return Math.abs(hash);
@@ -270,17 +329,23 @@ function generateConcepts(topic: string, count: number, seed: number): Concept[]
 
   const bodyTemplates = [
     // Explanatory body paragraphs with varied structure
-    (h: string) => `The concept behind ${h.toLowerCase()} is critical to understand before diving into implementation. In distributed systems, this becomes even more important because failures are inevitable and your design must account for them gracefully.`,
+    (h: string) =>
+      `The concept behind ${h.toLowerCase()} is critical to understand before diving into implementation. In distributed systems, this becomes even more important because failures are inevitable and your design must account for them gracefully.`,
 
-    (h: string) => `To understand ${h.toLowerCase()}, consider a real-world analogy. Think of it like a highway system. Traffic needs to flow efficiently, bottlenecks need to be identified early, and the system needs to handle unexpected surges without falling apart.`,
+    (h: string) =>
+      `To understand ${h.toLowerCase()}, consider a real-world analogy. Think of it like a highway system. Traffic needs to flow efficiently, bottlenecks need to be identified early, and the system needs to handle unexpected surges without falling apart.`,
 
-    (h: string) => `When we talk about ${h.toLowerCase()}, we're really talking about making intelligent trade-offs. There is no perfect solution. Every approach has strengths and weaknesses, and senior engineers know how to pick the right tool for the specific constraints they face.`,
+    (h: string) =>
+      `When we talk about ${h.toLowerCase()}, we're really talking about making intelligent trade-offs. There is no perfect solution. Every approach has strengths and weaknesses, and senior engineers know how to pick the right tool for the specific constraints they face.`,
 
-    (h: string) => `Most tutorials oversimplify ${h.toLowerCase()}. They show you the happy path and ignore the edge cases. But in production, edge cases ARE the path. Let's look at what actually happens when things go wrong and how to design for resilience.`,
+    (h: string) =>
+      `Most tutorials oversimplify ${h.toLowerCase()}. They show you the happy path and ignore the edge cases. But in production, edge cases ARE the path. Let's look at what actually happens when things go wrong and how to design for resilience.`,
 
-    (h: string) => `The key insight about ${h.toLowerCase()} is that it's not just a technical decision. It affects team productivity, operational costs, and how quickly you can ship features. Understanding these second-order effects is what makes a staff engineer.`,
+    (h: string) =>
+      `The key insight about ${h.toLowerCase()} is that it's not just a technical decision. It affects team productivity, operational costs, and how quickly you can ship features. Understanding these second-order effects is what makes a staff engineer.`,
 
-    (h: string) => `There are several approaches to ${h.toLowerCase()}, each with distinct characteristics. The choice depends on your specific requirements: consistency vs. availability, latency vs. throughput, simplicity vs. flexibility. Let's examine each approach.`,
+    (h: string) =>
+      `There are several approaches to ${h.toLowerCase()}, each with distinct characteristics. The choice depends on your specific requirements: consistency vs. availability, latency vs. throughput, simplicity vs. flexibility. Let's examine each approach.`,
   ];
 
   const concepts: Concept[] = [];
@@ -303,7 +368,7 @@ function generateCodeExamples(
   concepts: Concept[],
   primary: string,
   secondary: string,
-  seed: number,
+  seed: number
 ): string[] {
   const slug = toSlug(topic);
   const className = toPascalCase(topic);
@@ -325,21 +390,38 @@ function generateCodeExamples(
   return examples;
 }
 
-function generatePrimaryExample(topic: string, className: string, varName: string, lang: string, seed: number): string {
+function generatePrimaryExample(
+  topic: string,
+  className: string,
+  varName: string,
+  lang: string,
+  seed: number
+): string {
   if (lang === 'python' || lang === 'javascript' || lang === 'typescript') {
     return generatePythonExample(topic, className, varName, seed);
   }
   return generateJavaExample(topic, className, varName, seed);
 }
 
-function generateSecondaryExample(topic: string, className: string, varName: string, lang: string, seed: number): string {
+function generateSecondaryExample(
+  topic: string,
+  className: string,
+  varName: string,
+  lang: string,
+  seed: number
+): string {
   if (lang === 'java') {
     return generateJavaExample(topic, className, varName, seed);
   }
   return generatePythonExample(topic, className, varName, seed);
 }
 
-function generatePythonExample(topic: string, className: string, varName: string, seed: number): string {
+function generatePythonExample(
+  topic: string,
+  className: string,
+  varName: string,
+  seed: number
+): string {
   const templates = [
     // Template 1: Class-based implementation
     `\`\`\`python
@@ -471,7 +553,12 @@ print(f"{store.utilization:.0%}") # 1%
   return templates[seed % templates.length];
 }
 
-function generateJavaExample(topic: string, className: string, varName: string, seed: number): string {
+function generateJavaExample(
+  topic: string,
+  className: string,
+  varName: string,
+  seed: number
+): string {
   const templates = [
     // Template 1: Class with generics
     `\`\`\`java
@@ -624,7 +711,13 @@ public class ${className}Config {
   return templates[seed % templates.length];
 }
 
-function generateAdvancedExample(topic: string, className: string, varName: string, lang: string, seed: number): string {
+function generateAdvancedExample(
+  topic: string,
+  className: string,
+  varName: string,
+  lang: string,
+  seed: number
+): string {
   if (lang === 'python' || lang === 'javascript' || lang === 'typescript') {
     return `\`\`\`python
 # ${topic} — Optimized / Production-Ready Version
@@ -736,16 +829,40 @@ public class ${className}Engine {
 
 // ─── Internal: Comparison Table ──────────────────────────────────────────────
 
-function generateComparisonTable(topic: string, concepts: Concept[], seed: number): { heading: string; markdown: string } {
+function generateComparisonTable(
+  topic: string,
+  concepts: Concept[],
+  seed: number
+): { heading: string; markdown: string } {
   const tableStyles = [
     {
       heading: `${topic} Approaches Compared`,
       headers: ['Approach', 'Pros', 'Cons', 'Best For'],
       rows: [
-        ['Simple / Naive', 'Easy to implement, easy to debug', 'Does not scale, limited flexibility', 'Prototypes, small teams'],
-        ['Optimized', 'Better performance, handles edge cases', 'More complex, harder to maintain', 'Mid-scale production'],
-        ['Distributed', 'Horizontally scalable, fault-tolerant', 'Operational overhead, eventual consistency', 'Large-scale systems'],
-        ['Hybrid', 'Balances simplicity and performance', 'Requires careful design', 'Most real-world applications'],
+        [
+          'Simple / Naive',
+          'Easy to implement, easy to debug',
+          'Does not scale, limited flexibility',
+          'Prototypes, small teams',
+        ],
+        [
+          'Optimized',
+          'Better performance, handles edge cases',
+          'More complex, harder to maintain',
+          'Mid-scale production',
+        ],
+        [
+          'Distributed',
+          'Horizontally scalable, fault-tolerant',
+          'Operational overhead, eventual consistency',
+          'Large-scale systems',
+        ],
+        [
+          'Hybrid',
+          'Balances simplicity and performance',
+          'Requires careful design',
+          'Most real-world applications',
+        ],
       ],
     },
     {
@@ -774,7 +891,7 @@ function generateComparisonTable(topic: string, concepts: Concept[], seed: numbe
   const style = tableStyles[seed % tableStyles.length];
   const headerRow = `| ${style.headers.join(' | ')} |`;
   const separator = `| ${style.headers.map(() => '---').join(' | ')} |`;
-  const dataRows = style.rows.map(row => `| ${row.join(' | ')} |`);
+  const dataRows = style.rows.map((row) => `| ${row.join(' | ')} |`);
 
   return {
     heading: style.heading,
@@ -872,7 +989,7 @@ function toPascalCase(str: string): string {
   return str
     .replace(/[^a-zA-Z0-9\s]/g, '')
     .split(/\s+/)
-    .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
     .join('');
 }
 

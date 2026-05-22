@@ -50,14 +50,14 @@ function createMockScene(opts: MockSceneOptions = {}): Scene {
 function createSceneSequence(
   count: number,
   framesPerScene: number,
-  overrides: Partial<MockSceneOptions> = {},
+  overrides: Partial<MockSceneOptions> = {}
 ): Scene[] {
   return Array.from({ length: count }, (_, i) =>
     createMockScene({
       startFrame: i * framesPerScene,
       endFrame: (i + 1) * framesPerScene,
       ...overrides,
-    }),
+    })
   );
 }
 
@@ -95,12 +95,18 @@ describe('generateHookText()', () => {
 
   describe('loss-aversion pattern (fail / break keywords)', () => {
     it('heading with "fail" → contains "FAILING" or "BROKEN" or "BUG" or "FAILING"', () => {
-      const result = generateHookText({ heading: 'Why Systems fail', archetype: 'subtopic' }, TOPIC);
+      const result = generateHookText(
+        { heading: 'Why Systems fail', archetype: 'subtopic' },
+        TOPIC
+      );
       expect(result).toMatch(/FAILING|BROKEN|BUG|SILENTLY/i);
     });
 
     it('heading with "break" → contains loss-aversion copy', () => {
-      const result = generateHookText({ heading: 'When things break', archetype: 'subtopic' }, TOPIC);
+      const result = generateHookText(
+        { heading: 'When things break', archetype: 'subtopic' },
+        TOPIC
+      );
       expect(result).toMatch(/FAILING|SILENTLY|BUG/i);
     });
 
@@ -112,12 +118,18 @@ describe('generateHookText()', () => {
 
   describe('cognitive-dissonance pattern (wrong / myth keywords)', () => {
     it('heading with "wrong" → contains "WRONG" or "EVERYTHING"', () => {
-      const result = generateHookText({ heading: 'Everything is wrong here', archetype: 'subtopic' }, TOPIC);
+      const result = generateHookText(
+        { heading: 'Everything is wrong here', archetype: 'subtopic' },
+        TOPIC
+      );
       expect(result).toMatch(/WRONG|EVERYTHING/i);
     });
 
     it('heading with "myth" → contains "WRONG" or "EVERYTHING"', () => {
-      const result = generateHookText({ heading: 'The Myth of caching', archetype: 'subtopic' }, TOPIC);
+      const result = generateHookText(
+        { heading: 'The Myth of caching', archetype: 'subtopic' },
+        TOPIC
+      );
       expect(result).toMatch(/WRONG|EVERYTHING/i);
     });
 
@@ -129,7 +141,10 @@ describe('generateHookText()', () => {
 
   describe('archetype-driven hooks', () => {
     it('archetype="interview" → contains "FAILS" or "ENGINEERS"', () => {
-      const result = generateHookText({ heading: 'Generic Subtopic', archetype: 'interview' }, TOPIC);
+      const result = generateHookText(
+        { heading: 'Generic Subtopic', archetype: 'interview' },
+        TOPIC
+      );
       expect(result).toMatch(/FAILS|ENGINEERS/i);
     });
 
@@ -319,7 +334,7 @@ describe('buildMiniStoryboard()', () => {
         heading: `Scene ${i}`,
         audioFile: `audio/scene-${i}.mp3`,
         audioOffsetSeconds: i * 10,
-      }),
+      })
     );
     const storyboard = createMockStoryboard(scenes, 'audio/master.mp3');
     storyboard.sceneOffsets = scenes.map((_, i) => i * 10);
@@ -378,10 +393,9 @@ describe('buildMiniStoryboard()', () => {
       const { storyboard } = buildStoryboard();
       // scenes 1–3: 3 scenes × 300 frames = 900
       const mini = buildMiniStoryboard(storyboard, 1, 3);
-      const expectedFrames = storyboard.scenes.slice(1, 4).reduce(
-        (sum, s) => sum + (s.endFrame - s.startFrame),
-        0,
-      );
+      const expectedFrames = storyboard.scenes
+        .slice(1, 4)
+        .reduce((sum, s) => sum + (s.endFrame - s.startFrame), 0);
       expect(mini.durationInFrames).toBe(expectedFrames);
     });
 

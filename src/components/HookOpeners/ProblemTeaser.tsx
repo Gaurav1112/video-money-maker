@@ -20,7 +20,10 @@ import { COLORS, FONTS } from '../../lib/theme';
 import type { HookOpenerProps } from './types';
 
 function extractProblem(hookText: string, topic: string): { problem: string; promise: string } {
-  const sentences = hookText.split(/[.!?]/).map((s) => s.trim()).filter(Boolean);
+  const sentences = hookText
+    .split(/[.!?]/)
+    .map((s) => s.trim())
+    .filter(Boolean);
   return {
     problem: sentences[0] || `Your ${topic} is breaking under load`,
     promise: sentences[1] || `In this session: exactly why — and how to fix it`,
@@ -45,13 +48,16 @@ const LogLines: React.FC<{ frame: number; topic: string }> = ({ frame, topic }) 
         });
         const isError = line.startsWith('[ERROR') || line.startsWith('[FATAL');
         return (
-          <div key={i} style={{
-            fontFamily: FONTS.code,
-            fontSize: 20,
-            color: isError ? '#FF6B6B' : '#FFA500',
-            opacity: op,
-            lineHeight: 1.4,
-          }}>
+          <div
+            key={i}
+            style={{
+              fontFamily: FONTS.code,
+              fontSize: 20,
+              color: isError ? '#FF6B6B' : '#FFA500',
+              opacity: op,
+              lineHeight: 1.4,
+            }}
+          >
             {line}
           </div>
         );
@@ -63,7 +69,10 @@ const LogLines: React.FC<{ frame: number; topic: string }> = ({ frame, topic }) 
 export const ProblemTeaser: React.FC<HookOpenerProps> = ({ frame, fps: _fps, topic, hookText }) => {
   const { problem, promise } = extractProblem(hookText, topic);
 
-  const bgOp = interpolate(frame, [0, 10], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
+  const bgOp = interpolate(frame, [0, 10], [0, 1], {
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
+  });
 
   // Problem headline
   const probOp = interpolate(frame, [11, 18, 58, 66], [0, 1, 1, 0], {
@@ -116,46 +125,52 @@ export const ProblemTeaser: React.FC<HookOpenerProps> = ({ frame, fps: _fps, top
       }}
     >
       {/* Pulsing red border */}
-      <div style={{
-        position: 'absolute',
-        inset: 0,
-        border: `3px solid ${COLORS.red}`,
-        opacity: borderOp * pulse,
-      }} />
+      <div
+        style={{
+          position: 'absolute',
+          inset: 0,
+          border: `3px solid ${COLORS.red}`,
+          opacity: borderOp * pulse,
+        }}
+      />
 
       {/* Corner "SYSTEM FAILURE" chip */}
-      <div style={{
-        position: 'absolute',
-        top: 40,
-        left: 40,
-        backgroundColor: COLORS.red,
-        paddingLeft: 16,
-        paddingRight: 16,
-        paddingTop: 6,
-        paddingBottom: 6,
-        fontFamily: FONTS.heading,
-        fontSize: 18,
-        fontWeight: 900,
-        color: '#FFFFFF',
-        letterSpacing: 2,
-        textTransform: 'uppercase',
-        opacity: borderOp,
-      }}>
+      <div
+        style={{
+          position: 'absolute',
+          top: 40,
+          left: 40,
+          backgroundColor: COLORS.red,
+          paddingLeft: 16,
+          paddingRight: 16,
+          paddingTop: 6,
+          paddingBottom: 6,
+          fontFamily: FONTS.heading,
+          fontSize: 18,
+          fontWeight: 900,
+          color: '#FFFFFF',
+          letterSpacing: 2,
+          textTransform: 'uppercase',
+          opacity: borderOp,
+        }}
+      >
         ⚠ SYSTEM FAILURE
       </div>
 
       {/* Problem headline */}
-      <div style={{
-        fontFamily: FONTS.heading,
-        fontSize: 52,
-        fontWeight: 900,
-        color: '#FFFFFF',
-        lineHeight: 1.2,
-        opacity: probOp,
-        transform: `translateY(${probY}px)`,
-        marginBottom: 32,
-        maxWidth: 1100,
-      }}>
+      <div
+        style={{
+          fontFamily: FONTS.heading,
+          fontSize: 52,
+          fontWeight: 900,
+          color: '#FFFFFF',
+          lineHeight: 1.2,
+          opacity: probOp,
+          transform: `translateY(${probY}px)`,
+          marginBottom: 32,
+          maxWidth: 1100,
+        }}
+      >
         {problem}
       </div>
 
@@ -163,15 +178,17 @@ export const ProblemTeaser: React.FC<HookOpenerProps> = ({ frame, fps: _fps, top
       <LogLines frame={frame} topic={topic} />
 
       {/* Promise teaser */}
-      <div style={{
-        marginTop: 32,
-        fontFamily: FONTS.text,
-        fontSize: 28,
-        color: COLORS.teal,
-        opacity: promiseOp,
-        transform: `translateY(${promiseY}px)`,
-        fontWeight: 600,
-      }}>
+      <div
+        style={{
+          marginTop: 32,
+          fontFamily: FONTS.text,
+          fontSize: 28,
+          color: COLORS.teal,
+          opacity: promiseOp,
+          transform: `translateY(${promiseY}px)`,
+          fontWeight: 600,
+        }}
+      >
         → {promise}
       </div>
     </AbsoluteFill>

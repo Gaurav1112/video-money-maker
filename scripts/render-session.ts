@@ -18,7 +18,11 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { generateScript } from '../src/pipeline/script-generator';
 import { generateSceneAudios } from '../src/pipeline/tts-engine';
-import { generateStoryboard, getStoryboardDuration, validateStoryboard } from '../src/pipeline/storyboard';
+import {
+  generateStoryboard,
+  getStoryboardDuration,
+  validateStoryboard,
+} from '../src/pipeline/storyboard';
 import type { SessionInput } from '../src/types';
 
 const CONTENT_DIR = path.resolve(__dirname, '../../guru-sishya/public/content');
@@ -41,7 +45,7 @@ function pickBgm(seed: string): string {
 function findTopic(slug: string): any | null {
   const searchTerms = slug.toLowerCase().split('-');
 
-  const files = fs.readdirSync(CONTENT_DIR).filter(f => f.endsWith('.json'));
+  const files = fs.readdirSync(CONTENT_DIR).filter((f) => f.endsWith('.json'));
 
   let fallback: any = null;
 
@@ -52,14 +56,18 @@ function findTopic(slug: string): any | null {
 
       for (const topic of data) {
         const topicName = (topic.topic || topic.title || '').toLowerCase();
-        const matches = searchTerms.every(term => topicName.includes(term));
+        const matches = searchTerms.every((term) => topicName.includes(term));
         if (matches) {
           // Prefer topics that have plan.sessions (renderable)
           if (Array.isArray(topic?.plan?.sessions)) {
             return topic;
           }
           // Also accept topics with sessions as an object (e.g. {"1": "md", "2": "md"})
-          if (topic.sessions && typeof topic.sessions === 'object' && !Array.isArray(topic.sessions)) {
+          if (
+            topic.sessions &&
+            typeof topic.sessions === 'object' &&
+            !Array.isArray(topic.sessions)
+          ) {
             if (!fallback) fallback = topic;
             continue;
           }
@@ -85,7 +93,9 @@ function extractPlanSession(topic: any, sessionNumber: number): SessionInput | n
     if (objSessions && typeof objSessions === 'object' && !Array.isArray(objSessions)) {
       const session = objSessions[String(sessionNumber)];
       if (!session) {
-        console.error(`Session ${sessionNumber} not found in object-style sessions. Available: ${Object.keys(objSessions).join(', ')}`);
+        console.error(
+          `Session ${sessionNumber} not found in object-style sessions. Available: ${Object.keys(objSessions).join(', ')}`
+        );
         return null;
       }
       return buildSessionInput(topic, session, sessionNumber);
@@ -124,15 +134,18 @@ async function main() {
   const args = process.argv.slice(2);
 
   if (args.length < 2) {
-    console.log('Usage: npx tsx scripts/render-session.ts <topic-slug> <session-number> [--language python|java]');
+    console.log(
+      'Usage: npx tsx scripts/render-session.ts <topic-slug> <session-number> [--language python|java]'
+    );
     console.log('Example: npx tsx scripts/render-session.ts load-balancing 2');
     process.exit(1);
   }
 
   const topicSlug = args[0];
   const sessionNumber = parseInt(args[1], 10);
-  const langArg = args.find(a => a.startsWith('--language='))?.split('=')[1]
-    || (args.indexOf('--language') >= 0 ? args[args.indexOf('--language') + 1] : 'python');
+  const langArg =
+    args.find((a) => a.startsWith('--language='))?.split('=')[1] ||
+    (args.indexOf('--language') >= 0 ? args[args.indexOf('--language') + 1] : 'python');
 
   if (isNaN(sessionNumber) || sessionNumber < 1) {
     console.error('Session number must be a positive integer.');
@@ -168,7 +181,9 @@ async function main() {
   console.log(`\nExtracting session ${sessionNumber}...`);
   const session = extractPlanSession(topic, sessionNumber);
   if (!session) {
-    console.error(`Session ${sessionNumber} not found. Available: 1-${planSessions?.length || '?'}`);
+    console.error(
+      `Session ${sessionNumber} not found. Available: 1-${planSessions?.length || '?'}`
+    );
     process.exit(1);
   }
   console.log(`  Title: "${session.title}"`);
@@ -184,7 +199,7 @@ async function main() {
   // 4. Generate TTS audio
   console.log('\nGenerating TTS audio (Kokoro)...');
   const audioResults = await generateSceneAudios(
-    script.map(s => ({ narration: s.narration, type: s.type })),
+    script.map((s) => ({ narration: s.narration, type: s.type })),
     'af_heart',
     'indian-english'
   );
@@ -218,14 +233,18 @@ async function main() {
   console.log('\nScene breakdown:');
   storyboard.scenes.forEach((s, i) => {
     const dur = ((s.endFrame - s.startFrame) / 30).toFixed(1);
-    console.log(`  Scene ${i + 1}: [${s.type}] frames ${s.startFrame}-${s.endFrame} (${dur}s)${s.vizVariant ? ' viz=' + s.vizVariant : ''}`);
+    console.log(
+      `  Scene ${i + 1}: [${s.type}] frames ${s.startFrame}-${s.endFrame} (${dur}s)${s.vizVariant ? ' viz=' + s.vizVariant : ''}`
+    );
   });
 
   console.log(`\nTo render:`);
-  console.log(`  npx remotion render src/compositions/index.tsx LongVideo output/${topicSlug}-s${sessionNumber}.mp4 --props=${propsPath}`);
+  console.log(
+    `  npx remotion render src/compositions/index.tsx LongVideo output/${topicSlug}-s${sessionNumber}.mp4 --props=${propsPath}`
+  );
 }
 
-main().catch(err => {
+main().catch((err) => {
   console.error('Fatal error:', err);
   process.exit(1);
 });

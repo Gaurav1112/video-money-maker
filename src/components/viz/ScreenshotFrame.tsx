@@ -1,30 +1,23 @@
 import React from 'react';
-import {
-  useCurrentFrame,
-  interpolate,
-  spring,
-  useVideoConfig,
-  staticFile,
-  Img,
-} from 'remotion';
+import { useCurrentFrame, interpolate, spring, useVideoConfig, staticFile, Img } from 'remotion';
 import type { VisualBeat } from '../../types';
 
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 export interface ScreenshotHighlight {
-  x: number;          // percentage 0-100
-  y: number;          // percentage 0-100
-  width: number;      // percentage 0-100
-  height: number;     // percentage 0-100
+  x: number; // percentage 0-100
+  y: number; // percentage 0-100
+  width: number; // percentage 0-100
+  height: number; // percentage 0-100
   label?: string;
-  beatIndex: number;  // when to show this highlight
+  beatIndex: number; // when to show this highlight
 }
 
 export interface ScreenshotFrameProps {
-  src: string;          // path relative to public/
+  src: string; // path relative to public/
   type: 'browser' | 'terminal' | 'ide';
-  title?: string;       // tab title or filename
+  title?: string; // tab title or filename
   highlights?: ScreenshotHighlight[];
   beats: VisualBeat[];
   fps: number;
@@ -79,9 +72,7 @@ const THEME = {
 // ---------------------------------------------------------------------------
 // Traffic light dots
 // ---------------------------------------------------------------------------
-const TrafficLights: React.FC<{ d1: string; d2: string; d3: string }> = ({
-  d1, d2, d3,
-}) => (
+const TrafficLights: React.FC<{ d1: string; d2: string; d3: string }> = ({ d1, d2, d3 }) => (
   <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
     <div style={{ width: 12, height: 12, borderRadius: '50%', backgroundColor: d1 }} />
     <div style={{ width: 12, height: 12, borderRadius: '50%', backgroundColor: d2 }} />
@@ -347,9 +338,30 @@ const IDEFrame: React.FC<{
           }}
         >
           {/* File explorer icon */}
-          <div style={{ width: 20, height: 20, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.15)' }} />
-          <div style={{ width: 20, height: 20, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.08)' }} />
-          <div style={{ width: 20, height: 20, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.08)' }} />
+          <div
+            style={{
+              width: 20,
+              height: 20,
+              borderRadius: 2,
+              backgroundColor: 'rgba(255,255,255,0.15)',
+            }}
+          />
+          <div
+            style={{
+              width: 20,
+              height: 20,
+              borderRadius: 2,
+              backgroundColor: 'rgba(255,255,255,0.08)',
+            }}
+          />
+          <div
+            style={{
+              width: 20,
+              height: 20,
+              borderRadius: 2,
+              backgroundColor: 'rgba(255,255,255,0.08)',
+            }}
+          />
         </div>
         {/* Line number gutter */}
         <div
@@ -454,11 +466,7 @@ export const ScreenshotFrame: React.FC<ScreenshotFrameProps> = ({
 
   // Select frame wrapper
   const FrameWrapper =
-    type === 'browser'
-      ? BrowserFrame
-      : type === 'terminal'
-        ? TerminalFrame
-        : IDEFrame;
+    type === 'browser' ? BrowserFrame : type === 'terminal' ? TerminalFrame : IDEFrame;
 
   return (
     <div

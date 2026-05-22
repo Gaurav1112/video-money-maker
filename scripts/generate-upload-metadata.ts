@@ -49,7 +49,7 @@ function seededIndex(topic: string, sessionNumber: number, salt: number, max: nu
   let hash = salt;
   const key = `${topic}:${sessionNumber}:${salt}`;
   for (let i = 0; i < key.length; i++) {
-    hash = ((hash << 5) - hash) + key.charCodeAt(i);
+    hash = (hash << 5) - hash + key.charCodeAt(i);
     hash |= 0;
   }
   return Math.abs(hash) % max;
@@ -73,51 +73,51 @@ interface MetadataFile {
 // ─── Topic Name Resolution ──────────────────────────────────────────────────
 
 const TOPIC_NAME_MAP: Record<string, string> = {
-  'caching': 'Caching',
+  caching: 'Caching',
   'load-balancing': 'Load Balancing',
   'api-gateway': 'API Gateway',
-  'kafka': 'Kafka',
-  'database': 'Database Design',
-  'microservices': 'Microservices',
-  'distributed': 'Distributed Systems',
+  kafka: 'Kafka',
+  database: 'Database Design',
+  microservices: 'Microservices',
+  distributed: 'Distributed Systems',
   'message-queue': 'Message Queue',
-  'authentication': 'Authentication',
+  authentication: 'Authentication',
   'rate-limiting': 'Rate Limiting',
-  'monitoring': 'Monitoring',
+  monitoring: 'Monitoring',
   'consistent-hashing': 'Consistent Hashing',
-  'cdn': 'CDN',
-  'dns': 'DNS',
-  'docker': 'Docker',
-  'kubernetes': 'Kubernetes',
-  'sql': 'SQL',
-  'nosql': 'NoSQL',
+  cdn: 'CDN',
+  dns: 'DNS',
+  docker: 'Docker',
+  kubernetes: 'Kubernetes',
+  sql: 'SQL',
+  nosql: 'NoSQL',
   'ci-cd': 'CI/CD',
-  'redis': 'Redis',
-  'graphql': 'GraphQL',
-  'grpc': 'gRPC',
-  'websocket': 'WebSocket',
-  'sharding': 'Database Sharding',
-  'indexing': 'Database Indexing',
+  redis: 'Redis',
+  graphql: 'GraphQL',
+  grpc: 'gRPC',
+  websocket: 'WebSocket',
+  sharding: 'Database Sharding',
+  indexing: 'Database Indexing',
   'binary-search': 'Binary Search',
-  'sorting': 'Sorting Algorithms',
+  sorting: 'Sorting Algorithms',
   'dynamic-programming': 'Dynamic Programming',
-  'trees': 'Trees',
-  'graphs': 'Graphs',
-  'arrays': 'Arrays',
+  trees: 'Trees',
+  graphs: 'Graphs',
+  arrays: 'Arrays',
   'linked-list': 'Linked List',
   'hash-map': 'HashMap',
   'rest-api': 'REST API',
-  'http': 'HTTP',
-  'tcp': 'TCP',
-  'networking': 'Networking',
-  'scalability': 'Scalability',
+  http: 'HTTP',
+  tcp: 'TCP',
+  networking: 'Networking',
+  scalability: 'Scalability',
 };
 
 function resolveTopicName(slug: string): string {
   const lower = slug.toLowerCase().replace(/\s+/g, '-');
   if (TOPIC_NAME_MAP[lower]) return TOPIC_NAME_MAP[lower];
   // Convert slug to title case
-  return slug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+  return slug.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 // ─── Company References (deterministic per topic) ───────────────────────────
@@ -129,9 +129,21 @@ function getCompanyReferences(topic: string, sessionNumber: number): string[] {
   // Deterministic set of companies per session
   const allCompanies = [
     primaryCompany,
-    'Amazon', 'Google', 'Netflix', 'Uber', 'Flipkart',
-    'Swiggy', 'Razorpay', 'PhonePe', 'Zerodha', 'CRED',
-    'Meta', 'Microsoft', 'Hotstar', 'Paytm', 'Zomato',
+    'Amazon',
+    'Google',
+    'Netflix',
+    'Uber',
+    'Flipkart',
+    'Swiggy',
+    'Razorpay',
+    'PhonePe',
+    'Zerodha',
+    'CRED',
+    'Meta',
+    'Microsoft',
+    'Hotstar',
+    'Paytm',
+    'Zomato',
   ];
 
   // Pick 4 companies deterministically, always including the primary
@@ -153,7 +165,7 @@ function getCompanyReferences(topic: string, sessionNumber: number): string[] {
 
 function generateChaptersFromScenes(
   scenes: Array<{ type: string; heading?: string; startFrame: number }>,
-  fps: number,
+  fps: number
 ): string {
   const seen = new Set<string>();
   const chapters: string[] = [];
@@ -202,7 +214,7 @@ function buildLongFormDescription(
   totalSessions: number,
   chapters: string,
   companies: string[],
-  durationMins: number,
+  durationMins: number
 ): string {
   const example = getTopicExample(topic);
   const sessionLabel = getSessionLabel(sessionNumber);
@@ -211,7 +223,7 @@ function buildLongFormDescription(
   const openLine = `${topic} (${sessionLabel}) — master this for your FAANG interview. FREE practice with 5,800+ questions at guru-sishya.in/${topicSlug}`;
 
   // Company interview references
-  const companyLines = companies.map(c => {
+  const companyLines = companies.map((c) => {
     const roleTemplates = [
       `${c} SDE-2 System Design Round`,
       `${c} Backend Engineering Interview`,
@@ -224,7 +236,11 @@ function buildLongFormDescription(
 
   // Series navigation
   const navLines: string[] = [];
-  for (let i = Math.max(1, sessionNumber - 1); i <= Math.min(totalSessions, sessionNumber + 1); i++) {
+  for (
+    let i = Math.max(1, sessionNumber - 1);
+    i <= Math.min(totalSessions, sessionNumber + 1);
+    i++
+  ) {
     if (i === sessionNumber) {
       navLines.push(`\u2605 Session ${i}: ${getSessionLabel(i)} (You are here)`);
     } else if (i < sessionNumber) {
@@ -237,15 +253,32 @@ function buildLongFormDescription(
   // Hashtags — exactly the format that worked for kafka-s2
   const hashtags = [
     `#${topic.replace(/\s+/g, '')}`,
-    '#SystemDesign', '#InterviewPrep', '#FAANG', '#CodingInterview',
-    '#DistributedSystems', '#TechInterview', '#PlacementPrep',
-    '#SystemDesignInterview', `#${topic.replace(/\s+/g, '')}Tutorial`,
-    '#JavaInterview', '#SoftwareEngineering', '#BackendDevelopment',
-    '#Microservices', '#EventDriven', '#MessageQueue',
-    '#DataEngineering', '#BigData', '#InterviewQuestions',
-    '#DSA', '#CompetitiveProgramming', '#SDE',
-    '#GoogleInterview', '#AmazonInterview', '#FlipkartInterview',
-    '#IndianTech', '#GuruSishya',
+    '#SystemDesign',
+    '#InterviewPrep',
+    '#FAANG',
+    '#CodingInterview',
+    '#DistributedSystems',
+    '#TechInterview',
+    '#PlacementPrep',
+    '#SystemDesignInterview',
+    `#${topic.replace(/\s+/g, '')}Tutorial`,
+    '#JavaInterview',
+    '#SoftwareEngineering',
+    '#BackendDevelopment',
+    '#Microservices',
+    '#EventDriven',
+    '#MessageQueue',
+    '#DataEngineering',
+    '#BigData',
+    '#InterviewQuestions',
+    '#DSA',
+    '#CompetitiveProgramming',
+    '#SDE',
+    '#GoogleInterview',
+    '#AmazonInterview',
+    '#FlipkartInterview',
+    '#IndianTech',
+    '#GuruSishya',
   ];
 
   return `${openLine}
@@ -280,7 +313,7 @@ function buildShortDescription(
   partNumber: number,
   totalParts: number,
   longFormYouTubeUrl: string,
-  partSegment: string,
+  partSegment: string
 ): string {
   const example = getTopicExample(topic);
 
@@ -305,7 +338,7 @@ const PART_TITLE_TEMPLATES: string[][] = [
     'Wait, THIS is how {company} uses {topic}?! \ud83e\udd2f #Shorts',
     '90% of devs get {topic} wrong \ud83d\ude33 #Shorts',
     'The {topic} secret that gets you hired \ud83e\udd2b #Shorts',
-    '{topic} \u2014 what they don\'t teach you #Shorts',
+    "{topic} \u2014 what they don't teach you #Shorts",
     'This {topic} trick saved my interview \ud83e\udd2f #Shorts',
   ],
   // Part 2 titles (core content)
@@ -324,7 +357,7 @@ const PART_TITLE_TEMPLATES: string[][] = [
     'Know {topic} or fail your interview \ud83d\udc80 #Shorts',
     'The {topic} insight that changes everything \ud83d\udca1 #Shorts',
     'FAANG interview: {topic} in 60s \ud83d\ude80 #Shorts',
-    'If you don\'t know {topic}, you\'re cooked \ud83d\udd25 #Shorts',
+    "If you don't know {topic}, you're cooked \ud83d\udd25 #Shorts",
   ],
 ];
 
@@ -332,15 +365,13 @@ function generatePartTitle(
   topic: string,
   sessionNumber: number,
   partNumber: number,
-  company: string,
+  company: string
 ): string {
   const partIdx = Math.min(partNumber - 1, 2);
   const templates = PART_TITLE_TEMPLATES[partIdx];
   const idx = seededIndex(topic, sessionNumber * 10 + partNumber, 89, templates.length);
 
-  let title = templates[idx]
-    .replace(/{topic}/g, topic)
-    .replace(/{company}/g, company);
+  let title = templates[idx].replace(/{topic}/g, topic).replace(/{company}/g, company);
 
   // Ensure under 100 chars
   if (title.length > 100) {
@@ -376,7 +407,7 @@ function getPartSegments(topic: string, sessionNumber: number): string[] {
 function generateAllMetadata(
   topicSlug: string,
   sessionNumber: number,
-  storyboard: Storyboard,
+  storyboard: Storyboard
 ): {
   longForm: MetadataFile;
   parts: MetadataFile[];
@@ -403,7 +434,7 @@ function generateAllMetadata(
     totalSessions,
     chapters,
     companies,
-    durationMins,
+    durationMins
   );
 
   // ─── Long-form metadata ─────────────────────────────────────────────
@@ -438,7 +469,7 @@ function generateAllMetadata(
       p,
       totalParts,
       longFormUrlPlaceholder,
-      segment,
+      segment
     );
 
     // Short-specific tags: subset of long-form tags + shorts-specific
@@ -448,7 +479,9 @@ function generateAllMetadata(
       `${topic.toLowerCase()} shorts`,
       'short video',
       '60 seconds',
-    ].filter((v, i, a) => a.indexOf(v) === i).slice(0, 20);
+    ]
+      .filter((v, i, a) => a.indexOf(v) === i)
+      .slice(0, 20);
 
     const partMeta: MetadataFile = {
       youtube: {
@@ -530,19 +563,24 @@ Flags:
 
   if (!topicSlug || isNaN(sessionNumber) || sessionNumber < 1) {
     console.error('Error: Invalid topic slug or session number.');
-    console.error('Usage: npx tsx scripts/generate-upload-metadata.ts <topic-slug> <session-number>');
+    console.error(
+      'Usage: npx tsx scripts/generate-upload-metadata.ts <topic-slug> <session-number>'
+    );
     process.exit(1);
   }
 
   // Find props file
   const propsIdx = args.indexOf('--props');
-  const propsPath = propsIdx >= 0
-    ? path.resolve(args[propsIdx + 1])
-    : path.join(OUTPUT_DIR, `test-props-s${sessionNumber}.json`);
+  const propsPath =
+    propsIdx >= 0
+      ? path.resolve(args[propsIdx + 1])
+      : path.join(OUTPUT_DIR, `test-props-s${sessionNumber}.json`);
 
   if (!fs.existsSync(propsPath)) {
     console.error(`Error: Props file not found: ${propsPath}`);
-    console.error(`Generate it first: npx tsx scripts/render-session.ts ${topicSlug} ${sessionNumber}`);
+    console.error(
+      `Generate it first: npx tsx scripts/render-session.ts ${topicSlug} ${sessionNumber}`
+    );
     process.exit(1);
   }
 
@@ -562,7 +600,9 @@ Flags:
 
   // Override session number if it differs (props might be from a different session)
   if (storyboard.sessionNumber !== sessionNumber) {
-    console.warn(`Warning: Props file has sessionNumber=${storyboard.sessionNumber}, using ${sessionNumber} from CLI.`);
+    console.warn(
+      `Warning: Props file has sessionNumber=${storyboard.sessionNumber}, using ${sessionNumber} from CLI.`
+    );
     storyboard.sessionNumber = sessionNumber;
   }
 
@@ -570,7 +610,9 @@ Flags:
   console.log(`Generating metadata for: ${topicName} — Session ${sessionNumber}`);
   console.log(`  Topic slug: ${topicSlug}`);
   console.log(`  Scenes: ${storyboard.scenes.length}`);
-  console.log(`  Duration: ${Math.round(storyboard.durationInFrames / storyboard.fps)}s (~${Math.round(storyboard.durationInFrames / storyboard.fps / 60)} min)`);
+  console.log(
+    `  Duration: ${Math.round(storyboard.durationInFrames / storyboard.fps)}s (~${Math.round(storyboard.durationInFrames / storyboard.fps / 60)} min)`
+  );
 
   // Generate all metadata
   const { longForm, parts } = generateAllMetadata(topicSlug, sessionNumber, storyboard);
@@ -582,28 +624,24 @@ Flags:
   writeMetadata(
     path.join(OUTPUT_DIR, `${topicSlug}-s${sessionNumber}-metadata.json`),
     longForm,
-    dryRun,
+    dryRun
   );
   for (let i = 0; i < parts.length; i++) {
     writeMetadata(
       path.join(OUTPUT_DIR, `${topicSlug}-s${sessionNumber}-part${i + 1}-metadata.json`),
       parts[i],
-      dryRun,
+      dryRun
     );
   }
 
   // 2. Session directory (for auto-publish to discover)
   const sessionDir = path.join(GURU_SISHYA_BASE, topicSlug, `session-${sessionNumber}`);
-  writeMetadata(
-    path.join(sessionDir, 'metadata.json'),
-    longForm,
-    dryRun,
-  );
+  writeMetadata(path.join(sessionDir, 'metadata.json'), longForm, dryRun);
   for (let i = 0; i < parts.length; i++) {
     writeMetadata(
       path.join(sessionDir, 'vertical-parts', `part${i + 1}-metadata.json`),
       parts[i],
-      dryRun,
+      dryRun
     );
   }
 
@@ -619,7 +657,9 @@ Flags:
 
   if (!dryRun) {
     console.log(`\nAll ${1 + parts.length} metadata files written successfully.`);
-    console.log(`Run auto-publish to upload: npx tsx scripts/auto-publish.ts --topic ${topicSlug} --session ${sessionNumber}`);
+    console.log(
+      `Run auto-publish to upload: npx tsx scripts/auto-publish.ts --topic ${topicSlug} --session ${sessionNumber}`
+    );
   }
 }
 

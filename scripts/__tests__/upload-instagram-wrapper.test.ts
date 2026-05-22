@@ -23,8 +23,8 @@ describe('upload-instagram-wrapper', () => {
       R2_PUBLIC_URL: 'x',
     });
     expect(r.status).toBe(0);
-    expect((r.stdout + r.stderr)).toMatch(/INSTAGRAM_ACCESS_TOKEN/);
-    expect((r.stdout + r.stderr)).toMatch(/skipping/i);
+    expect(r.stdout + r.stderr).toMatch(/INSTAGRAM_ACCESS_TOKEN/);
+    expect(r.stdout + r.stderr).toMatch(/skipping/i);
   });
 
   it('exits 0 when any R2 env var is missing', () => {
@@ -38,7 +38,7 @@ describe('upload-instagram-wrapper', () => {
       R2_PUBLIC_URL: 'x',
     });
     expect(r.status).toBe(0);
-    expect((r.stdout + r.stderr)).toMatch(/R2_ACCOUNT_ID/);
+    expect(r.stdout + r.stderr).toMatch(/R2_ACCOUNT_ID/);
   });
 
   it('exits 1 when invoked with no positional args', () => {

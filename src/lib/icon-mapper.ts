@@ -4,46 +4,77 @@
  */
 const ICON_MAP: Record<string, string> = {
   // Cloud & Infrastructure
-  'aws': 'amazonaws', 'amazon': 'amazonaws', 'ec2': 'amazonec2',
-  's3': 'amazons3', 'lambda': 'awslambda',
-  'gcp': 'googlecloud', 'google cloud': 'googlecloud',
-  'azure': 'microsoftazure',
-  'docker': 'docker', 'kubernetes': 'kubernetes', 'k8s': 'kubernetes',
-  'terraform': 'terraform', 'ansible': 'ansible',
+  aws: 'amazonaws',
+  amazon: 'amazonaws',
+  ec2: 'amazonec2',
+  s3: 'amazons3',
+  lambda: 'awslambda',
+  gcp: 'googlecloud',
+  'google cloud': 'googlecloud',
+  azure: 'microsoftazure',
+  docker: 'docker',
+  kubernetes: 'kubernetes',
+  k8s: 'kubernetes',
+  terraform: 'terraform',
+  ansible: 'ansible',
 
   // Databases
-  'redis': 'redis', 'mongodb': 'mongodb', 'mysql': 'mysql',
-  'postgresql': 'postgresql', 'postgres': 'postgresql',
-  'cassandra': 'apachecassandra', 'dynamodb': 'amazondynamodb',
-  'elasticsearch': 'elasticsearch', 'sqlite': 'sqlite',
+  redis: 'redis',
+  mongodb: 'mongodb',
+  mysql: 'mysql',
+  postgresql: 'postgresql',
+  postgres: 'postgresql',
+  cassandra: 'apachecassandra',
+  dynamodb: 'amazondynamodb',
+  elasticsearch: 'elasticsearch',
+  sqlite: 'sqlite',
 
   // Message Queues
-  'kafka': 'apachekafka', 'rabbitmq': 'rabbitmq',
-  'sqs': 'amazonsqs',
+  kafka: 'apachekafka',
+  rabbitmq: 'rabbitmq',
+  sqs: 'amazonsqs',
 
   // Languages
-  'python': 'python', 'javascript': 'javascript', 'typescript': 'typescript',
-  'java': 'openjdk', 'go': 'go', 'rust': 'rust',
-  'c++': 'cplusplus', 'c#': 'csharp',
+  python: 'python',
+  javascript: 'javascript',
+  typescript: 'typescript',
+  java: 'openjdk',
+  go: 'go',
+  rust: 'rust',
+  'c++': 'cplusplus',
+  'c#': 'csharp',
 
   // Frameworks
-  'react': 'react', 'node': 'nodedotjs', 'nodejs': 'nodedotjs',
-  'express': 'express', 'django': 'django', 'flask': 'flask',
-  'spring': 'spring', 'fastapi': 'fastapi',
+  react: 'react',
+  node: 'nodedotjs',
+  nodejs: 'nodedotjs',
+  express: 'express',
+  django: 'django',
+  flask: 'flask',
+  spring: 'spring',
+  fastapi: 'fastapi',
 
   // Tools
-  'git': 'git', 'github': 'github', 'nginx': 'nginx',
-  'apache': 'apache', 'grafana': 'grafana', 'prometheus': 'prometheus',
-  'jenkins': 'jenkins', 'linux': 'linux',
+  git: 'git',
+  github: 'github',
+  nginx: 'nginx',
+  apache: 'apache',
+  grafana: 'grafana',
+  prometheus: 'prometheus',
+  jenkins: 'jenkins',
+  linux: 'linux',
 
   // Protocols & APIs
-  'graphql': 'graphql', 'grpc': 'grpc',
+  graphql: 'graphql',
+  grpc: 'grpc',
 
   // CDN & Caching
-  'cloudflare': 'cloudflare', 'varnish': 'varnish',
+  cloudflare: 'cloudflare',
+  varnish: 'varnish',
 
   // Indian Companies
-  'flipkart': 'flipkart', 'swiggy': 'swiggy',
+  flipkart: 'flipkart',
+  swiggy: 'swiggy',
 };
 
 /**
