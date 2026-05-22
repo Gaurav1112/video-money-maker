@@ -5,10 +5,11 @@ name: "🌙 Evening Upload Pipeline (7:15 PM IST)"
 # Deadline: 7:15 PM IST = 13:45 UTC (1h 45m buffer)
 
 on:
-  schedule:
-    # 5:30 PM IST = 12:00 PM UTC
-    - cron: '0 12 * * *'
-  
+  # DISABLED 2026-05-22 (F009): redundant upload path — see docs/upload-workflow-audit.md. Canonical Shorts pipeline is auto-shorts.yml.
+  # schedule:
+  #   # 5:30 PM IST = 12:00 PM UTC
+  #   - cron: '0 12 * * *'
+
   workflow_dispatch:
     inputs:
       limit:

@@ -1,9 +1,10 @@
 name: Daily Publish Pipeline
 
 on:
-  schedule:
-    # 06:00 IST = 00:30 UTC
-    - cron: '30 0 * * *'
+  # DISABLED 2026-05-22 (F009): redundant upload path — see docs/upload-workflow-audit.md. Canonical Shorts pipeline is auto-shorts.yml.
+  # schedule:
+  #   # 06:00 IST = 00:30 UTC
+  #   - cron: '30 0 * * *'
   workflow_dispatch:
     inputs:
       episode:

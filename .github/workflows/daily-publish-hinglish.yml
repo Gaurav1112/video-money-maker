@@ -1,16 +1,17 @@
 name: Daily Publish — Hinglish Track
 
 on:
-  schedule:
-    # Panel-20 Dist P1-5 (Blake): 07:00 UTC = 12:30 PM IST is the
-    # Indian school/college lunch window — low engagement vs the
-    # 7:00 PM IST peak that the primary daily-short.yml track
-    # documents. Move to 13:30 UTC = 7:00 PM IST, matching the
-    # primary track's algorithmic peak. Same-channel dual upload
-    # in the SAME peak hour is fine: YT Shorts uses video-level
-    # signals, not channel-level rate-limiting in the discovery
-    # shelf.
-    - cron: "30 13 * * *"
+  # DISABLED 2026-05-22 (F009): redundant upload path — see docs/upload-workflow-audit.md. Canonical Shorts pipeline is auto-shorts.yml.
+  # schedule:
+  #   # Panel-20 Dist P1-5 (Blake): 07:00 UTC = 12:30 PM IST is the
+  #   # Indian school/college lunch window — low engagement vs the
+  #   # 7:00 PM IST peak that the primary daily-short.yml track
+  #   # documents. Move to 13:30 UTC = 7:00 PM IST, matching the
+  #   # primary track's algorithmic peak. Same-channel dual upload
+  #   # in the SAME peak hour is fine: YT Shorts uses video-level
+  #   # signals, not channel-level rate-limiting in the discovery
+  #   # shelf.
+  #   - cron: "30 13 * * *"
   workflow_dispatch:
     inputs:
       topic:
