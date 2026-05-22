@@ -1,0 +1,33 @@
+name: Set Video Privacy (restore / hide a video by ID)
+
+on:
+  workflow_dispatch:
+    inputs:
+      video_ids:
+        description: 'Space-separated YouTube video IDs'
+        required: true
+      status:
+        description: 'Target privacy status'
+        required: true
+        default: 'public'
+        type: choice
+        options: [public, private, unlisted]
+
+permissions:
+  contents: read
+
+jobs:
+  set-privacy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
+      YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
+      YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '20' }
+      - run: npm ci
+      - name: Set privacy
+        run: npx tsx scripts/set-video-privacy.ts --status ${{ inputs.status }} ${{ inputs.video_ids }}

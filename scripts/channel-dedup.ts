@@ -23,6 +23,7 @@ export interface DedupRecord {
   views: number;
   privacyStatus: string;
   publishedAt: string;
+  durationISO?: string;
 }
 
 export interface DuplicateGroup {
@@ -34,6 +35,24 @@ export interface DuplicateGroup {
 // Broad emoji + symbol ranges + variation selectors + ZWJ.
 const EMOJI_RE =
   /[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{2190}-\u{21FF}\u{2B00}-\u{2BFF}\u{FE00}-\u{FE0F}\u{200D}\u{20E3}\u{E0020}-\u{E007F}]/gu;
+
+/** Parse an ISO-8601 duration (e.g. PT3M53S) into total seconds. */
+function durationSeconds(iso?: string): number {
+  if (!iso) return 0;
+  const m = /PT(?:(\d+)M)?(?:(\d+)S)?/.exec(iso);
+  if (!m) return 0;
+  return Number(m[1] ?? 0) * 60 + Number(m[2] ?? 0);
+}
+
+/**
+ * A video's format bucket. A Short and its companion long-form share a title
+ * but are an intentional pair, not duplicates — keying on format keeps them
+ * in separate groups so dedup never privates one for the other.
+ */
+function formatBucket(r: DedupRecord): 'short' | 'long' {
+  if (/#shorts\b/i.test(r.title)) return 'short';
+  return durationSeconds(r.durationISO) <= 60 ? 'short' : 'long';
+}
 
 /** Lowercase, strip emoji + hashtags + punctuation, collapse whitespace. */
 export function normalizeTitle(title: string): string {
@@ -55,8 +74,9 @@ export function buildDuplicateGroups(records: DedupRecord[]): DuplicateGroup[] {
   const byKey: Record<string, DedupRecord[]> = {};
   for (const r of records) {
     if (r.privacyStatus !== 'public') continue;
-    const key = normalizeTitle(r.title);
-    if (!key) continue;
+    const titleKey = normalizeTitle(r.title);
+    if (!titleKey) continue;
+    const key = `${formatBucket(r)}::${titleKey}`;
     (byKey[key] ??= []).push(r);
   }
   const groups: DuplicateGroup[] = [];

@@ -22,8 +22,9 @@ describe('buildDuplicateGroups', () => {
     title: string,
     views: number,
     publishedAt: string,
-    privacyStatus = 'public'
-  ): DedupRecord => ({ videoId, title, views, publishedAt, privacyStatus });
+    privacyStatus = 'public',
+    durationISO?: string
+  ): DedupRecord => ({ videoId, title, views, publishedAt, privacyStatus, durationISO });
 
   it('returns only groups with >=2 public members', () => {
     const groups = buildDuplicateGroups([
@@ -50,6 +51,23 @@ describe('buildDuplicateGroups', () => {
       rec('older', 'API Gateway SPOF 🔥 #Shorts', 5, '2026-05-10'),
     ]);
     expect(groups[0].keeper.videoId).toBe('older');
+  });
+
+  it('does not group a Short with its companion long-form', () => {
+    const groups = buildDuplicateGroups([
+      rec('short', 'Are Microservices Killing CX? #Shorts', 18, '2026-05-21'),
+      rec('long', 'Are Microservices Killing CX?', 1, '2026-05-21', 'public', 'PT3M53S'),
+    ]);
+    expect(groups).toHaveLength(0);
+  });
+
+  it('still groups two long-form videos with the same title', () => {
+    const groups = buildDuplicateGroups([
+      rec('l1', 'Microservices Deep Dive', 50, '2026-05-01', 'public', 'PT8M'),
+      rec('l2', 'Microservices Deep Dive 🔥', 10, '2026-05-02', 'public', 'PT9M'),
+    ]);
+    expect(groups).toHaveLength(1);
+    expect(groups[0].keeper.videoId).toBe('l1');
   });
 
   it('ignores private videos', () => {
