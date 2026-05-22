@@ -311,5 +311,67 @@ export function buildNarrationPlan(opinion: OpinionPiece): OpinionNarrationScene
     });
   }
 
-  return plan;
+  // Feature 012: cap the plan to the 4-6 min duration budget. A verbose source
+  // markdown could otherwise inflate past the retention-friendly window.
+  return capNarrationPlan(plan);
+}
+
+// ─── Narration budget cap (Feature 012) ───────────────────────────────────
+
+/** Words a single sentence chunk owns. */
+function countWords(text: string): number {
+  return text.split(/\s+/).filter(Boolean).length;
+}
+
+/**
+ * Split narration into sentence chunks, each chunk keeping its terminating
+ * punctuation. Used so truncation lands only on sentence boundaries.
+ */
+function splitSentences(narration: string): string[] {
+  const matches = narration.match(/[^.!?]+[.!?]+(\s|$)|[^.!?]+$/g);
+  return (matches || []).map((s) => s.trim()).filter(Boolean);
+}
+
+/**
+ * Cap a narration plan to a total word budget (default 900 words ~ 6 min at
+ * ~150 wpm), so a fully-rendered opinion long-form lands in the 240-360 s
+ * retention window (Feature 012).
+ *
+ * Pure + deterministic (Constitution I): under-budget plans are returned
+ * unchanged; over-budget plans are trimmed sentence-by-sentence in document
+ * order. Each scene receives a proportional share of the budget but is never
+ * cut mid-sentence; the budget is a maximum, never a minimum (terse markdown
+ * is left alone).
+ */
+export function capNarrationPlan(
+  plan: OpinionNarrationScene[],
+  maxWords = 900
+): OpinionNarrationScene[] {
+  const total = plan.reduce((n, s) => n + countWords(s.narration), 0);
+  if (total <= maxWords || plan.length === 0) return plan;
+
+  // Distribute the budget proportionally to each scene's original length.
+  let remaining = maxWords;
+  return plan.map((scene, idx) => {
+    const sentences = splitSentences(scene.narration);
+    const scenesLeft = plan.length - idx;
+    // Reserve at least one word of budget per remaining scene so later
+    // scenes (hook, lesson, question) are never starved entirely.
+    const share = Math.max(1, remaining - (scenesLeft - 1));
+    const kept: string[] = [];
+    let used = 0;
+    for (const sentence of sentences) {
+      const w = countWords(sentence);
+      if (used + w > share) break;
+      kept.push(sentence);
+      used += w;
+    }
+    // Guarantee at least the first sentence so no scene becomes empty.
+    if (kept.length === 0 && sentences.length > 0) {
+      kept.push(sentences[0]);
+      used = countWords(sentences[0]);
+    }
+    remaining = Math.max(0, remaining - used);
+    return { ...scene, narration: kept.join(' ') };
+  });
 }
