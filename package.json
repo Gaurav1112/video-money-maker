@@ -56,7 +56,7 @@
     "react-dom": "^18.3.1",
     "remotion": "^4.0.457",
     "roughjs": "^4.6.6",
-    "zod": "^3.23.8"
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
