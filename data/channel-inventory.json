@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2026-05-22T01:12:29.221Z",
+  "fetchedAt": "2026-05-22T04:40:35.496Z",
   "channelTitle": "GuruSishya",
   "subscriberCount": 12,
   "totalUploads": 91,
@@ -61,7 +61,7 @@
       "views": 453,
       "likes": 1,
       "comments": 0,
-      "privacyStatus": "public",
+      "privacyStatus": "private",
       "url": "https://youtu.be/Dm2OCaR9vck"
     },
     {
@@ -325,7 +325,7 @@
       "views": 105,
       "likes": 1,
       "comments": 0,
-      "privacyStatus": "public",
+      "privacyStatus": "private",
       "url": "https://youtu.be/ZSEXGQlBHIE"
     },
     {
@@ -385,7 +385,7 @@
       "views": 91,
       "likes": 2,
       "comments": 0,
-      "privacyStatus": "public",
+      "privacyStatus": "private",
       "url": "https://youtu.be/txp4fhpFY4M"
     },
     {
@@ -404,12 +404,12 @@
       "videoId": "oHvuPXPqoNI",
       "title": "The API Gateway interview answer that works 🎯 #Shorts",
       "publishedAt": "2026-05-12T16:26:12Z",
-      "ageInDays": 9,
+      "ageInDays": 10,
       "durationISO": "PT2M54S",
       "views": 90,
       "likes": 0,
       "comments": 0,
-      "privacyStatus": "public",
+      "privacyStatus": "private",
       "url": "https://youtu.be/oHvuPXPqoNI"
     },
     {
@@ -440,7 +440,7 @@
       "videoId": "igrOiZyjvnA",
       "title": "Queue: When to Use What #Shorts",
       "publishedAt": "2026-05-12T16:29:31Z",
-      "ageInDays": 9,
+      "ageInDays": 10,
       "durationISO": "PT49S",
       "views": 69,
       "likes": 0,
@@ -481,7 +481,7 @@
       "views": 52,
       "likes": 1,
       "comments": 0,
-      "privacyStatus": "public",
+      "privacyStatus": "private",
       "url": "https://youtu.be/QCaLJ3rOBBE"
     },
     {
@@ -493,7 +493,7 @@
       "views": 51,
       "likes": 1,
       "comments": 0,
-      "privacyStatus": "public",
+      "privacyStatus": "private",
       "url": "https://youtu.be/XiH7nxy0GRo"
     },
     {
@@ -541,7 +541,7 @@
       "views": 36,
       "likes": 0,
       "comments": 0,
-      "privacyStatus": "public",
+      "privacyStatus": "private",
       "url": "https://youtu.be/5_kiXriF0Zk"
     },
     {
@@ -572,7 +572,7 @@
       "videoId": "XqdQXSKrEDI",
       "title": "Cdn: When to Use What #Shorts",
       "publishedAt": "2026-05-02T14:34:07Z",
-      "ageInDays": 19,
+      "ageInDays": 20,
       "durationISO": "PT49S",
       "views": 32,
       "likes": 1,
@@ -596,7 +596,7 @@
       "videoId": "C4yok-yyUd8",
       "title": "API Gateway Routing — Tier-3 to FAANG Roadmap Session 4 #systemdesign #apigateway #gurusishya #code",
       "publishedAt": "2026-04-04T13:30:24Z",
-      "ageInDays": 47,
+      "ageInDays": 48,
       "durationISO": "PT10M51S",
       "views": 30,
       "likes": 1,
@@ -625,14 +625,14 @@
       "views": 25,
       "likes": 0,
       "comments": 0,
-      "privacyStatus": "public",
+      "privacyStatus": "private",
       "url": "https://youtu.be/eogJ6Rzx7go"
     },
     {
       "videoId": "6jJHXravvvY",
       "title": "API Gateway Explained in 9 Minutes | System Design Interview",
       "publishedAt": "2026-05-09T15:42:43Z",
-      "ageInDays": 12,
+      "ageInDays": 13,
       "durationISO": "PT8M44S",
       "views": 19,
       "likes": 1,
@@ -704,7 +704,7 @@
       "videoId": "xHbKrrbt_84",
       "title": "Netflix Uses THIS to Handle 200 Million Users — Load Balancing Explained",
       "publishedAt": "2026-03-28T16:17:13Z",
-      "ageInDays": 54,
+      "ageInDays": 55,
       "durationISO": "PT8M5S",
       "views": 17,
       "likes": 1,
@@ -800,7 +800,7 @@
       "videoId": "fhR6GEVCQck",
       "title": "API Gateway Explained in 9 Minutes | System Design Interview",
       "publishedAt": "2026-05-16T15:38:39Z",
-      "ageInDays": 5,
+      "ageInDays": 6,
       "durationISO": "PT8M44S",
       "views": 10,
       "likes": 2,
@@ -812,7 +812,7 @@
       "videoId": "DNMKvVxxVGw",
       "title": "Apache Kafka Explained in 9 Minutes | System Design Intervi…",
       "publishedAt": "2026-05-02T15:44:06Z",
-      "ageInDays": 19,
+      "ageInDays": 20,
       "durationISO": "PT8M51S",
       "views": 10,
       "likes": 1,
@@ -884,7 +884,7 @@
       "videoId": "gMtoq6NarIs",
       "title": "Apache Kafka Complete Guide — From Junior to Senior",
       "publishedAt": "2026-05-01T13:40:54Z",
-      "ageInDays": 20,
+      "ageInDays": 21,
       "durationISO": "PT9M6S",
       "views": 7,
       "likes": 0,
@@ -968,7 +968,7 @@
       "videoId": "0g0-1SCJ4Yk",
       "title": "The Apache Kafka interview answer that works 🎯 #Shorts",
       "publishedAt": "2026-05-01T13:41:39Z",
-      "ageInDays": 20,
+      "ageInDays": 21,
       "durationISO": "PT3M2S",
       "views": 4,
       "likes": 0,
@@ -985,7 +985,7 @@
       "views": 3,
       "likes": 0,
       "comments": 0,
-      "privacyStatus": "public",
+      "privacyStatus": "private",
       "url": "https://youtu.be/rR9NEaC2nCU"
     },
     {
@@ -1016,7 +1016,7 @@
       "videoId": "TLPVLIp8ejg",
       "title": "How Google Routes You to the Nearest Server — GSLB Explained Session 6",
       "publishedAt": "2026-03-29T13:30:18Z",
-      "ageInDays": 53,
+      "ageInDays": 54,
       "durationISO": "PT7M39S",
       "views": 3,
       "likes": 0,
@@ -1033,7 +1033,7 @@
       "views": 2,
       "likes": 0,
       "comments": 0,
-      "privacyStatus": "public",
+      "privacyStatus": "private",
       "url": "https://youtu.be/OzpuLCRSJEc"
     },
     {
@@ -1045,14 +1045,14 @@
       "views": 2,
       "likes": 0,
       "comments": 0,
-      "privacyStatus": "public",
+      "privacyStatus": "private",
       "url": "https://youtu.be/jiWID08S6lk"
     },
     {
       "videoId": "imbiuBpLUYE",
       "title": "I coded Apache Kafka from scratch 🔥 #Shorts",
       "publishedAt": "2026-05-01T13:42:29Z",
-      "ageInDays": 20,
+      "ageInDays": 21,
       "durationISO": "PT3M1S",
       "views": 2,
       "likes": 0,
@@ -1069,14 +1069,14 @@
       "views": 1,
       "likes": 0,
       "comments": 0,
-      "privacyStatus": "public",
+      "privacyStatus": "private",
       "url": "https://youtu.be/WRiF-lPllsg"
     },
     {
       "videoId": "6NWJzuD2bCE",
       "title": "90% of devs get Apache Kafka wrong 😳 #Shorts",
       "publishedAt": "2026-05-01T13:41:55Z",
-      "ageInDays": 20,
+      "ageInDays": 21,
       "durationISO": "PT3M1S",
       "views": 0,
       "likes": 0,
