@@ -85,6 +85,13 @@ function readInventory(): Inventory | null {
 
 /** Best-effort channel-level Analytics query. Returns null on any failure. */
 async function queryChannel(metrics: string, days: number): Promise<Record<string, number> | null> {
+  // Guard credentials BEFORE touching the OAuth client — getYouTubeAuthClient()
+  // calls process.exit(1) on missing creds, which would skip our graceful
+  // 'unavailable' degradation (FR-005).
+  if (!process.env.YOUTUBE_CLIENT_ID || !process.env.YOUTUBE_CLIENT_SECRET) {
+    console.error('[monetization] YouTube credentials absent — Analytics metrics unavailable.');
+    return null;
+  }
   try {
     const { getYouTubeAnalyticsClient } = await import('./lib/youtube-analytics-client.js');
     const analytics = await getYouTubeAnalyticsClient();
