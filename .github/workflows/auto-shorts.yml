@@ -148,7 +148,12 @@ jobs:
             SRT="${VIDEO%.mp4}.srt"
             PARTIAL="data/variants/$ID.partial.json"
             echo "--- variant $ID ---"
+            # F009: --dedup-key "$ID" — $ID is the per-variant key
+            # (${topic}-quiz-${index}[-variantA|-variantB]). upload-youtube.ts
+            # skips (exit 0) if data/uploaded/$ID.json exists, else records it
+            # after a successful upload. Stops rotation wrap-around re-uploads.
             npx tsx scripts/upload-youtube.ts "$VIDEO" "$META" --shorts \
+              --dedup-key "$ID" \
               $([ -f "$THUMB" ] && echo "--thumbnail $THUMB") \
               $([ -f "$SRT" ] && echo "--captions $SRT") \
               $([ -n "$EQ" ] && echo "--first-comment \"$EQ 👀\"") \
@@ -171,7 +176,9 @@ jobs:
             SRT="${VIDEO%.mp4}.srt"
             PARTIAL="data/variants/$ID.partial.json"
             echo "--- variant $ID ---"
+            # F009: see Upload Short 1 step — --dedup-key dedups per quiz variant.
             npx tsx scripts/upload-youtube.ts "$VIDEO" "$META" --shorts \
+              --dedup-key "$ID" \
               $([ -f "$THUMB" ] && echo "--thumbnail $THUMB") \
               $([ -f "$SRT" ] && echo "--captions $SRT") \
               $([ -n "$EQ" ] && echo "--first-comment \"$EQ 👀\"") \
@@ -179,19 +186,21 @@ jobs:
               || echo "Upload $ID failed (continuing)"
           done
 
-      - name: Commit variant records
+      - name: Commit variant + upload-ledger records
         if: inputs.dry_run != true
         run: |
           # Persist data/variants/<videoId>.json files written by upload step
           # so the analytics workflow can join them with metrics later.
+          # F009: also persist data/uploaded/<quizKey>.json upload-ledger
+          # records so the per-quiz dedup survives across CI runs.
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add data/variants/*.json 2>/dev/null || true
+          git add data/variants/*.json data/uploaded/*.json 2>/dev/null || true
           if ! git diff --cached --quiet; then
-            git commit -m "data(variants): record uploaded A/B variants $(date -u +%Y-%m-%dT%H:%MZ)"
+            git commit -m "data(f009): record uploaded A/B variants + upload-ledger $(date -u +%Y-%m-%dT%H:%MZ)"
             git push || echo "push failed (non-fatal)"
           else
-            echo "No new variant records to commit"
+            echo "No new variant/ledger records to commit"
           fi
 
       - name: Upload variants to Instagram Reels (F004)

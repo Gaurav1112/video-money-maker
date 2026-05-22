@@ -21,6 +21,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { getYouTubeAuthClient } from './lib/youtube-oauth.js';
 import { writeVariantRecord, type VariantRecord } from './lib/variant-store.js';
+import { hasUploaded, recordUpload } from './lib/upload-ledger.js';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -328,6 +329,13 @@ async function main(): Promise<void> {
   const variantRecordIdx = process.argv.indexOf('--variant-record');
   const variantRecordPath = variantRecordIdx > -1 ? process.argv[variantRecordIdx + 1] : undefined;
 
+  // F009 (upload-ledger): --dedup-key <key>
+  // If passed and the key is already in data/uploaded/, skip the upload
+  // entirely (exit 0). After a successful upload the key is recorded so the
+  // same quiz never uploads twice — even when auto-shorts rotation wraps.
+  const dedupKeyIdx = process.argv.indexOf('--dedup-key');
+  const dedupKey = dedupKeyIdx > -1 ? process.argv[dedupKeyIdx + 1] : undefined;
+
   if (positional.length < 2) {
     console.error(
       'Usage: npx tsx scripts/upload-youtube.ts <video.mp4> <metadata.json> [--shorts] [--private] [--thumbnail <path>] [--captions <srt-path>] [--first-comment <text>]'
@@ -345,6 +353,9 @@ async function main(): Promise<void> {
     console.error('  --first-comment   Text to post as first (channel-owner) comment after upload');
     console.error(
       '  --variant-record  Path to partial variant JSON (A/B test); upload fills in videoId + uploadedAt'
+    );
+    console.error(
+      '  --dedup-key       Per-quiz upload key (${topic}-quiz-${index}[-variantA|-variantB]); skips if already uploaded'
     );
     process.exit(1);
   }
@@ -387,8 +398,28 @@ async function main(): Promise<void> {
     private: flags.includes('--private'),
   };
 
+  // F009: dedup gate — skip if this quiz key was already uploaded.
+  if (dedupKey && hasUploaded(dedupKey)) {
+    console.log(
+      `SKIP: already uploaded (dedup-key="${dedupKey}") — see data/uploaded/${dedupKey}.json`
+    );
+    process.exit(0);
+  }
+
   try {
     const result = await uploadVideo(resolvedVideoPath, metadata, options);
+
+    // F009: record the upload in the ledger so this quiz key never uploads
+    // again. Done right after a confirmed videoId, before optional thumbnail/
+    // caption steps, so a later non-fatal failure can't undo dedup.
+    if (dedupKey && result.videoId) {
+      try {
+        recordUpload(dedupKey, result.videoId);
+        console.log(`   ✓ Upload ledger: data/uploaded/${dedupKey}.json`);
+      } catch (err) {
+        console.warn(`   [warn] upload-ledger write failed: ${String(err).slice(0, 120)}`);
+      }
+    }
 
     // ── Thumbnail upload ──
     if (thumbnailPath && fs.existsSync(thumbnailPath)) {
