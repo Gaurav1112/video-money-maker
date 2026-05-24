@@ -50,6 +50,10 @@ function main(): void {
     epIdx > -1 ? args[epIdx + 1] : nextFlag ? pickNextUnpublished() : null;
 
   if (!slug) {
+    if (nextFlag) {
+      console.log('No unpublished episodes — cron has nothing to publish. Exiting cleanly.');
+      return;
+    }
     console.error('No --episode <slug> and no unpublished episodes found.');
     process.exit(1);
   }

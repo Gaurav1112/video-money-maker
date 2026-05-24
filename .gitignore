@@ -8,6 +8,8 @@ n8n-data/
 .DS_Store
 queue.db-shm
 queue.db-wal
+.claude/worktrees/
+.worktrees/
 
 # Generated audio (master tracks, scene audio) — only keep BGM/SFX templates
 public/audio/master-*.mp3

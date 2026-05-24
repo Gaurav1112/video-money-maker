@@ -24,6 +24,11 @@ on:
         required: false
         default: ''
 
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
 concurrency:
   group: retention-${{ github.ref }}
   cancel-in-progress: true
