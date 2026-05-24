@@ -1,0 +1,28 @@
+name: Set Video Title (retitle by batch file)
+
+on:
+  workflow_dispatch:
+    inputs:
+      batch_path:
+        description: 'Path to JSON batch file in repo (e.g. data/retitle-batch.json)'
+        required: true
+        default: 'data/retitle-batch.json'
+
+permissions:
+  contents: read
+
+jobs:
+  retitle:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
+      YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
+      YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '20' }
+      - run: npm ci
+      - name: Retitle
+        run: npx tsx scripts/set-video-title.ts ${{ inputs.batch_path }}
