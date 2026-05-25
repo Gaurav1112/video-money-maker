@@ -47,10 +47,10 @@ jobs:
       YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
       EDGE_TTS: '1'  # Use Edge TTS on CI (Kokoro needs local GPU)
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
@@ -246,7 +246,7 @@ jobs:
           done
 
       - name: Upload distribution artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: shorts-${{ github.run_number }}
           path: |
