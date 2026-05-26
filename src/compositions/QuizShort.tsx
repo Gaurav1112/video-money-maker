@@ -25,23 +25,23 @@ import { AnimatedBox } from '../components/viz/AnimatedBox';
 import { AnimatedArrow } from '../components/viz/AnimatedArrow';
 
 const FPS = 30;
-// F009: ~30s retention-optimized Short. YouTube Analytics on 50 videos showed
-// 120s v3 Shorts only reached 22-34% completion; old ~30s Shorts hit 100-126%.
-const DEFAULT_DURATION_S = 30;
+// Analytics: top performers are 15-22s (84-122% completion). 30s baseline
+// was too long — same absolute watch time (10-12s) = 33% vs 67% completion.
+// Trimmed narration targets ~15s audio; floor set to 20s for phase room.
+const DEFAULT_DURATION_S = 20;
 
-// F009: ABSOLUTE phase boundaries in seconds. Total = ~30s. The single
-// answer phase absorbs slack when audio is slightly longer.
+// ABSOLUTE phase boundaries in seconds. Total = ~20s. Answer phase absorbs slack.
 //
-//   HOOK            0  → 3s
-//   QUESTION        3  → 12s   (3 options + countdown — time to read)
-//   FLASH           12 → 13s
-//   ANSWER SPLASH   13 → 14s
-//   ONE-SENTENCE    14 → 25s   (single tight answer line — NOT multi-sentence)
-//   END CTA         25 → 30s
-const HOOK_END_S = 3;
-const QUESTION_END_S = 12;
-const FLASH_END_S = 13;
-const ANSWER_SPLASH_END_S = 14;
+//   HOOK            0  → 2s
+//   QUESTION        2  → 8s    (3 options + countdown — 6s to read)
+//   FLASH           8  → 9s
+//   ANSWER SPLASH   9  → 10s
+//   ONE-SENTENCE    10 → 15s   (single punchy line — NOT multi-sentence)
+//   END CTA         15 → 20s
+const HOOK_END_S = 2;
+const QUESTION_END_S = 8;
+const FLASH_END_S = 9;
+const ANSWER_SPLASH_END_S = 10;
 const END_CTA_DURATION_S = 5; // last 5s of total
 
 // Colors — dark theme for Shorts (proven higher retention)
@@ -204,7 +204,7 @@ function extractBigStat(explanation: string): { number: string; context: string 
   return null;
 }
 
-// ── F009: pick the punchiest single sentence for the ~30s answer beat ──
+// ── Pick the punchiest single sentence for the answer beat ──
 // Prefers the first sentence of `explanation` that carries a power word; falls
 // back to the first sentence of `explanation`, then `twist`. Shared with the
 // render script so on-screen text and narration stay in sync.
@@ -1072,7 +1072,7 @@ export const QuizShort: React.FC<QuizShortProps> = ({
 
   // F009: ABSOLUTE phase boundaries (not ratios). Hook/question/flash/cta do NOT
   // scale with total length. The single answer phase absorbs slack when the
-  // narration audio runs slightly longer than the ~30s baseline.
+  // narration audio runs slightly longer than the ~20s baseline.
   const HOOK_END = Math.round(HOOK_END_S * fps);
   const QUESTION_END = Math.round(QUESTION_END_S * fps);
   const FLASH_END = Math.round(FLASH_END_S * fps);
@@ -1340,7 +1340,7 @@ export const QuizShort: React.FC<QuizShortProps> = ({
           <AnswerSplashCard startFrame={FLASH_END} />
 
           {/* ═══════════════════════════════════════════════════════════
-              Phase 4: REVEAL flash + ONE-SENTENCE ANSWER (14-25s).
+              Phase 4: REVEAL flash + ONE-SENTENCE ANSWER (10-15s).
               Confetti + green flash anchored to ANSWER_SPLASH_END so they
               still fire on reveal.
               ═══════════════════════════════════════════════════════════ */}
@@ -1370,7 +1370,7 @@ export const QuizShort: React.FC<QuizShortProps> = ({
             </>
           )}
 
-          {/* F009: single tight answer beat (14-25s). Replaces the F006-era
+          {/* Single tight answer beat (10-15s). Replaces the F006-era
               ExplanationBeats / CodeSnippetPanel / WorkedExample. Renders the
               punchiest single sentence of the explanation with a brief stat
               counter + hormozi captions. */}
@@ -1603,9 +1603,8 @@ export const QuizShort: React.FC<QuizShortProps> = ({
 };
 
 // ── Metadata ────────────────────────────────────────────────────────
-// F009: floors at a ~30s baseline. Audio shorter than 30s -> composition is
-// still 30s (fadeOut handles the short silent tail). Audio longer -> composition
-// grows to fit (audio + 1s tail).
+// Floors at 20s baseline. Audio shorter than 20s → still 20s (silent tail).
+// Audio longer → composition grows to fit (audio + 1s tail).
 export const calculateQuizShortMetadata: CalculateMetadataFunction<Record<string, unknown>> = ({
   props,
 }) => {

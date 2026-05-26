@@ -192,20 +192,16 @@ async function main() {
   fs.mkdirSync(OUTPUT_DIR, { recursive: true });
 
   // ── Step 1: Generate TTS audio from quiz narration ──
-  // F009: SHORT narration for the ~30s retention-optimized Short. Order matches
-  // QuizShort.tsx phase order: HOOK 0-3s | QUESTION 3-12s | FLASH 12-14s |
-  // ONE-SENTENCE ANSWER 14-25s | END CTA 25-30s. The F006-era spokenCode /
-  // spokenExample / key-insight-repeat / bridge sentences are removed — they
-  // ballooned the audio to ~138s and tanked Shorts completion.
+  // Target ~18s total (matches 15-22s top performers from analytics).
+  // Removed dead-air pause and CTA tail — both caused mid-video drop-off.
+  // Phase order: HOOK 0-2s | QUESTION 2-8s | FLASH 8-9s | ANSWER 9-15s | CTA 15-20s
   console.log('\n[1/4] Generating TTS audio...');
   const answerSentence = pickAnswerSentence(quiz.explanation, quiz.twist);
   const narrationParts = [
-    quiz.spokenHook, // ~3s hook
-    quiz.question, // ~5s question
-    'Take a moment. Think about it.', // ~3s pause
-    answerSentence, // ~10s one-sentence answer
-    // END CTA — ~5s
-    `${quiz.endQuestion}. Drop your answer in the comments.`,
+    quiz.spokenHook, // ~2.5s hook
+    quiz.question, // ~4s question (countdown fills remaining question phase)
+    answerSentence, // ~6s punchy one-sentence answer
+    quiz.endQuestion, // ~2.5s CTA question (no "Drop your answer" — redundant)
   ];
   const fullNarration = narrationParts.filter(Boolean).join(' ');
 
@@ -218,7 +214,7 @@ async function main() {
 
   // ── Step 2: Build storyboard (for audio stitching only) ──
   console.log('[2/4] Building storyboard...');
-  // F009: default to the ~30s baseline (composition enforces minimum via metadata).
+  // Default to 20s baseline (composition enforces minimum via metadata).
   const audioDuration = audioResults[0]?.duration ?? 30;
 
   // ── Emit SRT from TTS word timestamps ──
