@@ -17,6 +17,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: channel-dedup
+  cancel-in-progress: false
+
 jobs:
   dedup:
     runs-on: ubuntu-latest
@@ -33,8 +37,10 @@ jobs:
       - name: Refresh inventory
         run: npx tsx scripts/channel-inventory.ts
       - name: Run dedup
+        env:
+          INPUT_EXECUTE: ${{ inputs.execute }}
         run: |
-          if [ "${{ inputs.execute }}" = "true" ]; then
+          if [ "$INPUT_EXECUTE" = "true" ]; then
             npx tsx scripts/channel-dedup.ts --execute
           else
             npx tsx scripts/channel-dedup.ts

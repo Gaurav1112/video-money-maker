@@ -16,6 +16,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: set-video-privacy
+  cancel-in-progress: false
+
 jobs:
   set-privacy:
     runs-on: ubuntu-latest
@@ -30,4 +34,7 @@ jobs:
         with: { node-version: '20' }
       - run: npm ci
       - name: Set privacy
-        run: npx tsx scripts/set-video-privacy.ts --status ${{ inputs.status }} ${{ inputs.video_ids }}
+        env:
+          INPUT_STATUS: ${{ inputs.status }}
+          INPUT_VIDEO_IDS: ${{ inputs.video_ids }}
+        run: npx tsx scripts/set-video-privacy.ts --status "$INPUT_STATUS" $INPUT_VIDEO_IDS

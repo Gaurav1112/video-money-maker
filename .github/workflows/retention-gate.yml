@@ -63,7 +63,7 @@ jobs:
             src/lib/retention-engine.ts \
             src/lib/retention-proxy.ts \
             src/lib/dropoff-predictor.ts \
-            scripts/retention-cli.ts \
+            npx tsx scripts/retention-cli.ts \
             || true  # non-fatal: some repos use separate tsconfig for scripts
 
       - name: Run retention engine tests
@@ -164,7 +164,7 @@ jobs:
             echo "Checking: $VIDEO"
 
             # Run retention CLI (exits 1 if score < 70)
-            if npx ts-node scripts/retention-cli.ts "$VIDEO" 2>&1; then
+            if npx tsx scripts/retention-cli.ts "$VIDEO" 2>&1; then
               echo "✅ PASS: $VIDEO"
             else
               EXIT_CODE=$?

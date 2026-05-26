@@ -17,6 +17,10 @@ on:
         required: false
         default: 'false'
 
+permissions:
+  contents: write
+  actions: read
+
 concurrency:
   group: weekly-article
   cancel-in-progress: false
@@ -41,12 +45,14 @@ jobs:
           DEVTO_API_KEY: ${{ secrets.DEVTO_API_KEY }}
           HASHNODE_API_KEY: ${{ secrets.HASHNODE_API_KEY }}
           HASHNODE_PUBLICATION_ID: ${{ secrets.HASHNODE_PUBLICATION_ID }}
+          INPUT_WEEK: ${{ github.event.inputs.week }}
+          INPUT_DRY_RUN: ${{ github.event.inputs.dry_run }}
         run: |
           ARGS=""
-          if [ -n "${{ github.event.inputs.week }}" ]; then
-            ARGS="$ARGS --week ${{ github.event.inputs.week }}"
+          if [ -n "$INPUT_WEEK" ]; then
+            ARGS="$ARGS --week $INPUT_WEEK"
           fi
-          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+          if [ "$INPUT_DRY_RUN" = "true" ]; then
             ARGS="$ARGS --dry-run"
           fi
           npx tsx scripts/synthesize-weekly.ts $ARGS

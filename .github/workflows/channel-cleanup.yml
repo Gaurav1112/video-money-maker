@@ -31,6 +31,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: channel-cleanup
+  cancel-in-progress: false
+
 jobs:
   cleanup:
     runs-on: ubuntu-latest
@@ -47,12 +51,18 @@ jobs:
       - name: Refresh inventory
         run: npx tsx scripts/channel-inventory.ts
       - name: Run cleanup
+        env:
+          INPUT_THRESHOLD: ${{ inputs.threshold }}
+          INPUT_MIN_AGE_DAYS: ${{ inputs.min_age_days }}
+          INPUT_ACTION: ${{ inputs.action }}
+          INPUT_EXECUTE: ${{ inputs.execute }}
+          INPUT_CONFIRM_DELETE: ${{ inputs.confirm_delete }}
         run: |
-          FLAGS="--threshold ${{ inputs.threshold }} --min-age ${{ inputs.min_age_days }} --action ${{ inputs.action }}"
-          if [ "${{ inputs.execute }}" = "true" ]; then
+          FLAGS="--threshold $INPUT_THRESHOLD --min-age $INPUT_MIN_AGE_DAYS --action $INPUT_ACTION"
+          if [ "$INPUT_EXECUTE" = "true" ]; then
             FLAGS="$FLAGS --execute"
           fi
-          if [ "${{ inputs.action }}" = "delete" ] && [ "${{ inputs.confirm_delete }}" = "DELETE_CONFIRMED" ]; then
+          if [ "$INPUT_ACTION" = "delete" ] && [ "$INPUT_CONFIRM_DELETE" = "DELETE_CONFIRMED" ]; then
             FLAGS="$FLAGS --confirm-delete"
           fi
           echo "Running: npx tsx scripts/channel-cleanup.ts $FLAGS"

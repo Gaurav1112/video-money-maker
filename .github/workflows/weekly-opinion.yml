@@ -12,6 +12,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: weekly-opinion
+  cancel-in-progress: false
+
 jobs:
   publish:
     runs-on: ubuntu-latest
@@ -34,8 +38,10 @@ jobs:
           pip install --break-system-packages edge-tts
           npx remotion browser ensure
       - name: Render + upload
+        env:
+          INPUT_EPISODE: ${{ inputs.episode }}
         run: |
-          EPISODE="${{ inputs.episode }}"
+          EPISODE="$INPUT_EPISODE"
           if [ -n "$EPISODE" ]; then
             npx tsx scripts/upload-opinion-piece.ts --episode "$EPISODE"
           else

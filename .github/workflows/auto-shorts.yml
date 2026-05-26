@@ -34,6 +34,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: auto-shorts
+  cancel-in-progress: false
+
 env:
   NODE_VERSION: '20'
 
@@ -47,10 +51,10 @@ jobs:
       YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
       EDGE_TTS: '1'  # Use Edge TTS on CI (Kokoro needs local GPU)
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.2.2
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
@@ -68,11 +72,13 @@ jobs:
 
       - name: Determine quiz numbers
         id: quizzes
+        env:
+          INPUT_QUIZ_NUMBER: ${{ inputs.quiz_number }}
         run: |
           DOY=$(date +%j)
-          if [ -n "${{ inputs.quiz_number }}" ]; then
-            echo "quiz1=${{ inputs.quiz_number }}" >> $GITHUB_OUTPUT
-            echo "quiz2=$(( (${{ inputs.quiz_number }} + 1) % 61 ))" >> $GITHUB_OUTPUT
+          if [ -n "$INPUT_QUIZ_NUMBER" ]; then
+            echo "quiz1=$INPUT_QUIZ_NUMBER" >> $GITHUB_OUTPUT
+            echo "quiz2=$(( (INPUT_QUIZ_NUMBER + 1) % 61 ))" >> $GITHUB_OUTPUT
           else
             # Topic-diverse selection: pick from different topic groups
             TOPIC_STARTS=(0 12 18 23 28 33 37 41 45 50 54 58)
@@ -88,9 +94,10 @@ jobs:
 
       - name: Compute formula flag
         id: formula
+        env:
+          INPUT_FORCE_FORMULA: ${{ inputs.force_formula }}
         run: |
-          # Feature 001 (A/B): translate workflow_dispatch input to a CLI flag.
-          FF="${{ inputs.force_formula }}"
+          FF="$INPUT_FORCE_FORMULA"
           if [ -z "$FF" ] || [ "$FF" = "auto" ]; then
             echo "flag=" >> $GITHUB_OUTPUT
           else
@@ -100,9 +107,12 @@ jobs:
 
       - name: Render Quiz Short 1
         id: render1
+        env:
+          QUIZ1: ${{ steps.quizzes.outputs.quiz1 }}
+          FORMULA_FLAG: ${{ steps.formula.outputs.flag }}
         run: |
-          echo "=== Rendering Quiz #${{ steps.quizzes.outputs.quiz1 }} ==="
-          npx tsx scripts/render-daily-short.ts --short ${{ steps.quizzes.outputs.quiz1 }} ${{ steps.formula.outputs.flag }}
+          echo "=== Rendering Quiz #$QUIZ1 ==="
+          npx tsx scripts/render-daily-short.ts --short "$QUIZ1" $FORMULA_FLAG
           # When A/B is on, render-daily-short.ts emits *-variantA.mp4 / *-variantB.mp4.
           # Pick the most-recent base id so downstream steps can iterate variants.
           BASE=$(ls -t output/daily-short/*.mp4 | head -1 | sed -E 's/-variant[AB]\.mp4$//;s/\.mp4$//')
@@ -112,9 +122,12 @@ jobs:
 
       - name: Render Quiz Short 2
         id: render2
+        env:
+          QUIZ2: ${{ steps.quizzes.outputs.quiz2 }}
+          FORMULA_FLAG: ${{ steps.formula.outputs.flag }}
         run: |
-          echo "=== Rendering Quiz #${{ steps.quizzes.outputs.quiz2 }} ==="
-          npx tsx scripts/render-daily-short.ts --short ${{ steps.quizzes.outputs.quiz2 }} ${{ steps.formula.outputs.flag }}
+          echo "=== Rendering Quiz #$QUIZ2 ==="
+          npx tsx scripts/render-daily-short.ts --short "$QUIZ2" $FORMULA_FLAG
           BASE=$(ls -t output/daily-short/*.mp4 | head -1 | sed -E 's/-variant[AB]\.mp4$//;s/\.mp4$//')
           echo "base=$BASE" >> $GITHUB_OUTPUT
           echo "Rendered base: $BASE"
@@ -132,9 +145,11 @@ jobs:
 
       - name: Upload Short 1 variants to YouTube
         if: inputs.dry_run != true
+        env:
+          RENDER1_BASE: ${{ steps.render1.outputs.base }}
         run: |
           echo "=== Uploading Short 1 variants ==="
-          BASE="${{ steps.render1.outputs.base }}"
+          BASE="$RENDER1_BASE"
           # Iterate any -variantA / -variantB files plus the single-variant case.
           # Each upload is wrapped in `|| true` per FR-008 (one failure does not
           # abort the other variant).
@@ -163,9 +178,11 @@ jobs:
 
       - name: Upload Short 2 variants to YouTube
         if: inputs.dry_run != true
+        env:
+          RENDER2_BASE: ${{ steps.render2.outputs.base }}
         run: |
           echo "=== Uploading Short 2 variants ==="
-          BASE="${{ steps.render2.outputs.base }}"
+          BASE="$RENDER2_BASE"
           for VIDEO in "$BASE.mp4" "$BASE-variantA.mp4" "$BASE-variantB.mp4"; do
             [ -f "$VIDEO" ] || continue
             ID=$(basename "${VIDEO%.mp4}")
@@ -246,7 +263,7 @@ jobs:
           done
 
       - name: Upload distribution artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: shorts-${{ github.run_number }}
           path: |

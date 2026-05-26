@@ -8,6 +8,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: channel-inventory
+  cancel-in-progress: false
+
 jobs:
   inventory:
     runs-on: ubuntu-latest

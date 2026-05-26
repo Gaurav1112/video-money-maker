@@ -23,6 +23,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: trend-short
+  cancel-in-progress: true
+
 env:
   NODE_VERSION: '20'
 
@@ -36,10 +40,10 @@ jobs:
       YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
       EDGE_TTS: '1'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.2.2
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
@@ -80,14 +84,19 @@ jobs:
 
       - name: Upload to YouTube
         if: steps.render.outputs.video != ''
+        env:
+          RENDER_VIDEO: ${{ steps.render.outputs.video }}
+          RENDER_META: ${{ steps.render.outputs.meta }}
         run: |
-          npx tsx scripts/upload-youtube.ts "${{ steps.render.outputs.video }}" "${{ steps.render.outputs.meta }}" --shorts || echo "Upload failed"
+          npx tsx scripts/upload-youtube.ts "$RENDER_VIDEO" "$RENDER_META" --shorts || echo "Upload failed"
 
       - name: Summary
+        env:
+          TRENDS_FOUND: ${{ steps.trends.outputs.found }}
         run: |
           echo "## Trend Detection Results" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          if [ "${{ steps.trends.outputs.found }}" = "true" ]; then
+          if [ "$TRENDS_FOUND" = "true" ]; then
             echo "🔥 Trending topic found and rendered!" >> $GITHUB_STEP_SUMMARY
           else
             echo "📭 No trending topics scored high enough." >> $GITHUB_STEP_SUMMARY

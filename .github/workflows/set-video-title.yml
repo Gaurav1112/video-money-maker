@@ -11,6 +11,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: set-video-title
+  cancel-in-progress: false
+
 jobs:
   retitle:
     runs-on: ubuntu-latest
@@ -25,4 +29,6 @@ jobs:
         with: { node-version: '20' }
       - run: npm ci
       - name: Retitle
-        run: npx tsx scripts/set-video-title.ts ${{ inputs.batch_path }}
+        env:
+          INPUT_BATCH_PATH: ${{ inputs.batch_path }}
+        run: npx tsx scripts/set-video-title.ts "$INPUT_BATCH_PATH"

@@ -1,23 +1,42 @@
 {
+  "version": 1,
+  "lastUpdated": "2026-05-26",
   "topics": [
     {
-      "topicId": "database-indexing",
-      "title": "Database Indexing Explained (Retention 9/10)",
-      "priority": 1,
-      "publishAt": "2026-05-04T20:30:00Z",
-      "tags": ["database", "indexing", "performance", "optimization"]
+      "slug": "api-gateway",
+      "name": "API Gateway",
+      "sessions": 10,
+      "category": "system-design",
+      "priority": "high",
+      "rendered": [],
+      "published": []
     },
     {
-      "topicId": "system-design-caching",
-      "title": "Caching Strategies: The Complete Guide",
-      "priority": 2,
-      "publishAt": "2026-05-05T09:00:00Z",
-      "tags": ["system-design", "caching", "redis", "performance"]
+      "slug": "caching",
+      "name": "Caching Strategies",
+      "sessions": 10,
+      "category": "system-design",
+      "priority": "high",
+      "rendered": [],
+      "published": []
+    },
+    {
+      "slug": "database-design",
+      "name": "Database Design",
+      "sessions": 10,
+      "category": "database",
+      "priority": "high",
+      "rendered": [],
+      "published": []
+    },
+    {
+      "slug": "load-balancing",
+      "name": "Load Balancing",
+      "sessions": 10,
+      "category": "system-design",
+      "priority": "high",
+      "rendered": [],
+      "published": []
     }
-  ],
-  "settings": {
-    "autoPublish": true,
-    "publishInterval": "daily",
-    "maxVideosPerDay": 2
-  }
+  ]
 }
