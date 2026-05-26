@@ -96,10 +96,10 @@ const AvatarBubble: React.FC = () => {
 // ── Constants ─────────────────────────────────────────────────────────────────
 const WIDTH = 1080;
 const HEIGHT = 1920;
-const FPS = 60;
-const HOOK_FRAMES = 150; // 2.5 seconds at 60fps — algorithm needs 2-3s to measure retention
-const CTA_FRAMES = 150; // 2.5 seconds at 60fps — enough to read all 3 CTA elements
-const MAX_TOTAL_FRAMES = 3300; // 55 seconds at 60fps
+const FPS = 30; // 30fps — platform standard for Shorts/Reels
+const HOOK_FRAMES = 150; // 5 seconds at 30fps — algorithm needs 2-3s to measure retention
+const CTA_FRAMES = 150; // 5 seconds at 30fps — enough to read all 3 CTA elements
+const MAX_TOTAL_FRAMES = 1650; // 55 seconds at 30fps
 
 // Unified dark theme for Shorts — consistent throughout, no jarring transitions
 const SHORTS_BG = '#0F0F14'; // rich dark (not pure black, avoids OLED banding)
@@ -1986,7 +1986,12 @@ function generateHookText(heading: string, topic: string): string {
 export function calculateViralShortMetadata({ props }: { props: Record<string, unknown> }) {
   const sb = props.storyboard as Storyboard;
   if (!sb || !sb.scenes || sb.scenes.length === 0) {
-    return { durationInFrames: 1800, fps: 60, width: 1080, height: 1920 };
+    return {
+      durationInFrames: Math.min(FPS * 30, MAX_TOTAL_FRAMES),
+      fps: FPS,
+      width: 1080,
+      height: 1920,
+    };
   }
 
   const clipStartIdx = props.clipStart as number | undefined;
@@ -2001,12 +2006,12 @@ export function calculateViralShortMetadata({ props }: { props: Record<string, u
 
   const duration = getAudioDuration(scene);
   const contentSeconds = Math.min(duration, 48);
-  const contentFrames = Math.round(contentSeconds * 60);
+  const contentFrames = Math.round(contentSeconds * FPS);
   const total = HOOK_FRAMES + contentFrames + CTA_FRAMES;
 
   return {
     durationInFrames: Math.min(total, MAX_TOTAL_FRAMES),
-    fps: 60,
+    fps: FPS,
     width: 1080,
     height: 1920,
   };

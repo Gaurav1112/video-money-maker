@@ -177,7 +177,7 @@ function isDSATopic(slug: string): boolean {
   return DSA_TOPICS.has(slug);
 }
 
-function truncTitle(title: string, max: number = 80): string {
+function truncTitle(title: string, max: number = 55): string {
   return title.length <= max ? title : title.slice(0, max - 3) + '...';
 }
 
@@ -186,7 +186,7 @@ const SHORT_FORMATS: ShortFormat[] = [
   {
     name: 'concept-explainer',
     visualCue: 'concept',
-    titleTemplate: (t) => truncTitle(`${t} in 45 Seconds — Finally Explained`),
+    titleTemplate: (t) => truncTitle(`You're Using ${t} Wrong`),
     generateContent: (_slug, topic, ex) => ({
       narration: `Your system is slow. You add ${topic}. Fast now. Problem solved — until you hit ${ex.scale}. Then ${ex.problem}. All at once. Not gradual. A cliff. ${ex.company} hit that cliff. Their fix? ${ex.solution}. Not a rewrite. Not a new framework. A specific architectural decision that took twenty minutes to implement. The tradeoff — you now operate a distributed component. More moving parts. More failure modes. Worth it above ${ex.scale}. Below that? Skip it. Seriously. The pain of operating ${topic} has to exceed the pain of not having it. That is the only rule.`,
       heading: `${topic} Explained`,
@@ -824,7 +824,7 @@ export function generateShort(topicSlug: string, shortIndex: number): ShortEpiso
 
   // Enforce 135-word limit (110-135 target range for ~45s at 2.5 words/sec)
   const words = narration.split(/\s+/);
-  const clampedNarration = words.length > 135 ? words.slice(0, 135).join(' ') + '.' : narration;
+  const clampedNarration = words.length > 120 ? words.slice(0, 120).join(' ') + '.' : narration;
 
   const title = format.titleTemplate(topicDisplay);
 
@@ -867,11 +867,11 @@ export function resolveShortNumber(shortNumber: number): { topicSlug: string; sh
   const clamped = ((shortNumber % TOTAL_SHORTS) + TOTAL_SHORTS) % TOTAL_SHORTS;
   // Interleave: day 0 = topic 0 format 0, day 1 = topic 1 format 0, ...
   // day 66 = topic 0 format 1, day 67 = topic 1 format 1, etc.
-  const topicIdx = clamped % ALL_TOPICS.length;
-  const shortIdx = Math.floor(clamped / ALL_TOPICS.length);
+  const topicIdx = Math.floor(clamped / SHORT_FORMATS.length);
+  const shortIdx = clamped % SHORT_FORMATS.length;
   return {
     topicSlug: ALL_TOPICS[topicIdx],
-    shortIndex: shortIdx % SHORT_FORMATS.length,
+    shortIndex: shortIdx,
   };
 }
 

@@ -4,8 +4,10 @@ name: Batch Render Sessions
 # Uses self-hosted runner with access to local content + Remotion
 
 on:
-  schedule:
-    - cron: '30 20 * * *'   # 8:30 PM UTC = 2:00 AM IST daily
+  # DISABLED 2026-05-26: superseded by render-pipeline.yml (ubuntu-latest).
+  # self-hosted runner no longer provisioned; render-pipeline.yml handles nightly batch.
+  # schedule:
+  #   - cron: '30 20 * * *'   # 8:30 PM UTC = 2:00 AM IST daily
 
   workflow_dispatch:
     inputs:
