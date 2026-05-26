@@ -1,8 +1,8 @@
-# Weekly Report — 2026-05-25
+# Weekly Report — 2026-05-26
 
-**Videos analyzed:** 99
-**Median completion %:** 21.3%  (target: ≥70%)
-**Median views:** 19
+**Videos analyzed:** 103
+**Median completion %:** 21.2%  (target: ≥70%)
+**Median views:** 18
 **Median comments per 1k views:** 0.00
 
 ## Per-Video
@@ -24,34 +24,35 @@
 | `IJ9nxeKyjAU` | 108 | 66.3% | 17.0 | 0 | 0 |
 | `dqkEfxm3l28` | 5 | 63.3% | 227.0 | 0 | 0 |
 | `rgigqg68eMA` | 112 | 61.2% | 26.0 | 1 | 0 |
-| `V3YiM9QkDfQ` | 14 | 60.5% | 19.0 | 2 | 0 |
 | `jiWID08S6lk` | 2 | 59.8% | 15.0 | 0 | 0 |
 | `LYz7WFhcwpI` | 3 | 59.6% | 29.0 | 1 | 0 |
 | `3iyoFAvFbCY` | 2 | 57.8% | 429.0 | 0 | 0 |
+| `I1M_v0Kg5MQ` | 3 | 56.2% | 42.0 | 0 | 0 |
 | `pHlD7USp2eE` | 2 | 52.6% | 375.0 | 0 | 0 |
-| `mnFxZgfDlj8` | 15 | 50.2% | 15.0 | 2 | 0 |
+| `V3YiM9QkDfQ` | 25 | 51.6% | 17.0 | 2 | 0 |
+| `mnFxZgfDlj8` | 18 | 50.2% | 15.0 | 2 | 0 |
 | `9mpU0loTBMA` | 104 | 49.9% | 89.0 | 2 | 0 |
 | `r4wkYxBWyA0` | 13 | 49.1% | 19.0 | 0 | 0 |
 | `6Ezgm7WwJFQ` | 107 | 47.8% | 12.0 | 1 | 0 |
 | `x3bKXjsgiEI` | 18 | 46.3% | 22.0 | 0 | 0 |
-| `Ys8huowtVOY` | 19 | 45.2% | 25.0 | 0 | 0 |
+| `Ys8huowtVOY` | 20 | 45.2% | 25.0 | 0 | 0 |
 | `kJW3aDYovck` | 51 | 45.0% | 11.0 | 0 | 0 |
 | `DNMKvVxxVGw` | 10 | 41.5% | 220.0 | 1 | 0 |
 | `BhUnmvTCigU` | 13 | 41.1% | 188.0 | 1 | 0 |
 | `wau1zkuOfYA` | 41 | 34.8% | 10.0 | 0 | 0 |
 | `Lyo5OREw584` | 189 | 34.5% | 12.0 | 2 | 0 |
 | `fvsbgLEams8` | 110 | 33.9% | 8.0 | 0 | 0 |
-| `I1M_v0Kg5MQ` | 5 | 33.5% | 25.0 | 0 | 0 |
 | `TvjpUU_ybLI` | 26 | 32.8% | 58.0 | 0 | 0 |
 | `xBcr0AZzGMc` | 188 | 32.2% | 55.0 | 2 | 0 |
 | `igrOiZyjvnA` | 69 | 31.0% | 15.0 | 0 | 0 |
-| `txp4fhpFY4M` | 90 | 30.1% | 11.0 | 2 | 0 |
+| `txp4fhpFY4M` | 91 | 30.1% | 11.0 | 2 | 0 |
 | `0g0-1SCJ4Yk` | 4 | 28.4% | 51.0 | 0 | 0 |
 | `gV4Ct9AIjSU` | 133 | 28.0% | 13.0 | 0 | 0 |
 | `eVo-Sh9ioLI` | 16 | 28.0% | 13.0 | 0 | 0 |
 | `MH4jS0KbQEw` | 14 | 27.4% | 49.0 | 0 | 0 |
 | `EO7ktgsh1x8` | 6 | 27.1% | 116.0 | 0 | 0 |
 | `gMtoq6NarIs` | 7 | 26.2% | 143.0 | 0 | 0 |
+| `vQc2Fnou1aE` | 177 | 25.0% | 34.0 | 1 | 0 |
 | `1gCRslwAQhI` | 34 | 23.6% | 11.0 | 0 | 0 |
 | `WRiF-lPllsg` | 1 | 23.5% | 54.0 | 0 | 0 |
 | `u3Bi2IAk6iM` | 12 | 23.1% | 87.0 | 0 | 0 |
@@ -69,7 +70,6 @@
 | `6jJHXravvvY` | 19 | 19.8% | 103.0 | 1 | 0 |
 | `5_kiXriF0Zk` | 36 | 19.7% | 5.0 | 0 | 0 |
 | `35i1D9ab6AE` | 211 | 18.7% | 33.0 | 4 | 1 |
-| `OGT7oriCHS4` | 18 | 18.2% | 81.0 | 0 | 0 |
 | `huagCvTJCMg` | 68 | 18.0% | 5.0 | 0 | 0 |
 | `4GJH6Bt3GHo` | 98 | 17.8% | 8.0 | 1 | 0 |
 | `EOxQcooASUU` | 50 | 17.2% | 5.0 | 0 | 0 |
@@ -78,10 +78,10 @@
 | `QCaLJ3rOBBE` | 52 | 16.6% | 29.0 | 1 | 0 |
 | `eogJ6Rzx7go` | 25 | 16.0% | 22.0 | 0 | 0 |
 | `9aazjc7r_68` | 138 | 15.4% | 17.0 | 1 | 1 |
-| `vQc2Fnou1aE` | 172 | 14.6% | 20.0 | 1 | 0 |
 | `M2RIPyTHKAA` | 177 | 14.1% | 17.0 | 1 | 0 |
+| `OGT7oriCHS4` | 17 | 13.6% | 61.0 | 0 | 0 |
 | `oHvuPXPqoNI` | 90 | 13.1% | 22.0 | 0 | 0 |
-| `fhR6GEVCQck` | 10 | 12.3% | 64.0 | 2 | 0 |
+| `fhR6GEVCQck` | 11 | 12.1% | 63.0 | 2 | 0 |
 | `yqIco25PeQw` | 124 | 12.1% | 21.0 | 1 | 0 |
 | `jrk8_qKoJ70` | 17 | 11.8% | 5.0 | 0 | 0 |
 | `88fCPLdFs0k` | 132 | 11.6% | 15.0 | 0 | 0 |
@@ -102,18 +102,22 @@
 | `9PnlcIqlysU` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `HcLsn4JNWeA` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `ItSyCtpy5Gk` | 0 | 0.0% | 0.0 | 0 | 0 |
+| `LEHOToLaWkQ` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `OzpuLCRSJEc` | 2 | 0.0% | 0.0 | 0 | 0 |
 | `TLPVLIp8ejg` | 0 | 0.0% | 0.0 | 0 | 0 |
+| `ZivDzk156SU` | 0 | 0.0% | 0.0 | 0 | 0 |
+| `eYIpssVuiAA` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `hKQhDQidk-Q` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `hXD7fHTD5mo` | 0 | 0.0% | 0.0 | 0 | 0 |
+| `hxYYYN4zcnc` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `l-ZBHfU46XM` | 2 | 0.0% | 0.0 | 0 | 0 |
 | `uUGsn9yb6t4` | 0 | 0.0% | 0.0 | 0 | 0 |
 
-## Per-formula comparison (last N=2 paired uploads)
+## Per-formula comparison (last N=4 paired uploads)
 
 | Formula | n_videos | median completion % | median views |
 |---------|----------|---------------------|--------------|
-| specific_stat | 2 | 26.4% | 55 |
-| wrong_answer_first | 2 | 18.7% | 45 |
+| specific_stat | 4 | 9.0% | 21 |
+| wrong_answer_first | 4 | 8.6% | 20 |
 
-**No winner yet — continuing A/B** (2/5 pairs collected).
+**No winner yet — continuing A/B** (4/5 pairs collected).
