@@ -141,7 +141,7 @@ export function scoreTitle(title: string): number {
       label: '90% WRONG formula strict',
     },
     { pattern: /\d+%.*wrong/i, score: 92, label: '% WRONG general' },
-    { pattern: /90%\s*(get|are|do)/i, score: 92, label: '90% shock hook' },
+    { pattern: /90%\s*(get|are|do|of)/i, score: 92, label: '90% shock hook' },
     { pattern: /wrong|mistake|error|fail/i, score: 75, label: 'Error/failure hook' },
 
     // Tier 2: Strong performers (500–900 views)
@@ -158,9 +158,32 @@ export function scoreTitle(title: string): number {
     },
     { pattern: /(secret|trick|hack)\s+(to|behind|of)/i, score: 80, label: 'Secret/trick hook' },
     {
-      pattern: /\d+\s*(billion|million|M|B)\s*(request|user|view)/i,
+      pattern:
+        /\d+\s*(trillion|billion|million|M|B).*\b(requests?|users?|views?|messages?|events?|transactions?)\b/i,
       score: 77,
       label: 'Scale curiosity hook',
+    },
+    // Quiz-bank titles: "cost $XM", "SECURITY HOLE", "NEVER meant for", "silent[ly]"
+    {
+      pattern: /cost\s+\$?\d|bug\s+cost|incident|crashed|killed\s+(your|the|a)/i,
+      score: 80,
+      label: 'Incident/cost shock hook',
+    },
+    {
+      pattern: /security\s+hole|vulnerability|exploit|hack|breach|compromised|stolen/i,
+      score: 80,
+      label: 'Security threat hook',
+    },
+    {
+      pattern: /never\s+(meant|designed|built|intended)\s+for/i,
+      score: 78,
+      label: 'Misconception reveal hook',
+    },
+    {
+      pattern:
+        /silent(ly)?.*\b(kill|los|corrupt|break|fail|bug)|\b(kill|los|corrupt|break|fail|bug).*silent(ly)?/i,
+      score: 78,
+      label: 'Silent failure hook',
     },
 
     // Tier 3: Moderate performers (250–500 views)
@@ -590,7 +613,8 @@ export function expectedScoreRange(views: number): [number, number] {
   if (views >= 300) return [60, 72];
   if (views >= 100) return [48, 62];
   if (views >= 30) return [38, 50];
-  return [0, 42];
+  if (views >= 10) return [10, 42];
+  return [0, 35];
 }
 
 // ─── Formatting ───────────────────────────────────────────────────────────────

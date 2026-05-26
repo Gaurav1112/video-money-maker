@@ -45,13 +45,14 @@ All non-trivial work happens on a feature branch in `.claude/worktrees/<name>/` 
 
 ## Currently Accepted Known Issues
 
-These tests fail on every CI run and are deferred:
+None. All tests pass as of 2026-05-26.
 
-- `tests/shorts-format.test.ts` — 3 failures, ViralShort composition tests (the parallel pipeline per principle VIII). Resolution path: deprecate one of the two Shorts pipelines.
-- `tests/workflow-security.test.ts` — 8-10 failures about missing `concurrency:` blocks and unpinned `actions/checkout@v4` SHAs. Resolution path: add `concurrency:` keys to `auto-shorts.yml` / `trend-short.yml` / `analytics.yml`, pin third-party actions to commit SHAs.
-- `src/pipeline/__tests__/shorts-generator.test.ts` — 6 failures in a generator we no longer use directly. Resolution path: either fix or quarantine.
-
-These represent ~18 pre-existing failures. New code must not increase this count.
+Previous deferred failures resolved:
+- `tests/shorts-format.test.ts` — fixed (FPS constant + calculateViralShortMetadata)
+- `tests/workflow-security.test.ts` — fixed (concurrency blocks + pinned action SHAs)
+- `src/pipeline/__tests__/shorts-generator.test.ts` — fixed (title max 55, clamp 120, resolveShortNumber algorithm)
+- `tests/retention-proxy.test.ts` — fixed (expectedScoreRange monotonicity, CTA buyback ordering)
+- `tests/retention-engine.test.ts` — fixed (CTA buyback inserted after shifted CTA segment)
 
 ## Governance
 
@@ -59,4 +60,4 @@ These represent ~18 pre-existing failures. New code must not increase this count
 - Amendments require a commit on `main` that updates this file alongside the implementation that changes the principle.
 - The constitution is referenced by every `/speckit-*` command via `.specify/memory/constitution.md`.
 
-**Version:** 1.0.0 | **Established:** 2026-05-21 | **Last Amended:** 2026-05-21
+**Version:** 1.0.0 | **Established:** 2026-05-21 | **Last Amended:** 2026-05-26

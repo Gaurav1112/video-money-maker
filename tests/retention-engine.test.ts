@@ -32,11 +32,18 @@ import {
 /** 9-minute long-form script with a CTA at minute 4 */
 function makeLongFormScript(): ScriptSegment[] {
   return [
-    { id: 's0', type: 'hook',    startSeconds: 0,   endSeconds: 5,   text: 'Hook text' },
-    { id: 's1', type: 'content', startSeconds: 5,   endSeconds: 60,  text: 'Intro content' },
-    { id: 's2', type: 'content', startSeconds: 60,  endSeconds: 120, text: 'Content beat 1', isHardConcept: true },
+    { id: 's0', type: 'hook', startSeconds: 0, endSeconds: 5, text: 'Hook text' },
+    { id: 's1', type: 'content', startSeconds: 5, endSeconds: 60, text: 'Intro content' },
+    {
+      id: 's2',
+      type: 'content',
+      startSeconds: 60,
+      endSeconds: 120,
+      text: 'Content beat 1',
+      isHardConcept: true,
+    },
     { id: 's3', type: 'content', startSeconds: 120, endSeconds: 180, text: 'Content beat 2' },
-    { id: 's4', type: 'cta',     startSeconds: 240, endSeconds: 250, text: 'Subscribe link' },
+    { id: 's4', type: 'cta', startSeconds: 240, endSeconds: 250, text: 'Subscribe link' },
     { id: 's5', type: 'content', startSeconds: 250, endSeconds: 360, text: 'Content beat 3' },
     { id: 's6', type: 'summary', startSeconds: 360, endSeconds: 400, text: 'Summary' },
     { id: 's7', type: 'content', startSeconds: 400, endSeconds: 480, text: 'Content beat 4' },
@@ -47,9 +54,9 @@ function makeLongFormScript(): ScriptSegment[] {
 /** 50-second Short */
 function makeShortFormScript(): ScriptSegment[] {
   return [
-    { id: 's0', type: 'hook',    startSeconds: 0,  endSeconds: 2,  text: '90% wrong' },
-    { id: 's1', type: 'content', startSeconds: 2,  endSeconds: 20, text: 'Core content' },
-    { id: 's2', type: 'cta',     startSeconds: 40, endSeconds: 45, text: 'Follow' },
+    { id: 's0', type: 'hook', startSeconds: 0, endSeconds: 2, text: '90% wrong' },
+    { id: 's1', type: 'content', startSeconds: 2, endSeconds: 20, text: 'Core content' },
+    { id: 's2', type: 'cta', startSeconds: 40, endSeconds: 45, text: 'Follow' },
     { id: 's3', type: 'summary', startSeconds: 45, endSeconds: 50, text: 'Summary' },
   ];
 }
@@ -57,21 +64,34 @@ function makeShortFormScript(): ScriptSegment[] {
 /** Minimal script with no CTA */
 function makeNoCTAScript(): ScriptSegment[] {
   return [
-    { id: 's0', type: 'hook',    startSeconds: 0,   endSeconds: 5,   text: 'Hook' },
-    { id: 's1', type: 'content', startSeconds: 5,   endSeconds: 300, text: 'Big content' },
+    { id: 's0', type: 'hook', startSeconds: 0, endSeconds: 5, text: 'Hook' },
+    { id: 's1', type: 'content', startSeconds: 5, endSeconds: 300, text: 'Big content' },
     { id: 's2', type: 'summary', startSeconds: 300, endSeconds: 350, text: 'Summary' },
   ];
 }
 
 const VALID_AUDIO_EVENTS = new Set([
-  'none', 'zoom_punch', 'audio_sting', 'audio_rise', 'audio_duck',
-  'audio_slam', 'color_flash', 'silence_cut',
+  'none',
+  'zoom_punch',
+  'audio_sting',
+  'audio_rise',
+  'audio_duck',
+  'audio_slam',
+  'color_flash',
+  'silence_cut',
 ]);
 
 const VALID_BEAT_TYPES = new Set<RetentionBeatType>([
-  'open_loop', 'stake_escalation', 'pattern_interrupt', 'curiosity_gap',
-  'cta_buyback', 'numbered_tease', 'status_reveal', 'loss_aversion',
-  'recall_bait', 'surprise_subversion',
+  'open_loop',
+  'stake_escalation',
+  'pattern_interrupt',
+  'curiosity_gap',
+  'cta_buyback',
+  'numbered_tease',
+  'status_reveal',
+  'loss_aversion',
+  'recall_bait',
+  'surprise_subversion',
 ]);
 
 // ─── Tests ────────────────────────────────────────────────────────────────────
@@ -97,13 +117,9 @@ describe('insertRetentionBeats — long-form', () => {
 
   test('at least one pattern interrupt in every 60s window', () => {
     const totalDuration = result.totalDurationSeconds;
-    const interrupts = result.beatsInserted.filter(
-      (b) => b.beatType === 'pattern_interrupt',
-    );
+    const interrupts = result.beatsInserted.filter((b) => b.beatType === 'pattern_interrupt');
     // Expect at least floor(totalDuration / 60) interrupts
-    expect(interrupts.length).toBeGreaterThanOrEqual(
-      Math.floor(totalDuration / 60),
-    );
+    expect(interrupts.length).toBeGreaterThanOrEqual(Math.floor(totalDuration / 60));
   });
 
   test('pattern interrupts are spaced ≤ 60s apart (MrBeast rule: every 30s)', () => {
@@ -124,13 +140,11 @@ describe('insertRetentionBeats — long-form', () => {
     const midpoint = result.totalDurationSeconds * 0.5;
     // Recall bait should be within 25% of midpoint
     expect(Math.abs(recallBait!.insertAtSeconds - midpoint)).toBeLessThan(
-      result.totalDurationSeconds * 0.25,
+      result.totalDurationSeconds * 0.25
     );
   });
 
-  test.skip('CTA buyback inserted after CTA segment', () => {
-    // Pre-existing bug (long-form retention engine): buyback insert time falls
-    // before CTA segment start. Tracked separately — re-enable after fix.
+  test('CTA buyback inserted after CTA segment', () => {
     const ctaSeg = result.segments.find((s) => s.type === 'cta');
     expect(ctaSeg).toBeDefined();
     const buyback = result.beatsInserted.find((b) => b.beatType === 'cta_buyback');
@@ -141,23 +155,19 @@ describe('insertRetentionBeats — long-form', () => {
   test('pre-CTA loss_aversion beat inserted before CTA', () => {
     const ctaSeg = result.segments.find((s) => s.type === 'cta');
     expect(ctaSeg).toBeDefined();
-    const lossBeats = result.beatsInserted.filter(
-      (b) => b.beatType === 'loss_aversion',
-    );
-    const preCTA = lossBeats.find(
-      (b) => b.insertAtSeconds < ctaSeg!.startSeconds,
-    );
+    const lossBeats = result.beatsInserted.filter((b) => b.beatType === 'loss_aversion');
+    const preCTA = lossBeats.find((b) => b.insertAtSeconds < ctaSeg!.startSeconds);
     expect(preCTA).toBeDefined();
   });
 
   test('status_reveal inserted before hard concept segment', () => {
     const hardConceptInResult = result.segments.find(
-      (s) => s.isHardConcept && s.type !== 'retention_beat',
+      (s) => s.isHardConcept && s.type !== 'retention_beat'
     );
     if (hardConceptInResult) {
       const reveal = result.beatsInserted.find(
-        (b) => b.beatType === 'status_reveal' &&
-               b.insertAtSeconds < hardConceptInResult.startSeconds,
+        (b) =>
+          b.beatType === 'status_reveal' && b.insertAtSeconds < hardConceptInResult.startSeconds
       );
       expect(reveal).toBeDefined();
     }
@@ -166,15 +176,13 @@ describe('insertRetentionBeats — long-form', () => {
   test('all segments sorted by startSeconds', () => {
     for (let i = 1; i < result.segments.length; i++) {
       expect(result.segments[i].startSeconds).toBeGreaterThanOrEqual(
-        result.segments[i - 1].startSeconds,
+        result.segments[i - 1].startSeconds
       );
     }
   });
 
   test('open loop balance: opened ≤ closed + 2', () => {
-    expect(result.openLoopBalance.opened).toBeLessThanOrEqual(
-      result.openLoopBalance.closed + 2,
-    );
+    expect(result.openLoopBalance.opened).toBeLessThanOrEqual(result.openLoopBalance.closed + 2);
   });
 
   test('all beat texts are non-empty', () => {
@@ -197,7 +205,7 @@ describe('insertRetentionBeats — long-form', () => {
 
   test('topic string appears in beat texts', () => {
     const beatsWithTopic = result.beatsInserted.filter((b) =>
-      b.text.toLowerCase().includes('kafka'),
+      b.text.toLowerCase().includes('kafka')
     );
     expect(beatsWithTopic.length).toBeGreaterThan(0);
   });
@@ -267,7 +275,7 @@ describe('insertRetentionBeats — determinism', () => {
     for (let i = 0; i < result1.beatsInserted.length; i++) {
       expect(result1.beatsInserted[i].beatType).toBe(result2.beatsInserted[i].beatType);
       expect(result1.beatsInserted[i].insertAtSeconds).toBe(
-        result2.beatsInserted[i].insertAtSeconds,
+        result2.beatsInserted[i].insertAtSeconds
       );
       expect(result1.beatsInserted[i].text).toBe(result2.beatsInserted[i].text);
     }

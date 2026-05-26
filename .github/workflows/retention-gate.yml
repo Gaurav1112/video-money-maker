@@ -163,8 +163,21 @@ jobs:
             echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
             echo "Checking: $VIDEO"
 
+            # Extract YouTube title from companion metadata JSON (if present).
+            # render-daily-short.ts writes <base>-metadata.json next to the MP4.
+            # Without this, the CLI falls back to the filename which scores ~40/100.
+            BASE="${VIDEO%-variantA.mp4}"
+            BASE="${BASE%-variantB.mp4}"
+            BASE="${BASE%.mp4}"
+            META_JSON="${BASE}-metadata.json"
+            TITLE_FLAG=""
+            if [ -f "$META_JSON" ]; then
+              YT_TITLE=$(node -e "try{const j=require('./$META_JSON');process.stdout.write(j.youtube?.title||'')}catch{}" 2>/dev/null || echo "")
+              [ -n "$YT_TITLE" ] && TITLE_FLAG="--title \"$YT_TITLE\""
+            fi
+
             # Run retention CLI (exits 1 if score < 70)
-            if npx tsx scripts/retention-cli.ts "$VIDEO" 2>&1; then
+            if eval npx tsx scripts/retention-cli.ts "$VIDEO" $TITLE_FLAG 2>&1; then
               echo "✅ PASS: $VIDEO"
             else
               EXIT_CODE=$?

@@ -458,8 +458,9 @@ export function insertRetentionBeats(
     workingSegments.push(beatToSegment(restateBeat));
     workingSegments.sort((a, b) => a.startSeconds - b.startSeconds);
 
-    // CTA buyback immediately after CTA
-    const buybackAt = cta.endSeconds + 0.5;
+    // CTA buyback immediately after CTA — re-find shifted position after the restate insert
+    const shiftedCta = workingSegments.find((s) => s.type === 'cta' && s.startSeconds >= restateAt);
+    const buybackAt = (shiftedCta?.endSeconds ?? cta.endSeconds) + 0.5;
     const buybackBeat: RetentionBeat = {
       beatType: 'cta_buyback',
       insertAtSeconds: buybackAt,

@@ -79,10 +79,9 @@ function weakPerformerMetrics(title: string): VideoMetrics {
 // ─── Calibration tests (channel-shorts.tsv) ───────────────────────────────────
 
 describe('Retention Proxy — Calibration against channel-shorts.tsv', () => {
-
   describe('Top performer: 944 views — "90% Engineers WRONG"', () => {
     const metrics = topPerformerMetrics(
-      '90% Engineers Are Preparing WRONG | Fix Your Interview Strategy 🚀  #systemdesign #interviewprep',
+      '90% Engineers Are Preparing WRONG | Fix Your Interview Strategy 🚀  #systemdesign #interviewprep'
     );
     const result = scoreRetention(metrics);
 
@@ -102,7 +101,7 @@ describe('Retention Proxy — Calibration against channel-shorts.tsv', () => {
 
   describe('Second performer: 905 views — "Health Checks 3 Minutes"', () => {
     const metrics = topPerformerMetrics(
-      'Health Checks Explained in 3 Minutes 🔥 #backend #faang #systemdesign',
+      'Health Checks Explained in 3 Minutes 🔥 #backend #faang #systemdesign'
     );
     const result = scoreRetention(metrics);
 
@@ -116,9 +115,7 @@ describe('Retention Proxy — Calibration against channel-shorts.tsv', () => {
   });
 
   describe('812 views — "90% Get Kafka Producers WRONG"', () => {
-    const metrics = topPerformerMetrics(
-      '90% Get Kafka Producers WRONG 😳',
-    );
+    const metrics = topPerformerMetrics('90% Get Kafka Producers WRONG 😳');
     const result = scoreRetention(metrics);
 
     test('scores > 78', () => {
@@ -144,7 +141,7 @@ describe('Retention Proxy — Calibration against channel-shorts.tsv', () => {
   describe('354 views — "Netflix 1B requests"', () => {
     const metrics: VideoMetrics = {
       ...topPerformerMetrics(
-        'The secret to how Netflix handles 1 BILLION requests daily..#SystemDesign',
+        'The secret to how Netflix handles 1 BILLION requests daily..#SystemDesign'
       ),
       loopBackMatch: false,
       retentionBeatCount: 4,
@@ -176,7 +173,7 @@ describe('Retention Proxy — Calibration against channel-shorts.tsv', () => {
 
   describe('11 views — "API Gateway in 60 Seconds" (WEAK)', () => {
     const metrics = weakPerformerMetrics(
-      'API Gateway in 60 Seconds #systemdesign #loadbalancing #interviewprep',
+      'API Gateway in 60 Seconds #systemdesign #loadbalancing #interviewprep'
     );
     const result = scoreRetention(metrics);
 
@@ -190,9 +187,7 @@ describe('Retention Proxy — Calibration against channel-shorts.tsv', () => {
   });
 
   describe('4 views — "Caching in 60 Seconds Flat" (WEAKEST)', () => {
-    const metrics = weakPerformerMetrics(
-      'Caching in 60 Seconds Flat #systemdesign',
-    );
+    const metrics = weakPerformerMetrics('Caching in 60 Seconds Flat #systemdesign');
     const result = scoreRetention(metrics);
 
     test('scores < 40', () => {
@@ -212,7 +207,9 @@ describe('Retention Proxy — Calibration against channel-shorts.tsv', () => {
   describe('Rank ordering: top performer scores > bottom performer', () => {
     test('944-view video scores higher than 4-view video', () => {
       const top = scoreRetention(topPerformerMetrics('90% Engineers Are Preparing WRONG 🚀'));
-      const bottom = scoreRetention(weakPerformerMetrics('Caching in 60 Seconds Flat #systemdesign'));
+      const bottom = scoreRetention(
+        weakPerformerMetrics('Caching in 60 Seconds Flat #systemdesign')
+      );
       expect(top.totalScore).toBeGreaterThan(bottom.totalScore + 40);
     });
   });
@@ -230,7 +227,9 @@ describe('scoreTitle — hook quality scoring', () => {
   });
 
   test('scale/curiosity hook (Netflix 1B) scores > 70', () => {
-    expect(scoreTitle('The secret to how Netflix handles 1 BILLION requests daily')).toBeGreaterThan(70);
+    expect(
+      scoreTitle('The secret to how Netflix handles 1 BILLION requests daily')
+    ).toBeGreaterThan(70);
   });
 
   test('descriptive "in 60 Seconds" hook scores < 35', () => {
@@ -255,7 +254,9 @@ describe('scoreTitle — hook quality scoring', () => {
 
   test('title > 70 chars gets penalty', () => {
     const short = scoreTitle('90% Get Kafka WRONG');
-    const long = scoreTitle('90% Get Kafka WRONG — Here Is The Full Explanation For Senior Engineers At FAANG Companies In 2025');
+    const long = scoreTitle(
+      '90% Get Kafka WRONG — Here Is The Full Explanation For Senior Engineers At FAANG Companies In 2025'
+    );
     // Long version loses the +5 emoji bonus and gains -5 penalty
     expect(long).toBeLessThanOrEqual(short);
   });
@@ -270,15 +271,19 @@ describe('expectedScoreRange', () => {
     expect(hi).toBe(100);
   });
 
-  test('< 30 views → [0, 42]', () => {
+  test('< 10 views → [0, 35]', () => {
     const [lo, hi] = expectedScoreRange(4);
     expect(lo).toBe(0);
+    expect(hi).toBe(35);
+  });
+
+  test('10–29 views → [10, 42]', () => {
+    const [lo, hi] = expectedScoreRange(11);
+    expect(lo).toBe(10);
     expect(hi).toBe(42);
   });
 
-  test.skip('score ranges are increasing with view count', () => {
-    // Pre-existing bug: expectedScoreRange returns [0, hi] for low view counts,
-    // breaking the strict-monotonic assertion. Tracked separately.
+  test('score ranges are increasing with view count', () => {
     const [lo4] = expectedScoreRange(4);
     const [lo11] = expectedScoreRange(11);
     const [lo268] = expectedScoreRange(268);
@@ -321,7 +326,7 @@ describe('Hook auto-fail gate', () => {
 describe('CTA timing scoring', () => {
   test('CTA at 55% scores highest CTA section', () => {
     const optimal: VideoMetrics = { ...topPerformerMetrics('90% WRONG'), ctaTimingFraction: 0.55 };
-    const early: VideoMetrics = { ...topPerformerMetrics('90% WRONG'), ctaTimingFraction: 0.10 };
+    const early: VideoMetrics = { ...topPerformerMetrics('90% WRONG'), ctaTimingFraction: 0.1 };
 
     const optResult = scoreRetention(optimal);
     const earlyResult = scoreRetention(early);
