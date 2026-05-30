@@ -1,7 +1,7 @@
-# Weekly Report — 2026-05-29
+# Weekly Report — 2026-05-30
 
-**Videos analyzed:** 107
-**Median completion %:** 22.4%  (target: ≥70%)
+**Videos analyzed:** 111
+**Median completion %:** 23.1%  (target: ≥70%)
 **Median views:** 25
 **Median comments per 1k views:** 0.00
 
@@ -35,30 +35,33 @@
 | `r4wkYxBWyA0` | 13 | 49.1% | 19.0 | 0 | 0 |
 | `6Ezgm7WwJFQ` | 107 | 47.8% | 12.0 | 1 | 0 |
 | `x3bKXjsgiEI` | 18 | 46.3% | 22.0 | 0 | 0 |
-| `eYIpssVuiAA` | 26 | 45.3% | 14.0 | 0 | 0 |
-| `Ys8huowtVOY` | 21 | 45.2% | 25.0 | 0 | 0 |
 | `kJW3aDYovck` | 51 | 45.0% | 11.0 | 0 | 0 |
+| `eYIpssVuiAA` | 29 | 43.9% | 13.0 | 0 | 0 |
 | `DNMKvVxxVGw` | 10 | 41.5% | 220.0 | 1 | 0 |
 | `BhUnmvTCigU` | 13 | 41.1% | 188.0 | 1 | 0 |
+| `vxWoLPFH6SU` | 2 | 37.8% | 332.0 | 0 | 0 |
 | `wau1zkuOfYA` | 41 | 34.8% | 10.0 | 0 | 0 |
 | `Lyo5OREw584` | 189 | 34.5% | 12.0 | 2 | 0 |
 | `fvsbgLEams8` | 110 | 33.9% | 8.0 | 0 | 0 |
+| `1mJAXHC0ogk` | 75 | 33.1% | 7.0 | 1 | 0 |
+| `0rqgSAZYHNA` | 40 | 32.8% | 8.0 | 0 | 0 |
+| `Ys8huowtVOY` | 24 | 32.8% | 18.0 | 0 | 0 |
 | `TvjpUU_ybLI` | 26 | 32.8% | 58.0 | 0 | 0 |
 | `xBcr0AZzGMc` | 188 | 32.2% | 55.0 | 2 | 0 |
+| `kO8OfNKq_7U` | 1 | 31.4% | 6.0 | 0 | 0 |
 | `igrOiZyjvnA` | 69 | 31.0% | 15.0 | 0 | 0 |
 | `txp4fhpFY4M` | 91 | 30.1% | 11.0 | 2 | 0 |
 | `0g0-1SCJ4Yk` | 4 | 28.4% | 51.0 | 0 | 0 |
 | `gV4Ct9AIjSU` | 133 | 28.0% | 13.0 | 0 | 0 |
 | `eVo-Sh9ioLI` | 16 | 28.0% | 13.0 | 0 | 0 |
 | `MH4jS0KbQEw` | 14 | 27.4% | 49.0 | 0 | 0 |
-| `LEHOToLaWkQ` | 80 | 27.3% | 8.0 | 0 | 0 |
 | `EO7ktgsh1x8` | 6 | 27.1% | 116.0 | 0 | 0 |
-| `vxWoLPFH6SU` | 3 | 26.4% | 231.0 | 0 | 0 |
+| `LEHOToLaWkQ` | 82 | 26.7% | 8.0 | 0 | 0 |
 | `gMtoq6NarIs` | 7 | 26.2% | 143.0 | 0 | 0 |
 | `uUGsn9yb6t4` | 67 | 26.1% | 14.0 | 1 | 0 |
-| `hxYYYN4zcnc` | 113 | 25.8% | 8.0 | 0 | 0 |
+| `hxYYYN4zcnc` | 111 | 25.8% | 8.0 | 0 | 0 |
 | `vQc2Fnou1aE` | 180 | 25.0% | 34.0 | 1 | 0 |
-| `ZivDzk156SU` | 90 | 24.9% | 7.0 | 0 | 0 |
+| `ZivDzk156SU` | 89 | 23.8% | 7.0 | 0 | 0 |
 | `1gCRslwAQhI` | 34 | 23.6% | 11.0 | 0 | 0 |
 | `WRiF-lPllsg` | 1 | 23.5% | 54.0 | 0 | 0 |
 | `u3Bi2IAk6iM` | 12 | 23.1% | 87.0 | 0 | 0 |
@@ -81,6 +84,7 @@
 | `EOxQcooASUU` | 50 | 17.2% | 5.0 | 0 | 0 |
 | `rfOrncb5nts` | 622 | 16.9% | 29.0 | 3 | 1 |
 | `QCaLJ3rOBBE` | 52 | 16.6% | 29.0 | 1 | 0 |
+| `gdTsESO64Xs` | 23 | 16.5% | 4.0 | 1 | 0 |
 | `OGT7oriCHS4` | 14 | 16.2% | 73.0 | 0 | 0 |
 | `eogJ6Rzx7go` | 25 | 16.0% | 22.0 | 0 | 0 |
 | `9aazjc7r_68` | 138 | 15.4% | 17.0 | 1 | 1 |
@@ -99,29 +103,29 @@
 | `XqdQXSKrEDI` | 32 | 8.3% | 4.0 | 1 | 0 |
 | `4enELkaZ8Fw` | 119 | 8.1% | 14.0 | 1 | 0 |
 | `yrg2WPjHa6k` | 9 | 8.0% | 33.0 | 1 | 0 |
+| `HcLsn4JNWeA` | 12 | 6.4% | 21.0 | 1 | 0 |
 | `Dm2OCaR9vck` | 453 | 6.3% | 11.0 | 1 | 0 |
-| `HcLsn4JNWeA` | 13 | 5.9% | 19.0 | 1 | 0 |
 | `imbiuBpLUYE` | 2 | 4.8% | 8.0 | 0 | 0 |
 | `do_5f6Q_pbI` | 270 | 4.6% | 6.0 | 1 | 0 |
 | `v2U9KzVwVxg` | 2 | 2.2% | 11.0 | 0 | 0 |
-| `0rqgSAZYHNA` | 0 | 0.0% | 0.0 | 0 | 0 |
-| `1mJAXHC0ogk` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `6NWJzuD2bCE` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `9PnlcIqlysU` | 0 | 0.0% | 0.0 | 0 | 0 |
+| `CXPrhPXHKSc` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `ItSyCtpy5Gk` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `OzpuLCRSJEc` | 2 | 0.0% | 0.0 | 0 | 0 |
 | `TLPVLIp8ejg` | 0 | 0.0% | 0.0 | 0 | 0 |
-| `gdTsESO64Xs` | 0 | 0.0% | 0.0 | 0 | 0 |
+| `_q7Iynn8mE0` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `hKQhDQidk-Q` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `hXD7fHTD5mo` | 0 | 0.0% | 0.0 | 0 | 0 |
-| `kO8OfNKq_7U` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `l-ZBHfU46XM` | 2 | 0.0% | 0.0 | 0 | 0 |
+| `sH0DXyH-27c` | 0 | 0.0% | 0.0 | 0 | 0 |
+| `uNa300hlJyQ` | 0 | 0.0% | 0.0 | 0 | 0 |
 
-## Per-formula comparison (last N=6 paired uploads)
+## Per-formula comparison (last N=8 paired uploads)
 
 | Formula | n_videos | median completion % | median views |
 |---------|----------|---------------------|--------------|
-| specific_stat | 6 | 21.5% | 34 |
-| wrong_answer_first | 6 | 18.7% | 46 |
+| specific_stat | 8 | 28.3% | 41 |
+| wrong_answer_first | 8 | 18.7% | 32 |
 
-**No winner yet — continuing A/B** (margin 2.7pp < 3pp threshold).
+**Winner**: specific_stat (+9.5pp margin, ≥3pp threshold met)
