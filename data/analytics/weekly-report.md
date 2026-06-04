@@ -2,7 +2,7 @@
 
 **Videos analyzed:** 115
 **Median completion %:** 26.3%  (target: ≥70%)
-**Median views:** 12
+**Median views:** 11
 **Median comments per 1k views:** 0.00
 
 ## Per-Video
@@ -42,9 +42,9 @@
 | `x3bKXjsgiEI` | 18 | 46.3% | 22.0 | 0 | 0 |
 | `kJW3aDYovck` | 51 | 45.0% | 11.0 | 0 | 0 |
 | `BhUnmvTCigU` | 7 | 43.9% | 200.0 | 0 | 0 |
-| `CXPrhPXHKSc` | 12 | 43.7% | 10.0 | 0 | 0 |
+| `CXPrhPXHKSc` | 11 | 43.7% | 10.0 | 0 | 0 |
 | `0rqgSAZYHNA` | 44 | 43.0% | 11.0 | 0 | 0 |
-| `_q7Iynn8mE0` | 9 | 42.5% | 8.0 | 0 | 0 |
+| `_q7Iynn8mE0` | 8 | 42.5% | 8.0 | 0 | 0 |
 | `1mJAXHC0ogk` | 80 | 40.9% | 8.0 | 1 | 0 |
 | `3iyoFAvFbCY` | 3 | 39.0% | 290.0 | 0 | 0 |
 | `vxWoLPFH6SU` | 2 | 37.8% | 332.0 | 0 | 0 |
