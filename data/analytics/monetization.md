@@ -1,22 +1,22 @@
 # YPP Monetization Tracker — @GuruSishya-India
 
-_Generated: 2026-06-19T09:19:59.589Z_
+_Generated: 2026-06-20T08:03:00.500Z_
 
 ## Current standing
 
 | Metric | Value |
 |---|---|
 | Subscribers | 13 |
-| 90-day Shorts views (approx) | 11,006 |
+| 90-day Shorts views (approx) | 11,065 |
 | 12-month watch hours | 21 |
-| Inventory cross-check (lifetime views, videos ≤3min) | 10,639 |
+| Inventory cross-check (lifetime views, videos ≤3min) | 10,740 |
 
 > **Approximation caveat:** The YouTube Analytics API does not cleanly separate Shorts views from long-form views. The "90-day Shorts views" figure above is the channel-level 90-day `views` total and therefore an upper bound. The inventory cross-check sums lifetime views of videos ≤3min as a lower-bound sanity check.
 
 ## YPP Path 1 — 1,000 subs + 10,000,000 Shorts views / 90 days
 
 - Subscribers: `░░░░░░░░░░░░░░░░░░░░` 1.3% — gap 987
-- Shorts views: `░░░░░░░░░░░░░░░░░░░░` 0.1% — gap 9,988,994
+- Shorts views: `░░░░░░░░░░░░░░░░░░░░` 0.1% — gap 9,988,935
 
 ## YPP Path 2 — 1,000 subs + 4,000 watch hours / 12 months
 
