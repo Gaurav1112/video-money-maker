@@ -1,4 +1,4 @@
-# Weekly Report — 2026-06-25
+# Weekly Report — 2026-06-26
 
 **Videos analyzed:** 134
 **Median completion %:** 0.0%  (target: ≥70%)
@@ -11,17 +11,17 @@
 |---|---|---|---|---|---|
 | `aDPROoam-g8` | 140 | 450.0% | 94.0 | 1 | 0 |
 | `vSq5vgDXZTU` | 27 | 133.3% | 27.0 | 0 | 0 |
-| `9IbK5a9qJ1I` | 52 | 75.4% | 18.0 | 0 | 0 |
+| `9IbK5a9qJ1I` | 53 | 75.4% | 18.0 | 0 | 0 |
 | `I2NOXjMoAZk` | 18 | 69.8% | 16.0 | 0 | 0 |
 | `sKlu48Iq_Gc` | 99 | 67.9% | 14.0 | 0 | 0 |
+| `qOCaObr_ZRg` | 40 | 61.1% | 14.0 | 0 | 0 |
+| `eYIpssVuiAA` | 6 | 61.0% | 18.0 | 0 | 0 |
 | `juH-XiRdlRU` | 41 | 60.0% | 13.0 | 0 | 0 |
 | `6Sz9BAmA264` | 38 | 59.5% | 12.0 | 1 | 0 |
-| `eYIpssVuiAA` | 13 | 57.7% | 17.0 | 0 | 0 |
 | `4ZXlpO6pZ0c` | 36 | 55.3% | 11.0 | 0 | 0 |
-| `qOCaObr_ZRg` | 35 | 55.3% | 12.0 | 0 | 0 |
-| `tTmCPg6DAxk` | 3 | 54.6% | 13.0 | 0 | 0 |
 | `sH0DXyH-27c` | 74 | 50.5% | 10.0 | 1 | 0 |
 | `lJznx5zsIGs` | 59 | 47.9% | 11.0 | 0 | 0 |
+| `tTmCPg6DAxk` | 4 | 45.8% | 11.0 | 0 | 0 |
 | `CXPrhPXHKSc` | 11 | 43.7% | 10.0 | 0 | 0 |
 | `Kz8zWav3fvo` | 56 | 43.5% | 10.0 | 0 | 0 |
 | `LCwF78a3iqU` | 86 | 43.4% | 11.0 | 1 | 0 |
@@ -37,10 +37,10 @@
 | `IcdnJQm17jA` | 100 | 30.1% | 7.0 | 0 | 0 |
 | `MRssw6dB2QI` | 60 | 26.9% | 7.0 | 0 | 0 |
 | `rF3EsLhHewQ` | 21 | 26.9% | 5.0 | 0 | 0 |
-| `LEHOToLaWkQ` | 11 | 23.4% | 7.0 | 0 | 0 |
 | `I1M_v0Kg5MQ` | 2 | 23.3% | 17.0 | 0 | 0 |
 | `gdTsESO64Xs` | 51 | 22.6% | 5.0 | 1 | 0 |
-| `HcLsn4JNWeA` | 23 | 21.8% | 73.0 | 0 | 0 |
+| `HcLsn4JNWeA` | 22 | 21.9% | 74.0 | 0 | 0 |
+| `LEHOToLaWkQ` | 7 | 21.3% | 6.0 | 0 | 0 |
 | `4enELkaZ8Fw` | 2 | 21.1% | 38.0 | 0 | 0 |
 | `Q0v7mRnPgXc` | 2 | 20.1% | 61.0 | 0 | 0 |
 | `ZivDzk156SU` | 1 | 16.8% | 5.0 | 0 | 0 |
@@ -49,7 +49,7 @@
 | `hAStNx9DsVY` | 1 | 7.2% | 8.0 | 0 | 0 |
 | `iTzM_c9SqKE` | 3 | 7.0% | 11.0 | 0 | 0 |
 | `fhR6GEVCQck` | 2 | 4.9% | 25.0 | 0 | 0 |
-| `vQc2Fnou1aE` | 6 | 3.0% | 4.0 | 0 | 0 |
+| `vQc2Fnou1aE` | 4 | 3.0% | 4.0 | 0 | 0 |
 | `gjWW-L5JHpQ` | 1 | 2.5% | 4.0 | 0 | 0 |
 | `vDHs09jlWDI` | 1 | 2.5% | 3.0 | 0 | 0 |
 | `3iyoFAvFbCY` | 1 | 1.6% | 11.0 | 0 | 0 |
@@ -76,7 +76,7 @@
 | `DISr28v9swU` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `DNMKvVxxVGw` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `Dm2OCaR9vck` | 0 | 0.0% | 0.0 | 0 | 0 |
-| `EBUUXcSy05g` | 1 | 0.0% | 0.0 | 0 | 0 |
+| `EBUUXcSy05g` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `EO7ktgsh1x8` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `EOxQcooASUU` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `H4NGxbsGQ2o` | 0 | 0.0% | 0.0 | 0 | 0 |
@@ -96,7 +96,7 @@
 | `S4-TEYj6Uog` | 1 | 0.0% | 0.0 | 0 | 0 |
 | `TLPVLIp8ejg` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `TvjpUU_ybLI` | 0 | 0.0% | 0.0 | 0 | 0 |
-| `V3YiM9QkDfQ` | 1 | 0.0% | 0.0 | 0 | 0 |
+| `V3YiM9QkDfQ` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `WRiF-lPllsg` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `XOeB3NjSqNg` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `XiH7nxy0GRo` | 0 | 0.0% | 0.0 | 0 | 0 |
@@ -122,7 +122,7 @@
 | `kJW3aDYovck` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `l-ZBHfU46XM` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `lfpoVVXfWzQ` | 0 | 0.0% | 0.0 | 0 | 0 |
-| `mnFxZgfDlj8` | 1 | 0.0% | 0.0 | 0 | 0 |
+| `mnFxZgfDlj8` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `oHvuPXPqoNI` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `owKNt21muck` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `pHlD7USp2eE` | 0 | 0.0% | 0.0 | 0 | 0 |
@@ -148,7 +148,7 @@
 
 | Formula | n_videos | median completion % | median views |
 |---------|----------|---------------------|--------------|
-| specific_stat | 8 | 35.4% | 11 |
-| wrong_answer_first | 8 | 23.0% | 7 |
+| specific_stat | 8 | 35.4% | 7 |
+| wrong_answer_first | 8 | 21.9% | 5 |
 
-**Winner**: specific_stat (+12.5pp margin, ≥3pp threshold met)
+**Winner**: specific_stat (+13.5pp margin, ≥3pp threshold met)
