@@ -1,4 +1,4 @@
-# Weekly Report — 2026-06-28
+# Weekly Report — 2026-06-29
 
 **Videos analyzed:** 136
 **Median completion %:** 0.0%  (target: ≥70%)
@@ -11,43 +11,43 @@
 |---|---|---|---|---|---|
 | `aDPROoam-g8` | 140 | 450.0% | 94.0 | 1 | 0 |
 | `vSq5vgDXZTU` | 27 | 133.3% | 27.0 | 0 | 0 |
-| `XOeB3NjSqNg` | 13 | 104.7% | 21.0 | 0 | 0 |
+| `XOeB3NjSqNg` | 15 | 104.7% | 21.0 | 0 | 0 |
 | `eYIpssVuiAA` | 2 | 83.9% | 26.0 | 0 | 0 |
-| `9IbK5a9qJ1I` | 53 | 75.4% | 18.0 | 0 | 0 |
+| `9IbK5a9qJ1I` | 54 | 74.4% | 17.0 | 0 | 0 |
 | `I2NOXjMoAZk` | 18 | 69.8% | 16.0 | 0 | 0 |
 | `sKlu48Iq_Gc` | 99 | 67.9% | 14.0 | 0 | 0 |
 | `cFs9GU8jw5M` | 13 | 65.4% | 14.0 | 0 | 0 |
 | `qOCaObr_ZRg` | 47 | 63.3% | 14.0 | 1 | 0 |
-| `6Sz9BAmA264` | 38 | 59.5% | 12.0 | 1 | 0 |
+| `6Sz9BAmA264` | 39 | 59.5% | 12.0 | 1 | 0 |
 | `4ZXlpO6pZ0c` | 36 | 55.3% | 11.0 | 0 | 0 |
 | `juH-XiRdlRU` | 42 | 51.8% | 11.0 | 0 | 0 |
-| `sH0DXyH-27c` | 74 | 50.5% | 10.0 | 1 | 0 |
 | `lJznx5zsIGs` | 59 | 47.9% | 11.0 | 0 | 0 |
 | `tTmCPg6DAxk` | 4 | 45.8% | 11.0 | 0 | 0 |
-| `1mJAXHC0ogk` | 5 | 45.0% | 9.0 | 0 | 0 |
-| `CXPrhPXHKSc` | 11 | 43.7% | 10.0 | 0 | 0 |
 | `Kz8zWav3fvo` | 61 | 43.5% | 10.0 | 0 | 0 |
 | `LCwF78a3iqU` | 86 | 43.4% | 11.0 | 1 | 0 |
-| `_q7Iynn8mE0` | 8 | 42.5% | 8.0 | 0 | 0 |
+| `sH0DXyH-27c` | 64 | 42.5% | 8.0 | 0 | 0 |
 | `j5LzNwyJTnc` | 105 | 40.9% | 11.0 | 0 | 0 |
+| `uNa300hlJyQ` | 22 | 39.9% | 9.0 | 0 | 0 |
 | `kDVFgYJBnvk` | 22 | 38.8% | 8.0 | 0 | 0 |
 | `Yl0dogA_AWU` | 141 | 38.3% | 9.0 | 2 | 0 |
 | `mSmIEClPVmI` | 6 | 33.3% | 7.0 | 0 | 0 |
-| `uNa300hlJyQ` | 23 | 33.0% | 7.0 | 0 | 0 |
 | `IcdnJQm17jA` | 100 | 30.1% | 7.0 | 0 | 0 |
 | `rF3EsLhHewQ` | 22 | 27.9% | 6.0 | 0 | 0 |
+| `nwfU8wCNfXE` | 2 | 27.7% | 6.0 | 0 | 0 |
 | `MRssw6dB2QI` | 60 | 26.9% | 7.0 | 0 | 0 |
+| `1mJAXHC0ogk` | 3 | 26.7% | 5.0 | 0 | 0 |
+| `gdTsESO64Xs` | 2 | 24.9% | 6.0 | 0 | 0 |
 | `HcLsn4JNWeA` | 20 | 23.8% | 80.0 | 0 | 0 |
 | `I1M_v0Kg5MQ` | 2 | 23.3% | 17.0 | 0 | 0 |
+| `_q7Iynn8mE0` | 2 | 22.3% | 4.0 | 0 | 0 |
 | `LEHOToLaWkQ` | 3 | 21.6% | 6.0 | 0 | 0 |
-| `gdTsESO64Xs` | 4 | 21.5% | 5.0 | 0 | 0 |
 | `4enELkaZ8Fw` | 2 | 21.1% | 38.0 | 0 | 0 |
 | `Q0v7mRnPgXc` | 2 | 20.1% | 61.0 | 0 | 0 |
 | `Lyo5OREw584` | 1 | 11.5% | 4.0 | 0 | 0 |
 | `hAStNx9DsVY` | 1 | 7.2% | 8.0 | 0 | 0 |
 | `iTzM_c9SqKE` | 2 | 7.0% | 11.0 | 0 | 0 |
 | `fhR6GEVCQck` | 2 | 4.9% | 25.0 | 0 | 0 |
-| `vQc2Fnou1aE` | 4 | 3.0% | 4.0 | 0 | 0 |
+| `vQc2Fnou1aE` | 3 | 3.0% | 4.0 | 0 | 0 |
 | `gjWW-L5JHpQ` | 1 | 2.5% | 4.0 | 0 | 0 |
 | `vDHs09jlWDI` | 1 | 2.5% | 3.0 | 0 | 0 |
 | `3iyoFAvFbCY` | 1 | 1.6% | 11.0 | 0 | 0 |
@@ -55,7 +55,7 @@
 | `0rqgSAZYHNA` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `1gCRslwAQhI` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `35i1D9ab6AE` | 1 | 0.0% | 0.0 | 0 | 0 |
-| `39YuWeIc9Lo` | 1 | 0.0% | 0.0 | 0 | 0 |
+| `39YuWeIc9Lo` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `3M3jgMBp3-c` | 1 | 0.0% | 0.0 | 0 | 0 |
 | `3k1dYlmydFw` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `4GJH6Bt3GHo` | 0 | 0.0% | 0.0 | 0 | 0 |
@@ -72,6 +72,7 @@
 | `BPs0RDoDzAM` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `BhUnmvTCigU` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `C4yok-yyUd8` | 0 | 0.0% | 0.0 | 0 | 0 |
+| `CXPrhPXHKSc` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `DISr28v9swU` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `DNMKvVxxVGw` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `Dm2OCaR9vck` | 0 | 0.0% | 0.0 | 0 | 0 |
@@ -120,11 +121,10 @@
 | `jiWID08S6lk` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `jrk8_qKoJ70` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `kJW3aDYovck` | 0 | 0.0% | 0.0 | 0 | 0 |
-| `kO8OfNKq_7U` | 2 | 0.0% | 0.0 | 0 | 0 |
+| `kO8OfNKq_7U` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `l-ZBHfU46XM` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `lfpoVVXfWzQ` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `mnFxZgfDlj8` | 0 | 0.0% | 0.0 | 0 | 0 |
-| `nwfU8wCNfXE` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `oHvuPXPqoNI` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `owKNt21muck` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `pHlD7USp2eE` | 0 | 0.0% | 0.0 | 0 | 0 |
@@ -150,7 +150,7 @@
 
 | Formula | n_videos | median completion % | median views |
 |---------|----------|---------------------|--------------|
-| specific_stat | 8 | 16.5% | 1 |
-| wrong_answer_first | 8 | 10.8% | 3 |
+| specific_stat | 8 | 11.2% | 1 |
+| wrong_answer_first | 8 | 0.0% | 1 |
 
-**Winner**: specific_stat (+5.8pp margin, ≥3pp threshold met)
+**Winner**: specific_stat (+11.2pp margin, ≥3pp threshold met)
