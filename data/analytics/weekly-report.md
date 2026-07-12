@@ -1,4 +1,4 @@
-# Weekly Report — 2026-07-11
+# Weekly Report — 2026-07-12
 
 **Videos analyzed:** 154
 **Median completion %:** 0.0%  (target: ≥70%)
@@ -10,7 +10,6 @@
 | Video | Views | Completion % | AVD (s) | Likes | Comments |
 |---|---|---|---|---|---|
 | `aDPROoam-g8` | 140 | 450.0% | 94.0 | 1 | 0 |
-| `vSq5vgDXZTU` | 26 | 170.9% | 35.0 | 0 | 0 |
 | `gjWW-L5JHpQ` | 9 | 107.9% | 191.0 | 0 | 0 |
 | `4ZXlpO6pZ0c` | 1 | 97.1% | 20.0 | 0 | 0 |
 | `XgDk6WDk2RE` | 4 | 88.1% | 18.0 | 0 | 0 |
@@ -20,7 +19,6 @@
 | `qOCaObr_ZRg` | 48 | 63.3% | 14.0 | 1 | 0 |
 | `YleOgjiekrI` | 78 | 62.2% | 15.0 | 0 | 0 |
 | `vRc3mbYUllA` | 3 | 60.8% | 14.0 | 0 | 0 |
-| `I2NOXjMoAZk` | 2 | 59.0% | 13.0 | 0 | 0 |
 | `DgDZa4yjYB4` | 20 | 57.7% | 13.0 | 0 | 0 |
 | `yUZkaiQm_gE` | 67 | 56.0% | 11.0 | 0 | 0 |
 | `juH-XiRdlRU` | 42 | 51.8% | 11.0 | 0 | 0 |
@@ -34,18 +32,19 @@
 | `zH56FQ08za0` | 10 | 38.1% | 8.0 | 0 | 0 |
 | `nwfU8wCNfXE` | 6 | 36.4% | 8.0 | 1 | 0 |
 | `sJQtDTySy2Y` | 30 | 36.1% | 9.0 | 0 | 0 |
+| `aByD7C8yzAg` | 67 | 35.8% | 7.0 | 0 | 0 |
 | `rF3EsLhHewQ` | 22 | 27.9% | 6.0 | 0 | 0 |
 | `UXQfc044wEA` | 8 | 25.0% | 6.0 | 0 | 0 |
 | `M2RIPyTHKAA` | 1 | 22.8% | 28.0 | 0 | 0 |
 | `HOfsYdU3JIk` | 25 | 22.6% | 4.0 | 0 | 0 |
+| `I2NOXjMoAZk` | 1 | 20.9% | 4.0 | 0 | 0 |
 | `Q0v7mRnPgXc` | 2 | 20.1% | 61.0 | 0 | 0 |
 | `mSmIEClPVmI` | 1 | 20.0% | 4.0 | 0 | 0 |
 | `fhR6GEVCQck` | 1 | 19.7% | 103.0 | 0 | 0 |
 | `I1M_v0Kg5MQ` | 1 | 11.9% | 8.0 | 0 | 0 |
 | `rfOrncb5nts` | 1 | 11.6% | 20.0 | 0 | 0 |
-| `aByD7C8yzAg` | 6 | 7.3% | 1.0 | 0 | 0 |
 | `iTzM_c9SqKE` | 1 | 7.0% | 11.0 | 0 | 0 |
-| `HcLsn4JNWeA` | 14 | 6.6% | 22.0 | 0 | 0 |
+| `HcLsn4JNWeA` | 13 | 6.0% | 20.0 | 0 | 0 |
 | `4enELkaZ8Fw` | 1 | 2.4% | 4.0 | 0 | 0 |
 | `-uoT4hTotJY` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `0g0-1SCJ4Yk` | 0 | 0.0% | 0.0 | 0 | 0 |
@@ -156,6 +155,7 @@
 | `v2U9KzVwVxg` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `vDHs09jlWDI` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `vQc2Fnou1aE` | 0 | 0.0% | 0.0 | 0 | 0 |
+| `vSq5vgDXZTU` | 1 | 0.0% | 0.0 | 0 | 0 |
 | `vxWoLPFH6SU` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `wau1zkuOfYA` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `x3bKXjsgiEI` | 0 | 0.0% | 0.0 | 0 | 0 |
