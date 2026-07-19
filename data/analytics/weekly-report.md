@@ -1,4 +1,4 @@
-# Weekly Report — 2026-07-18
+# Weekly Report — 2026-07-19
 
 **Videos analyzed:** 164
 **Median completion %:** 0.0%  (target: ≥70%)
@@ -13,31 +13,31 @@
 | `XgDk6WDk2RE` | 4 | 88.1% | 18.0 | 0 | 0 |
 | `HOfsYdU3JIk` | 27 | 68.7% | 14.0 | 0 | 0 |
 | `XOeB3NjSqNg` | 17 | 67.3% | 14.0 | 0 | 0 |
-| `fiNM2U5Fa9U` | 6 | 66.3% | 15.0 | 0 | 0 |
 | `YleOgjiekrI` | 78 | 66.0% | 16.0 | 0 | 0 |
 | `cFs9GU8jw5M` | 16 | 65.4% | 14.0 | 0 | 0 |
 | `qOCaObr_ZRg` | 48 | 63.3% | 14.0 | 1 | 0 |
 | `Kz8zWav3fvo` | 65 | 61.2% | 14.0 | 0 | 0 |
 | `vRc3mbYUllA` | 3 | 60.8% | 14.0 | 0 | 0 |
 | `DgDZa4yjYB4` | 20 | 57.7% | 13.0 | 0 | 0 |
+| `fiNM2U5Fa9U` | 8 | 56.2% | 13.0 | 0 | 0 |
 | `yUZkaiQm_gE` | 67 | 56.0% | 11.0 | 0 | 0 |
 | `9IbK5a9qJ1I` | 4 | 53.8% | 12.0 | 0 | 0 |
 | `Yl0dogA_AWU` | 1 | 51.2% | 12.0 | 0 | 0 |
 | `HEmGXDrV7OU` | 75 | 51.2% | 12.0 | 0 | 0 |
 | `UDVdsc-ZiFY` | 2 | 49.6% | 12.0 | 0 | 0 |
 | `tTmCPg6DAxk` | 4 | 45.8% | 11.0 | 0 | 0 |
-| `juH-XiRdlRU` | 8 | 45.5% | 10.0 | 0 | 0 |
 | `8fanwTfAxgU` | 80 | 43.8% | 9.0 | 0 | 0 |
 | `j5LzNwyJTnc` | 105 | 40.9% | 11.0 | 0 | 0 |
 | `nwfU8wCNfXE` | 6 | 36.4% | 8.0 | 1 | 0 |
 | `sJQtDTySy2Y` | 30 | 36.1% | 9.0 | 0 | 0 |
 | `aByD7C8yzAg` | 69 | 34.2% | 7.0 | 0 | 0 |
-| `rF3EsLhHewQ` | 6 | 33.0% | 7.0 | 0 | 0 |
+| `rF3EsLhHewQ` | 2 | 32.3% | 7.0 | 0 | 0 |
 | `zH56FQ08za0` | 28 | 26.5% | 5.0 | 0 | 0 |
 | `FatlERck1nM` | 39 | 26.5% | 6.0 | 0 | 0 |
 | `UXQfc044wEA` | 8 | 25.0% | 6.0 | 0 | 0 |
 | `M2RIPyTHKAA` | 2 | 22.8% | 28.0 | 0 | 0 |
 | `fhR6GEVCQck` | 1 | 19.7% | 103.0 | 0 | 0 |
+| `juH-XiRdlRU` | 1 | 18.9% | 4.0 | 0 | 0 |
 | `I1M_v0Kg5MQ` | 1 | 11.9% | 8.0 | 0 | 0 |
 | `rfOrncb5nts` | 1 | 11.6% | 20.0 | 0 | 0 |
 | `HcLsn4JNWeA` | 11 | 5.2% | 17.0 | 0 | 0 |
