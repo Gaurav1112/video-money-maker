@@ -1,4 +1,4 @@
-# Weekly Report — 2026-07-30
+# Weekly Report — 2026-07-31
 
 **Videos analyzed:** 173
 **Median completion %:** 0.0%  (target: ≥70%)
@@ -9,6 +9,7 @@
 
 | Video | Views | Completion % | AVD (s) | Likes | Comments |
 |---|---|---|---|---|---|
+| `LFXztEwQ5AM` | 4 | 122.6% | 28.0 | 0 | 0 |
 | `sH0DXyH-27c` | 2 | 104.6% | 21.0 | 0 | 0 |
 | `Kz8zWav3fvo` | 6 | 96.8% | 23.0 | 0 | 0 |
 | `1ka4RiVkCJQ` | 37 | 96.3% | 21.0 | 1 | 0 |
@@ -23,8 +24,7 @@
 | `fiNM2U5Fa9U` | 8 | 56.2% | 13.0 | 0 | 0 |
 | `yUZkaiQm_gE` | 67 | 56.0% | 11.0 | 0 | 0 |
 | `HEmGXDrV7OU` | 75 | 51.2% | 12.0 | 0 | 0 |
-| `XH-DUJ-Zyic` | 33 | 50.3% | 12.0 | 0 | 0 |
-| `XOeB3NjSqNg` | 2 | 48.7% | 10.0 | 0 | 0 |
+| `XH-DUJ-Zyic` | 33 | 49.3% | 12.0 | 0 | 0 |
 | `8fanwTfAxgU` | 80 | 43.8% | 9.0 | 0 | 0 |
 | `zM1gMmgxLQQ` | 33 | 42.9% | 9.0 | 0 | 0 |
 | `FatlERck1nM` | 40 | 36.9% | 8.0 | 0 | 0 |
@@ -40,10 +40,10 @@
 | `fhR6GEVCQck` | 1 | 19.7% | 103.0 | 0 | 0 |
 | `tTmCPg6DAxk` | 1 | 16.1% | 4.0 | 0 | 0 |
 | `Z4iCdKDkXzA` | 11 | 12.3% | 2.0 | 0 | 0 |
-| `LFXztEwQ5AM` | 1 | 12.2% | 2.0 | 0 | 0 |
 | `rfOrncb5nts` | 1 | 11.6% | 20.0 | 0 | 0 |
-| `HcLsn4JNWeA` | 8 | 5.8% | 19.0 | 0 | 0 |
+| `HcLsn4JNWeA` | 7 | 6.1% | 20.0 | 0 | 0 |
 | `Q0v7mRnPgXc` | 1 | 1.2% | 3.0 | 0 | 0 |
+| `XOeB3NjSqNg` | 1 | 0.3% | 0.0 | 0 | 0 |
 | `-uoT4hTotJY` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `0g0-1SCJ4Yk` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `0rqgSAZYHNA` | 0 | 0.0% | 0.0 | 0 | 0 |
@@ -161,7 +161,7 @@
 | `pK8c1ECdmoE` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `pQ7A59YOCnM` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `q2SmqYqlAMo` | 0 | 0.0% | 0.0 | 0 | 0 |
-| `qOCaObr_ZRg` | 1 | 0.0% | 0.0 | 0 | 0 |
+| `qOCaObr_ZRg` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `r4wkYxBWyA0` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `rF3EsLhHewQ` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `rR9NEaC2nCU` | 0 | 0.0% | 0.0 | 0 | 0 |
@@ -187,7 +187,7 @@
 
 | Formula | n_videos | median completion % | median views |
 |---------|----------|---------------------|--------------|
-| wrong_answer_first | 25 | 31.6% | 7 |
+| wrong_answer_first | 25 | 34.2% | 7 |
 | specific_stat | 25 | 0.0% | 1 |
 
-**Winner**: wrong_answer_first (+31.6pp margin, ≥3pp threshold met)
+**Winner**: wrong_answer_first (+34.2pp margin, ≥3pp threshold met)
