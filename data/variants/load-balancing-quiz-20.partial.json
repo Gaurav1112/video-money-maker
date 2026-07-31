@@ -1,5 +1,5 @@
 {
   "quizIndex": 20,
   "variant": "A",
-  "hookFormula": "specific_stat"
+  "hookFormula": "wrong_answer_first"
 }
