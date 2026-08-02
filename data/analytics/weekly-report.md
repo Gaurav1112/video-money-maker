@@ -1,4 +1,4 @@
-# Weekly Report — 2026-08-01
+# Weekly Report — 2026-08-02
 
 **Videos analyzed:** 173
 **Median completion %:** 0.0%  (target: ≥70%)
@@ -33,13 +33,11 @@
 | `QzWe-QxCqU0` | 1 | 30.9% | 6.0 | 0 | 0 |
 | `zH56FQ08za0` | 28 | 26.5% | 5.0 | 0 | 0 |
 | `c75h22GPJKs` | 3 | 23.6% | 5.0 | 0 | 0 |
-| `sJQtDTySy2Y` | 29 | 21.4% | 5.0 | 0 | 0 |
 | `DgDZa4yjYB4` | 17 | 20.4% | 4.0 | 0 | 0 |
 | `aDPROoam-g8` | 1 | 19.1% | 4.0 | 0 | 0 |
 | `tTmCPg6DAxk` | 1 | 16.1% | 4.0 | 0 | 0 |
 | `Z4iCdKDkXzA` | 11 | 12.3% | 2.0 | 0 | 0 |
-| `rfOrncb5nts` | 1 | 11.6% | 20.0 | 0 | 0 |
-| `HcLsn4JNWeA` | 6 | 3.0% | 9.0 | 0 | 0 |
+| `HcLsn4JNWeA` | 5 | 2.9% | 9.0 | 0 | 0 |
 | `Q0v7mRnPgXc` | 1 | 1.2% | 3.0 | 0 | 0 |
 | `-uoT4hTotJY` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `0g0-1SCJ4Yk` | 0 | 0.0% | 0.0 | 0 | 0 |
@@ -107,7 +105,7 @@
 | `UXQfc044wEA` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `V3YiM9QkDfQ` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `WRiF-lPllsg` | 0 | 0.0% | 0.0 | 0 | 0 |
-| `XOWCZjJjfZ0` | 1 | 0.0% | 0.0 | 0 | 0 |
+| `XOWCZjJjfZ0` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `XOeB3NjSqNg` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `XgDk6WDk2RE` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `XiH7nxy0GRo` | 0 | 0.0% | 0.0 | 0 | 0 |
@@ -165,8 +163,10 @@
 | `r4wkYxBWyA0` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `rF3EsLhHewQ` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `rR9NEaC2nCU` | 0 | 0.0% | 0.0 | 0 | 0 |
+| `rfOrncb5nts` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `rgigqg68eMA` | 0 | 0.0% | 0.0 | 0 | 0 |
-| `sKlu48Iq_Gc` | 0 | 0.0% | 0.0 | 0 | 0 |
+| `sJQtDTySy2Y` | 0 | 0.0% | 0.0 | 0 | 0 |
+| `sKlu48Iq_Gc` | 1 | 0.0% | 0.0 | 0 | 0 |
 | `txp4fhpFY4M` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `u3Bi2IAk6iM` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `uNa300hlJyQ` | 0 | 0.0% | 0.0 | 0 | 0 |
@@ -187,7 +187,7 @@
 
 | Formula | n_videos | median completion % | median views |
 |---------|----------|---------------------|--------------|
-| wrong_answer_first | 25 | 21.4% | 7 |
+| wrong_answer_first | 25 | 20.4% | 4 |
 | specific_stat | 25 | 0.0% | 0 |
 
-**Winner**: wrong_answer_first (+21.4pp margin, ≥3pp threshold met)
+**Winner**: wrong_answer_first (+20.4pp margin, ≥3pp threshold met)
