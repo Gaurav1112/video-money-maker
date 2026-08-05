@@ -1,4 +1,4 @@
-# Weekly Report — 2026-08-04
+# Weekly Report — 2026-08-05
 
 **Videos analyzed:** 173
 **Median completion %:** 0.0%  (target: ≥70%)
@@ -15,15 +15,13 @@
 | `1ka4RiVkCJQ` | 37 | 96.3% | 21.0 | 1 | 0 |
 | `m9Q7lAUd6Pk` | 7 | 87.4% | 18.0 | 0 | 0 |
 | `P45frqp49rE` | 54 | 81.7% | 18.0 | 0 | 0 |
-| `vRc3mbYUllA` | 1 | 74.0% | 17.0 | 0 | 0 |
 | `HOfsYdU3JIk` | 27 | 68.7% | 14.0 | 0 | 0 |
 | `YleOgjiekrI` | 79 | 60.7% | 15.0 | 0 | 0 |
 | `JlXKC5g-cm0` | 6 | 59.9% | 13.0 | 0 | 0 |
 | `fiNM2U5Fa9U` | 8 | 56.2% | 13.0 | 0 | 0 |
-| `yUZkaiQm_gE` | 67 | 56.0% | 11.0 | 0 | 0 |
 | `igrOiZyjvnA` | 1 | 55.5% | 27.0 | 0 | 0 |
 | `HEmGXDrV7OU` | 75 | 51.2% | 12.0 | 0 | 0 |
-| `XH-DUJ-Zyic` | 33 | 49.3% | 12.0 | 0 | 0 |
+| `XH-DUJ-Zyic` | 34 | 49.3% | 12.0 | 0 | 0 |
 | `q2SmqYqlAMo` | 11 | 49.1% | 10.0 | 0 | 0 |
 | `8fanwTfAxgU` | 80 | 43.8% | 9.0 | 0 | 0 |
 | `zM1gMmgxLQQ` | 33 | 42.9% | 9.0 | 0 | 0 |
@@ -37,7 +35,7 @@
 | `aDPROoam-g8` | 1 | 19.1% | 4.0 | 0 | 0 |
 | `tTmCPg6DAxk` | 1 | 16.1% | 4.0 | 0 | 0 |
 | `Z4iCdKDkXzA` | 11 | 12.3% | 2.0 | 0 | 0 |
-| `HcLsn4JNWeA` | 3 | 1.9% | 6.0 | 0 | 0 |
+| `HcLsn4JNWeA` | 4 | 2.0% | 6.0 | 1 | 0 |
 | `Q0v7mRnPgXc` | 1 | 1.2% | 3.0 | 0 | 0 |
 | `-uoT4hTotJY` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `0g0-1SCJ4Yk` | 0 | 0.0% | 0.0 | 0 | 0 |
@@ -174,12 +172,14 @@
 | `v2U9KzVwVxg` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `vDHs09jlWDI` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `vQc2Fnou1aE` | 0 | 0.0% | 0.0 | 0 | 0 |
+| `vRc3mbYUllA` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `vSq5vgDXZTU` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `vxWoLPFH6SU` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `wau1zkuOfYA` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `x3bKXjsgiEI` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `xBcr0AZzGMc` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `xHbKrrbt_84` | 0 | 0.0% | 0.0 | 0 | 0 |
+| `yUZkaiQm_gE` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `yqIco25PeQw` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `yrg2WPjHa6k` | 0 | 0.0% | 0.0 | 0 | 0 |
 
@@ -187,7 +187,7 @@
 
 | Formula | n_videos | median completion % | median views |
 |---------|----------|---------------------|--------------|
-| wrong_answer_first | 25 | 12.3% | 2 |
 | specific_stat | 25 | 0.0% | 0 |
+| wrong_answer_first | 25 | 0.0% | 2 |
 
-**Winner**: wrong_answer_first (+12.3pp margin, ≥3pp threshold met)
+**No winner yet — continuing A/B** (margin 0.0pp < 3pp threshold).
