@@ -1,6 +1,6 @@
-# Weekly Report — 2026-08-05
+# Weekly Report — 2026-08-06
 
-**Videos analyzed:** 173
+**Videos analyzed:** 175
 **Median completion %:** 0.0%  (target: ≥70%)
 **Median views:** 0
 **Median comments per 1k views:** 0.00
@@ -10,19 +10,19 @@
 | Video | Views | Completion % | AVD (s) | Likes | Comments |
 |---|---|---|---|---|---|
 | `LFXztEwQ5AM` | 4 | 122.6% | 28.0 | 0 | 0 |
+| `HOfsYdU3JIk` | 2 | 114.8% | 24.0 | 0 | 0 |
 | `sH0DXyH-27c` | 2 | 104.6% | 21.0 | 0 | 0 |
 | `Kz8zWav3fvo` | 6 | 96.8% | 23.0 | 0 | 0 |
 | `1ka4RiVkCJQ` | 37 | 96.3% | 21.0 | 1 | 0 |
 | `m9Q7lAUd6Pk` | 7 | 87.4% | 18.0 | 0 | 0 |
 | `P45frqp49rE` | 54 | 81.7% | 18.0 | 0 | 0 |
-| `HOfsYdU3JIk` | 27 | 68.7% | 14.0 | 0 | 0 |
-| `YleOgjiekrI` | 79 | 60.7% | 15.0 | 0 | 0 |
+| `q2SmqYqlAMo` | 13 | 62.6% | 13.0 | 0 | 0 |
 | `JlXKC5g-cm0` | 6 | 59.9% | 13.0 | 0 | 0 |
 | `fiNM2U5Fa9U` | 8 | 56.2% | 13.0 | 0 | 0 |
 | `igrOiZyjvnA` | 1 | 55.5% | 27.0 | 0 | 0 |
+| `YleOgjiekrI` | 76 | 54.1% | 13.0 | 0 | 0 |
 | `HEmGXDrV7OU` | 75 | 51.2% | 12.0 | 0 | 0 |
 | `XH-DUJ-Zyic` | 34 | 49.3% | 12.0 | 0 | 0 |
-| `q2SmqYqlAMo` | 11 | 49.1% | 10.0 | 0 | 0 |
 | `8fanwTfAxgU` | 80 | 43.8% | 9.0 | 0 | 0 |
 | `zM1gMmgxLQQ` | 33 | 42.9% | 9.0 | 0 | 0 |
 | `FatlERck1nM` | 40 | 36.9% | 8.0 | 0 | 0 |
@@ -84,6 +84,7 @@
 | `IMn-mk8EkcQ` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `IcdnJQm17jA` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `ItSyCtpy5Gk` | 0 | 0.0% | 0.0 | 0 | 0 |
+| `KFcJkGKR6mA` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `LCwF78a3iqU` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `LEHOToLaWkQ` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `LYz7WFhcwpI` | 0 | 0.0% | 0.0 | 0 | 0 |
@@ -115,6 +116,7 @@
 | `ZivDzk156SU` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `_q7Iynn8mE0` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `bLbBg4oUc5g` | 1 | 0.0% | 0.0 | 0 | 0 |
+| `bviMfGT5Ch8` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `cFs9GU8jw5M` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `cZMxLngiaUE` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `caUGylVAxdE` | 0 | 0.0% | 0.0 | 0 | 0 |
@@ -161,7 +163,7 @@
 | `r4wkYxBWyA0` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `rF3EsLhHewQ` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `rR9NEaC2nCU` | 0 | 0.0% | 0.0 | 0 | 0 |
-| `rfOrncb5nts` | 0 | 0.0% | 0.0 | 0 | 0 |
+| `rfOrncb5nts` | 2 | 0.0% | 0.0 | 0 | 0 |
 | `rgigqg68eMA` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `sJQtDTySy2Y` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `sKlu48Iq_Gc` | 1 | 0.0% | 0.0 | 0 | 0 |
