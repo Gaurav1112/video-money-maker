@@ -1,6 +1,6 @@
-# Weekly Report — 2026-08-19
+# Weekly Report — 2026-08-20
 
-**Videos analyzed:** 190
+**Videos analyzed:** 192
 **Median completion %:** 0.0%  (target: ≥70%)
 **Median views:** 0
 **Median comments per 1k views:** 0.00
@@ -12,7 +12,6 @@
 | `lJznx5zsIGs` | 3 | 279.5% | 67.0 | 0 | 0 |
 | `LFXztEwQ5AM` | 3 | 232.9% | 53.0 | 0 | 0 |
 | `sH0DXyH-27c` | 2 | 104.6% | 21.0 | 0 | 0 |
-| `FatlERck1nM` | 1 | 99.1% | 22.0 | 0 | 0 |
 | `vQc2Fnou1aE` | 1 | 97.3% | 134.0 | 0 | 0 |
 | `1ka4RiVkCJQ` | 37 | 96.3% | 21.0 | 1 | 0 |
 | `kWhsMg7oAbo` | 2 | 95.5% | 21.0 | 0 | 0 |
@@ -23,24 +22,26 @@
 | `m9Q7lAUd6Pk` | 7 | 87.4% | 18.0 | 0 | 0 |
 | `bviMfGT5Ch8` | 11 | 75.6% | 16.0 | 0 | 0 |
 | `KFcJkGKR6mA` | 6 | 71.1% | 15.0 | 0 | 0 |
-| `aHSNnKNpwuA` | 36 | 67.3% | 14.0 | 0 | 0 |
+| `aHSNnKNpwuA` | 37 | 63.0% | 13.0 | 0 | 0 |
 | `q2SmqYqlAMo` | 14 | 60.5% | 12.0 | 0 | 0 |
 | `JlXKC5g-cm0` | 6 | 59.9% | 13.0 | 0 | 0 |
+| `X9Z9MehqLLU` | 10 | 59.2% | 12.0 | 0 | 0 |
 | `nepQ7gXy-wk` | 8 | 59.0% | 14.0 | 0 | 0 |
 | `igrOiZyjvnA` | 1 | 55.5% | 27.0 | 0 | 0 |
-| `21zRj5r6EzM` | 38 | 54.1% | 12.0 | 0 | 0 |
+| `21zRj5r6EzM` | 37 | 54.1% | 12.0 | 0 | 0 |
 | `paS4Zp4pPzE` | 5 | 52.9% | 12.0 | 0 | 0 |
 | `XH-DUJ-Zyic` | 34 | 49.3% | 12.0 | 0 | 0 |
 | `mu80C3s_qjg` | 1 | 46.9% | 11.0 | 0 | 0 |
 | `UlEL2U9DYD0` | 52 | 42.1% | 10.0 | 1 | 0 |
 | `i5rdwL9XfC0` | 11 | 40.9% | 9.0 | 0 | 0 |
 | `HwZdboc1aGU` | 19 | 38.0% | 9.0 | 0 | 0 |
-| `TvCEWCZ5cjA` | 33 | 31.6% | 7.0 | 0 | 0 |
+| `TvCEWCZ5cjA` | 29 | 31.6% | 7.0 | 0 | 0 |
 | `DJ5bmqpH6J8` | 23 | 31.0% | 8.0 | 0 | 0 |
 | `QzWe-QxCqU0` | 1 | 30.9% | 6.0 | 0 | 0 |
 | `aDPROoam-g8` | 2 | 27.2% | 5.0 | 0 | 0 |
 | `HcLsn4JNWeA` | 11 | 27.0% | 91.0 | 1 | 0 |
 | `l2jNKQDdiSY` | 14 | 23.3% | 5.0 | 0 | 0 |
+| `SOpnEYoZlSQ` | 12 | 17.1% | 3.0 | 0 | 0 |
 | `tTmCPg6DAxk` | 1 | 16.1% | 4.0 | 0 | 0 |
 | `Z4iCdKDkXzA` | 11 | 12.3% | 2.0 | 0 | 0 |
 | `gjWW-L5JHpQ` | 2 | 3.1% | 5.0 | 0 | 0 |
@@ -58,6 +59,7 @@
 | `4GJH6Bt3GHo` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `4ZXlpO6pZ0c` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `4enELkaZ8Fw` | 0 | 0.0% | 0.0 | 0 | 0 |
+| `4rCj0MjlTQI` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `4u-IXZKnVHE` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `5_kiXriF0Zk` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `6EmtohMtY2Q` | 0 | 0.0% | 0.0 | 0 | 0 |
@@ -81,6 +83,7 @@
 | `EBUUXcSy05g` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `EO7ktgsh1x8` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `EOxQcooASUU` | 0 | 0.0% | 0.0 | 0 | 0 |
+| `FatlERck1nM` | 1 | 0.0% | 0.0 | 0 | 0 |
 | `H4NGxbsGQ2o` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `HEmGXDrV7OU` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `HOfsYdU3JIk` | 0 | 0.0% | 0.0 | 0 | 0 |
@@ -108,7 +111,6 @@
 | `QCaLJ3rOBBE` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `R-nlbkk9qsQ` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `S4-TEYj6Uog` | 0 | 0.0% | 0.0 | 0 | 0 |
-| `SOpnEYoZlSQ` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `TLPVLIp8ejg` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `TvjpUU_ybLI` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `UDVdsc-ZiFY` | 0 | 0.0% | 0.0 | 0 | 0 |
@@ -117,7 +119,6 @@
 | `V3YiM9QkDfQ` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `VtP0TTSr55c` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `WRiF-lPllsg` | 0 | 0.0% | 0.0 | 0 | 0 |
-| `X9Z9MehqLLU` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `XOWCZjJjfZ0` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `XOeB3NjSqNg` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `XgDk6WDk2RE` | 0 | 0.0% | 0.0 | 0 | 0 |
@@ -173,6 +174,7 @@
 | `pK8c1ECdmoE` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `pQ7A59YOCnM` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `pfOSQOASzPc` | 0 | 0.0% | 0.0 | 0 | 0 |
+| `q5tvXdA90Ag` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `qOCaObr_ZRg` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `r4wkYxBWyA0` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `rF3EsLhHewQ` | 0 | 0.0% | 0.0 | 0 | 0 |
@@ -200,11 +202,11 @@
 | `yrg2WPjHa6k` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `zM1gMmgxLQQ` | 0 | 0.0% | 0.0 | 0 | 0 |
 
-## Per-formula comparison (last N=31 paired uploads)
+## Per-formula comparison (last N=32 paired uploads)
 
 | Formula | n_videos | median completion % | median views |
 |---------|----------|---------------------|--------------|
-| specific_stat | 31 | 0.0% | 0 |
-| wrong_answer_first | 31 | 0.0% | 0 |
+| specific_stat | 32 | 0.0% | 0 |
+| wrong_answer_first | 32 | 0.0% | 0 |
 
 **No winner yet — continuing A/B** (margin 0.0pp < 3pp threshold).
