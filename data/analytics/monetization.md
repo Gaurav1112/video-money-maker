@@ -1,13 +1,13 @@
 # YPP Monetization Tracker — @GuruSishya-India
 
-_Generated: 2026-08-20T05:04:30.397Z_
+_Generated: 2026-08-21T05:04:31.179Z_
 
 ## Current standing
 
 | Metric | Value |
 |---|---|
 | Subscribers | 13 |
-| 90-day Shorts views (approx) | 3,389 |
+| 90-day Shorts views (approx) | 3,152 |
 | 12-month watch hours | 23 |
 | Inventory cross-check (lifetime views, videos ≤3min) | 12,030 |
 
@@ -16,7 +16,7 @@ _Generated: 2026-08-20T05:04:30.397Z_
 ## YPP Path 1 — 1,000 subs + 10,000,000 Shorts views / 90 days
 
 - Subscribers: `░░░░░░░░░░░░░░░░░░░░` 1.3% — gap 987
-- Shorts views: `░░░░░░░░░░░░░░░░░░░░` 0.0% — gap 9,996,611
+- Shorts views: `░░░░░░░░░░░░░░░░░░░░` 0.0% — gap 9,996,848
 
 ## YPP Path 2 — 1,000 subs + 4,000 watch hours / 12 months
 
