@@ -1,6 +1,6 @@
-# Weekly Report — 2026-08-28
+# Weekly Report — 2026-08-29
 
-**Videos analyzed:** 198
+**Videos analyzed:** 200
 **Median completion %:** 0.0%  (target: ≥70%)
 **Median views:** 0
 **Median comments per 1k views:** 0.00
@@ -13,16 +13,16 @@
 | `vQc2Fnou1aE` | 1 | 97.3% | 134.0 | 0 | 0 |
 | `kWhsMg7oAbo` | 2 | 95.5% | 21.0 | 0 | 0 |
 | `YleOgjiekrI` | 1 | 94.4% | 23.0 | 0 | 0 |
-| `1mJAXHC0ogk` | 1 | 91.4% | 20.0 | 0 | 0 |
 | `zH56FQ08za0` | 1 | 91.2% | 19.0 | 0 | 0 |
 | `9IbK5a9qJ1I` | 2 | 90.8% | 21.0 | 0 | 0 |
+| `q2SmqYqlAMo` | 3 | 77.7% | 16.0 | 0 | 0 |
 | `bviMfGT5Ch8` | 11 | 75.6% | 16.0 | 0 | 0 |
 | `vRc3mbYUllA` | 1 | 75.4% | 18.0 | 0 | 0 |
 | `39YuWeIc9Lo` | 1 | 74.0% | 22.0 | 0 | 0 |
 | `KFcJkGKR6mA` | 6 | 71.1% | 15.0 | 0 | 0 |
+| `1mJAXHC0ogk` | 2 | 68.4% | 15.0 | 0 | 0 |
 | `4rCj0MjlTQI` | 2 | 65.5% | 17.0 | 0 | 0 |
 | `aHSNnKNpwuA` | 37 | 63.0% | 13.0 | 0 | 0 |
-| `q2SmqYqlAMo` | 14 | 60.5% | 12.0 | 0 | 0 |
 | `X9Z9MehqLLU` | 10 | 59.2% | 12.0 | 0 | 0 |
 | `nepQ7gXy-wk` | 8 | 59.0% | 14.0 | 0 | 0 |
 | `igrOiZyjvnA` | 1 | 55.5% | 27.0 | 0 | 0 |
@@ -32,17 +32,19 @@
 | `UlEL2U9DYD0` | 52 | 42.1% | 10.0 | 1 | 0 |
 | `i5rdwL9XfC0` | 11 | 40.9% | 9.0 | 0 | 0 |
 | `HwZdboc1aGU` | 19 | 38.0% | 9.0 | 0 | 0 |
+| `aDPROoam-g8` | 1 | 35.3% | 7.0 | 0 | 0 |
 | `DJ5bmqpH6J8` | 23 | 31.0% | 8.0 | 0 | 0 |
 | `HcLsn4JNWeA` | 10 | 29.4% | 99.0 | 1 | 0 |
 | `Mz2w-4UNvgI` | 36 | 27.5% | 7.0 | 0 | 0 |
-| `aDPROoam-g8` | 2 | 27.2% | 5.0 | 0 | 0 |
+| `JMiJt23PA9I` | 32 | 25.8% | 6.0 | 0 | 0 |
+| `y70jWW2pFps` | 3 | 23.6% | 5.0 | 0 | 0 |
 | `l2jNKQDdiSY` | 14 | 23.3% | 5.0 | 0 | 0 |
 | `q5tvXdA90Ag` | 6 | 18.7% | 4.0 | 0 | 0 |
 | `_S-9hhjTsVI` | 12 | 17.4% | 4.0 | 0 | 0 |
 | `SOpnEYoZlSQ` | 14 | 17.1% | 3.0 | 0 | 0 |
 | `gdKeebafecg` | 2 | 16.8% | 4.0 | 0 | 0 |
+| `4gbakDX5Bfc` | 8 | 16.4% | 4.0 | 0 | 0 |
 | `Q0v7mRnPgXc` | 1 | 10.3% | 31.0 | 0 | 0 |
-| `JlXKC5g-cm0` | 1 | 3.9% | 0.0 | 0 | 0 |
 | `gjWW-L5JHpQ` | 2 | 3.1% | 5.0 | 0 | 0 |
 | `35i1D9ab6AE` | 2 | 2.9% | 5.0 | 0 | 0 |
 | `9mpU0loTBMA` | 2 | 2.4% | 4.0 | 0 | 0 |
@@ -58,7 +60,6 @@
 | `4GJH6Bt3GHo` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `4ZXlpO6pZ0c` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `4enELkaZ8Fw` | 0 | 0.0% | 0.0 | 0 | 0 |
-| `4gbakDX5Bfc` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `4u-IXZKnVHE` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `5_kiXriF0Zk` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `6EmtohMtY2Q` | 0 | 0.0% | 0.0 | 0 | 0 |
@@ -94,7 +95,7 @@
 | `IMn-mk8EkcQ` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `IcdnJQm17jA` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `ItSyCtpy5Gk` | 0 | 0.0% | 0.0 | 0 | 0 |
-| `JMiJt23PA9I` | 0 | 0.0% | 0.0 | 0 | 0 |
+| `JlXKC5g-cm0` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `Kz8zWav3fvo` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `LCwF78a3iqU` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `LEHOToLaWkQ` | 0 | 0.0% | 0.0 | 0 | 0 |
@@ -131,6 +132,7 @@
 | `Ys8huowtVOY` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `Z4iCdKDkXzA` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `ZSEXGQlBHIE` | 0 | 0.0% | 0.0 | 0 | 0 |
+| `ZgJD9Y3Dp4s` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `ZivDzk156SU` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `_q7Iynn8mE0` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `aByD7C8yzAg` | 0 | 0.0% | 0.0 | 0 | 0 |
@@ -188,7 +190,8 @@
 | `roczjnP1iBc` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `sH0DXyH-27c` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `sJQtDTySy2Y` | 0 | 0.0% | 0.0 | 0 | 0 |
-| `sKlu48Iq_Gc` | 1 | 0.0% | 0.0 | 0 | 0 |
+| `sKlu48Iq_Gc` | 2 | 0.0% | 0.0 | 0 | 0 |
+| `sM5aKzm4jHE` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `tTmCPg6DAxk` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `txp4fhpFY4M` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `u3Bi2IAk6iM` | 0 | 0.0% | 0.0 | 0 | 0 |
@@ -202,17 +205,16 @@
 | `x3bKXjsgiEI` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `xBcr0AZzGMc` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `xHbKrrbt_84` | 0 | 0.0% | 0.0 | 0 | 0 |
-| `y70jWW2pFps` | 1 | 0.0% | 0.0 | 0 | 0 |
 | `yUZkaiQm_gE` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `yqIco25PeQw` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `yrg2WPjHa6k` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `zM1gMmgxLQQ` | 0 | 0.0% | 0.0 | 0 | 0 |
 
-## Per-formula comparison (last N=35 paired uploads)
+## Per-formula comparison (last N=36 paired uploads)
 
 | Formula | n_videos | median completion % | median views |
 |---------|----------|---------------------|--------------|
-| specific_stat | 35 | 0.0% | 0 |
-| wrong_answer_first | 35 | 0.0% | 0 |
+| specific_stat | 36 | 0.0% | 0 |
+| wrong_answer_first | 36 | 0.0% | 0 |
 
 **No winner yet — continuing A/B** (margin 0.0pp < 3pp threshold).
