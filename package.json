@@ -41,7 +41,7 @@
   },
   "dependencies": {
     "@remotion/cli": "^4.0.457",
-    "@remotion/google-fonts": "^4.0.457",
+    "@remotion/google-fonts": "^4.0.463",
     "@remotion/lottie": "^4.0.457",
     "@remotion/paths": "^4.0.457",
     "@remotion/transitions": "^4.0.457",
