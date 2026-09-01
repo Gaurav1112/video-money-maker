@@ -44,7 +44,7 @@
     "@remotion/google-fonts": "^4.0.457",
     "@remotion/lottie": "^4.0.457",
     "@remotion/paths": "^4.0.457",
-    "@remotion/transitions": "^4.0.457",
+    "@remotion/transitions": "^4.0.463",
     "axios": "^1.16.0",
     "fs-extra": "^11.3.4",
     "googleapis": "^171.4.0",
