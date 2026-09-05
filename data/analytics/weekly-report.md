@@ -1,6 +1,6 @@
-# Weekly Report — 2026-09-04
+# Weekly Report — 2026-09-05
 
-**Videos analyzed:** 202
+**Videos analyzed:** 204
 **Median completion %:** 0.0%  (target: ≥70%)
 **Median views:** 0
 **Median comments per 1k views:** 0.00
@@ -10,28 +10,33 @@
 | Video | Views | Completion % | AVD (s) | Likes | Comments |
 |---|---|---|---|---|---|
 | `lJznx5zsIGs` | 3 | 279.5% | 67.0 | 0 | 0 |
-| `sM5aKzm4jHE` | 26 | 129.8% | 27.0 | 0 | 0 |
+| `sM5aKzm4jHE` | 29 | 129.8% | 27.0 | 0 | 0 |
+| `LFXztEwQ5AM` | 5 | 110.8% | 25.0 | 0 | 0 |
 | `-uoT4hTotJY` | 1 | 97.4% | 21.0 | 0 | 0 |
 | `kWhsMg7oAbo` | 2 | 95.5% | 21.0 | 0 | 0 |
 | `YleOgjiekrI` | 1 | 94.4% | 23.0 | 0 | 0 |
-| `ZgJD9Y3Dp4s` | 54 | 91.5% | 19.0 | 0 | 0 |
+| `dj1nzDQzJYc` | 2 | 93.0% | 22.0 | 0 | 0 |
+| `IcdnJQm17jA` | 1 | 92.2% | 22.0 | 0 | 0 |
+| `ZgJD9Y3Dp4s` | 58 | 91.5% | 19.0 | 0 | 0 |
 | `zH56FQ08za0` | 1 | 91.2% | 19.0 | 0 | 0 |
 | `9IbK5a9qJ1I` | 2 | 90.8% | 21.0 | 0 | 0 |
 | `vQc2Fnou1aE` | 2 | 80.7% | 111.0 | 0 | 0 |
-| `bviMfGT5Ch8` | 11 | 75.6% | 16.0 | 0 | 0 |
+| `bviMfGT5Ch8` | 9 | 75.6% | 16.0 | 0 | 0 |
 | `vRc3mbYUllA` | 1 | 75.4% | 18.0 | 0 | 0 |
 | `39YuWeIc9Lo` | 1 | 74.0% | 22.0 | 0 | 0 |
-| `KFcJkGKR6mA` | 6 | 71.1% | 15.0 | 0 | 0 |
 | `1mJAXHC0ogk` | 2 | 68.4% | 15.0 | 0 | 0 |
-| `X9Z9MehqLLU` | 12 | 66.5% | 13.0 | 0 | 0 |
+| `sH0DXyH-27c` | 1 | 66.6% | 13.0 | 0 | 0 |
+| `X9Z9MehqLLU` | 13 | 66.5% | 13.0 | 0 | 0 |
 | `4rCj0MjlTQI` | 2 | 65.5% | 17.0 | 0 | 0 |
 | `aHSNnKNpwuA` | 37 | 63.0% | 13.0 | 0 | 0 |
 | `nepQ7gXy-wk` | 8 | 59.0% | 14.0 | 0 | 0 |
 | `21zRj5r6EzM` | 37 | 54.1% | 12.0 | 0 | 0 |
 | `paS4Zp4pPzE` | 5 | 52.9% | 12.0 | 0 | 0 |
 | `mu80C3s_qjg` | 2 | 46.9% | 11.0 | 0 | 0 |
+| `tP2KCmARs6c` | 36 | 44.5% | 10.0 | 0 | 0 |
 | `FatlERck1nM` | 2 | 43.0% | 9.0 | 0 | 0 |
 | `UlEL2U9DYD0` | 52 | 42.1% | 10.0 | 1 | 0 |
+| `KFcJkGKR6mA` | 4 | 41.8% | 9.0 | 0 | 0 |
 | `i5rdwL9XfC0` | 11 | 40.9% | 9.0 | 0 | 0 |
 | `HwZdboc1aGU` | 19 | 38.0% | 9.0 | 0 | 0 |
 | `JMiJt23PA9I` | 33 | 36.2% | 9.0 | 0 | 0 |
@@ -41,7 +46,7 @@
 | `M2RIPyTHKAA` | 1 | 24.1% | 30.0 | 0 | 0 |
 | `y70jWW2pFps` | 3 | 23.6% | 5.0 | 0 | 0 |
 | `l2jNKQDdiSY` | 14 | 23.3% | 5.0 | 0 | 0 |
-| `_S-9hhjTsVI` | 14 | 23.2% | 6.0 | 0 | 0 |
+| `_S-9hhjTsVI` | 15 | 23.2% | 6.0 | 0 | 0 |
 | `q5tvXdA90Ag` | 6 | 18.7% | 4.0 | 0 | 0 |
 | `SOpnEYoZlSQ` | 14 | 17.1% | 3.0 | 0 | 0 |
 | `gdKeebafecg` | 2 | 16.8% | 4.0 | 0 | 0 |
@@ -93,18 +98,17 @@
 | `I2NOXjMoAZk` | 1 | 0.0% | 0.0 | 0 | 0 |
 | `IJ9nxeKyjAU` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `IMn-mk8EkcQ` | 0 | 0.0% | 0.0 | 0 | 0 |
-| `IcdnJQm17jA` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `ItSyCtpy5Gk` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `JlXKC5g-cm0` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `Kz8zWav3fvo` | 1 | 0.0% | 0.0 | 0 | 0 |
 | `LCwF78a3iqU` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `LEHOToLaWkQ` | 0 | 0.0% | 0.0 | 0 | 0 |
-| `LFXztEwQ5AM` | 2 | 0.0% | 0.0 | 0 | 0 |
 | `LYz7WFhcwpI` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `Lyo5OREw584` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `MH4jS0KbQEw` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `MRssw6dB2QI` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `MhgM1feg3sg` | 0 | 0.0% | 0.0 | 0 | 0 |
+| `NnXW0VkrNhk` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `OGT7oriCHS4` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `OzpuLCRSJEc` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `P45frqp49rE` | 0 | 0.0% | 0.0 | 0 | 0 |
@@ -121,6 +125,7 @@
 | `V3YiM9QkDfQ` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `VtP0TTSr55c` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `WRiF-lPllsg` | 0 | 0.0% | 0.0 | 0 | 0 |
+| `XBhoGRZaBDw` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `XH-DUJ-Zyic` | 4 | 0.0% | 0.0 | 0 | 0 |
 | `XOWCZjJjfZ0` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `XOeB3NjSqNg` | 0 | 0.0% | 0.0 | 0 | 0 |
@@ -140,7 +145,6 @@
 | `cFs9GU8jw5M` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `cZMxLngiaUE` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `caUGylVAxdE` | 0 | 0.0% | 0.0 | 0 | 0 |
-| `dj1nzDQzJYc` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `do_5f6Q_pbI` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `dqkEfxm3l28` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `eVo-Sh9ioLI` | 0 | 0.0% | 0.0 | 0 | 0 |
@@ -190,10 +194,8 @@
 | `rfOrncb5nts` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `rgigqg68eMA` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `roczjnP1iBc` | 0 | 0.0% | 0.0 | 0 | 0 |
-| `sH0DXyH-27c` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `sJQtDTySy2Y` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `sKlu48Iq_Gc` | 1 | 0.0% | 0.0 | 0 | 0 |
-| `tP2KCmARs6c` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `tTmCPg6DAxk` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `txp4fhpFY4M` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `u3Bi2IAk6iM` | 0 | 0.0% | 0.0 | 0 | 0 |
@@ -212,11 +214,11 @@
 | `yrg2WPjHa6k` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `zM1gMmgxLQQ` | 0 | 0.0% | 0.0 | 0 | 0 |
 
-## Per-formula comparison (last N=37 paired uploads)
+## Per-formula comparison (last N=38 paired uploads)
 
 | Formula | n_videos | median completion % | median views |
 |---------|----------|---------------------|--------------|
-| specific_stat | 37 | 0.0% | 0 |
-| wrong_answer_first | 37 | 0.0% | 0 |
+| specific_stat | 38 | 0.0% | 0 |
+| wrong_answer_first | 38 | 0.0% | 0 |
 
 **No winner yet — continuing A/B** (margin 0.0pp < 3pp threshold).
