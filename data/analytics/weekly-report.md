@@ -1,4 +1,4 @@
-# Weekly Report — 2026-10-18
+# Weekly Report — 2026-10-19
 
 **Videos analyzed:** 230
 **Median completion %:** 0.0%  (target: ≥70%)
@@ -9,10 +9,10 @@
 
 | Video | Views | Completion % | AVD (s) | Likes | Comments |
 |---|---|---|---|---|---|
-| `lQlKPOc85WM` | 30 | 114.7% | 24.0 | 0 | 0 |
 | `mnTaBTu5f4A` | 19 | 110.0% | 25.0 | 0 | 0 |
 | `F-3C8qPfFug` | 14 | 107.5% | 22.0 | 0 | 0 |
-| `YleOgjiekrI` | 4 | 99.9% | 24.0 | 0 | 0 |
+| `YleOgjiekrI` | 5 | 99.9% | 24.0 | 0 | 0 |
+| `lQlKPOc85WM` | 31 | 93.8% | 19.0 | 0 | 0 |
 | `hTBs856_PaA` | 2 | 92.8% | 19.0 | 0 | 0 |
 | `EBUUXcSy05g` | 2 | 92.0% | 23.0 | 0 | 0 |
 | `sM5aKzm4jHE` | 2 | 87.3% | 18.0 | 0 | 0 |
@@ -23,7 +23,7 @@
 | `iTzM_c9SqKE` | 1 | 46.7% | 79.0 | 0 | 0 |
 | `Soho9s9p9yI` | 12 | 44.3% | 9.0 | 0 | 0 |
 | `0ufETPpeeRA` | 156 | 43.0% | 9.0 | 0 | 0 |
-| `24hrAVEnLUI` | 39 | 40.1% | 8.0 | 0 | 0 |
+| `24hrAVEnLUI` | 41 | 40.1% | 8.0 | 0 | 0 |
 | `BY5adCBkjpY` | 25 | 33.3% | 7.0 | 0 | 0 |
 | `5v5_Ktm7-s8` | 2 | 31.5% | 6.0 | 0 | 0 |
 | `Jj_x2jry-78` | 2 | 22.2% | 4.0 | 0 | 0 |
@@ -130,7 +130,7 @@
 | `XH-DUJ-Zyic` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `XOWCZjJjfZ0` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `XOeB3NjSqNg` | 1 | 0.0% | 0.0 | 0 | 0 |
-| `XgDk6WDk2RE` | 1 | 0.0% | 0.0 | 0 | 0 |
+| `XgDk6WDk2RE` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `XiH7nxy0GRo` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `XqdQXSKrEDI` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `Yl0dogA_AWU` | 0 | 0.0% | 0.0 | 0 | 0 |
