@@ -1,6 +1,6 @@
-# Weekly Report — 2026-10-21
+# Weekly Report — 2026-10-22
 
-**Videos analyzed:** 230
+**Videos analyzed:** 232
 **Median completion %:** 0.0%  (target: ≥70%)
 **Median views:** 0
 **Median comments per 1k views:** 0.00
@@ -9,19 +9,19 @@
 
 | Video | Views | Completion % | AVD (s) | Likes | Comments |
 |---|---|---|---|---|---|
+| `F-3C8qPfFug` | 5 | 121.7% | 25.0 | 0 | 0 |
 | `mnTaBTu5f4A` | 19 | 110.0% | 25.0 | 0 | 0 |
-| `F-3C8qPfFug` | 14 | 107.5% | 22.0 | 0 | 0 |
+| `yOhE808TcD4` | 9 | 100.0% | 22.0 | 0 | 0 |
 | `YleOgjiekrI` | 5 | 99.9% | 24.0 | 0 | 0 |
 | `lQlKPOc85WM` | 31 | 93.8% | 19.0 | 0 | 0 |
 | `hTBs856_PaA` | 2 | 92.8% | 19.0 | 0 | 0 |
 | `EBUUXcSy05g` | 2 | 92.0% | 23.0 | 0 | 0 |
 | `sM5aKzm4jHE` | 2 | 87.3% | 18.0 | 0 | 0 |
+| `Soho9s9p9yI` | 4 | 85.3% | 17.0 | 0 | 0 |
 | `EM05GGy1yZY` | 125 | 84.9% | 20.0 | 1 | 0 |
-| `yOhE808TcD4` | 12 | 74.5% | 16.0 | 0 | 0 |
 | `KFcJkGKR6mA` | 1 | 72.5% | 15.0 | 0 | 0 |
 | `xjhPgNUPm8k` | 5 | 50.5% | 10.0 | 0 | 0 |
 | `iTzM_c9SqKE` | 1 | 46.7% | 79.0 | 0 | 0 |
-| `Soho9s9p9yI` | 12 | 44.3% | 9.0 | 0 | 0 |
 | `0ufETPpeeRA` | 156 | 43.0% | 9.0 | 0 | 0 |
 | `24hrAVEnLUI` | 41 | 40.1% | 8.0 | 0 | 0 |
 | `BY5adCBkjpY` | 25 | 33.3% | 7.0 | 0 | 0 |
@@ -94,6 +94,7 @@
 | `ItSyCtpy5Gk` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `JMiJt23PA9I` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `JlXKC5g-cm0` | 0 | 0.0% | 0.0 | 0 | 0 |
+| `K78U7dbP4Jc` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `LCwF78a3iqU` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `LEHOToLaWkQ` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `LFXztEwQ5AM` | 0 | 0.0% | 0.0 | 0 | 0 |
@@ -147,6 +148,7 @@
 | `aHSNnKNpwuA` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `bLbBg4oUc5g` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `bOFowX8GrcM` | 5 | 0.0% | 0.0 | 0 | 0 |
+| `bdF-A0fh-Gw` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `bviMfGT5Ch8` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `c75h22GPJKs` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `cFs9GU8jw5M` | 0 | 0.0% | 0.0 | 0 | 0 |
@@ -158,7 +160,7 @@
 | `eVo-Sh9ioLI` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `eYIpssVuiAA` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `eogJ6Rzx7go` | 0 | 0.0% | 0.0 | 0 | 0 |
-| `fUhr5RucnGY` | 1 | 0.0% | 0.0 | 0 | 0 |
+| `fUhr5RucnGY` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `fhR6GEVCQck` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `fiNM2U5Fa9U` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `fvsbgLEams8` | 0 | 0.0% | 0.0 | 0 | 0 |
@@ -192,7 +194,7 @@
 | `mnFxZgfDlj8` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `mu80C3s_qjg` | 2 | 0.0% | 0.0 | 0 | 0 |
 | `n2AcPFKNYsg` | 0 | 0.0% | 0.0 | 0 | 0 |
-| `n9OT4CWBOFY` | 2 | 0.0% | 0.0 | 0 | 0 |
+| `n9OT4CWBOFY` | 1 | 0.0% | 0.0 | 0 | 0 |
 | `nepQ7gXy-wk` | 1 | 0.0% | 0.0 | 0 | 0 |
 | `nwfU8wCNfXE` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `oHvuPXPqoNI` | 0 | 0.0% | 0.0 | 0 | 0 |
@@ -240,11 +242,11 @@
 | `zH56FQ08za0` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `zM1gMmgxLQQ` | 0 | 0.0% | 0.0 | 0 | 0 |
 
-## Per-formula comparison (last N=51 paired uploads)
+## Per-formula comparison (last N=52 paired uploads)
 
 | Formula | n_videos | median completion % | median views |
 |---------|----------|---------------------|--------------|
-| specific_stat | 51 | 0.0% | 0 |
-| wrong_answer_first | 51 | 0.0% | 0 |
+| specific_stat | 52 | 0.0% | 0 |
+| wrong_answer_first | 52 | 0.0% | 0 |
 
 **No winner yet — continuing A/B** (margin 0.0pp < 3pp threshold).
