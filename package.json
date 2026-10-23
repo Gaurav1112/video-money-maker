@@ -46,7 +46,7 @@
     "@remotion/paths": "^4.0.457",
     "@remotion/transitions": "^4.0.457",
     "axios": "^1.16.0",
-    "fs-extra": "^11.3.4",
+    "fs-extra": "^11.3.5",
     "googleapis": "^171.4.0",
     "lottie-web": "^5.13.0",
     "lucide-react": "^1.14.0",
