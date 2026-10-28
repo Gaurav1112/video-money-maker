@@ -1,4 +1,4 @@
-# Weekly Report — 2026-10-27
+# Weekly Report — 2026-10-28
 
 **Videos analyzed:** 232
 **Median completion %:** 0.0%  (target: ≥70%)
@@ -18,7 +18,7 @@
 | `sM5aKzm4jHE` | 2 | 87.3% | 18.0 | 0 | 0 |
 | `EM05GGy1yZY` | 126 | 84.9% | 20.0 | 1 | 0 |
 | `bdF-A0fh-Gw` | 14 | 62.8% | 13.0 | 1 | 0 |
-| `xjhPgNUPm8k` | 3 | 55.0% | 11.0 | 0 | 0 |
+| `xjhPgNUPm8k` | 2 | 55.0% | 11.0 | 0 | 0 |
 | `iTzM_c9SqKE` | 1 | 46.7% | 79.0 | 0 | 0 |
 | `0ufETPpeeRA` | 156 | 43.0% | 9.0 | 0 | 0 |
 | `24hrAVEnLUI` | 41 | 40.1% | 8.0 | 0 | 0 |
@@ -189,7 +189,7 @@
 | `lJznx5zsIGs` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `lfpoVVXfWzQ` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `m9Q7lAUd6Pk` | 0 | 0.0% | 0.0 | 0 | 0 |
-| `mSmIEClPVmI` | 1 | 0.0% | 0.0 | 0 | 0 |
+| `mSmIEClPVmI` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `mnFxZgfDlj8` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `mu80C3s_qjg` | 2 | 0.0% | 0.0 | 0 | 0 |
 | `n2AcPFKNYsg` | 0 | 0.0% | 0.0 | 0 | 0 |
