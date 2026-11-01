@@ -1,18 +1,18 @@
 # Weekly Decision Digest — @GuruSishya-India
 
-_Generated: 2026-10-25T09:38:51.118Z_
+_Generated: 2026-11-01T11:45:04.638Z_
 
 One report. Five sections. One recommended action. Read the bottom line.
 
 ## 1. Monetization delta
 
 - Subscribers: 13 → 13 (0)
-- 90-day views (approx): 1,495 → 1,446 (-49)
+- 90-day views (approx): 1,433 → 1,436 (+3)
 - 12-month watch hours: 25 → 25 (0)
 
 **YPP Path 1** (1,000 subs + 10M Shorts views/90d):
 - Subscribers: 1.3% — gap 987
-- Shorts views: 0.01% — gap 9,998,554
+- Shorts views: 0.01% — gap 9,998,564
 **YPP Path 2** (1,000 subs + 4,000 watch hours/12mo):
 - Subscribers: 1.3% — gap 987
 - Watch hours: 0.6% — gap 3,975
@@ -20,12 +20,11 @@ One report. Five sections. One recommended action. Read the bottom line.
 ## 2. Retention trend
 
 - Median completion: 22.1% → **0.0%** (-22.1pp) across 232 videos.
-- F011 30s-Short check: last-7-day videos median 84.6% vs older 0.0% (+84.6pp) — change showing up.
+- F011 30s-Short check: not enough split data (0 recent / 230 older videos with completion).
 
 ## 3. Top / bottom video of the week
 
-- **Top**: "90% of devs get Kafka acks WRONG #Shorts" — 21 views, 116.7% completion
-- **Bottom**: "90% of devs get Kafka acks WRONG #Shorts" — 14 views, 52.5% completion
+_No videos published in the last 7 days._
 
 ## 4. A/B hook status
 
@@ -36,4 +35,4 @@ One report. Five sections. One recommended action. Read the bottom line.
 
 > **Retention regressed — investigate the last change before shipping anything new.**
 
-_Signals: daysSinceLastChange=151, completionDeltaPp=-22.1, subscriberDeltaPerWeek=0, weeksFlat=0. Advisory only — a human decides._
+_Signals: daysSinceLastChange=158, completionDeltaPp=-22.1, subscriberDeltaPerWeek=0, weeksFlat=0. Advisory only — a human decides._
