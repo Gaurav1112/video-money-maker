@@ -1,4 +1,4 @@
-# Weekly Report — 2026-11-01
+# Weekly Report — 2026-11-02
 
 **Videos analyzed:** 232
 **Median completion %:** 0.0%  (target: ≥70%)
@@ -10,14 +10,14 @@
 | Video | Views | Completion % | AVD (s) | Likes | Comments |
 |---|---|---|---|---|---|
 | `K78U7dbP4Jc` | 22 | 116.7% | 25.0 | 0 | 0 |
-| `mnTaBTu5f4A` | 19 | 110.0% | 25.0 | 0 | 0 |
+| `mnTaBTu5f4A` | 14 | 110.0% | 25.0 | 0 | 0 |
 | `lQlKPOc85WM` | 31 | 93.8% | 19.0 | 0 | 0 |
 | `hTBs856_PaA` | 2 | 92.8% | 19.0 | 0 | 0 |
 | `sM5aKzm4jHE` | 2 | 87.3% | 18.0 | 0 | 0 |
 | `EM05GGy1yZY` | 126 | 84.9% | 20.0 | 1 | 0 |
 | `bdF-A0fh-Gw` | 14 | 62.8% | 13.0 | 1 | 0 |
+| `0ufETPpeeRA` | 5 | 47.0% | 10.0 | 0 | 0 |
 | `iTzM_c9SqKE` | 1 | 46.7% | 79.0 | 0 | 0 |
-| `0ufETPpeeRA` | 156 | 43.0% | 9.0 | 0 | 0 |
 | `24hrAVEnLUI` | 42 | 40.1% | 8.0 | 0 | 0 |
 | `BY5adCBkjpY` | 25 | 33.3% | 7.0 | 0 | 0 |
 | `Jj_x2jry-78` | 2 | 22.2% | 4.0 | 0 | 0 |
