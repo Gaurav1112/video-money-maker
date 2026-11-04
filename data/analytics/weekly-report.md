@@ -1,4 +1,4 @@
-# Weekly Report — 2026-11-03
+# Weekly Report — 2026-11-04
 
 **Videos analyzed:** 234
 **Median completion %:** 0.0%  (target: ≥70%)
@@ -10,13 +10,11 @@
 | Video | Views | Completion % | AVD (s) | Likes | Comments |
 |---|---|---|---|---|---|
 | `K78U7dbP4Jc` | 22 | 116.7% | 25.0 | 0 | 0 |
-| `mnTaBTu5f4A` | 12 | 110.0% | 25.0 | 0 | 0 |
 | `lQlKPOc85WM` | 31 | 93.8% | 19.0 | 0 | 0 |
 | `hTBs856_PaA` | 2 | 92.8% | 19.0 | 0 | 0 |
 | `sM5aKzm4jHE` | 2 | 87.3% | 18.0 | 0 | 0 |
 | `EM05GGy1yZY` | 126 | 84.9% | 20.0 | 1 | 0 |
 | `bdF-A0fh-Gw` | 14 | 62.8% | 13.0 | 1 | 0 |
-| `0ufETPpeeRA` | 2 | 56.5% | 13.0 | 0 | 0 |
 | `iTzM_c9SqKE` | 1 | 46.7% | 79.0 | 0 | 0 |
 | `24hrAVEnLUI` | 42 | 40.1% | 8.0 | 0 | 0 |
 | `BY5adCBkjpY` | 25 | 33.3% | 7.0 | 0 | 0 |
@@ -29,6 +27,7 @@
 | `-uoT4hTotJY` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `0g0-1SCJ4Yk` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `0rqgSAZYHNA` | 0 | 0.0% | 0.0 | 0 | 0 |
+| `0ufETPpeeRA` | 1 | 0.0% | 0.0 | 0 | 0 |
 | `1gCRslwAQhI` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `1ka4RiVkCJQ` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `1mJAXHC0ogk` | 1 | 0.0% | 0.0 | 0 | 0 |
@@ -107,7 +106,7 @@
 | `OGT7oriCHS4` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `OzpuLCRSJEc` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `P45frqp49rE` | 0 | 0.0% | 0.0 | 0 | 0 |
-| `Q0v7mRnPgXc` | 1 | 0.0% | 0.0 | 0 | 0 |
+| `Q0v7mRnPgXc` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `QCaLJ3rOBBE` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `QV67E2MJMkY` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `QvQLmCVFsYQ` | 0 | 0.0% | 0.0 | 0 | 0 |
@@ -126,7 +125,7 @@
 | `V3YiM9QkDfQ` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `VtP0TTSr55c` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `WRiF-lPllsg` | 0 | 0.0% | 0.0 | 0 | 0 |
-| `X9Z9MehqLLU` | 2 | 0.0% | 0.0 | 0 | 0 |
+| `X9Z9MehqLLU` | 1 | 0.0% | 0.0 | 0 | 0 |
 | `XBhoGRZaBDw` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `XH-DUJ-Zyic` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `XOWCZjJjfZ0` | 0 | 0.0% | 0.0 | 0 | 0 |
@@ -192,6 +191,7 @@
 | `m9Q7lAUd6Pk` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `mSmIEClPVmI` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `mnFxZgfDlj8` | 0 | 0.0% | 0.0 | 0 | 0 |
+| `mnTaBTu5f4A` | 6 | 0.0% | 0.0 | 0 | 0 |
 | `mu80C3s_qjg` | 2 | 0.0% | 0.0 | 0 | 0 |
 | `n2AcPFKNYsg` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `n9OT4CWBOFY` | 0 | 0.0% | 0.0 | 0 | 0 |
