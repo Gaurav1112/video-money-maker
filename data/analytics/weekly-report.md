@@ -1,4 +1,4 @@
-# Weekly Report — 2026-11-16
+# Weekly Report — 2026-11-17
 
 **Videos analyzed:** 236
 **Median completion %:** 0.0%  (target: ≥70%)
@@ -108,7 +108,7 @@
 | `Q0v7mRnPgXc` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `QCaLJ3rOBBE` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `QV67E2MJMkY` | 0 | 0.0% | 0.0 | 0 | 0 |
-| `QvQLmCVFsYQ` | 0 | 0.0% | 0.0 | 0 | 0 |
+| `QvQLmCVFsYQ` | 1 | 0.0% | 0.0 | 0 | 0 |
 | `QzWe-QxCqU0` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `R-nlbkk9qsQ` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `S4-TEYj6Uog` | 0 | 0.0% | 0.0 | 0 | 0 |
