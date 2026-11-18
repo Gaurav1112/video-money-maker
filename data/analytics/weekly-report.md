@@ -1,4 +1,4 @@
-# Weekly Report — 2026-11-17
+# Weekly Report — 2026-11-18
 
 **Videos analyzed:** 236
 **Median completion %:** 0.0%  (target: ≥70%)
@@ -10,9 +10,9 @@
 | Video | Views | Completion % | AVD (s) | Likes | Comments |
 |---|---|---|---|---|---|
 | `K78U7dbP4Jc` | 22 | 116.7% | 25.0 | 0 | 0 |
+| `uNa300hlJyQ` | 3 | 64.7% | 15.0 | 0 | 0 |
 | `bdF-A0fh-Gw` | 14 | 62.8% | 13.0 | 1 | 0 |
 | `iTzM_c9SqKE` | 1 | 46.7% | 79.0 | 0 | 0 |
-| `uNa300hlJyQ` | 1 | 28.7% | 6.0 | 0 | 0 |
 | `Lr6uCgYgboU` | 1 | 25.0% | 6.0 | 0 | 0 |
 | `4u-IXZKnVHE` | 2 | 18.5% | 3.0 | 0 | 0 |
 | `gjWW-L5JHpQ` | 2 | 5.4% | 9.0 | 0 | 0 |
@@ -69,7 +69,7 @@
 | `EO7ktgsh1x8` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `EOxQcooASUU` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `F-3C8qPfFug` | 0 | 0.0% | 0.0 | 0 | 0 |
-| `FatlERck1nM` | 2 | 0.0% | 0.0 | 0 | 0 |
+| `FatlERck1nM` | 1 | 0.0% | 0.0 | 0 | 0 |
 | `H4NGxbsGQ2o` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `HEmGXDrV7OU` | 1 | 0.0% | 0.0 | 0 | 0 |
 | `HOfsYdU3JIk` | 1 | 0.0% | 0.0 | 0 | 0 |
@@ -236,7 +236,7 @@
 | `x3bKXjsgiEI` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `xBcr0AZzGMc` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `xHbKrrbt_84` | 0 | 0.0% | 0.0 | 0 | 0 |
-| `xjhPgNUPm8k` | 0 | 0.0% | 0.0 | 0 | 0 |
+| `xjhPgNUPm8k` | 1 | 0.0% | 0.0 | 0 | 0 |
 | `y70jWW2pFps` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `yOhE808TcD4` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `yUZkaiQm_gE` | 0 | 0.0% | 0.0 | 0 | 0 |
