@@ -1,6 +1,6 @@
-# Weekly Report — 2026-11-20
+# Weekly Report — 2026-11-21
 
-**Videos analyzed:** 236
+**Videos analyzed:** 238
 **Median completion %:** 0.0%  (target: ≥70%)
 **Median views:** 0
 **Median comments per 1k views:** 0.00
@@ -9,9 +9,8 @@
 
 | Video | Views | Completion % | AVD (s) | Likes | Comments |
 |---|---|---|---|---|---|
-| `K78U7dbP4Jc` | 22 | 116.7% | 25.0 | 0 | 0 |
+| `bdF-A0fh-Gw` | 5 | 83.4% | 18.0 | 0 | 0 |
 | `uNa300hlJyQ` | 3 | 64.7% | 15.0 | 0 | 0 |
-| `bdF-A0fh-Gw` | 14 | 62.8% | 13.0 | 1 | 0 |
 | `I7D3M0Tzb4U` | 6 | 52.5% | 12.0 | 0 | 0 |
 | `iTzM_c9SqKE` | 1 | 46.7% | 79.0 | 0 | 0 |
 | `Lr6uCgYgboU` | 1 | 25.0% | 6.0 | 0 | 0 |
@@ -87,12 +86,14 @@
 | `JMiJt23PA9I` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `Jj_x2jry-78` | 1 | 0.0% | 0.0 | 0 | 0 |
 | `JlXKC5g-cm0` | 0 | 0.0% | 0.0 | 0 | 0 |
+| `K78U7dbP4Jc` | 1 | 0.0% | 0.0 | 0 | 0 |
 | `KFcJkGKR6mA` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `Kz8zWav3fvo` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `LCwF78a3iqU` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `LEHOToLaWkQ` | 0 | 0.0% | 0.0 | 0 | 0 |
-| `LFXztEwQ5AM` | 0 | 0.0% | 0.0 | 0 | 0 |
+| `LFXztEwQ5AM` | 1 | 0.0% | 0.0 | 0 | 0 |
 | `LYz7WFhcwpI` | 0 | 0.0% | 0.0 | 0 | 0 |
+| `LpSkoO0Fh90` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `Lyo5OREw584` | 1 | 0.0% | 0.0 | 0 | 0 |
 | `M2RIPyTHKAA` | 1 | 0.0% | 0.0 | 0 | 0 |
 | `MH4jS0KbQEw` | 0 | 0.0% | 0.0 | 0 | 0 |
@@ -140,6 +141,7 @@
 | `ZgJD9Y3Dp4s` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `ZivDzk156SU` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `_S-9hhjTsVI` | 0 | 0.0% | 0.0 | 0 | 0 |
+| `_bPynAJkogs` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `_q7Iynn8mE0` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `aByD7C8yzAg` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `aDPROoam-g8` | 0 | 0.0% | 0.0 | 0 | 0 |
@@ -219,7 +221,7 @@
 | `sH0DXyH-27c` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `sJQtDTySy2Y` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `sKlu48Iq_Gc` | 0 | 0.0% | 0.0 | 0 | 0 |
-| `sM5aKzm4jHE` | 0 | 0.0% | 0.0 | 0 | 0 |
+| `sM5aKzm4jHE` | 1 | 0.0% | 0.0 | 0 | 0 |
 | `tP2KCmARs6c` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `tTmCPg6DAxk` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `txp4fhpFY4M` | 0 | 0.0% | 0.0 | 0 | 0 |
@@ -246,11 +248,11 @@
 | `zH56FQ08za0` | 0 | 0.0% | 0.0 | 0 | 0 |
 | `zM1gMmgxLQQ` | 0 | 0.0% | 0.0 | 0 | 0 |
 
-## Per-formula comparison (last N=54 paired uploads)
+## Per-formula comparison (last N=55 paired uploads)
 
 | Formula | n_videos | median completion % | median views |
 |---------|----------|---------------------|--------------|
-| specific_stat | 54 | 0.0% | 0 |
-| wrong_answer_first | 54 | 0.0% | 0 |
+| specific_stat | 55 | 0.0% | 0 |
+| wrong_answer_first | 55 | 0.0% | 0 |
 
 **No winner yet — continuing A/B** (margin 0.0pp < 3pp threshold).
