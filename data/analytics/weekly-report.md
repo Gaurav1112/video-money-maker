@@ -1,4 +1,4 @@
-# Weekly Report — 2026-11-27
+# Weekly Report — 2026-11-28
 
 **Videos analyzed:** 238
 **Median completion %:** 0.0%  (target: ≥70%)
